@@ -129,7 +129,7 @@ code {
 }
 
 .dark .glass {
-  background: rgba(26, 29, 37, 0.94);
+  background: rgba(23, 23, 23, 0.94);
 }
 
 .rule-card {
@@ -188,7 +188,7 @@ code {
 }
 
 .dark .sidebar-scroll::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.35);
+  background: rgba(163, 163, 163, 0.35);
 }
 
 .sidebar-scroll::-webkit-scrollbar-thumb:hover {
@@ -196,7 +196,7 @@ code {
 }
 
 .dark .sidebar-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.5);
+  background: rgba(163, 163, 163, 0.5);
 }
 
 @keyframes fadeUp {
