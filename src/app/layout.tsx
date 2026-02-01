@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Manrope, Source_Serif_4 } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const sourceSerif = Source_Serif_4({
@@ -58,6 +59,7 @@ export default function RootLayout({
           Skip to content
         </a>
         {children}
+        <Analytics />
       </body>
     </html>
   );
