@@ -1,54 +1,107 @@
 @import "tailwindcss";
 
+/* Enable class-based dark mode toggling (Tailwind v4) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ==========================================================================
+   DESIGN TOKENS - Unified Theme System
+   ========================================================================== */
+
 :root {
-  --bg: #f2eee7;
-  --ink: #171717;
-  --muted: #6b6b6b;
-  --card: #ffffff;
-  --stroke: #e7e1d6;
-  --accent: #2563eb;
-  --accent-2: #0ea5a4;
-  --shadow: 0 20px 60px rgba(23, 23, 23, 0.08);
+  /* Background tokens */
+  --color-bg: #ffffff;
+  --color-bg-elevated: #ffffff;
+  --color-bg-muted: #f5f5f5;
+  --color-bg-inverse: #171717;
+
+  /* Text tokens */
+  --color-text-primary: #171717;
+  --color-text-secondary: #525252;
+  --color-text-muted: #737373;
+  --color-text-inverse: #f5f5f5;
+
+  /* Stroke/border tokens */
+  --color-stroke: #e5e5e5;
+  --color-stroke-muted: #f5f5f5;
+  --color-stroke-strong: #d4d4d4;
+
+  /* Accent tokens */
+  --color-accent: #2563eb;
+  --color-accent-hover: #1d4ed8;
+  --color-accent-2: #0ea5a4;
+
+  /* Semantic tokens */
+  --color-success: #10b981;
+  --color-success-muted: rgba(16, 185, 129, 0.12);
+  --color-error: #ef4444;
+  --color-error-muted: rgba(239, 68, 68, 0.12);
+
+  /* Shadow tokens - removed for flat design */
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+
+  /* Radius tokens */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
 }
 
+.dark {
+  /* Background tokens - dark mode (pure neutral grays) */
+  --color-bg: #111111;
+  --color-bg-elevated: #1a1a1a;
+  --color-bg-muted: #161616;
+  --color-bg-inverse: #fafafa;
+
+  /* Text tokens - dark mode */
+  --color-text-primary: #fafafa;
+  --color-text-secondary: #d4d4d4;
+  --color-text-muted: #a3a3a3;
+  --color-text-inverse: #111111;
+
+  /* Stroke/border tokens - dark mode */
+  --color-stroke: #333333;
+  --color-stroke-muted: #222222;
+  --color-stroke-strong: #525252;
+
+  /* Semantic tokens - dark mode */
+  --color-success-muted: rgba(45, 212, 191, 0.18);
+  --color-error-muted: rgba(248, 113, 113, 0.18);
+
+  /* Shadow tokens - dark mode */
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+}
+
+/* ==========================================================================
+   BASE STYLES
+   ========================================================================== */
+
 html {
-  background-color: var(--bg);
+  background-color: var(--color-bg);
   color-scheme: light;
 }
 
 .dark {
   color-scheme: dark;
-  background-color: #0f1115;
 }
 
 :where(input, textarea, select) {
-  background-color: var(--card);
-  color: var(--ink);
-}
-
-.dark :where(input, textarea, select) {
-  background-color: #0f1115;
-  color: #f8fafc;
+  background-color: var(--color-bg-elevated);
+  color: var(--color-text-primary);
 }
 
 body {
   font-family: var(--font-manrope), sans-serif;
-  color: var(--ink);
-  background:
-    radial-gradient(1200px 600px at 10% -10%, rgba(14, 165, 164, 0.15), transparent 60%),
-    radial-gradient(900px 500px at 90% 0%, rgba(37, 99, 235, 0.12), transparent 60%),
-    var(--bg);
+  color: var(--color-text-primary);
+  background: var(--color-bg);
   min-height: 100vh;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-}
-
-.dark body {
-  color: #f8fafc;
-  background:
-    radial-gradient(1200px 600px at 10% -10%, rgba(255, 255, 255, 0.04), transparent 60%),
-    radial-gradient(900px 500px at 90% 0%, rgba(255, 255, 255, 0.03), transparent 60%),
-    #0f1115;
 }
 
 h1,
@@ -65,17 +118,18 @@ code {
   font-family: var(--font-plex-mono), monospace;
 }
 
+/* ==========================================================================
+   COMPONENT STYLES
+   ========================================================================== */
+
 .glass {
   background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(12px);
-  border: 1px solid var(--stroke);
-  box-shadow: var(--shadow);
+  border: 1px solid var(--color-stroke);
 }
 
 .dark .glass {
-  background: rgba(17, 19, 24, 0.94);
-  border-color: #24272f;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  background: rgba(26, 29, 37, 0.94);
 }
 
 .rule-card {
@@ -86,42 +140,30 @@ code {
 
 .rule-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 18px 40px rgba(23, 23, 23, 0.12);
-}
-
-.dark .rule-card:hover {
-  box-shadow: 0 18px 40px rgba(2, 6, 23, 0.5);
 }
 
 .chip {
-  border: 1px solid var(--stroke);
-  background: #f1ece2;
-}
-
-.dark .chip {
-  border-color: #2a2f38;
-  background: #151821;
+  border: 1px solid var(--color-stroke);
+  background: var(--color-bg-muted);
 }
 
 .badge-do {
-  background: rgba(14, 165, 164, 0.12);
+  background: var(--color-success-muted);
   color: #0f766e;
   letter-spacing: 0.08em;
 }
 
 .dark .badge-do {
-  background: rgba(45, 212, 191, 0.18);
   color: #99f6e4;
 }
 
 .badge-dont {
-  background: rgba(239, 68, 68, 0.12);
+  background: var(--color-error-muted);
   color: #b91c1c;
   letter-spacing: 0.08em;
 }
 
 .dark .badge-dont {
-  background: rgba(248, 113, 113, 0.18);
   color: #fecaca;
 }
 
@@ -177,33 +219,27 @@ code {
 
   .rule-card:hover {
     transform: none;
-    box-shadow: 0 18px 40px rgba(23, 23, 23, 0.12);
   }
 }
+
 .skip-link {
   position: absolute;
   top: 12px;
   left: 12px;
   transform: translateY(-200%);
   padding: 8px 14px;
-  border-radius: 999px;
-  background: #ffffff;
-  color: #0f172a;
+  border-radius: var(--radius-full);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
+  border: 1px solid var(--color-stroke);
   transition: transform 160ms ease;
   z-index: 50;
 }
 
 .skip-link:focus {
   transform: translateY(0);
-}
-
-.dark .skip-link {
-  background: #0f1115;
-  color: #f8fafc;
-  border: 1px solid #2a2f38;
 }
