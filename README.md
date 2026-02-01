@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Axiom — UI Logic Repository
 
-## Getting Started
+> Treat every decision as a repeatable system. Break the rule only after you understand it.
 
-First, run the development server:
+The decision engine behind sharp, consistent interfaces. This repository captures the micro-decisions that define durable design systems across typography, layout, color, and interaction patterns.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## What is Axiom?
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Axiom is a reference-ready collection of product UI best practices structured as design axioms—fundamental truths that don't require proof, just application. Each decision includes:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- ✅ Do/Don't patterns
+- 🎯 Context tags (Buttons, Forms, Accessibility, etc.)
+- 📐 Specific values and formulas
+- 🧠 Conceptual grounding (Gestalt, Fitts's Law, etc.)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Coverage
 
-## Learn More
+- **38 curated decisions** grounded in product UI best practices
+- **6 system categories**: Typography, Layout, Color, Components, Forms, System Logic
+- **Fast scanning** with tag filters and encoded patterns
 
-To learn more about Next.js, take a look at the following resources:
+## Why Axiom?
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Stop debating the same design decisions on every project. Axiom codifies battle-tested heuristics so teams can:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Ship faster with consistent patterns
+- Onboard designers with clear principles
+- Reduce decision fatigue
+- Build accessible, readable interfaces by default
 
-## Deploy on Vercel
+## Structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Each axiom follows a consistent format:
+- **Title**: The principle (e.g., "Sentence Case is King")
+- **Tags**: Context/domains it applies to
+- **Rule**: The specific guideline
+- **Do/Avoid**: Visual comparison with values
+- **Deep dive**: Extended rationale and edge cases
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+**Built for consistency. Break rules only after mastering them.**

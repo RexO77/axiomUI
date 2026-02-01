@@ -1,26 +1,209 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #f2eee7;
+  --ink: #171717;
+  --muted: #6b6b6b;
+  --card: #ffffff;
+  --stroke: #e7e1d6;
+  --accent: #2563eb;
+  --accent-2: #0ea5a4;
+  --shadow: 0 20px 60px rgba(23, 23, 23, 0.08);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html {
+  background-color: var(--bg);
+  color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  color-scheme: dark;
+  background-color: #0f1115;
+}
+
+:where(input, textarea, select) {
+  background-color: var(--card);
+  color: var(--ink);
+}
+
+.dark :where(input, textarea, select) {
+  background-color: #0f1115;
+  color: #f8fafc;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-manrope), sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(14, 165, 164, 0.15), transparent 60%),
+    radial-gradient(900px 500px at 90% 0%, rgba(37, 99, 235, 0.12), transparent 60%),
+    var(--bg);
+  min-height: 100vh;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dark body {
+  color: #f8fafc;
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(255, 255, 255, 0.04), transparent 60%),
+    radial-gradient(900px 500px at 90% 0%, rgba(255, 255, 255, 0.03), transparent 60%),
+    #0f1115;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-source-serif), serif;
+  text-wrap: balance;
+}
+
+code {
+  font-family: var(--font-plex-mono), monospace;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--stroke);
+  box-shadow: var(--shadow);
+}
+
+.dark .glass {
+  background: rgba(17, 19, 24, 0.94);
+  border-color: #24272f;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+
+.rule-card {
+  transition: transform 200ms ease, box-shadow 200ms ease;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 320px;
+}
+
+.rule-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 40px rgba(23, 23, 23, 0.12);
+}
+
+.dark .rule-card:hover {
+  box-shadow: 0 18px 40px rgba(2, 6, 23, 0.5);
+}
+
+.chip {
+  border: 1px solid var(--stroke);
+  background: #f1ece2;
+}
+
+.dark .chip {
+  border-color: #2a2f38;
+  background: #151821;
+}
+
+.badge-do {
+  background: rgba(14, 165, 164, 0.12);
+  color: #0f766e;
+  letter-spacing: 0.08em;
+}
+
+.dark .badge-do {
+  background: rgba(45, 212, 191, 0.18);
+  color: #99f6e4;
+}
+
+.badge-dont {
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+  letter-spacing: 0.08em;
+}
+
+.dark .badge-dont {
+  background: rgba(248, 113, 113, 0.18);
+  color: #fecaca;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  animation: fadeUp 0.6s ease forwards;
+  animation-delay: var(--delay, 0ms);
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(23, 23, 23, 0.2);
+  border-radius: 999px;
+}
+
+.dark .sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(23, 23, 23, 0.35);
+}
+
+.dark .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
+@keyframes fadeUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .rule-card {
+    transition: none;
+  }
+
+  .rule-card:hover {
+    transform: none;
+    box-shadow: 0 18px 40px rgba(23, 23, 23, 0.12);
+  }
+}
+.skip-link {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  transform: translateY(-200%);
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
+  transition: transform 160ms ease;
+  z-index: 50;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.dark .skip-link {
+  background: #0f1115;
+  color: #f8fafc;
+  border: 1px solid #2a2f38;
 }
