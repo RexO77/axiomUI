@@ -22,8 +22,66 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "axiom",
-  description: "UI logic repository of repeatable design decisions",
+  title: {
+    default: "Axiom — UI Logic Repository",
+    template: "%s | Axiom",
+  },
+  description:
+    "29 actionable UI design rules covering typography, layout, color, and components. Learn button padding formulas, the 60-30-10 rule, modal vs drawer patterns, and more.",
+  keywords: [
+    "design system",
+    "UI logic",
+    "typography rules",
+    "button padding",
+    "color theory",
+    "UX patterns",
+    "interface design",
+    "design decisions",
+    "refactoring UI",
+    "component patterns",
+  ],
+  authors: [{ name: "Nischal Skanda" }],
+  creator: "Nischal Skanda",
+  metadataBase: new URL("https://axiom.design"),
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://axiom.design",
+    title: "Axiom — UI Logic Repository",
+    description:
+      "29 actionable UI design rules for consistent, sharp interfaces. Master typography, layout, color, and component patterns.",
+    siteName: "Axiom",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Axiom UI Logic Repository — Design System Rules",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Axiom — UI Logic Repository",
+    description:
+      "29 actionable UI design rules for consistent, sharp interfaces.",
+    images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({
@@ -49,12 +107,59 @@ export default function RootLayout({
     })();
   `;
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://axiom.design/#website",
+        url: "https://axiom.design",
+        name: "Axiom",
+        description:
+          "UI Logic Repository of repeatable design decisions for consistent, sharp interfaces",
+        publisher: {
+          "@id": "https://axiom.design/#organization",
+        },
+      },
+      {
+        "@type": "Organization",
+        "@id": "https://axiom.design/#organization",
+        name: "Axiom",
+        url: "https://axiom.design",
+        logo: {
+          "@type": "ImageObject",
+          url: "https://axiom.design/og-image.png",
+        },
+      },
+      {
+        "@type": "CollectionPage",
+        "@id": "https://axiom.design/#collection",
+        url: "https://axiom.design",
+        name: "UI Logic Rules",
+        description:
+          "29 actionable UI design rules covering typography, layout, color, and components",
+        isPartOf: {
+          "@id": "https://axiom.design/#website",
+        },
+        about: {
+          "@type": "Thing",
+          name: "User Interface Design",
+        },
+        numberOfItems: 29,
+      },
+    ],
+  };
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${sourceSerif.variable} ${manrope.variable} ${plexMono.variable} antialiased`}
       >
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
@@ -64,3 +169,4 @@ export default function RootLayout({
     </html>
   );
 }
+
