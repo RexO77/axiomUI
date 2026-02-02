@@ -6,9 +6,9 @@ export function Header() {
                 <span className="chip rounded-full px-3 py-1">Product Heuristics</span>
                 <span className="chip rounded-full px-3 py-1">UX Logic</span>
             </div>
-            <h2 className="mt-6 text-4xl font-semibold text-neutral-900 md:text-5xl dark:text-neutral-100">
+            <h1 className="mt-6 text-4xl font-semibold text-neutral-900 md:text-5xl dark:text-neutral-100">
                 The Decision Engine Behind Sharp, Consistent Interfaces.
-            </h2>
+            </h1>
             <p className="mt-4 max-w-2xl text-base text-neutral-600 md:text-lg dark:text-neutral-300">
                 Stop relying on intuition. This repository captures the micro-decisions that
                 define durable design systems across typography, layout, color, and interaction

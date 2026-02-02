@@ -64,9 +64,9 @@ function SidebarContent({
                         <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-neutral-400 dark:text-neutral-500">
                             axiom
                         </p>
-                        <h1 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
+                        <span className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
                             UI Logic
-                        </h1>
+                        </span>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">

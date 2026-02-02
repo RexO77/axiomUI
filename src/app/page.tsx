@@ -132,9 +132,9 @@ function HomeContent() {
                         <p className="text-xs uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">
                           {group.id}
                         </p>
-                        <h3 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+                        <h2 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
                           {group.name}
-                        </h3>
+                        </h2>
                       </div>
                     </div>
 
