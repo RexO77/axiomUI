@@ -1,36 +1,27 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useMemo } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Layers, SearchX } from "lucide-react";
+
+import { categories, rules } from "@/data/ui-logic";
+import { Sidebar } from "@/components/layout/sidebar";
+import { Header } from "@/components/layout/header";
+import { RuleCard } from "@/components/features/rules/rule-card";
+import { RuleDrawer } from "@/components/features/rules/rule-drawer";
+
+// Re-importing cleanly for section icons (kept local for now)
 import {
   BoxSelect,
-  CheckCircle2,
   Cpu,
-  Download,
-  Expand,
-  Layers,
   LayoutGrid,
   Palette,
-  Search,
-  SearchX,
   TextCursorInput,
   Type,
-  XCircle,
 } from "lucide-react";
-import { Drawer } from "vaul";
-import { buildDeepDive, categories, rules } from "@/data/ui-logic";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 
-const tips = [
-  "Treat every decision as a repeatable system.",
-  "Break the rule only after you understand it.",
-  "Typography, layout, color, components, forms, and system logic.",
-  "Fast scanning, tag filters, and encoded do/don't patterns.",
-  "Curated rules grounded in product UI best practices.",
-];
-
-const categoryIcons = new Map([
+const sectionIcons = new Map([
   ["typography", Type],
   ["layout", LayoutGrid],
   ["color", Palette],
@@ -45,19 +36,10 @@ function HomeContent() {
   const router = useRouter();
   const query = searchParams.get("q") ?? "";
   const activeRuleId = searchParams.get("rule");
-  const isDrawerOpen = Boolean(activeRuleId);
   const searchLower = query.trim().toLowerCase();
 
-  const updateParams = (updates: { q?: string; rule?: string | null }) => {
+  const updateParams = (updates: { rule?: string | null }) => {
     const nextParams = new URLSearchParams(searchParams.toString());
-
-    if (updates.q !== undefined) {
-      if (updates.q) {
-        nextParams.set("q", updates.q);
-      } else {
-        nextParams.delete("q");
-      }
-    }
 
     if (updates.rule !== undefined) {
       if (updates.rule) {
@@ -108,135 +90,15 @@ function HomeContent() {
     ? categoryById.get(activeRule.category) ?? ""
     : "";
 
-  const activeDeepDive = activeRule ? buildDeepDive(activeRule) : [];
-  const formattedDate = useMemo(() => {
-    const parts = new Intl.DateTimeFormat("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "2-digit",
-    }).formatToParts(new Date());
-    const lookup = parts.reduce<Record<string, string>>((acc, part) => {
-      acc[part.type] = part.value;
-      return acc;
-    }, {});
-    return `${lookup.weekday} ${lookup.month} ${lookup.day}`;
-  }, []);
-
-  // Rotating tips
-  const [tipIndex, setTipIndex] = useState(0);
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTipIndex((prev) => (prev + 1) % tips.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
   let delayIndex = 0;
 
   return (
-    <div className="flex min-h-screen bg-neutral-50 dark:bg-neutral-950">
-      <aside className="border-b border-neutral-200 bg-white transition-colors duration-200 md:fixed md:inset-y-0 md:w-[280px] md:border-b-0 md:border-r dark:border-neutral-800 dark:bg-neutral-900">
-        <div className="flex h-full flex-col p-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-neutral-900 text-white dark:bg-white dark:text-neutral-900">
-                <Layers aria-hidden="true" className="h-4 w-4" />
-              </div>
-              <div>
-                <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-neutral-400 dark:text-neutral-500">
-                  axiom
-                </p>
-                <h1 className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
-                  UI Logic
-                </h1>
-              </div>
-            </div>
-            <ThemeToggle />
-          </div>
-
-          {/* Search */}
-          <div className="mt-6">
-            <div className="relative">
-              <Search
-                aria-hidden="true"
-                className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400 dark:text-neutral-500"
-              />
-              <input
-                type="search"
-                id="searchInput"
-                name="search"
-                autoComplete="off"
-                placeholder="Search decisions..."
-                value={query}
-                onChange={(event) => {
-                  const nextQuery = event.target.value;
-                  if (nextQuery === query) {
-                    return;
-                  }
-                  updateParams({ q: nextQuery });
-                }}
-                className="w-full rounded-lg border border-neutral-200 bg-neutral-50 py-2 pl-9 pr-3 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none transition-colors duration-200 focus:border-neutral-300 focus:bg-white dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:border-neutral-600 dark:focus:bg-neutral-800"
-              />
-            </div>
-            <p className="mt-2 text-xs text-neutral-400 dark:text-neutral-500">
-              {filteredRules.length} decisions
-            </p>
-          </div>
-
-          {/* Categories */}
-          <div className="mt-6 flex flex-1 flex-col overflow-hidden">
-            <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-neutral-400 dark:text-neutral-500">
-              Categories
-            </p>
-            <nav className="sidebar-scroll mt-3 flex-1 space-y-0.5 overflow-y-auto">
-              {categories.map((cat) => (
-                <a
-                  key={cat.id}
-                  href={`#${cat.id}`}
-                  className="group flex items-center gap-3 rounded-lg px-2 py-2.5 text-sm text-neutral-600 transition-colors duration-150 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
-                >
-                  <span className="flex h-7 w-7 items-center justify-center rounded-md bg-neutral-100 text-neutral-500 transition-colors duration-150 group-hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:group-hover:bg-neutral-700">
-                    {(() => {
-                      const Icon = categoryIcons.get(cat.id) ?? Layers;
-                      return <Icon aria-hidden="true" className="h-3.5 w-3.5" />;
-                    })()}
-                  </span>
-                  <span className="font-medium">{cat.name}</span>
-                </a>
-              ))}
-            </nav>
-          </div>
-
-          {/* Tip */}
-          <div className="mt-4 rounded-lg bg-neutral-100 px-4 py-3 dark:bg-neutral-800">
-            <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">
-              Tip
-            </p>
-            <p className="mt-1.5 text-sm leading-relaxed text-neutral-600 transition-opacity duration-300 dark:text-neutral-300">
-              {tips[tipIndex]}
-            </p>
-          </div>
-        </div>
-      </aside>
+    <div className="flex min-h-screen flex-col bg-neutral-50 md:flex-row dark:bg-neutral-950">
+      <Sidebar filteredCount={filteredRules.length} />
 
       <main id="main-content" tabIndex={-1} className="flex-1 md:pl-[280px]">
         <div className="mx-auto max-w-5xl space-y-12 px-4 py-8 md:px-12">
-          <header className="py-12">
-            <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.3em] text-neutral-500 dark:text-neutral-400">
-              <span className="chip rounded-full px-3 py-1">Design Systems</span>
-              <span className="chip rounded-full px-3 py-1">Product Heuristics</span>
-              <span className="chip rounded-full px-3 py-1">UX Logic</span>
-            </div>
-            <h2 className="mt-6 text-4xl font-semibold text-neutral-900 md:text-5xl dark:text-neutral-100">
-              The Decision Engine Behind Sharp, Consistent Interfaces.
-            </h2>
-            <p className="mt-4 max-w-2xl text-base text-neutral-600 md:text-lg dark:text-neutral-300">
-              Stop relying on intuition. This repository captures the micro-decisions that
-              define durable design systems across typography, layout, color, and interaction
-              patterns.
-            </p>
-          </header>
+          <Header />
 
           <section className="space-y-10" id="rulesContainer">
             {grouped.length === 0 ? (
@@ -253,7 +115,7 @@ function HomeContent() {
               </div>
             ) : (
               grouped.map((group) => {
-                const Icon = categoryIcons.get(group.id) ?? Layers;
+                const Icon = sectionIcons.get(group.id) ?? Layers;
                 delayIndex += 1;
                 return (
                   <section
@@ -280,73 +142,13 @@ function HomeContent() {
                       {group.rules.map((rule) => {
                         delayIndex += 1;
                         return (
-                          <article
+                          <RuleCard
                             key={rule.id}
-                            className="rule-card glass reveal rounded-2xl p-6"
+                            rule={rule}
+                            activeRuleId={activeRuleId}
+                            onDeepDive={(id) => updateParams({ rule: id })}
                             style={{ "--delay": `${delayIndex * 40}ms` } as CSSProperties}
-                          >
-                            <div className="flex flex-wrap items-start justify-between gap-4">
-                              <h4 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
-                                {rule.title}
-                              </h4>
-                              <div className="flex flex-wrap gap-2">
-                                {rule.tags.map((tag) => (
-                                  <span
-                                    key={`${rule.id}-${tag}`}
-                                    className="chip rounded-full px-3 py-1 text-xs font-medium text-neutral-600 dark:text-neutral-300"
-                                  >
-                                    {tag}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-
-                            <p className="mt-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">
-                              {rule.desc}
-                            </p>
-
-                            <div className="mt-6 grid gap-4 md:grid-cols-2">
-                              <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-900 dark:bg-emerald-950/50">
-                                <div className="flex items-center gap-2">
-                                  <CheckCircle2 aria-hidden="true" className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                                  <span className="rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-semibold uppercase text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
-                                    Do this
-                                  </span>
-                                </div>
-                                <code className="mt-3 block rounded-lg border border-emerald-100 bg-white px-3 py-2 text-sm text-neutral-700 dark:border-emerald-900 dark:bg-neutral-900 dark:text-neutral-200">
-                                  {rule.do}
-                                </code>
-                              </div>
-                              <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 dark:border-rose-900 dark:bg-rose-950/50">
-                                <div className="flex items-center gap-2">
-                                  <XCircle aria-hidden="true" className="h-4 w-4 text-rose-600 dark:text-rose-400" />
-                                  <span className="rounded-full bg-rose-100 px-3 py-1 text-[11px] font-semibold uppercase text-rose-700 dark:bg-rose-900 dark:text-rose-300">
-                                    Avoid this
-                                  </span>
-                                </div>
-                                <code className="mt-3 block rounded-lg border border-rose-100 bg-white px-3 py-2 text-sm text-neutral-500 dark:border-rose-900 dark:bg-neutral-900 dark:text-neutral-400">
-                                  {rule.dont}
-                                </code>
-                              </div>
-                            </div>
-                            <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200 pt-4 text-sm dark:border-neutral-700">
-                              <span className="text-xs uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-500">
-                                Deep Dive
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (rule.id !== activeRuleId) {
-                                    updateParams({ rule: rule.id });
-                                  }
-                                }}
-                                className="inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 py-1.5 text-sm font-semibold text-neutral-700 transition-colors duration-200 hover:border-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:border-neutral-500"
-                              >
-                                <Expand aria-hidden="true" className="h-4 w-4" />
-                                More About This
-                              </button>
-                            </div>
-                          </article>
+                          />
                         );
                       })}
                     </div>
@@ -362,111 +164,31 @@ function HomeContent() {
         </div>
       </main>
 
-      <Drawer.Root
-        open={isDrawerOpen}
-        onOpenChange={(open) => {
-          if (!open && activeRuleId) {
-            updateParams({ rule: null });
-          }
-        }}
-      >
-        <Drawer.Portal>
-          <Drawer.Overlay className="fixed inset-0 bg-neutral-950/50 dark:bg-black/70" />
-          <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 h-[90vh] overscroll-contain rounded-t-3xl border border-neutral-200 bg-white outline-none dark:border-neutral-800 dark:bg-neutral-900">
-            <div className="mx-auto flex h-full max-w-4xl flex-col">
-              <Drawer.Title className="sr-only">
-                {activeRule?.title ?? "Rule Details"}
-              </Drawer.Title>
-              <div className="flex justify-center pt-4">
-                <Drawer.Handle className="h-1.5 w-14 rounded-full bg-neutral-300 dark:bg-neutral-600" />
-              </div>
-              <div className="flex items-center justify-between border-b border-neutral-200 px-8 py-6 dark:border-neutral-800">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-500">
-                    {activeCategoryName}
-                  </p>
-                  <h3 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
-                    {activeRule?.title ?? "Select a Rule"}
-                  </h3>
-                </div>
-                <Drawer.Close className="rounded-full border border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-600 transition hover:border-neutral-300 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:border-neutral-500 dark:hover:bg-neutral-800">
-                  Close
-                </Drawer.Close>
-              </div>
-              <div className="flex-1 space-y-6 overflow-y-auto px-8 py-6">
-                {activeRule ? (
-                  <div className="flex flex-wrap gap-2">
-                    {activeRule.tags.map((tag) => (
-                      <span
-                        key={`${activeRule.id}-${tag}`}
-                        className="chip rounded-full px-3 py-1 text-xs font-medium text-neutral-600 dark:text-neutral-300"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                ) : null}
-
-                {activeDeepDive.map((section) => {
-                  if (section.type === "text") {
-                    return (
-                      <div key={`${activeRuleId}-${section.title ?? section.content}`}>
-                        {section.title ? (
-                          <p className="text-xs uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-500">
-                            {section.title}
-                          </p>
-                        ) : null}
-                        <p className="mt-2 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">
-                          {section.content}
-                        </p>
-                      </div>
-                    );
-                  }
-
-                  if (section.type === "list") {
-                    return (
-                      <div key={`${activeRuleId}-${section.title ?? "list"}`}>
-                        {section.title ? (
-                          <p className="text-xs uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-500">
-                            {section.title}
-                          </p>
-                        ) : null}
-                        <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-neutral-600 dark:text-neutral-300">
-                          {section.items.map((item) => (
-                            <li key={item}>{item}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div key={`${activeRuleId}-${section.title ?? "code"}`}>
-                      {section.title ? (
-                        <p className="text-xs uppercase tracking-[0.2em] text-neutral-700 dark:text-neutral-500">
-                          {section.title}
-                        </p>
-                      ) : null}
-                      <pre className="mt-3 whitespace-pre-wrap rounded-2xl border border-neutral-200 bg-neutral-100 px-5 py-4 text-sm text-neutral-800 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100">
-                        <code>{section.code}</code>
-                      </pre>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </Drawer.Content>
-        </Drawer.Portal>
-      </Drawer.Root>
+      <RuleDrawer
+        activeRule={activeRule}
+        activeCategoryName={activeCategoryName}
+        activeRuleId={activeRuleId}
+        onClose={() => updateParams({ rule: null })}
+      />
     </div>
   );
 }
 
 function HomeLoading() {
   return (
-    <div className="flex min-h-screen bg-neutral-50 dark:bg-neutral-950">
-      <aside className="border-b border-neutral-200 bg-white md:fixed md:inset-y-0 md:w-[280px] md:border-b-0 md:border-r dark:border-neutral-800 dark:bg-neutral-900">
-        <div className="flex h-full flex-col p-6">
+    <div className="flex min-h-screen flex-col bg-neutral-50 md:flex-row dark:bg-neutral-950">
+      {/* Mobile Header Skeleton */}
+      <div className="sticky top-0 z-40 flex h-[60px] items-center justify-between border-b border-neutral-200 bg-white/80 px-4 backdrop-blur-md md:hidden dark:border-neutral-800 dark:bg-neutral-900/80">
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-8 rounded-lg bg-neutral-200 dark:bg-neutral-800" />
+          <div className="h-4 w-20 rounded bg-neutral-200 dark:bg-neutral-800" />
+        </div>
+        <div className="h-9 w-9 rounded-lg bg-neutral-200 dark:bg-neutral-800" />
+      </div>
+
+      {/* Desktop Sidebar Skeleton */}
+      <aside className="hidden border-r border-neutral-200 bg-white md:fixed md:inset-y-0 md:flex md:w-[280px] dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="flex h-full w-full flex-col p-6">
           <div className="animate-pulse space-y-4">
             <div className="flex items-center gap-3">
               <div className="h-9 w-9 rounded-lg bg-neutral-200 dark:bg-neutral-800" />
@@ -478,6 +200,7 @@ function HomeLoading() {
           </div>
         </div>
       </aside>
+
       <main className="flex-1 md:pl-[280px]">
         <div className="mx-auto max-w-5xl space-y-12 px-4 py-8 md:px-12">
           <div className="glass animate-pulse rounded-3xl p-8 md:p-12">
