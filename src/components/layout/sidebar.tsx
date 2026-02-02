@@ -158,7 +158,7 @@ export function Sidebar({ filteredCount }: { filteredCount: number }) {
             {/* Mobile Drawer */}
             <div
                 className={cn(
-                    "fixed inset-0 z-50 flex md:hidden",
+                    "fixed inset-0 z-50 flex justify-end md:hidden",
                     isOpen ? "pointer-events-auto" : "pointer-events-none"
                 )}
             >
@@ -175,8 +175,8 @@ export function Sidebar({ filteredCount }: { filteredCount: number }) {
                 {/* Drawer Panel */}
                 <div
                     className={cn(
-                        "relative w-[85%] max-w-[300px] border-r border-neutral-200 bg-white shadow-2xl transition-transform duration-300 dark:border-neutral-800 dark:bg-neutral-900",
-                        isOpen ? "translate-x-0" : "-translate-x-full"
+                        "relative w-[85%] max-w-[300px] border-l border-neutral-200 bg-white shadow-2xl transition-transform duration-300 dark:border-neutral-800 dark:bg-neutral-900",
+                        isOpen ? "translate-x-0" : "translate-x-full"
                     )}
                 >
                     <SidebarContent
