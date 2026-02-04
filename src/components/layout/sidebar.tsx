@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { SearchInput } from "@/components/features/search/search-input";
+import { AxiomLogo } from "@/components/ui/axiom-logo";
 import { categories } from "@/data/ui-logic";
 import { cn } from "@/lib/utils";
 
@@ -58,7 +59,7 @@ function SidebarContent({
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-neutral-900 text-white dark:bg-white dark:text-neutral-900">
-                        <Layers aria-hidden="true" className="h-4 w-4" />
+                        <AxiomLogo className="h-5 w-5" />
                     </div>
                     <div>
                         <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-neutral-400 dark:text-neutral-500">
@@ -137,7 +138,7 @@ export function Sidebar({ filteredCount }: { filteredCount: number }) {
             <div className="sticky top-0 z-40 flex items-center justify-between border-b border-neutral-200 bg-white/80 px-4 py-3 backdrop-blur-md md:hidden dark:border-neutral-800 dark:bg-neutral-900/80">
                 <div className="flex items-center gap-3">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-900 text-white dark:bg-white dark:text-neutral-900">
-                        <Layers aria-hidden="true" className="h-4 w-4" />
+                        <AxiomLogo className="h-4 w-4" />
                     </div>
                     <span className="text-sm font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
                         AXIOM

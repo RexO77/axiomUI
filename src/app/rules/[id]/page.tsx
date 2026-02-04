@@ -1,7 +1,8 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Check, X, Tag, Layers } from "lucide-react";
+import { ArrowLeft, Check, X, Tag } from "lucide-react";
+import { AxiomLogo } from "@/components/ui/axiom-logo";
 
 import { rules, categories, buildDeepDive } from "@/data/ui-logic";
 
@@ -98,7 +99,7 @@ export default async function RulePage({ params }: Props) {
                     </Link>
                     <div className="flex items-center gap-2">
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-900 text-white dark:bg-white dark:text-neutral-900">
-                            <Layers className="h-4 w-4" />
+                            <AxiomLogo className="h-4 w-4" />
                         </div>
                         <span className="text-sm font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
                             AXIOM
