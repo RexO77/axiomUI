@@ -3,6 +3,8 @@ import { IBM_Plex_Mono, Manrope, Source_Serif_4 } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
+const siteUrl = "https://axiomui.vercel.app";
+
 const sourceSerif = Source_Serif_4({
   variable: "--font-source-serif",
   subsets: ["latin"],
@@ -42,11 +44,11 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Nischal Skanda" }],
   creator: "Nischal Skanda",
-  metadataBase: new URL("https://axiom.design"),
+  metadataBase: new URL(siteUrl),
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://axiom.design",
+    url: siteUrl,
     title: "Axiom — UI Logic Repository",
     description:
       "29 actionable UI design rules for consistent, sharp interfaces. Master typography, layout, color, and component patterns.",
@@ -79,7 +81,10 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/icon.png", type: "image/png" },
+      { url: "/favicon.ico" },
+    ],
     apple: "/apple-touch-icon.png",
   },
 };
@@ -112,34 +117,34 @@ export default function RootLayout({
     "@graph": [
       {
         "@type": "WebSite",
-        "@id": "https://axiom.design/#website",
-        url: "https://axiom.design",
+        "@id": `${siteUrl}/#website`,
+        url: siteUrl,
         name: "Axiom",
         description:
           "UI Logic Repository of repeatable design decisions for consistent, sharp interfaces",
         publisher: {
-          "@id": "https://axiom.design/#organization",
+          "@id": `${siteUrl}/#organization`,
         },
       },
       {
         "@type": "Organization",
-        "@id": "https://axiom.design/#organization",
+        "@id": `${siteUrl}/#organization`,
         name: "Axiom",
-        url: "https://axiom.design",
+        url: siteUrl,
         logo: {
           "@type": "ImageObject",
-          url: "https://axiom.design/og-image.png",
+          url: `${siteUrl}/og-image.png`,
         },
       },
       {
         "@type": "CollectionPage",
-        "@id": "https://axiom.design/#collection",
-        url: "https://axiom.design",
+        "@id": `${siteUrl}/#collection`,
+        url: siteUrl,
         name: "UI Logic Rules",
         description:
           "29 actionable UI design rules covering typography, layout, color, and components",
         isPartOf: {
-          "@id": "https://axiom.design/#website",
+          "@id": `${siteUrl}/#website`,
         },
         about: {
           "@type": "Thing",
@@ -169,4 +174,3 @@ export default function RootLayout({
     </html>
   );
 }
-
