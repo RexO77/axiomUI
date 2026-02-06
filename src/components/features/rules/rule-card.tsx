@@ -3,6 +3,7 @@
 import { CheckCircle2, Expand, XCircle } from "lucide-react";
 import type { CSSProperties } from "react";
 import type { Rule } from "@/data/ui-logic";
+import { RulePreview } from "@/components/features/rules/rule-preview";
 
 interface RuleCardProps {
     rule: Rule;
@@ -45,7 +46,10 @@ export function RuleCard({ rule, activeRuleId, onDeepDive, style }: RuleCardProp
                             Do this
                         </span>
                     </div>
-                    <code className="mt-3 block rounded-lg border border-emerald-100 bg-white px-3 py-2 text-sm text-neutral-700 dark:border-emerald-900 dark:bg-neutral-900 dark:text-neutral-200">
+                    <div className="mt-3">
+                        <RulePreview rule={rule} variant="do" />
+                    </div>
+                    <code className="mt-2 block rounded-lg border border-emerald-100 bg-white px-3 py-2 text-sm text-neutral-700 dark:border-emerald-900 dark:bg-neutral-900 dark:text-neutral-200">
                         {rule.do}
                     </code>
                 </div>
@@ -56,7 +60,10 @@ export function RuleCard({ rule, activeRuleId, onDeepDive, style }: RuleCardProp
                             Avoid this
                         </span>
                     </div>
-                    <code className="mt-3 block rounded-lg border border-rose-100 bg-white px-3 py-2 text-sm text-neutral-500 dark:border-rose-900 dark:bg-neutral-900 dark:text-neutral-400">
+                    <div className="mt-3">
+                        <RulePreview rule={rule} variant="dont" />
+                    </div>
+                    <code className="mt-2 block rounded-lg border border-rose-100 bg-white px-3 py-2 text-sm text-neutral-500 dark:border-rose-900 dark:bg-neutral-900 dark:text-neutral-400">
                         {rule.dont}
                     </code>
                 </div>

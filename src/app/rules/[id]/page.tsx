@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Check, X, Tag } from "lucide-react";
 import { AxiomLogo } from "@/components/ui/axiom-logo";
+import { RulePreview } from "@/components/features/rules/rule-preview";
 
 import { rules, categories, buildDeepDive } from "@/data/ui-logic";
 
@@ -157,6 +158,9 @@ export default async function RulePage({ params }: Props) {
                                     Do
                                 </span>
                             </div>
+                            <div className="mb-3">
+                                <RulePreview rule={rule} variant="do" size="lg" />
+                            </div>
                             <p className="font-mono text-sm text-neutral-900 dark:text-neutral-100">
                                 {rule.do}
                             </p>
@@ -170,6 +174,9 @@ export default async function RulePage({ params }: Props) {
                                 <span className="text-xs font-semibold uppercase tracking-[0.15em] text-red-700 dark:text-red-300">
                                     Don&apos;t
                                 </span>
+                            </div>
+                            <div className="mb-3">
+                                <RulePreview rule={rule} variant="dont" size="lg" />
                             </div>
                             <p className="font-mono text-sm text-neutral-900 dark:text-neutral-100">
                                 {rule.dont}
