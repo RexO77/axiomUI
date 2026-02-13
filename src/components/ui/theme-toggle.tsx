@@ -1,43 +1,31 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { Moon, Sun } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { Moon, Sun } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const STORAGE_KEY = "axiom-theme:v1";
 
 export function ThemeToggle({ className }: { className?: string }) {
-  const [isDark, setIsDark] = useState<boolean | null>(null)
+  const handleToggle = () => {
+    const root = document.documentElement;
+    const nextIsDark = !root.classList.contains("dark");
 
-  useEffect(() => {
-    const stored = localStorage.getItem("axiom-theme:v1")
-    if (stored === "dark" || stored === "light") {
-      setIsDark(stored === "dark")
-    } else {
-      setIsDark(window.matchMedia("(prefers-color-scheme: dark)").matches)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (isDark === null) return
-    document.documentElement.classList.toggle("dark", isDark)
-    localStorage.setItem("axiom-theme:v1", isDark ? "dark" : "light")
-  }, [isDark])
-
-  if (isDark === null) return null
+    root.classList.toggle("dark", nextIsDark);
+    localStorage.setItem(STORAGE_KEY, nextIsDark ? "dark" : "light");
+  };
 
   return (
     <button
-      onClick={() => setIsDark(!isDark)}
+      type="button"
+      onClick={handleToggle}
       className={cn(
-        "p-2 rounded-lg transition-colors",
-        "hover:bg-neutral-100 dark:hover:bg-neutral-800",
-        "text-neutral-600 dark:text-neutral-400",
-        className
+        "rounded-lg p-2 text-neutral-600 transition-colors hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800",
+        className,
       )}
-      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      aria-label="Toggle theme"
     >
-      {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+      <Sun className="hidden h-5 w-5 dark:block" />
+      <Moon className="h-5 w-5 dark:hidden" />
     </button>
-  )
+  );
 }
-
-

@@ -3,23 +3,22 @@
 import type { CSSProperties } from "react";
 import { Suspense, useMemo } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Layers, SearchX } from "lucide-react";
+import {
+  BoxSelect,
+  Cpu,
+  Layers,
+  LayoutGrid,
+  Palette,
+  SearchX,
+  TextCursorInput,
+  Type,
+} from "lucide-react";
 
 import { categories, rules } from "@/data/ui-logic";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { RuleCard } from "@/components/features/rules/rule-card";
 import { RuleDrawer } from "@/components/features/rules/rule-drawer";
-
-// Re-importing cleanly for section icons (kept local for now)
-import {
-  BoxSelect,
-  Cpu,
-  LayoutGrid,
-  Palette,
-  TextCursorInput,
-  Type,
-} from "lucide-react";
 
 const sectionIcons = new Map([
   ["typography", Type],
@@ -97,7 +96,7 @@ function HomeContent() {
       <Sidebar filteredCount={filteredRules.length} />
 
       <main id="main-content" tabIndex={-1} className="flex-1 md:pl-[280px]">
-        <div className="mx-auto max-w-5xl space-y-12 px-4 py-8 md:px-12">
+        <div className="mx-auto max-w-6xl space-y-12 px-4 py-8 md:px-12">
           <Header />
 
           <section className="space-y-10" id="rulesContainer">
@@ -124,18 +123,24 @@ function HomeContent() {
                     className="reveal scroll-mt-10"
                     style={{ "--delay": `${delayIndex * 40}ms` } as CSSProperties}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900">
-                        <Icon aria-hidden="true" className="h-5 w-5" />
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900">
+                          <Icon aria-hidden="true" className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="text-xs uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-400">
+                            {group.id}
+                          </p>
+                          <h2 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+                            {group.name}
+                          </h2>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">
-                          {group.id}
-                        </p>
-                        <h2 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
-                          {group.name}
-                        </h2>
-                      </div>
+
+                      <span className="rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-medium text-neutral-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400">
+                        {group.rules.length} rules
+                      </span>
                     </div>
 
                     <div className="mt-6 grid gap-6">

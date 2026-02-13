@@ -123,13 +123,12 @@ code {
    ========================================================================== */
 
 .glass {
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(12px);
+  background: var(--color-bg-elevated);
   border: 1px solid var(--color-stroke);
 }
 
 .dark .glass {
-  background: rgba(23, 23, 23, 0.94);
+  background: var(--color-bg-elevated);
 }
 
 .rule-card {
@@ -139,7 +138,7 @@ code {
 }
 
 .rule-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-2px);
 }
 
 .chip {
