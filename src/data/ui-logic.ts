@@ -25,6 +25,7 @@ export const categories: Category[] = [
   { id: "components", name: "Components & Actions" },
   { id: "forms", name: "Forms & Inputs" },
   { id: "system", name: "System & Logic" },
+  { id: "accessibility", name: "Accessibility & Inclusivity" },
 ];
 
 export const rules: Rule[] = [
@@ -460,6 +461,227 @@ export const rules: Rule[] = [
     dont: "No progress indicator",
     tags: ["Flow", "Guidance"],
   },
+
+  // ── Typography additions ──────────────────────────────────────────
+  {
+    category: "typography",
+    title: "Truncation Strategy",
+    id: "typo-10",
+    desc: "Long text needs a plan: truncate with ellipsis, wrap, or fade. Never let text overflow or break layout.",
+    do: "text-ellipsis overflow-hidden",
+    dont: "Overflowing text breaking the layout",
+    tags: ["Overflow", "Responsive"],
+  },
+  {
+    category: "typography",
+    title: "Minimum Body Size",
+    id: "typo-11",
+    desc: "Body text should never be smaller than 14px on mobile / 12px on desktop. Subtext can go to 12px but never below.",
+    do: "Body: 16px / Subtext: 12px",
+    dont: "Body: 11px / Subtext: 9px",
+    tags: ["Readability", "Mobile"],
+  },
+
+  // ── Layout additions ──────────────────────────────────────────────
+  {
+    category: "layout",
+    title: "Responsive Spacing Scaling",
+    id: "layout-9",
+    desc: "Don't use the same spacing at every breakpoint. Reduce padding/margins on smaller screens proportionally.",
+    do: "p-6 lg / p-4 md / p-3 sm",
+    dont: "p-6 at all breakpoints",
+    tags: ["Responsive", "Mobile"],
+  },
+  {
+    category: "layout",
+    title: "Vertical Rhythm",
+    id: "layout-10",
+    desc: "Baseline spacing between sections should follow a consistent scale (e.g., 24 → 48 → 72). Random jumps between section gaps feel disconnected.",
+    do: "gap-6 → gap-12 → gap-18",
+    dont: "gap-6 → gap-10 → gap-14",
+    tags: ["Spacing", "Consistency"],
+  },
+  {
+    category: "layout",
+    title: "Z-Index Scale",
+    id: "layout-11",
+    desc: "Define a z-index system (base: 0, dropdown: 100, sticky: 200, modal: 300, toast: 400). Never use arbitrary values.",
+    do: "z-dropdown: 100, z-modal: 300",
+    dont: "z-index: 9999",
+    tags: ["System", "Layering"],
+  },
+
+  // ── Color additions ───────────────────────────────────────────────
+  {
+    category: "color",
+    title: "Dark Mode Isn't Inverted",
+    id: "color-8",
+    desc: "Dark mode is NOT just inverting colors. Reduce surface contrast, desaturate brand colors, and flip the elevation model (lighter = higher).",
+    do: "Dark: gray-900 bg / gray-800 card / desaturated brand",
+    dont: "filter: invert(1) on the whole page",
+    tags: ["Dark Mode", "Theming"],
+  },
+  {
+    category: "color",
+    title: "Accessible Contrast Ratios",
+    id: "color-9",
+    desc: "Text must meet WCAG AA contrast (4.5:1 for body, 3:1 for large text). Don't eyeball it — check it.",
+    do: "Contrast ratio 4.5:1+ (checked)",
+    dont: "Light grey text on white (#aaa on #fff)",
+    tags: ["Accessibility", "WCAG"],
+  },
+  {
+    category: "color",
+    title: "Opacity Over New Colors",
+    id: "color-10",
+    desc: "Use opacity to create hover/pressed states and subtle backgrounds (bg-blue-500/10) instead of picking new hex colors for every state.",
+    do: "bg-blue-500/10 for tint",
+    dont: "#e8f0fe custom hex per state",
+    tags: ["States", "Efficiency"],
+  },
+
+  // ── Component additions ───────────────────────────────────────────
+  {
+    category: "components",
+    title: "Loading States on Buttons",
+    id: "comp-9",
+    desc: "Buttons that trigger async actions should show a spinner/loading state and disable re-click. Never leave a button looking clickable during submission.",
+    do: "Spinner + disabled during submit",
+    dont: "Static button allows double-click",
+    tags: ["Feedback", "Async"],
+  },
+  {
+    category: "components",
+    title: "Consistent Icon Size",
+    id: "comp-10",
+    desc: "Icons in the same context should be the same size. Don't mix 16px and 20px icons in the same toolbar or nav.",
+    do: "All toolbar icons: 20px",
+    dont: "Mixed 16px, 20px, 24px icons in toolbar",
+    tags: ["Icons", "Consistency"],
+  },
+  {
+    category: "components",
+    title: "Card Click Area",
+    id: "comp-11",
+    desc: "If a card is clickable, the entire card should be the click target, not just the title or a tiny link inside it.",
+    do: "Full card is the click target",
+    dont: "Only the title text is clickable",
+    tags: ["UX", "Click Targets"],
+  },
+  {
+    category: "components",
+    title: "Close Affordance on Overlays",
+    id: "comp-12",
+    desc: "Every modal, drawer, and popover needs a visible close button AND should close on backdrop click and Escape key.",
+    do: "X button + backdrop close + Esc key",
+    dont: "No close button, only backdrop click",
+    tags: ["Patterns", "Accessibility"],
+  },
+
+  // ── Form additions ────────────────────────────────────────────────
+  {
+    category: "forms",
+    title: "Single Column Forms",
+    id: "form-10",
+    desc: "Multi-column forms slow completion. Use single column unless fields are logically paired (First/Last name, City/State).",
+    do: "Single column, stacked fields",
+    dont: "Three columns of unrelated fields",
+    tags: ["Layout", "Completion Rate"],
+  },
+  {
+    category: "forms",
+    title: "Smart Defaults",
+    id: "form-11",
+    desc: "Pre-fill fields with the most common answer when possible (e.g., default country from locale, today's date for date pickers).",
+    do: "Country auto-detected from locale",
+    dont: "Empty country dropdown (200+ options)",
+    tags: ["Efficiency", "UX"],
+  },
+  {
+    category: "forms",
+    title: "Success State Feedback",
+    id: "form-12",
+    desc: "Show positive confirmation after successful submission (not just absence of errors). Users need to know it worked.",
+    do: "Green checkmark + 'Saved successfully'",
+    dont: "Form just resets silently",
+    tags: ["Feedback", "Trust"],
+  },
+
+  // ── System additions ──────────────────────────────────────────────
+  {
+    category: "system",
+    title: "Keyboard Navigation",
+    id: "sys-8",
+    desc: "All interactive elements must be reachable via Tab, activatable via Enter/Space, and dismissible via Escape.",
+    do: "Tab → Enter → Esc flow works",
+    dont: "Click-only interactions, no keyboard support",
+    tags: ["Accessibility", "Navigation"],
+  },
+  {
+    category: "system",
+    title: "Optimistic UI Updates",
+    id: "sys-9",
+    desc: "For low-risk actions (like/favorite/toggle), update the UI immediately and reconcile with the server in the background.",
+    do: "Heart fills instantly, syncs async",
+    dont: "Spinner on every like button click",
+    tags: ["Perceived Performance", "UX"],
+  },
+  {
+    category: "system",
+    title: "Graceful Degradation",
+    id: "sys-10",
+    desc: "Always show a fallback when assets fail to load (broken images, failed API calls). Never show a broken state.",
+    do: "Placeholder image + retry option",
+    dont: "Broken image icon / blank screen",
+    tags: ["Error Handling", "Resilience"],
+  },
+  {
+    category: "system",
+    title: "Responsive Breakpoint Strategy",
+    id: "sys-11",
+    desc: "Design for 3 breakpoints max: mobile (<640px), tablet (640-1024px), desktop (>1024px). Don't design for every screen size.",
+    do: "sm: 640px / md: 1024px / lg: 1280px",
+    dont: "8 breakpoints for every device model",
+    tags: ["Responsive", "System"],
+  },
+  {
+    category: "system",
+    title: "Animation Purpose",
+    id: "sys-12",
+    desc: "Every animation should serve a purpose: orientation (where am I?), feedback (did it work?), or continuity (what changed?). Never animate just for flair.",
+    do: "Page slide = spatial orientation",
+    dont: "Bouncing logo on every page load",
+    tags: ["Motion", "Intent"],
+  },
+
+  // ── Accessibility & Inclusivity ───────────────────────────────────
+  {
+    category: "accessibility",
+    title: "Focus Visible Indicators",
+    id: "a11y-1",
+    desc: "Never remove focus outlines (outline: none) without replacing them with a visible alternative. Keyboard users depend on them.",
+    do: "focus-visible:ring-2 ring-blue-500",
+    dont: "outline: none with no replacement",
+    tags: ["Keyboard", "WCAG"],
+  },
+  {
+    category: "accessibility",
+    title: "Color Shouldn't Be the Only Signal",
+    id: "a11y-2",
+    desc: "Don't rely on color alone to convey meaning (red = error). Add icons, text, or patterns for colorblind users.",
+    do: "Red text + error icon + message",
+    dont: "Only a red border on the input",
+    tags: ["Color Blind", "Inclusive Design"],
+  },
+  {
+    category: "accessibility",
+    title: "Touch Target Spacing",
+    id: "a11y-3",
+    desc: "Adjacent touch targets need at least 8px gap between them to prevent mis-taps on mobile.",
+    do: "Buttons with 8px+ gap between",
+    dont: "Buttons touching edge-to-edge",
+    tags: ["Mobile", "Touch"],
+  },
 ];
 
 type CategoryDeepDive = {
@@ -574,6 +796,21 @@ const categoryDeepDive: Record<string, CategoryDeepDive> = {
       "Does the interface explain current status without relying on assumptions?",
       "Is there a clear recovery path when an action fails?",
       "Would this flow feel safe for irreversible actions?",
+    ],
+  },
+  accessibility: {
+    impact:
+      "Accessible design widens your audience and ensures no user is blocked by physical, cognitive, or situational limitations.",
+    failureMode:
+      "Inaccessible interfaces exclude users, invite legal risk, and signal that inclusivity is an afterthought.",
+    implementation: [
+      "Test every interactive element with keyboard-only navigation before shipping.",
+      "Run automated contrast checks and screen-reader audits as part of the design review.",
+    ],
+    reviewPrompts: [
+      "Can a keyboard-only user complete this flow without a mouse?",
+      "Does meaning survive when color is removed (greyscale test)?",
+      "Are touch targets large enough and spaced well for motor-impaired users?",
     ],
   },
 };

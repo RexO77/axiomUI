@@ -1068,6 +1068,641 @@ function getRulePreview(ruleId: string, variant: Variant, size: PreviewSize): Re
                     <MiniLine widthClass="w-32" />
                 </PreviewFrame>
             );
+        // ── Typography additions ──────────────────────────────────────
+        case "typo-10":
+            if (variant === "do") {
+                return (
+                    <PreviewFrame size={size}>
+                        <div className="flex items-center gap-2">
+                            <div className="min-w-0 flex-1">
+                                <span className={cn(textClass(size), "block truncate text-neutral-700 dark:text-neutral-200")}>
+                                    A very long label that gets truncated properly
+                                </span>
+                            </div>
+                            <MiniPill label="Tag" size={size} />
+                        </div>
+                    </PreviewFrame>
+                );
+            }
+            return (
+                <PreviewFrame size={size} className="overflow-hidden">
+                    <div className="flex items-center gap-2">
+                        <span className={cn(textClass(size), "whitespace-nowrap text-neutral-700 dark:text-neutral-200")}>
+                            A very long label that overflows and breaks the entire layout badly
+                        </span>
+                        <MiniPill label="Tag" size={size} />
+                    </div>
+                </PreviewFrame>
+            );
+        case "typo-11":
+            if (variant === "do") {
+                return (
+                    <PreviewFrame size={size}>
+                        <div className="space-y-1">
+                            <span className={cn(size === "lg" ? "text-sm" : "text-xs", "text-neutral-800 dark:text-neutral-100")}>
+                                Body at 16px
+                            </span>
+                            <span className={cn("text-xs text-neutral-500 dark:text-neutral-400")}>
+                                Subtext at 12px
+                            </span>
+                        </div>
+                    </PreviewFrame>
+                );
+            }
+            return (
+                <PreviewFrame size={size}>
+                    <div className="space-y-1">
+                        <span className={cn("text-[11px] text-neutral-800 dark:text-neutral-100")}>
+                            Body at 11px
+                        </span>
+                        <span className={cn("text-[9px] text-neutral-500 dark:text-neutral-400")}>
+                            Subtext at 9px
+                        </span>
+                    </div>
+                </PreviewFrame>
+            );
+
+        // ── Layout additions ────────────────────────────────────────────
+        case "layout-9":
+            if (variant === "do") {
+                return (
+                    <PreviewFrame size={size}>
+                        <div className="flex items-end gap-2">
+                            <div className="flex flex-col items-center gap-1">
+                                <div className="h-8 w-10 rounded-md border border-neutral-200 bg-white p-1 dark:border-neutral-700 dark:bg-neutral-900">
+                                    <MiniLine widthClass="w-full" className="h-1" />
+                                </div>
+                                <span className={cn(textClass(size), "text-neutral-400")}>sm:p-3</span>
+                            </div>
+                            <div className="flex flex-col items-center gap-1">
+                                <div className="h-10 w-14 rounded-md border border-neutral-200 bg-white p-2 dark:border-neutral-700 dark:bg-neutral-900">
+                                    <MiniLine widthClass="w-full" className="h-1" />
+                                </div>
+                                <span className={cn(textClass(size), "text-neutral-400")}>lg:p-6</span>
+                            </div>
+                        </div>
+                    </PreviewFrame>
+                );
+            }
+            return (
+                <PreviewFrame size={size}>
+                    <div className="flex items-end gap-2">
+                        <div className="flex flex-col items-center gap-1">
+                            <div className="h-10 w-10 rounded-md border border-neutral-200 bg-white p-2.5 dark:border-neutral-700 dark:bg-neutral-900">
+                                <MiniLine widthClass="w-full" className="h-1" />
+                            </div>
+                            <span className={cn(textClass(size), "text-neutral-400")}>sm:p-6</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-1">
+                            <div className="h-10 w-14 rounded-md border border-neutral-200 bg-white p-2.5 dark:border-neutral-700 dark:bg-neutral-900">
+                                <MiniLine widthClass="w-full" className="h-1" />
+                            </div>
+                            <span className={cn(textClass(size), "text-neutral-400")}>lg:p-6</span>
+                        </div>
+                    </div>
+                </PreviewFrame>
+            );
+        case "layout-10":
+            if (variant === "do") {
+                return (
+                    <PreviewFrame size={size}>
+                        <div className="space-y-0">
+                            <MiniLine widthClass="w-full" />
+                            <div className="h-2" />
+                            <MiniLine widthClass="w-full" />
+                            <div className="h-4" />
+                            <MiniLine widthClass="w-full" />
+                            <div className="h-2" />
+                            <MiniLine widthClass="w-full" />
+                        </div>
+                    </PreviewFrame>
+                );
+            }
+            return (
+                <PreviewFrame size={size}>
+                    <div className="space-y-0">
+                        <MiniLine widthClass="w-full" />
+                        <div className="h-1" />
+                        <MiniLine widthClass="w-full" />
+                        <div className="h-5" />
+                        <MiniLine widthClass="w-full" />
+                        <div className="h-2" />
+                        <MiniLine widthClass="w-full" />
+                    </div>
+                </PreviewFrame>
+            );
+        case "layout-11":
+            if (variant === "do") {
+                return (
+                    <PreviewFrame size={size}>
+                        <div className="relative h-12">
+                            <div className="absolute inset-x-0 bottom-0 h-6 rounded-md bg-neutral-100 dark:bg-neutral-800">
+                                <span className={cn(textClass(size), "absolute right-1 top-0.5 text-neutral-400")}>z-0</span>
+                            </div>
+                            <div className="absolute inset-x-2 bottom-2 h-5 rounded-md bg-neutral-200 dark:bg-neutral-700">
+                                <span className={cn(textClass(size), "absolute right-1 top-0.5 text-neutral-500")}>z-100</span>
+                            </div>
+                            <div className="absolute inset-x-4 bottom-4 h-4 rounded-md bg-neutral-300 dark:bg-neutral-600">
+                                <span className={cn(textClass(size), "absolute right-1 top-0.5 text-neutral-600 dark:text-neutral-300")}>z-300</span>
+                            </div>
+                        </div>
+                    </PreviewFrame>
+                );
+            }
+            return (
+                <PreviewFrame size={size}>
+                    <div className="relative h-12">
+                        <div className="absolute inset-x-0 bottom-0 h-6 rounded-md bg-neutral-100 dark:bg-neutral-800">
+                            <span className={cn(textClass(size), "absolute right-1 top-0.5 text-neutral-400")}>z-1</span>
+                        </div>
+                        <div className="absolute inset-x-2 bottom-2 h-5 rounded-md bg-neutral-200 dark:bg-neutral-700">
+                            <span className={cn(textClass(size), "absolute right-1 top-0.5 text-neutral-500")}>z-999</span>
+                        </div>
+                        <div className="absolute inset-x-4 bottom-4 h-4 rounded-md bg-neutral-300 dark:bg-neutral-600">
+                            <span className={cn(textClass(size), "absolute right-1 top-0.5 text-neutral-600 dark:text-neutral-300")}>z-9999</span>
+                        </div>
+                    </div>
+                </PreviewFrame>
+            );
+
+        // ── Color additions ─────────────────────────────────────────────
+        case "color-8":
+            if (variant === "do") {
+                return (
+                    <PreviewFrame size={size} className="bg-neutral-900">
+                        <div className="space-y-1.5">
+                            <div className="rounded-md bg-neutral-800 p-1.5">
+                                <span className={cn(textClass(size), "text-neutral-300")}>Card (elevated)</span>
+                            </div>
+                            <span className={cn(textClass(size), "text-neutral-400")}>Desaturated palette</span>
+                        </div>
+                    </PreviewFrame>
+                );
+            }
+            return (
+                <PreviewFrame size={size} className="bg-black">
+                    <div className="space-y-1.5">
+                        <div className="rounded-md bg-white p-1.5">
+                            <span className={cn(textClass(size), "text-black")}>Inverted card</span>
+                        </div>
+                        <span className={cn(textClass(size), "text-white")}>Just inverted</span>
+                    </div>
+                </PreviewFrame>
+            );
+        case "color-9":
+            if (variant === "do") {
+                return (
+                    <PreviewFrame size={size}>
+                        <div className="space-y-1">
+                            <span className={cn(textClass(size), "font-semibold text-neutral-900 dark:text-neutral-100")}>
+                                4.5:1 contrast
+                            </span>
+                            <div className="flex items-center gap-1">
+                                <div className="h-3 w-3 rounded-full bg-emerald-500" />
+                                <span className={cn(textClass(size), "text-emerald-700 dark:text-emerald-400")}>AA Pass</span>
+                            </div>
+                        </div>
+                    </PreviewFrame>
+                );
+            }
+            return (
+                <PreviewFrame size={size}>
+                    <div className="space-y-1">
+                        <span className={cn(textClass(size), "font-semibold text-neutral-300 dark:text-neutral-600")}>
+                            1.5:1 contrast
+                        </span>
+                        <div className="flex items-center gap-1">
+                            <div className="h-3 w-3 rounded-full bg-rose-500" />
+                            <span className={cn(textClass(size), "text-rose-700 dark:text-rose-400")}>AA Fail</span>
+                        </div>
+                    </div>
+                </PreviewFrame>
+            );
+        case "color-10":
+            if (variant === "do") {
+                return (
+                    <PreviewFrame size={size}>
+                        <div className="space-y-1.5">
+                            <div className="flex items-center gap-2">
+                                <div className="h-5 w-12 rounded-md bg-blue-500" />
+                                <span className={cn(textClass(size), "text-neutral-400")}>Default</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="h-5 w-12 rounded-md bg-blue-500/10" />
+                                <span className={cn(textClass(size), "text-neutral-400")}>bg/10</span>
+                            </div>
+                        </div>
+                    </PreviewFrame>
+                );
+            }
+            return (
+                <PreviewFrame size={size}>
+                    <div className="space-y-1.5">
+                        <div className="flex items-center gap-2">
+                            <div className="h-5 w-12 rounded-md bg-blue-500" />
+                            <span className={cn(textClass(size), "text-neutral-400")}>#3b82f6</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="h-5 w-12 rounded-md bg-[#e8f0fe]" />
+                            <span className={cn(textClass(size), "text-neutral-400")}>#e8f0fe</span>
+                        </div>
+                    </div>
+                </PreviewFrame>
+            );
+
+        // ── Component additions ─────────────────────────────────────────
+        case "comp-9":
+            if (variant === "do") {
+                return (
+                    <PreviewFrame size={size} className="flex items-center justify-center gap-3">
+                        <MiniButton label="Submit" variant="primary" size={size} />
+                        <span className="text-neutral-400">-&gt;</span>
+                        <span
+                            className={cn(
+                                "inline-flex items-center justify-center gap-1.5 rounded-md bg-neutral-900 font-semibold text-white dark:bg-neutral-100 dark:text-neutral-900",
+                                size === "lg" ? "px-3 py-1.5 text-xs" : "px-2.5 py-1 text-[10px]"
+                            )}
+                        >
+                            <span className="inline-block h-2.5 w-2.5 animate-spin rounded-full border border-current border-t-transparent" />
+                            Saving...
+                        </span>
+                    </PreviewFrame>
+                );
+            }
+            return (
+                <PreviewFrame size={size} className="flex items-center justify-center gap-3">
+                    <MiniButton label="Submit" variant="primary" size={size} />
+                    <span className="text-neutral-400">-&gt;</span>
+                    <MiniButton label="Submit" variant="primary" size={size} />
+                </PreviewFrame>
+            );
+        case "comp-10":
+            if (variant === "do") {
+                return (
+                    <PreviewFrame size={size}>
+                        <div className="flex items-center gap-2">
+                            <div className="h-5 w-5 rounded bg-neutral-200 dark:bg-neutral-700" />
+                            <div className="h-5 w-5 rounded bg-neutral-200 dark:bg-neutral-700" />
+                            <div className="h-5 w-5 rounded bg-neutral-200 dark:bg-neutral-700" />
+                            <span className={cn(textClass(size), "text-neutral-400")}>All 20px</span>
+                        </div>
+                    </PreviewFrame>
+                );
+            }
+            return (
+                <PreviewFrame size={size}>
+                    <div className="flex items-center gap-2">
+                        <div className="h-4 w-4 rounded bg-neutral-200 dark:bg-neutral-700" />
+                        <div className="h-5 w-5 rounded bg-neutral-200 dark:bg-neutral-700" />
+                        <div className="h-6 w-6 rounded bg-neutral-200 dark:bg-neutral-700" />
+                        <span className={cn(textClass(size), "text-neutral-400")}>Mixed</span>
+                    </div>
+                </PreviewFrame>
+            );
+        case "comp-11":
+            if (variant === "do") {
+                return (
+                    <PreviewFrame size={size}>
+                        <div className="rounded-md border-2 border-dashed border-blue-300 bg-blue-50/50 p-2 dark:border-blue-800 dark:bg-blue-950/30">
+                            <MiniLine widthClass="w-2/3" />
+                            <div className="mt-1.5">
+                                <MiniLine widthClass="w-full" className="h-1.5" />
+                            </div>
+                            <span className={cn(textClass(size), "mt-1 block text-blue-500")}>Entire card clickable</span>
+                        </div>
+                    </PreviewFrame>
+                );
+            }
+            return (
+                <PreviewFrame size={size}>
+                    <div className="rounded-md border border-neutral-200 bg-white p-2 dark:border-neutral-700 dark:bg-neutral-900">
+                        <MiniLine widthClass="w-2/3" />
+                        <div className="mt-1.5">
+                            <MiniLine widthClass="w-full" className="h-1.5" />
+                        </div>
+                        <span className={cn(textClass(size), "mt-1 block text-blue-500 underline")}>Read more</span>
+                    </div>
+                </PreviewFrame>
+            );
+        case "comp-12":
+            if (variant === "do") {
+                return (
+                    <PreviewFrame size={size}>
+                        <div className="relative rounded-md border border-neutral-200 bg-white p-2 dark:border-neutral-700 dark:bg-neutral-900">
+                            <div className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
+                                <span className="text-[8px] font-bold">X</span>
+                            </div>
+                            <MiniLine widthClass="w-2/3" />
+                            <div className="mt-2 flex gap-1">
+                                <MiniPill label="Esc" size={size} />
+                                <MiniPill label="Backdrop" size={size} />
+                            </div>
+                        </div>
+                    </PreviewFrame>
+                );
+            }
+            return (
+                <PreviewFrame size={size}>
+                    <div className="rounded-md border border-neutral-200 bg-white p-2 dark:border-neutral-700 dark:bg-neutral-900">
+                        <MiniLine widthClass="w-2/3" />
+                        <div className="mt-2">
+                            <MiniLine widthClass="w-full" className="h-1.5" />
+                        </div>
+                        <span className={cn(textClass(size), "mt-1.5 block text-neutral-400")}>No close button</span>
+                    </div>
+                </PreviewFrame>
+            );
+
+        // ── Form additions ──────────────────────────────────────────────
+        case "form-10":
+            if (variant === "do") {
+                return (
+                    <PreviewFrame size={size}>
+                        <div className="space-y-2">
+                            <div className="space-y-0.5">
+                                <MiniLabel label="Name" size={size} />
+                                <MiniInput size={size} />
+                            </div>
+                            <div className="space-y-0.5">
+                                <MiniLabel label="Email" size={size} />
+                                <MiniInput size={size} />
+                            </div>
+                        </div>
+                    </PreviewFrame>
+                );
+            }
+            return (
+                <PreviewFrame size={size}>
+                    <div className="grid grid-cols-3 gap-1">
+                        <div className="space-y-0.5">
+                            <MiniLabel label="Name" size={size} />
+                            <MiniInput size={size} />
+                        </div>
+                        <div className="space-y-0.5">
+                            <MiniLabel label="Email" size={size} />
+                            <MiniInput size={size} />
+                        </div>
+                        <div className="space-y-0.5">
+                            <MiniLabel label="Phone" size={size} />
+                            <MiniInput size={size} />
+                        </div>
+                    </div>
+                </PreviewFrame>
+            );
+        case "form-11":
+            if (variant === "do") {
+                return (
+                    <PreviewFrame size={size}>
+                        <div className="space-y-1">
+                            <MiniLabel label="Country" size={size} />
+                            <div className="flex items-center justify-between rounded-md border border-neutral-200 bg-white px-2 py-1 dark:border-neutral-700 dark:bg-neutral-900">
+                                <span className={cn(textClass(size), "text-neutral-700 dark:text-neutral-200")}>
+                                    United States
+                                </span>
+                                <span className="text-neutral-400">v</span>
+                            </div>
+                            <MiniPill label="Auto-detected" size={size} tone="accent" />
+                        </div>
+                    </PreviewFrame>
+                );
+            }
+            return (
+                <PreviewFrame size={size}>
+                    <div className="space-y-1">
+                        <MiniLabel label="Country" size={size} />
+                        <div className="flex items-center justify-between rounded-md border border-neutral-200 bg-white px-2 py-1 dark:border-neutral-700 dark:bg-neutral-900">
+                            <span className={cn(textClass(size), "text-neutral-400 dark:text-neutral-500")}>
+                                Select country...
+                            </span>
+                            <span className="text-neutral-400">v</span>
+                        </div>
+                        <span className={cn(textClass(size), "text-neutral-400")}>200+ options</span>
+                    </div>
+                </PreviewFrame>
+            );
+        case "form-12":
+            if (variant === "do") {
+                return (
+                    <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-1.5">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950">
+                            <span className="text-xs text-emerald-600 dark:text-emerald-400">✓</span>
+                        </div>
+                        <span className={cn(textClass(size), "font-semibold text-emerald-700 dark:text-emerald-400")}>
+                            Saved successfully
+                        </span>
+                    </PreviewFrame>
+                );
+            }
+            return (
+                <PreviewFrame size={size} className="flex items-center justify-center">
+                    <span className={cn(textClass(size), "text-neutral-400")}>
+                        Form resets silently...
+                    </span>
+                </PreviewFrame>
+            );
+
+        // ── System additions ────────────────────────────────────────────
+        case "sys-8":
+            if (variant === "do") {
+                return (
+                    <PreviewFrame size={size}>
+                        <div className="flex items-center gap-2">
+                            <MiniPill label="Tab" size={size} />
+                            <span className="text-neutral-400">→</span>
+                            <MiniPill label="Enter" size={size} />
+                            <span className="text-neutral-400">→</span>
+                            <MiniPill label="Esc" size={size} />
+                        </div>
+                    </PreviewFrame>
+                );
+            }
+            return (
+                <PreviewFrame size={size} className="flex items-center justify-center">
+                    <span className={cn(textClass(size), "text-neutral-400")}>
+                        Mouse only — no keyboard support
+                    </span>
+                </PreviewFrame>
+            );
+        case "sys-9":
+            if (variant === "do") {
+                return (
+                    <PreviewFrame size={size}>
+                        <div className="flex items-center gap-2">
+                            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-rose-100 text-rose-500 dark:bg-rose-950 dark:text-rose-400">
+                                <span className="text-xs">♥</span>
+                            </div>
+                            <span className={cn(textClass(size), "text-neutral-500")}>Instant + async sync</span>
+                        </div>
+                    </PreviewFrame>
+                );
+            }
+            return (
+                <PreviewFrame size={size}>
+                    <div className="flex items-center gap-2">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full border border-neutral-200 dark:border-neutral-700">
+                            <span className="inline-block h-2.5 w-2.5 animate-spin rounded-full border border-neutral-400 border-t-transparent" />
+                        </div>
+                        <span className={cn(textClass(size), "text-neutral-400")}>Loading...</span>
+                    </div>
+                </PreviewFrame>
+            );
+        case "sys-10":
+            if (variant === "do") {
+                return (
+                    <PreviewFrame size={size}>
+                        <div className="flex items-center gap-2 rounded-md bg-neutral-100 p-2 dark:bg-neutral-800">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-neutral-200 dark:bg-neutral-700">
+                                <span className={cn(textClass(size), "text-neutral-400")}>img</span>
+                            </div>
+                            <div className="space-y-1">
+                                <span className={cn(textClass(size), "text-neutral-600 dark:text-neutral-300")}>Failed to load</span>
+                                <MiniPill label="Retry" size={size} tone="accent" />
+                            </div>
+                        </div>
+                    </PreviewFrame>
+                );
+            }
+            return (
+                <PreviewFrame size={size} className="flex items-center justify-center">
+                    <div className="flex h-10 w-14 items-center justify-center rounded-md border border-dashed border-neutral-300 dark:border-neutral-700">
+                        <span className={cn(textClass(size), "text-neutral-300 dark:text-neutral-600")}>✕</span>
+                    </div>
+                </PreviewFrame>
+            );
+        case "sys-11":
+            if (variant === "do") {
+                return (
+                    <PreviewFrame size={size}>
+                        <div className="flex items-end gap-1">
+                            <div className="flex flex-col items-center gap-0.5">
+                                <div className="h-6 w-4 rounded-sm bg-neutral-300 dark:bg-neutral-700" />
+                                <span className={cn("text-[7px] text-neutral-400")}>sm</span>
+                            </div>
+                            <div className="flex flex-col items-center gap-0.5">
+                                <div className="h-6 w-8 rounded-sm bg-neutral-300 dark:bg-neutral-700" />
+                                <span className={cn("text-[7px] text-neutral-400")}>md</span>
+                            </div>
+                            <div className="flex flex-col items-center gap-0.5">
+                                <div className="h-6 w-14 rounded-sm bg-neutral-300 dark:bg-neutral-700" />
+                                <span className={cn("text-[7px] text-neutral-400")}>lg</span>
+                            </div>
+                        </div>
+                    </PreviewFrame>
+                );
+            }
+            return (
+                <PreviewFrame size={size}>
+                    <div className="flex items-end gap-0.5">
+                        {[3, 4, 5, 6, 7, 8, 10, 12].map((w) => (
+                            <div key={w} className="flex flex-col items-center gap-0.5">
+                                <div style={{ width: w * 2 }} className="h-5 rounded-sm bg-neutral-300 dark:bg-neutral-700" />
+                            </div>
+                        ))}
+                    </div>
+                </PreviewFrame>
+            );
+        case "sys-12":
+            if (variant === "do") {
+                return (
+                    <PreviewFrame size={size}>
+                        <div className="flex items-center gap-2">
+                            <div className="h-6 w-10 rounded-md bg-neutral-200 transition-transform duration-300 dark:bg-neutral-700" />
+                            <span className="text-neutral-400">→</span>
+                            <div className="h-6 w-10 translate-x-1 rounded-md bg-neutral-300 dark:bg-neutral-600" />
+                            <span className={cn(textClass(size), "text-neutral-500")}>Slide = spatial</span>
+                        </div>
+                    </PreviewFrame>
+                );
+            }
+            return (
+                <PreviewFrame size={size} className="flex items-center justify-center gap-2">
+                    <div className="h-5 w-5 animate-bounce rounded-full bg-neutral-300 dark:bg-neutral-700" />
+                    <span className={cn(textClass(size), "text-neutral-400")}>Bouncing logo — why?</span>
+                </PreviewFrame>
+            );
+
+        // ── Accessibility & Inclusivity ─────────────────────────────────
+        case "a11y-1":
+            if (variant === "do") {
+                return (
+                    <PreviewFrame size={size} className="flex items-center justify-center">
+                        <span
+                            className={cn(
+                                "inline-flex items-center justify-center rounded-md bg-neutral-900 font-semibold text-white ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:bg-neutral-100 dark:text-neutral-900 dark:ring-offset-neutral-950",
+                                size === "lg" ? "px-3 py-1.5 text-xs" : "px-2.5 py-1 text-[10px]"
+                            )}
+                        >
+                            Focused
+                        </span>
+                    </PreviewFrame>
+                );
+            }
+            return (
+                <PreviewFrame size={size} className="flex items-center justify-center">
+                    <span
+                        className={cn(
+                            "inline-flex items-center justify-center rounded-md bg-neutral-900 font-semibold text-white dark:bg-neutral-100 dark:text-neutral-900",
+                            size === "lg" ? "px-3 py-1.5 text-xs" : "px-2.5 py-1 text-[10px]"
+                        )}
+                    >
+                        No ring
+                    </span>
+                </PreviewFrame>
+            );
+        case "a11y-2":
+            if (variant === "do") {
+                return (
+                    <PreviewFrame size={size}>
+                        <div className="space-y-1">
+                            <MiniInput size={size} />
+                            <div className="flex items-center gap-1">
+                                <div className="flex h-3 w-3 items-center justify-center rounded-full bg-rose-500">
+                                    <span className="text-[7px] font-bold text-white">!</span>
+                                </div>
+                                <span className={cn(textClass(size), "text-rose-600 dark:text-rose-400")}>
+                                    Invalid email
+                                </span>
+                            </div>
+                        </div>
+                    </PreviewFrame>
+                );
+            }
+            return (
+                <PreviewFrame size={size}>
+                    <div className="space-y-1">
+                        <div
+                            className={cn(
+                                "rounded-md border-2 border-rose-500 bg-white dark:bg-neutral-900",
+                                size === "lg" ? "h-6" : "h-5",
+                                "w-full"
+                            )}
+                        />
+                        <span className={cn(textClass(size), "text-neutral-400")}>
+                            Only color signals error
+                        </span>
+                    </div>
+                </PreviewFrame>
+            );
+        case "a11y-3":
+            if (variant === "do") {
+                return (
+                    <PreviewFrame size={size} className="flex items-center justify-center">
+                        <div className="flex items-center gap-2">
+                            <MiniButton label="Cancel" variant="secondary" size={size} />
+                            <MiniButton label="Confirm" variant="primary" size={size} />
+                        </div>
+                    </PreviewFrame>
+                );
+            }
+            return (
+                <PreviewFrame size={size} className="flex items-center justify-center">
+                    <div className="flex items-center gap-0">
+                        <MiniButton label="Cancel" variant="secondary" size={size} />
+                        <MiniButton label="Confirm" variant="primary" size={size} />
+                    </div>
+                </PreviewFrame>
+            );
+
         default:
             return null;
     }

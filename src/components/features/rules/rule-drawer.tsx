@@ -5,6 +5,7 @@ import {
   BoxSelect,
   CheckCircle2,
   Cpu,
+  Eye,
   LayoutGrid,
   ListChecks,
   Palette,
@@ -35,6 +36,7 @@ const categoryIcons: Record<string, LucideIcon> = {
   components: BoxSelect,
   forms: TextCursorInput,
   system: Cpu,
+  accessibility: Eye,
 };
 
 export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClose }: RuleDrawerProps) {
@@ -72,7 +74,7 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
               <Drawer.Handle className="h-1.5 w-14 rounded-full bg-neutral-300 dark:bg-neutral-600" />
             </div>
 
-            <div className="flex-1 overflow-y-auto pb-2">
+            <div className="drawer-scroll flex-1 overflow-y-auto pb-2">
               {activeRule ? (
                 <div className="space-y-6">
                   <section className="rounded-2xl border border-neutral-200 bg-white p-5 md:p-7 dark:border-neutral-800 dark:bg-neutral-900">

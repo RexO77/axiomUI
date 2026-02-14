@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import {
     BoxSelect,
     Cpu,
+    Eye,
     Layers,
     LayoutGrid,
     Menu,
@@ -21,7 +22,7 @@ import { cn } from "@/lib/utils";
 const tips = [
     "Treat every decision as a repeatable system.",
     "Break the rule only after you understand it.",
-    "Typography, layout, color, components, forms, and system logic.",
+    "Typography, layout, color, components, forms, system logic, and accessibility.",
     "Fast scanning, tag filters, and encoded do/don't patterns.",
     "Curated rules grounded in product UI best practices.",
 ];
@@ -33,6 +34,7 @@ const categoryIcons = new Map([
     ["components", BoxSelect],
     ["forms", TextCursorInput],
     ["system", Cpu],
+    ["accessibility", Eye],
 ]);
 
 function SidebarContent({

@@ -198,6 +198,15 @@ code {
   background: rgba(163, 163, 163, 0.5);
 }
 
+.drawer-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.drawer-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 @keyframes fadeUp {
   to {
     opacity: 1;

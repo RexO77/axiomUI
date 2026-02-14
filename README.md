@@ -15,8 +15,8 @@ Axiom is a reference-ready collection of product UI best practices structured as
 
 ## Coverage
 
-- **38 curated decisions** grounded in product UI best practices
-- **6 system categories**: Typography, Layout, Color, Components, Forms, System Logic
+- **71 curated decisions** grounded in product UI best practices
+- **7 system categories**: Typography, Layout, Color, Components, Forms, System Logic, Accessibility
 - **Fast scanning** with tag filters and encoded patterns
 
 ## Why Axiom?
