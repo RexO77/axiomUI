@@ -4,6 +4,7 @@ import { CheckCircle2, Expand, XCircle } from "lucide-react";
 import type { CSSProperties } from "react";
 import type { Rule } from "@/data/ui-logic";
 import { RulePreview } from "@/components/features/rules/rule-preview";
+import { useHaptics } from "@/hooks/use-haptics";
 
 interface RuleCardProps {
   rule: Rule;
@@ -13,6 +14,7 @@ interface RuleCardProps {
 }
 
 export function RuleCard({ rule, activeRuleId, onDeepDive, style }: RuleCardProps) {
+  const { tapSuccess } = useHaptics();
   return (
     <article className="rule-card glass reveal rounded-2xl p-6 md:p-7" style={style}>
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -76,6 +78,7 @@ export function RuleCard({ rule, activeRuleId, onDeepDive, style }: RuleCardProp
           type="button"
           onClick={() => {
             if (rule.id !== activeRuleId) {
+              tapSuccess();
               onDeepDive(rule.id);
             }
           }}

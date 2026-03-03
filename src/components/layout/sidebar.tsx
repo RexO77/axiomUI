@@ -18,6 +18,7 @@ import { SearchInput } from "@/components/features/search/search-input";
 import { AxiomLogo } from "@/components/ui/axiom-logo";
 import { categories } from "@/data/ui-logic";
 import { cn } from "@/lib/utils";
+import { useHaptics } from "@/hooks/use-haptics";
 
 const tips = [
     "Treat every decision as a repeatable system.",
@@ -47,6 +48,7 @@ function SidebarContent({
     extraHeaderAction?: React.ReactNode;
 }) {
     const [tipIndex, setTipIndex] = useState(0);
+    const { tapLight } = useHaptics();
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -91,7 +93,10 @@ function SidebarContent({
                         <a
                             key={cat.id}
                             href={`#${cat.id}`}
-                            onClick={onLinkClick}
+                            onClick={() => {
+                                tapLight();
+                                onLinkClick?.();
+                            }}
                             className="group flex items-center gap-3 rounded-lg px-2 py-2.5 text-sm text-neutral-600 transition-colors duration-150 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
                         >
                             <span className="flex h-7 w-7 items-center justify-center rounded-md bg-neutral-100 text-neutral-500 transition-colors duration-150 group-hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:group-hover:bg-neutral-700">
@@ -121,6 +126,7 @@ function SidebarContent({
 
 export function Sidebar({ filteredCount }: { filteredCount: number }) {
     const [isOpen, setIsOpen] = useState(false);
+    const { tapNudge } = useHaptics();
 
     // Prevent body scroll when mobile menu is open
     useEffect(() => {
@@ -149,7 +155,7 @@ export function Sidebar({ filteredCount }: { filteredCount: number }) {
                 <div className="flex items-center gap-2">
                     <ThemeToggle />
                     <button
-                        onClick={() => setIsOpen(true)}
+                        onClick={() => { tapNudge(); setIsOpen(true); }}
                         className="flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
                         aria-label="Open menu"
                     >
@@ -171,7 +177,7 @@ export function Sidebar({ filteredCount }: { filteredCount: number }) {
                         "absolute inset-0 bg-neutral-950/20 backdrop-blur-sm transition-opacity duration-300 dark:bg-black/40",
                         isOpen ? "opacity-100" : "opacity-0"
                     )}
-                    onClick={() => setIsOpen(false)}
+                    onClick={() => { tapNudge(); setIsOpen(false); }}
                     aria-hidden="true"
                 />
 
@@ -187,7 +193,7 @@ export function Sidebar({ filteredCount }: { filteredCount: number }) {
                         onLinkClick={() => setIsOpen(false)}
                         extraHeaderAction={
                             <button
-                                onClick={() => setIsOpen(false)}
+                                onClick={() => { tapNudge(); setIsOpen(false); }}
                                 className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
                                 aria-label="Close menu"
                             >

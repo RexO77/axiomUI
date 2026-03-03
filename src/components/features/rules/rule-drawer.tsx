@@ -21,6 +21,7 @@ import { Drawer } from "vaul";
 import { RulePreview } from "@/components/features/rules/rule-preview";
 import type { DeepDiveSection, Rule } from "@/data/ui-logic";
 import { buildDeepDive } from "@/data/ui-logic";
+import { useHaptics } from "@/hooks/use-haptics";
 
 interface RuleDrawerProps {
   activeRule: Rule | null;
@@ -40,6 +41,7 @@ const categoryIcons: Record<string, LucideIcon> = {
 };
 
 export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClose }: RuleDrawerProps) {
+  const { tapMedium } = useHaptics();
   const activeDeepDive = activeRule ? buildDeepDive(activeRule) : [];
   const isOpen = Boolean(activeRuleId);
 
@@ -60,6 +62,7 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
       open={isOpen}
       onOpenChange={(open) => {
         if (!open && activeRuleId) {
+          tapMedium();
           onClose();
         }
       }}

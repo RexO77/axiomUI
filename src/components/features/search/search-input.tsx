@@ -2,12 +2,14 @@
 
 import { Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useHaptics } from "@/hooks/use-haptics";
 
 export function SearchInput({ itemCount }: { itemCount: number }) {
     const searchParams = useSearchParams();
     const pathname = usePathname();
     const router = useRouter();
     const query = searchParams.get("q") ?? "";
+    const { tapLight } = useHaptics();
 
     const updateParams = (updates: { q?: string }) => {
         const nextParams = new URLSearchParams(searchParams.toString());
@@ -37,6 +39,7 @@ export function SearchInput({ itemCount }: { itemCount: number }) {
                     autoComplete="off"
                     placeholder="Search decisions..."
                     value={query}
+                    onFocus={() => tapLight()}
                     onChange={(event) => {
                         const nextQuery = event.target.value;
                         if (nextQuery === query) {

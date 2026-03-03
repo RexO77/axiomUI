@@ -2,11 +2,15 @@
 
 import { Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useHaptics } from "@/hooks/use-haptics";
 
 const STORAGE_KEY = "axiom-theme:v1";
 
 export function ThemeToggle({ className }: { className?: string }) {
+  const { tapMedium } = useHaptics();
+
   const handleToggle = () => {
+    tapMedium();
     const root = document.documentElement;
     const nextIsDark = !root.classList.contains("dark");
 
