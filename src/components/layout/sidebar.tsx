@@ -48,7 +48,7 @@ function SidebarContent({
     extraHeaderAction?: React.ReactNode;
 }) {
     const [tipIndex, setTipIndex] = useState(0);
-    const { tapLight } = useHaptics();
+    const { tapLight, supportMessage } = useHaptics();
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -119,6 +119,11 @@ function SidebarContent({
                 <p className="mt-1.5 text-sm leading-relaxed text-neutral-600 transition-opacity duration-300 dark:text-neutral-300">
                     {tips[tipIndex]}
                 </p>
+                {supportMessage ? (
+                    <p className="mt-2 text-[11px] leading-relaxed text-amber-700 dark:text-amber-300">
+                        {supportMessage}
+                    </p>
+                ) : null}
             </div>
         </div>
     );

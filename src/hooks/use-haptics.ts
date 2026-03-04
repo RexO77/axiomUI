@@ -1,17 +1,18 @@
 "use client";
 
 import { useCallback } from "react";
-import { WebHaptics, defaultPatterns, type HapticInput } from "web-haptics";
+import { WebHaptics, type HapticInput } from "web-haptics";
 
 type HapticAction = "selection" | "medium" | "nudge" | "success" | "warning" | "error";
 
 const ACTION_PATTERNS: Record<HapticAction, HapticInput> = {
-  selection: defaultPatterns.selection,
-  medium: defaultPatterns.medium,
-  nudge: defaultPatterns.nudge,
-  success: defaultPatterns.success,
-  warning: defaultPatterns.warning,
-  error: defaultPatterns.error,
+  // Use explicit duration patterns to ensure tactile feedback is perceptible on Android hardware.
+  selection: 20,
+  medium: 28,
+  nudge: [36, 40, 24],
+  success: [30, 45, 40],
+  warning: [42, 70, 42],
+  error: [30, 45, 30, 45, 30],
 };
 
 const ACTION_COOLDOWN_MS: Record<HapticAction, number> = {
@@ -43,11 +44,7 @@ function canTriggerHaptics() {
     return false;
   }
 
-  if (document.visibilityState !== "visible") {
-    return false;
-  }
-
-  return !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  return document.visibilityState === "visible";
 }
 
 export function useHaptics() {
@@ -84,5 +81,6 @@ export function useHaptics() {
     tapError: () => triggerAction("error"),
     cancel,
     isSupported: WebHaptics.isSupported,
+    supportMessage: WebHaptics.isSupported ? null : "Haptics are not supported in this browser/device.",
   };
 }
