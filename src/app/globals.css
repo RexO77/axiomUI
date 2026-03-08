@@ -207,6 +207,58 @@ code {
   display: none;
 }
 
+.skill-modal-root {
+  --skill-modal-open-duration: 360ms;
+  --skill-modal-close-duration: 220ms;
+}
+
+.skill-modal-scrim {
+  opacity: 0;
+  will-change: opacity;
+  transition:
+    opacity var(--skill-modal-close-duration) cubic-bezier(0.4, 0, 1, 1);
+}
+
+.skill-modal-panel {
+  opacity: 0;
+  transform: translate3d(0, 28px, 0) scale(0.985);
+  transform-origin: center top;
+  will-change: transform, opacity;
+  transition:
+    opacity var(--skill-modal-close-duration) cubic-bezier(0.4, 0, 1, 1),
+    transform var(--skill-modal-close-duration) cubic-bezier(0.4, 0, 1, 1);
+}
+
+.skill-modal-content {
+  opacity: 0;
+  transform: translate3d(0, 10px, 0);
+  will-change: transform, opacity;
+  transition:
+    opacity var(--skill-modal-close-duration) cubic-bezier(0.4, 0, 1, 1),
+    transform var(--skill-modal-close-duration) cubic-bezier(0.4, 0, 1, 1);
+}
+
+.skill-modal-root[data-state="open"] .skill-modal-scrim {
+  opacity: 1;
+  transition-duration: var(--skill-modal-open-duration);
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.skill-modal-root[data-state="open"] .skill-modal-panel {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+  transition-duration: var(--skill-modal-open-duration);
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.skill-modal-root[data-state="open"] .skill-modal-content {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition-delay: 36ms;
+  transition-duration: var(--skill-modal-open-duration);
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 @keyframes fadeUp {
   to {
     opacity: 1;
@@ -226,6 +278,14 @@ code {
   }
 
   .rule-card:hover {
+    transform: none;
+  }
+
+  .skill-modal-scrim,
+  .skill-modal-panel,
+  .skill-modal-content {
+    transition: none;
+    opacity: 1;
     transform: none;
   }
 }

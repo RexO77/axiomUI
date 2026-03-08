@@ -15,18 +15,11 @@ import {
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { SearchInput } from "@/components/features/search/search-input";
+import { SkillBonus } from "@/components/features/skills/skill-bonus";
 import { AxiomLogo } from "@/components/ui/axiom-logo";
 import { categories } from "@/data/ui-logic";
 import { cn } from "@/lib/utils";
 import { useHaptics } from "@/hooks/use-haptics";
-
-const tips = [
-    "Treat every decision as a repeatable system.",
-    "Break the rule only after you understand it.",
-    "Typography, layout, color, components, forms, system logic, and accessibility.",
-    "Fast scanning, tag filters, and encoded do/don't patterns.",
-    "Curated rules grounded in product UI best practices.",
-];
 
 const categoryIcons = new Map([
     ["typography", Type],
@@ -47,15 +40,7 @@ function SidebarContent({
     onLinkClick?: () => void;
     extraHeaderAction?: React.ReactNode;
 }) {
-    const [tipIndex, setTipIndex] = useState(0);
     const { tapLight, supportMessage } = useHaptics();
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setTipIndex((prev) => (prev + 1) % tips.length);
-        }, 5000);
-        return () => clearInterval(interval);
-    }, []);
 
     return (
         <div className="flex h-full flex-col p-6">
@@ -111,16 +96,10 @@ function SidebarContent({
                 </nav>
             </div>
 
-            {/* Tip */}
-            <div className="mt-4 rounded-lg bg-neutral-100 px-4 py-3 dark:bg-neutral-800">
-                <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">
-                    Tip
-                </p>
-                <p className="mt-1.5 text-sm leading-relaxed text-neutral-600 transition-opacity duration-300 dark:text-neutral-300">
-                    {tips[tipIndex]}
-                </p>
+            <div className="mt-4 space-y-2">
+                <SkillBonus />
                 {supportMessage ? (
-                    <p className="mt-2 text-[11px] leading-relaxed text-amber-700 dark:text-amber-300">
+                    <p className="rounded-lg bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-700 dark:bg-amber-950/30 dark:text-amber-300">
                         {supportMessage}
                     </p>
                 ) : null}
