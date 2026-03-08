@@ -69,53 +69,53 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
     >
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 bg-neutral-950/50 backdrop-blur-[1px] dark:bg-black/60" />
-        <Drawer.Content className="fixed inset-x-0 bottom-0 z-50 h-[94vh] overscroll-contain rounded-t-[24px] border border-neutral-200 bg-neutral-50 outline-none dark:border-neutral-800 dark:bg-neutral-950">
-          <div className="mx-auto flex h-full w-full max-w-6xl flex-col px-4 pb-6 md:px-8">
+        <Drawer.Content className="fixed inset-x-0 bottom-0 z-50 h-[96dvh] overscroll-contain rounded-t-[24px] border border-neutral-200 bg-neutral-50 outline-none sm:h-[94vh] dark:border-neutral-800 dark:bg-neutral-950">
+          <div className="mx-auto flex h-full w-full max-w-6xl flex-col px-4 pb-4 sm:pb-6 md:px-8">
             <Drawer.Title className="sr-only">{activeRule?.title ?? "Rule details"}</Drawer.Title>
 
-            <div className="flex justify-center py-4">
+            <div className="flex justify-center py-3 sm:py-4">
               <Drawer.Handle className="h-1.5 w-14 rounded-full bg-neutral-300 dark:bg-neutral-600" />
             </div>
 
             <div className="drawer-scroll flex-1 overflow-y-auto pb-2">
               {activeRule ? (
-                <div className="space-y-6">
-                  <section className="rounded-2xl border border-neutral-200 bg-white p-5 md:p-7 dark:border-neutral-800 dark:bg-neutral-900">
-                    <div className="flex flex-wrap items-start justify-between gap-4">
-                      <div className="flex items-start gap-4">
+                <div className="space-y-4 sm:space-y-6">
+                  <section className="relative rounded-2xl border border-neutral-200 bg-white p-4 sm:p-5 md:p-7 dark:border-neutral-800 dark:bg-neutral-900">
+                    <Drawer.Close className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full border border-neutral-300 bg-white text-neutral-700 transition-colors hover:border-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:border-neutral-600">
+                      <X aria-hidden="true" className="h-4 w-4" />
+                      <span className="sr-only">Close</span>
+                    </Drawer.Close>
+
+                    <div className="pr-12">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
                         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-neutral-100 text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
                           <CategoryIcon aria-hidden="true" className="h-5 w-5" />
                         </div>
-                        <div className="max-w-3xl">
+                        <div className="min-w-0 max-w-3xl">
                           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-400">
                             Rule Deep Dive
                           </p>
-                          <h3 className="mt-2 text-3xl font-semibold leading-tight text-neutral-900 dark:text-neutral-50">
+                          <h3 className="mt-2 text-2xl font-semibold leading-tight text-neutral-900 sm:text-3xl dark:text-neutral-50">
                             {activeRule.title}
                           </h3>
-                          <p className="mt-3 text-base leading-relaxed text-neutral-600 dark:text-neutral-300">
+                          <p className="mt-3 max-w-2xl text-base leading-relaxed text-neutral-600 dark:text-neutral-300">
                             {summary}
                           </p>
                         </div>
                       </div>
-
-                      <Drawer.Close className="inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:border-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:border-neutral-600">
-                        <X aria-hidden="true" className="h-4 w-4" />
-                        Close
-                      </Drawer.Close>
                     </div>
 
-                    <div className="mt-5 grid gap-3 md:grid-cols-3">
-                      <MetaBlock label="Category" value={categoryLabel} />
+                    <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                      <MetaBlock label="Category" value={categoryLabel} featured />
                       <MetaBlock label="Signals" value={`${activeRule.tags.length} pattern cues`} />
                       <MetaBlock label="Rule ID" value={activeRule.id} />
                     </div>
                   </section>
 
-                  <div className="grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
-                    <section className="space-y-6">
+                  <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:gap-6">
+                    <section className="space-y-4 sm:space-y-6">
                       <div className="grid gap-4 md:grid-cols-2">
-                        <article className="rounded-2xl border border-emerald-200/70 bg-white p-5 dark:border-emerald-900/40 dark:bg-neutral-900">
+                        <article className="rounded-2xl border border-emerald-200/70 bg-white p-4 sm:p-5 dark:border-emerald-900/40 dark:bg-neutral-900">
                           <div className="flex items-center gap-2">
                             <CheckCircle2 aria-hidden="true" className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
                             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700 dark:text-emerald-200">
@@ -130,7 +130,7 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
                           </code>
                         </article>
 
-                        <article className="rounded-2xl border border-rose-200/70 bg-white p-5 dark:border-rose-900/40 dark:bg-neutral-900">
+                        <article className="rounded-2xl border border-rose-200/70 bg-white p-4 sm:p-5 dark:border-rose-900/40 dark:bg-neutral-900">
                           <div className="flex items-center gap-2">
                             <XCircle aria-hidden="true" className="h-4 w-4 text-rose-600 dark:text-rose-300" />
                             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-rose-700 dark:text-rose-200">
@@ -147,7 +147,7 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
                       </div>
 
                       {implementationNotes.length > 0 ? (
-                        <article className="rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+                        <article className="rounded-2xl border border-neutral-200 bg-white p-4 sm:p-6 dark:border-neutral-800 dark:bg-neutral-900">
                           <div className="flex items-center gap-2">
                             <ListChecks aria-hidden="true" className="h-4 w-4 text-neutral-600 dark:text-neutral-300" />
                             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500 dark:text-neutral-400">
@@ -168,7 +168,7 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
                       ) : null}
 
                       {riskWhenIgnored ? (
-                        <article className="rounded-2xl border border-amber-200/80 bg-amber-50/80 p-6 dark:border-amber-900/50 dark:bg-amber-950/20">
+                        <article className="rounded-2xl border border-amber-200/80 bg-amber-50/80 p-4 sm:p-6 dark:border-amber-900/50 dark:bg-amber-950/20">
                           <div className="flex items-center gap-2">
                             <AlertTriangle aria-hidden="true" className="h-4 w-4 text-amber-700 dark:text-amber-300" />
                             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-800 dark:text-amber-200">
@@ -180,9 +180,9 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
                       ) : null}
                     </section>
 
-                    <aside className="space-y-6">
+                    <aside className="space-y-4 sm:space-y-6">
                       {whyItMatters ? (
-                        <article className="rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+                        <article className="rounded-2xl border border-neutral-200 bg-white p-4 sm:p-6 dark:border-neutral-800 dark:bg-neutral-900">
                           <div className="flex items-center gap-2">
                             <Sparkles aria-hidden="true" className="h-4 w-4 text-neutral-600 dark:text-neutral-300" />
                             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500 dark:text-neutral-400">
@@ -194,7 +194,7 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
                       ) : null}
 
                       {relatedSignals.length > 0 ? (
-                        <article className="rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+                        <article className="rounded-2xl border border-neutral-200 bg-white p-4 sm:p-6 dark:border-neutral-800 dark:bg-neutral-900">
                           <div className="flex items-center gap-2">
                             <Tags aria-hidden="true" className="h-4 w-4 text-neutral-600 dark:text-neutral-300" />
                             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500 dark:text-neutral-400">
@@ -215,7 +215,7 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
                       ) : null}
 
                       {reviewPrompts.length > 0 ? (
-                        <article className="rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+                        <article className="rounded-2xl border border-neutral-200 bg-white p-4 sm:p-6 dark:border-neutral-800 dark:bg-neutral-900">
                           <div className="flex items-center gap-2">
                             <Sparkles aria-hidden="true" className="h-4 w-4 text-neutral-600 dark:text-neutral-300" />
                             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500 dark:text-neutral-400">
@@ -253,13 +253,19 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
   );
 }
 
-function MetaBlock({ label, value }: { label: string; value: string }) {
+function MetaBlock({ label, value, featured = false }: { label: string; value: string; featured?: boolean }) {
   return (
-    <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 dark:border-neutral-700 dark:bg-neutral-800/70">
+    <div
+      className={
+        featured
+          ? "rounded-xl border border-neutral-200 bg-neutral-50 p-4 sm:p-5 sm:col-span-2 xl:col-span-1 dark:border-neutral-700 dark:bg-neutral-800/70"
+          : "rounded-xl border border-neutral-200 bg-neutral-50 p-4 sm:p-5 dark:border-neutral-700 dark:bg-neutral-800/70"
+      }
+    >
       <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-500 dark:text-neutral-400">
         {label}
       </p>
-      <p className="mt-2 text-sm font-medium text-neutral-900 dark:text-neutral-100">{value}</p>
+      <p className="mt-2 text-base font-medium text-neutral-900 dark:text-neutral-100">{value}</p>
     </div>
   );
 }
