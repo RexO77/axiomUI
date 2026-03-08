@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Manrope, Source_Serif_4 } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
+import { rules } from "@/data/ui-logic";
 import "./globals.css";
 
 const siteUrl = "https://axiomui.vercel.app";
+const ruleCount = rules.length;
 
 const sourceSerif = Source_Serif_4({
   variable: "--font-source-serif",
@@ -29,7 +31,7 @@ export const metadata: Metadata = {
     template: "%s | Axiom",
   },
   description:
-    "29 actionable UI design rules covering typography, layout, color, and components. Learn button padding formulas, the 60-30-10 rule, modal vs drawer patterns, and more.",
+    `${ruleCount} actionable UI design rules covering typography, layout, color, components, forms, system states, and accessibility.`,
   keywords: [
     "design system",
     "UI logic",
@@ -51,7 +53,7 @@ export const metadata: Metadata = {
     url: siteUrl,
     title: "Axiom — UI Logic Repository",
     description:
-      "29 actionable UI design rules for consistent, sharp interfaces. Master typography, layout, color, and component patterns.",
+      `${ruleCount} actionable UI design rules for consistent, sharp interfaces. Master typography, layout, color, component patterns, forms, and accessibility.`,
     siteName: "Axiom",
     images: [
       {
@@ -66,7 +68,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Axiom — UI Logic Repository",
     description:
-      "29 actionable UI design rules for consistent, sharp interfaces.",
+      `${ruleCount} actionable UI design rules for consistent, sharp interfaces.`,
     images: ["/og-image.png"],
   },
   robots: {
@@ -141,7 +143,7 @@ export default function RootLayout({
         url: siteUrl,
         name: "UI Logic Rules",
         description:
-          "29 actionable UI design rules covering typography, layout, color, and components",
+          `${ruleCount} actionable UI design rules covering typography, layout, color, components, forms, system behavior, and accessibility`,
         isPartOf: {
           "@id": `${siteUrl}/#website`,
         },
@@ -149,7 +151,7 @@ export default function RootLayout({
           "@type": "Thing",
           name: "User Interface Design",
         },
-        numberOfItems: 29,
+        numberOfItems: ruleCount,
       },
     ],
   };
