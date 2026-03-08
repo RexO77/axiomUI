@@ -29,6 +29,7 @@ export const categories: Category[] = [
 ];
 
 export const rules: Rule[] = [
+  // ── Typography & Text ─────────────────────────────────────────────
   {
     category: "typography",
     title: "Sentence Case Is King",
@@ -111,6 +112,26 @@ export const rules: Rule[] = [
     tags: ["Hierarchy", "Consistency"],
   },
   {
+    category: "typography",
+    title: "Truncation Strategy",
+    id: "typo-10",
+    desc: "Long text needs a plan: truncate with ellipsis, wrap, or fade. Never let text overflow or break layout.",
+    do: "text-ellipsis overflow-hidden",
+    dont: "Overflowing text breaking the layout",
+    tags: ["Overflow", "Responsive"],
+  },
+  {
+    category: "typography",
+    title: "Minimum Body Size",
+    id: "typo-11",
+    desc: "Body text should never be smaller than 14px on mobile / 12px on desktop. Subtext can go to 12px but never below.",
+    do: "Body: 16px / Subtext: 12px",
+    dont: "Body: 11px / Subtext: 9px",
+    tags: ["Readability", "Mobile"],
+  },
+
+  // ── Layout & Spacing ─────────────────────────────────────────────
+  {
     category: "layout",
     title: "The 4pt Grid System",
     id: "layout-1",
@@ -183,6 +204,35 @@ export const rules: Rule[] = [
     tags: ["Grids", "Consistency"],
   },
   {
+    category: "layout",
+    title: "Responsive Spacing Scaling",
+    id: "layout-9",
+    desc: "Don't use the same spacing at every breakpoint. Reduce padding/margins on smaller screens proportionally.",
+    do: "p-6 lg / p-4 md / p-3 sm",
+    dont: "p-6 at all breakpoints",
+    tags: ["Responsive", "Mobile"],
+  },
+  {
+    category: "layout",
+    title: "Vertical Rhythm",
+    id: "layout-10",
+    desc: "Baseline spacing between sections should follow a consistent scale (e.g., 24 → 48 → 72). Random jumps between section gaps feel disconnected.",
+    do: "gap-6 → gap-12 → gap-18",
+    dont: "gap-6 → gap-10 → gap-14",
+    tags: ["Spacing", "Consistency"],
+  },
+  {
+    category: "layout",
+    title: "Z-Index Scale",
+    id: "layout-11",
+    desc: "Define a z-index system (base: 0, dropdown: 100, sticky: 200, modal: 300, toast: 400). Never use arbitrary values.",
+    do: "z-dropdown: 100, z-modal: 300",
+    dont: "z-index: 9999",
+    tags: ["System", "Layering"],
+  },
+
+  // ── Color & Depth ────────────────────────────────────────────────
+  {
     category: "color",
     title: "60-30-10 Rule",
     id: "color-1",
@@ -245,6 +295,35 @@ export const rules: Rule[] = [
     dont: "Blue -> Green on hover",
     tags: ["States", "Consistency"],
   },
+  {
+    category: "color",
+    title: "Dark Mode Isn't Inverted",
+    id: "color-8",
+    desc: "Dark mode is NOT just inverting colors. Reduce surface contrast, desaturate brand colors, and flip the elevation model (lighter = higher).",
+    do: "Dark: gray-900 bg / gray-800 card / desaturated brand",
+    dont: "filter: invert(1) on the whole page",
+    tags: ["Dark Mode", "Theming"],
+  },
+  {
+    category: "color",
+    title: "Accessible Contrast Ratios",
+    id: "color-9",
+    desc: "Text must meet WCAG AA contrast (4.5:1 for body, 3:1 for large text). Don't eyeball it — check it.",
+    do: "Contrast ratio 4.5:1+ (checked)",
+    dont: "Light grey text on white (#aaa on #fff)",
+    tags: ["Accessibility", "WCAG"],
+  },
+  {
+    category: "color",
+    title: "Opacity Over New Colors",
+    id: "color-10",
+    desc: "Use opacity to create hover/pressed states and subtle backgrounds (bg-blue-500/10) instead of picking new hex colors for every state.",
+    do: "bg-blue-500/10 for tint",
+    dont: "#e8f0fe custom hex per state",
+    tags: ["States", "Efficiency"],
+  },
+
+  // ── Components & Actions ─────────────────────────────────────────
   {
     category: "components",
     title: "Action Hierarchy",
@@ -317,6 +396,44 @@ export const rules: Rule[] = [
     dont: "Greyed-out button with no context",
     tags: ["Feedback", "Accessibility"],
   },
+  {
+    category: "components",
+    title: "Loading States on Buttons",
+    id: "comp-9",
+    desc: "Buttons that trigger async actions should show a spinner/loading state and disable re-click. Never leave a button looking clickable during submission.",
+    do: "Spinner + disabled during submit",
+    dont: "Static button allows double-click",
+    tags: ["Feedback", "Async"],
+  },
+  {
+    category: "components",
+    title: "Consistent Icon Size",
+    id: "comp-10",
+    desc: "Icons in the same context should be the same size. Don't mix 16px and 20px icons in the same toolbar or nav.",
+    do: "All toolbar icons: 20px",
+    dont: "Mixed 16px, 20px, 24px icons in toolbar",
+    tags: ["Icons", "Consistency"],
+  },
+  {
+    category: "components",
+    title: "Card Click Area",
+    id: "comp-11",
+    desc: "If a card is clickable, the entire card should be the click target, not just the title or a tiny link inside it.",
+    do: "Full card is the click target",
+    dont: "Only the title text is clickable",
+    tags: ["UX", "Click Targets"],
+  },
+  {
+    category: "components",
+    title: "Close Affordance on Overlays",
+    id: "comp-12",
+    desc: "Every modal, drawer, and popover needs a visible close button AND should close on backdrop click and Escape key.",
+    do: "X button + backdrop close + Esc key",
+    dont: "No close button, only backdrop click",
+    tags: ["Patterns", "Accessibility"],
+  },
+
+  // ── Forms & Inputs ───────────────────────────────────────────────
   {
     category: "forms",
     title: "Labels Top Aligned",
@@ -399,6 +516,35 @@ export const rules: Rule[] = [
     tags: ["Clarity", "Data Entry"],
   },
   {
+    category: "forms",
+    title: "Single Column Forms",
+    id: "form-10",
+    desc: "Multi-column forms slow completion. Use single column unless fields are logically paired (First/Last name, City/State).",
+    do: "Single column, stacked fields",
+    dont: "Three columns of unrelated fields",
+    tags: ["Layout", "Completion Rate"],
+  },
+  {
+    category: "forms",
+    title: "Smart Defaults",
+    id: "form-11",
+    desc: "Pre-fill fields with the most common answer when possible (e.g., default country from locale, today's date for date pickers).",
+    do: "Country auto-detected from locale",
+    dont: "Empty country dropdown (200+ options)",
+    tags: ["Efficiency", "UX"],
+  },
+  {
+    category: "forms",
+    title: "Success State Feedback",
+    id: "form-12",
+    desc: "Show positive confirmation after successful submission (not just absence of errors). Users need to know it worked.",
+    do: "Green checkmark + 'Saved successfully'",
+    dont: "Form just resets silently",
+    tags: ["Feedback", "Trust"],
+  },
+
+  // ── System & Logic ───────────────────────────────────────────────
+  {
     category: "system",
     title: "Skeleton Loading",
     id: "sys-1",
@@ -461,153 +607,6 @@ export const rules: Rule[] = [
     dont: "No progress indicator",
     tags: ["Flow", "Guidance"],
   },
-
-  // ── Typography additions ──────────────────────────────────────────
-  {
-    category: "typography",
-    title: "Truncation Strategy",
-    id: "typo-10",
-    desc: "Long text needs a plan: truncate with ellipsis, wrap, or fade. Never let text overflow or break layout.",
-    do: "text-ellipsis overflow-hidden",
-    dont: "Overflowing text breaking the layout",
-    tags: ["Overflow", "Responsive"],
-  },
-  {
-    category: "typography",
-    title: "Minimum Body Size",
-    id: "typo-11",
-    desc: "Body text should never be smaller than 14px on mobile / 12px on desktop. Subtext can go to 12px but never below.",
-    do: "Body: 16px / Subtext: 12px",
-    dont: "Body: 11px / Subtext: 9px",
-    tags: ["Readability", "Mobile"],
-  },
-
-  // ── Layout additions ──────────────────────────────────────────────
-  {
-    category: "layout",
-    title: "Responsive Spacing Scaling",
-    id: "layout-9",
-    desc: "Don't use the same spacing at every breakpoint. Reduce padding/margins on smaller screens proportionally.",
-    do: "p-6 lg / p-4 md / p-3 sm",
-    dont: "p-6 at all breakpoints",
-    tags: ["Responsive", "Mobile"],
-  },
-  {
-    category: "layout",
-    title: "Vertical Rhythm",
-    id: "layout-10",
-    desc: "Baseline spacing between sections should follow a consistent scale (e.g., 24 → 48 → 72). Random jumps between section gaps feel disconnected.",
-    do: "gap-6 → gap-12 → gap-18",
-    dont: "gap-6 → gap-10 → gap-14",
-    tags: ["Spacing", "Consistency"],
-  },
-  {
-    category: "layout",
-    title: "Z-Index Scale",
-    id: "layout-11",
-    desc: "Define a z-index system (base: 0, dropdown: 100, sticky: 200, modal: 300, toast: 400). Never use arbitrary values.",
-    do: "z-dropdown: 100, z-modal: 300",
-    dont: "z-index: 9999",
-    tags: ["System", "Layering"],
-  },
-
-  // ── Color additions ───────────────────────────────────────────────
-  {
-    category: "color",
-    title: "Dark Mode Isn't Inverted",
-    id: "color-8",
-    desc: "Dark mode is NOT just inverting colors. Reduce surface contrast, desaturate brand colors, and flip the elevation model (lighter = higher).",
-    do: "Dark: gray-900 bg / gray-800 card / desaturated brand",
-    dont: "filter: invert(1) on the whole page",
-    tags: ["Dark Mode", "Theming"],
-  },
-  {
-    category: "color",
-    title: "Accessible Contrast Ratios",
-    id: "color-9",
-    desc: "Text must meet WCAG AA contrast (4.5:1 for body, 3:1 for large text). Don't eyeball it — check it.",
-    do: "Contrast ratio 4.5:1+ (checked)",
-    dont: "Light grey text on white (#aaa on #fff)",
-    tags: ["Accessibility", "WCAG"],
-  },
-  {
-    category: "color",
-    title: "Opacity Over New Colors",
-    id: "color-10",
-    desc: "Use opacity to create hover/pressed states and subtle backgrounds (bg-blue-500/10) instead of picking new hex colors for every state.",
-    do: "bg-blue-500/10 for tint",
-    dont: "#e8f0fe custom hex per state",
-    tags: ["States", "Efficiency"],
-  },
-
-  // ── Component additions ───────────────────────────────────────────
-  {
-    category: "components",
-    title: "Loading States on Buttons",
-    id: "comp-9",
-    desc: "Buttons that trigger async actions should show a spinner/loading state and disable re-click. Never leave a button looking clickable during submission.",
-    do: "Spinner + disabled during submit",
-    dont: "Static button allows double-click",
-    tags: ["Feedback", "Async"],
-  },
-  {
-    category: "components",
-    title: "Consistent Icon Size",
-    id: "comp-10",
-    desc: "Icons in the same context should be the same size. Don't mix 16px and 20px icons in the same toolbar or nav.",
-    do: "All toolbar icons: 20px",
-    dont: "Mixed 16px, 20px, 24px icons in toolbar",
-    tags: ["Icons", "Consistency"],
-  },
-  {
-    category: "components",
-    title: "Card Click Area",
-    id: "comp-11",
-    desc: "If a card is clickable, the entire card should be the click target, not just the title or a tiny link inside it.",
-    do: "Full card is the click target",
-    dont: "Only the title text is clickable",
-    tags: ["UX", "Click Targets"],
-  },
-  {
-    category: "components",
-    title: "Close Affordance on Overlays",
-    id: "comp-12",
-    desc: "Every modal, drawer, and popover needs a visible close button AND should close on backdrop click and Escape key.",
-    do: "X button + backdrop close + Esc key",
-    dont: "No close button, only backdrop click",
-    tags: ["Patterns", "Accessibility"],
-  },
-
-  // ── Form additions ────────────────────────────────────────────────
-  {
-    category: "forms",
-    title: "Single Column Forms",
-    id: "form-10",
-    desc: "Multi-column forms slow completion. Use single column unless fields are logically paired (First/Last name, City/State).",
-    do: "Single column, stacked fields",
-    dont: "Three columns of unrelated fields",
-    tags: ["Layout", "Completion Rate"],
-  },
-  {
-    category: "forms",
-    title: "Smart Defaults",
-    id: "form-11",
-    desc: "Pre-fill fields with the most common answer when possible (e.g., default country from locale, today's date for date pickers).",
-    do: "Country auto-detected from locale",
-    dont: "Empty country dropdown (200+ options)",
-    tags: ["Efficiency", "UX"],
-  },
-  {
-    category: "forms",
-    title: "Success State Feedback",
-    id: "form-12",
-    desc: "Show positive confirmation after successful submission (not just absence of errors). Users need to know it worked.",
-    do: "Green checkmark + 'Saved successfully'",
-    dont: "Form just resets silently",
-    tags: ["Feedback", "Trust"],
-  },
-
-  // ── System additions ──────────────────────────────────────────────
   {
     category: "system",
     title: "Keyboard Navigation",
@@ -654,7 +653,7 @@ export const rules: Rule[] = [
     tags: ["Motion", "Intent"],
   },
 
-  // ── Accessibility & Inclusivity ───────────────────────────────────
+  // ── Accessibility & Inclusivity ──────────────────────────────────
   {
     category: "accessibility",
     title: "Focus Visible Indicators",
