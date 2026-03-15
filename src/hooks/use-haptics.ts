@@ -80,7 +80,5 @@ export function useHaptics() {
     tapWarning: () => triggerAction("warning"),
     tapError: () => triggerAction("error"),
     cancel,
-    isSupported: WebHaptics.isSupported,
-    supportMessage: WebHaptics.isSupported ? null : "Haptics are not supported in this browser/device.",
   };
 }

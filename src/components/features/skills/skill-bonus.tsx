@@ -205,25 +205,25 @@ export function SkillBonus() {
             type="button"
             aria-label="Close skill preview"
             onClick={closeModal}
-            className="skill-modal-scrim absolute inset-0 bg-black/72 backdrop-blur-md"
+            className="skill-modal-scrim absolute inset-0 bg-neutral-950/30 backdrop-blur-md dark:bg-black/72"
           />
 
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="skill-preview-title"
-            className="skill-modal-panel relative mx-auto flex h-[100dvh] max-w-5xl flex-col overflow-hidden rounded-none border-y border-white/10 bg-[#111216] text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] sm:h-full sm:rounded-[28px] sm:border"
+            className="skill-modal-panel relative mx-auto flex h-[100dvh] max-w-5xl flex-col overflow-hidden rounded-none border-y border-neutral-200 bg-white text-neutral-950 shadow-[0_24px_80px_rgba(15,23,42,0.14)] sm:h-full sm:rounded-[28px] sm:border dark:border-white/10 dark:bg-[#111216] dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]"
           >
             <div className="skill-modal-content flex h-full min-h-0 flex-col">
               <h2 id="skill-preview-title" className="sr-only">
                 Website Playbook
               </h2>
 
-              <div className="border-b border-white/10 px-4 py-3 sm:px-6">
+              <div className="border-b border-neutral-200 px-4 py-3 sm:px-6 dark:border-white/10">
                 <div className="flex items-start justify-between gap-3 sm:hidden">
                   <div className="min-w-0">
-                    <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-white/45">SKILL.md</p>
-                    <p className="mt-2 text-lg font-semibold tracking-tight text-white">
+                    <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-neutral-400 dark:text-white/45">SKILL.md</p>
+                    <p className="mt-2 text-lg font-semibold tracking-tight text-neutral-950 dark:text-white">
                       Website Playbook
                     </p>
                   </div>
@@ -231,7 +231,7 @@ export function SkillBonus() {
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 text-white/70 transition-colors hover:border-white/20 hover:bg-white/5 hover:text-white"
+                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-neutral-200 text-neutral-500 transition-colors hover:border-neutral-300 hover:bg-neutral-100 hover:text-neutral-950 dark:border-white/10 dark:text-white/70 dark:hover:border-white/20 dark:hover:bg-white/5 dark:hover:text-white"
                   >
                     <X aria-hidden="true" className="h-4.5 w-4.5" />
                   </button>
@@ -242,7 +242,7 @@ export function SkillBonus() {
                     type="button"
                     onClick={() => void handleCopy()}
                     disabled={loadState !== "ready"}
-                    className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white px-3.5 py-2 text-xs font-medium text-neutral-950 transition-colors hover:bg-white/90 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/15 disabled:text-white/50"
+                    className="inline-flex items-center gap-2 rounded-full border border-neutral-900 bg-neutral-950 px-3.5 py-2 text-xs font-medium text-white transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:border-neutral-200 disabled:bg-neutral-100 disabled:text-neutral-400 dark:border-white/10 dark:bg-white dark:text-neutral-950 dark:hover:bg-white/90 dark:disabled:border-white/10 dark:disabled:bg-white/15 dark:disabled:text-white/50"
                   >
                     {copyState === "copied" ? (
                       <Check aria-hidden="true" className="h-3.5 w-3.5" />
@@ -255,7 +255,7 @@ export function SkillBonus() {
                   <a
                     href={skillPath}
                     download="SKILL.md"
-                    className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3.5 py-2 text-xs font-medium text-white/80 transition-colors hover:border-white/20 hover:bg-white/5 hover:text-white"
+                    className="inline-flex items-center gap-2 rounded-full border border-neutral-200 px-3.5 py-2 text-xs font-medium text-neutral-700 transition-colors hover:border-neutral-300 hover:bg-neutral-100 hover:text-neutral-950 dark:border-white/10 dark:text-white/80 dark:hover:border-white/20 dark:hover:bg-white/5 dark:hover:text-white"
                   >
                     <Download aria-hidden="true" className="h-3.5 w-3.5" />
                     Download
@@ -263,8 +263,8 @@ export function SkillBonus() {
                 </div>
 
                 <div className="hidden sm:grid sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:gap-3">
-                  <p className="text-sm font-medium text-white/45">SKILL.md</p>
-                  <p className="text-sm font-semibold tracking-tight text-white md:text-base">
+                  <p className="text-sm font-medium text-neutral-400 dark:text-white/45">SKILL.md</p>
+                  <p className="text-sm font-semibold tracking-tight text-neutral-950 dark:text-white md:text-base">
                     Website Playbook
                   </p>
 
@@ -273,7 +273,7 @@ export function SkillBonus() {
                       type="button"
                       onClick={() => void handleCopy()}
                       disabled={loadState !== "ready"}
-                      className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white px-3.5 py-2 text-xs font-medium text-neutral-950 transition-colors hover:bg-white/90 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/15 disabled:text-white/50"
+                      className="inline-flex items-center gap-2 rounded-full border border-neutral-900 bg-neutral-950 px-3.5 py-2 text-xs font-medium text-white transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:border-neutral-200 disabled:bg-neutral-100 disabled:text-neutral-400 dark:border-white/10 dark:bg-white dark:text-neutral-950 dark:hover:bg-white/90 dark:disabled:border-white/10 dark:disabled:bg-white/15 dark:disabled:text-white/50"
                     >
                       {copyState === "copied" ? (
                         <Check aria-hidden="true" className="h-3.5 w-3.5" />
@@ -286,7 +286,7 @@ export function SkillBonus() {
                     <a
                       href={skillPath}
                       download="SKILL.md"
-                      className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3.5 py-2 text-xs font-medium text-white/80 transition-colors hover:border-white/20 hover:bg-white/5 hover:text-white"
+                      className="inline-flex items-center gap-2 rounded-full border border-neutral-200 px-3.5 py-2 text-xs font-medium text-neutral-700 transition-colors hover:border-neutral-300 hover:bg-neutral-100 hover:text-neutral-950 dark:border-white/10 dark:text-white/80 dark:hover:border-white/20 dark:hover:bg-white/5 dark:hover:text-white"
                     >
                       <Download aria-hidden="true" className="h-3.5 w-3.5" />
                       Download
@@ -295,7 +295,7 @@ export function SkillBonus() {
                     <button
                       type="button"
                       onClick={closeModal}
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-white/70 transition-colors hover:border-white/20 hover:bg-white/5 hover:text-white"
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200 text-neutral-500 transition-colors hover:border-neutral-300 hover:bg-neutral-100 hover:text-neutral-950 dark:border-white/10 dark:text-white/70 dark:hover:border-white/20 dark:hover:bg-white/5 dark:hover:text-white"
                     >
                       <X aria-hidden="true" className="h-4.5 w-4.5" />
                     </button>
@@ -305,20 +305,20 @@ export function SkillBonus() {
 
               <div className="min-h-0 flex-1 overflow-y-auto">
                 {loadState === "loading" || loadState === "idle" ? (
-                  <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center text-sm text-white/65">
+                  <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center text-sm text-neutral-500 dark:text-white/65">
                     <LoaderCircle aria-hidden="true" className="h-5 w-5 animate-spin" />
                     <p>Loading preview...</p>
                   </div>
                 ) : null}
 
                 {loadState === "error" ? (
-                  <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center text-sm text-white/65">
+                  <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center text-sm text-neutral-500 dark:text-white/65">
                     <p>Preview unavailable. The raw file still works.</p>
                     <a
                       href={skillPath}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm font-medium text-white/80 transition-colors hover:border-white/20 hover:bg-white/5 hover:text-white"
+                      className="inline-flex items-center gap-2 rounded-full border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:border-neutral-300 hover:bg-neutral-100 hover:text-neutral-950 dark:border-white/10 dark:text-white/80 dark:hover:border-white/20 dark:hover:bg-white/5 dark:hover:text-white"
                     >
                       <Download aria-hidden="true" className="h-4 w-4" />
                       Open file
@@ -328,14 +328,14 @@ export function SkillBonus() {
 
                 {loadState === "ready" ? (
                   <article className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-10">
-                    <header className="border-b border-white/10 pb-6 sm:pb-8">
-                      <p className="text-xs font-medium uppercase tracking-[0.18em] text-white/45 sm:text-sm sm:normal-case sm:tracking-normal">
+                    <header className="border-b border-neutral-200 pb-6 sm:pb-8 dark:border-white/10">
+                      <p className="text-xs font-medium uppercase tracking-[0.18em] text-neutral-500 sm:text-sm sm:normal-case sm:tracking-normal dark:text-white/45">
                         Bonus skill
                       </p>
-                      <h3 className="mt-3 text-2xl font-semibold tracking-tight text-white sm:text-3xl md:text-4xl">
+                      <h3 className="mt-3 text-2xl font-semibold tracking-tight text-neutral-950 sm:text-3xl md:text-4xl dark:text-white">
                         Website Upgrade Playbook
                       </h3>
-                      <p className="mt-3 max-w-2xl text-sm leading-7 text-white/68 sm:mt-4 sm:text-base sm:leading-8">
+                      <p className="mt-3 max-w-2xl text-sm leading-7 text-neutral-600 sm:mt-4 sm:text-base sm:leading-8 dark:text-white/68">
                         A reusable skill for tightening hierarchy, spacing, components, forms, states, and accessibility.
                       </p>
                     </header>
@@ -355,20 +355,20 @@ export function SkillBonus() {
 
   return (
     <>
-      <section className="rounded-[24px] border border-neutral-200 bg-neutral-950 px-4 py-4 text-white dark:border-neutral-800 dark:bg-neutral-950">
+      <section className="rounded-[24px] border border-neutral-200 bg-white px-4 py-4 text-neutral-950 shadow-[0_1px_0_rgba(17,24,39,0.04)] dark:border-neutral-800 dark:bg-neutral-950 dark:text-white dark:shadow-none">
         <button
           type="button"
           onClick={openModal}
           className="w-full text-left"
         >
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-white/45">Bonus skill</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-neutral-400 dark:text-white/45">Bonus skill</p>
           <div className="mt-3 flex items-start justify-between gap-3">
-            <h3 className="text-2xl font-semibold leading-tight tracking-tight text-white">
+            <h3 className="text-2xl font-semibold leading-tight tracking-tight text-neutral-950 dark:text-white">
               Website Playbook
             </h3>
-            <ArrowUpRight aria-hidden="true" className="mt-1 h-4 w-4 shrink-0 text-white/45" />
+            <ArrowUpRight aria-hidden="true" className="mt-1 h-4 w-4 shrink-0 text-neutral-400 dark:text-white/45" />
           </div>
-          <p className="mt-2 text-sm leading-relaxed text-white/60">
+          <p className="mt-2 text-sm leading-relaxed text-neutral-600 dark:text-white/60">
             Open a cleaner preview, then copy or download the raw file.
           </p>
         </button>
@@ -376,7 +376,7 @@ export function SkillBonus() {
         <a
           href={skillPath}
           download="SKILL.md"
-          className="mt-4 inline-flex items-center gap-2 text-xs font-medium text-white/72 transition-colors hover:text-white"
+          className="mt-4 inline-flex items-center gap-2 text-xs font-medium text-neutral-600 transition-colors hover:text-neutral-950 dark:text-white/72 dark:hover:text-white"
         >
           <Download aria-hidden="true" className="h-3.5 w-3.5" />
           Download .md
@@ -397,21 +397,21 @@ function renderPreviewNode(node: PreviewNode, index: number) {
     if (node.level === 2) {
       return (
         <section key={`heading-${index}`} className="space-y-4">
-          <h4 className="text-xl font-semibold tracking-tight text-white sm:text-2xl">{node.text}</h4>
+          <h4 className="text-xl font-semibold tracking-tight text-neutral-950 dark:text-white sm:text-2xl">{node.text}</h4>
         </section>
       );
     }
 
     return (
       <section key={`heading-${index}`} className="space-y-3">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">{node.text}</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500 dark:text-white/45">{node.text}</p>
       </section>
     );
   }
 
   if (node.type === "paragraph") {
     return (
-      <p key={`paragraph-${index}`} className="text-sm leading-7 text-white/70 sm:text-base sm:leading-8">
+      <p key={`paragraph-${index}`} className="text-sm leading-7 text-neutral-700 dark:text-white/70 sm:text-base sm:leading-8">
         {node.text}
       </p>
     );
@@ -419,9 +419,9 @@ function renderPreviewNode(node: PreviewNode, index: number) {
 
   if (node.type === "unordered-list") {
     return (
-      <ul key={`unordered-${index}`} className="space-y-2.5 pl-5 text-sm leading-7 text-white/70 sm:space-y-3 sm:text-base sm:leading-8">
+      <ul key={`unordered-${index}`} className="space-y-2.5 pl-5 text-sm leading-7 text-neutral-700 dark:text-white/70 sm:space-y-3 sm:text-base sm:leading-8">
         {node.items.map((item, itemIndex) => (
-          <li key={`${item}-${itemIndex}`} className="list-disc pl-2 marker:text-white/35">
+          <li key={`${item}-${itemIndex}`} className="list-disc pl-2 marker:text-neutral-400 dark:marker:text-white/35">
             {item}
           </li>
         ))}
@@ -430,9 +430,9 @@ function renderPreviewNode(node: PreviewNode, index: number) {
   }
 
   return (
-    <ol key={`ordered-${index}`} className="space-y-3 pl-5 text-sm leading-7 text-white/70 sm:space-y-4 sm:text-base sm:leading-8">
+    <ol key={`ordered-${index}`} className="space-y-3 pl-5 text-sm leading-7 text-neutral-700 dark:text-white/70 sm:space-y-4 sm:text-base sm:leading-8">
       {node.items.map((item, itemIndex) => (
-        <li key={`${item}-${itemIndex}`} className="list-decimal pl-2 marker:font-medium marker:text-white/45">
+        <li key={`${item}-${itemIndex}`} className="list-decimal pl-2 marker:font-medium marker:text-neutral-500 dark:marker:text-white/45">
           {item}
         </li>
       ))}

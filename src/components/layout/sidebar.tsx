@@ -40,7 +40,7 @@ function SidebarContent({
     onLinkClick?: () => void;
     extraHeaderAction?: React.ReactNode;
 }) {
-    const { tapLight, supportMessage } = useHaptics();
+    const { tapLight } = useHaptics();
 
     return (
         <div className="flex h-full flex-col p-6">
@@ -96,13 +96,8 @@ function SidebarContent({
                 </nav>
             </div>
 
-            <div className="mt-4 space-y-2">
+            <div className="mt-4">
                 <SkillBonus />
-                {supportMessage ? (
-                    <p className="rounded-lg bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-700 dark:bg-amber-950/30 dark:text-amber-300">
-                        {supportMessage}
-                    </p>
-                ) : null}
             </div>
         </div>
     );
