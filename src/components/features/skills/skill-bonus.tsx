@@ -7,6 +7,7 @@ import { createPortal } from "react-dom";
 import { ArrowUpRight, Check, Copy, Download, LoaderCircle, X } from "lucide-react";
 
 const skillPath = "/skills/axiom-website-upgrade/SKILL.md";
+const skillLoadTimeoutMs = 8000;
 const modalOpenDurationMs = 360;
 const modalCloseDurationMs = 220;
 
@@ -36,17 +37,35 @@ export function SkillBonus() {
   }, []);
 
   useEffect(() => {
-    if (!isModalVisible || loadState !== "idle") {
+    if (!isModalVisible && loadState === "loading" && !skillText) {
+      setLoadState("idle");
+    }
+  }, [isModalVisible, loadState, skillText]);
+
+  useEffect(() => {
+    if (!isModalVisible) {
+      return;
+    }
+
+    if (skillText) {
+      setLoadState("ready");
       return;
     }
 
     let active = true;
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => {
+      controller.abort();
+    }, skillLoadTimeoutMs);
 
     async function loadSkill() {
       setLoadState("loading");
 
       try {
-        const response = await fetch(skillPath, { cache: "force-cache" });
+        const response = await fetch(skillPath, {
+          cache: "force-cache",
+          signal: controller.signal,
+        });
 
         if (!response.ok) {
           throw new Error("Failed to load skill file");
@@ -66,6 +85,8 @@ export function SkillBonus() {
         }
 
         setLoadState("error");
+      } finally {
+        window.clearTimeout(timeoutId);
       }
     }
 
@@ -73,8 +94,10 @@ export function SkillBonus() {
 
     return () => {
       active = false;
+      controller.abort();
+      window.clearTimeout(timeoutId);
     };
-  }, [isModalVisible, loadState]);
+  }, [isModalVisible, skillText]);
 
   useEffect(() => {
     if (!isModalVisible) {
@@ -152,6 +175,10 @@ export function SkillBonus() {
   const previewNodes = useMemo(() => parsePreviewNodes(skillText), [skillText]);
 
   function openModal() {
+    if ((loadState === "loading" && !skillText) || loadState === "error") {
+      setLoadState("idle");
+    }
+
     const nextParams = new URLSearchParams(searchParams.toString());
 
     if (nextParams.has("rule")) {
