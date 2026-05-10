@@ -90,6 +90,15 @@ html {
   color-scheme: dark;
 }
 
+.theme-change-lock,
+.theme-change-lock *,
+.theme-change-lock *::before,
+.theme-change-lock *::after {
+  transition: none !important;
+  animation-duration: 0.01ms !important;
+  animation-delay: 0ms !important;
+}
+
 :where(input, textarea, select) {
   background-color: var(--color-bg-elevated);
   color: var(--color-text-primary);

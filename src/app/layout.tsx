@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, Manrope, Source_Serif_4 } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { rules } from "@/data/ui-logic";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 import "./globals.css";
 
 const siteUrl = "https://axiomui.vercel.app";
@@ -104,11 +105,9 @@ export default function RootLayout({
         var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         var isDark = mode === 'dark' || (mode === 'system' && prefersDark);
         var root = document.documentElement;
-        if (isDark) {
-          root.classList.add('dark');
-        } else {
-          root.classList.remove('dark');
-        }
+        root.classList.toggle('dark', isDark);
+        root.dataset.theme = isDark ? 'dark' : 'light';
+        root.style.colorScheme = isDark ? 'dark' : 'light';
       } catch (e) {}
     })();
   `;
@@ -169,7 +168,7 @@ export default function RootLayout({
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
         <Analytics />
       </body>
     </html>
