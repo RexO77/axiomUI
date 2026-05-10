@@ -96,10 +96,10 @@ function HomeContent() {
       <Sidebar filteredCount={filteredRules.length} />
 
       <main id="main-content" tabIndex={-1} className="flex-1 md:pl-[280px]">
-        <div className="mx-auto max-w-6xl space-y-12 px-4 py-8 md:px-12">
+        <div className="mx-auto max-w-6xl space-y-8 px-3 py-5 sm:px-4 sm:py-7 md:space-y-12 md:px-12 md:py-8">
           <Header />
 
-          <section className="space-y-10" id="rulesContainer">
+          <section className="space-y-8 md:space-y-10" id="rulesContainer">
             {grouped.length === 0 ? (
               <div className="glass reveal rounded-2xl p-10 text-center" style={{ "--delay": "40ms" } as CSSProperties}>
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
@@ -125,14 +125,14 @@ function HomeContent() {
                   >
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-neutral-900 text-white md:h-11 md:w-11 dark:bg-neutral-100 dark:text-neutral-900">
                           <Icon aria-hidden="true" className="h-5 w-5" />
                         </div>
                         <div>
                           <p className="text-xs uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-400">
                             {group.id}
                           </p>
-                          <h2 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+                          <h2 className="text-xl font-semibold text-neutral-900 sm:text-2xl dark:text-neutral-100">
                             {group.name}
                           </h2>
                         </div>
@@ -143,7 +143,7 @@ function HomeContent() {
                       </span>
                     </div>
 
-                    <div className="mt-6 grid gap-6">
+                    <div className="mt-4 grid gap-4 md:mt-6 md:gap-6">
                       {group.rules.map((rule) => {
                         delayIndex += 1;
                         return (

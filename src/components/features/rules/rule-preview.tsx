@@ -1740,7 +1740,7 @@ function PreviewFrame({
             aria-hidden="true"
             className={cn(
                 "relative overflow-hidden rounded-lg border border-neutral-200 bg-white text-neutral-700 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200",
-                size === "lg" ? "min-h-[96px] p-3 text-xs" : "min-h-[72px] p-2 text-[10px]",
+                size === "lg" ? "min-h-[96px] p-3 text-xs" : "min-h-[56px] p-2 text-[10px] sm:min-h-[72px]",
                 className
             )}
         >

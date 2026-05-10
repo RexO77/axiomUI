@@ -43,7 +43,7 @@ function SidebarContent({
     const { tapLight } = useHaptics();
 
     return (
-        <div className="flex h-full flex-col p-6">
+        <div className="flex h-full flex-col p-4 sm:p-6">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -163,7 +163,7 @@ export function Sidebar({ filteredCount }: { filteredCount: number }) {
                 {/* Drawer Panel */}
                 <div
                     className={cn(
-                        "relative w-[85%] max-w-[300px] border-l border-neutral-200 bg-white shadow-2xl transition-transform duration-300 dark:border-neutral-800 dark:bg-neutral-900",
+                        "relative w-[88%] max-w-[340px] border-l border-neutral-200 bg-white shadow-2xl transition-transform duration-300 dark:border-neutral-800 dark:bg-neutral-900",
                         isOpen ? "translate-x-0" : "translate-x-full"
                     )}
                 >
