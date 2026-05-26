@@ -655,6 +655,7 @@ export const rules: Rule[] = [
   },
 
   // ── Motion & Interaction ────────────────────────────────────────
+  // Start with frequency because repeated motion becomes latency.
   {
     category: "motion",
     title: "Animate by Frequency",
@@ -664,6 +665,7 @@ export const rules: Rule[] = [
     dont: "Command palette opens slowly",
     tags: ["Frequency", "Perceived Performance"],
   },
+  // Keyboard flows are speed tools, so animation should never tax them.
   {
     category: "motion",
     title: "Keyboard Actions Stay Instant",
@@ -673,6 +675,7 @@ export const rules: Rule[] = [
     dont: "Keyboard toggle waits for motion",
     tags: ["Keyboard", "Speed"],
   },
+  // Purpose is the filter that keeps motion from becoming decoration.
   {
     category: "motion",
     title: "Purpose Before Motion",
@@ -682,6 +685,7 @@ export const rules: Rule[] = [
     dont: "Decorative bounce on every load",
     tags: ["Intent", "Feedback"],
   },
+  // Easing rules define the feel before component-specific tuning begins.
   {
     category: "motion",
     title: "Use Strong Custom Easing",
@@ -700,6 +704,7 @@ export const rules: Rule[] = [
     dont: "ease-in menu open",
     tags: ["Easing", "Responsiveness"],
   },
+  // Timing rules keep everyday UI responsive while preserving comprehension.
   {
     category: "motion",
     title: "Keep UI Motion Under 300ms",
@@ -718,6 +723,7 @@ export const rules: Rule[] = [
     dont: "Same slow exit timing",
     tags: ["Timing", "Continuity"],
   },
+  // Press and entry rules make elements feel physically present.
   {
     category: "motion",
     title: "Press Feedback",
@@ -736,6 +742,7 @@ export const rules: Rule[] = [
     dont: "scale(0)",
     tags: ["Entry", "Transform"],
   },
+  // Spatial rules should describe where anchored UI comes from and returns.
   {
     category: "motion",
     title: "Origin-Aware Popovers",
@@ -754,6 +761,7 @@ export const rules: Rule[] = [
     dont: "Every toolbar tooltip waits",
     tags: ["Tooltips", "Speed"],
   },
+  // Interruptible UI should retarget smoothly under rapid user input.
   {
     category: "motion",
     title: "Use Transitions for Interruptible UI",
@@ -790,6 +798,7 @@ export const rules: Rule[] = [
     dont: "Hardcoded offscreen pixels",
     tags: ["Drawers", "Responsive"],
   },
+  // Device and accessibility rules prevent motion from becoming exclusionary.
   {
     category: "motion",
     title: "Gate Hover Motion",
@@ -808,6 +817,7 @@ export const rules: Rule[] = [
     dont: "Ignore prefers-reduced-motion",
     tags: ["Accessibility", "Reduced Motion"],
   },
+  // Gesture rules need physics, pointer ownership, and touch safety.
   {
     category: "motion",
     title: "Gesture Dismissal Uses Velocity",
