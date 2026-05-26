@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import {
+    Activity,
     BoxSelect,
     Cpu,
     Eye,
@@ -28,6 +29,7 @@ const categoryIcons = new Map([
     ["components", BoxSelect],
     ["forms", TextCursorInput],
     ["system", Cpu],
+    ["motion", Activity],
     ["accessibility", Eye],
 ]);
 

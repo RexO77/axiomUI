@@ -4,8 +4,10 @@ import type { CSSProperties } from "react";
 import { Suspense, useMemo } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
+  Activity,
   BoxSelect,
   Cpu,
+  Eye,
   Layers,
   LayoutGrid,
   Palette,
@@ -27,6 +29,8 @@ const sectionIcons = new Map([
   ["components", BoxSelect],
   ["forms", TextCursorInput],
   ["system", Cpu],
+  ["motion", Activity],
+  ["accessibility", Eye],
 ]);
 
 function HomeContent() {

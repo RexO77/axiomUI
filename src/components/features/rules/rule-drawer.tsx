@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Activity,
   AlertTriangle,
   BoxSelect,
   CheckCircle2,
@@ -37,6 +38,7 @@ const categoryIcons: Record<string, LucideIcon> = {
   components: BoxSelect,
   forms: TextCursorInput,
   system: Cpu,
+  motion: Activity,
   accessibility: Eye,
 };
 
