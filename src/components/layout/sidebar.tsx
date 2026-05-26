@@ -153,7 +153,7 @@ export function Sidebar({ filteredCount }: { filteredCount: number }) {
                 {/* Backdrop */}
                 <div
                     className={cn(
-                        "absolute inset-0 bg-neutral-950/20 backdrop-blur-sm transition-opacity duration-300 dark:bg-black/40",
+                        "absolute inset-0 bg-neutral-950/20 backdrop-blur-sm transition-opacity duration-200 ease-out dark:bg-black/40",
                         isOpen ? "opacity-100" : "opacity-0"
                     )}
                     onClick={() => { tapNudge(); setIsOpen(false); }}
@@ -166,6 +166,7 @@ export function Sidebar({ filteredCount }: { filteredCount: number }) {
                         "relative w-[88%] max-w-[340px] border-l border-neutral-200 bg-white shadow-2xl transition-transform duration-300 dark:border-neutral-800 dark:bg-neutral-900",
                         isOpen ? "translate-x-0" : "translate-x-full"
                     )}
+                    style={{ transitionTimingFunction: "var(--ease-drawer)" }}
                 >
                     <SidebarContent
                         filteredCount={filteredCount}
