@@ -8,8 +8,8 @@ import { ArrowUpRight, Check, Copy, Download, LoaderCircle, X } from "lucide-rea
 
 const skillPath = "/skills/axiom-website-upgrade/SKILL.md";
 const skillLoadTimeoutMs = 8000;
-const modalOpenDurationMs = 360;
-const modalCloseDurationMs = 220;
+const modalOpenDurationMs = 280;
+const modalCloseDurationMs = 180;
 
 type LoadState = "idle" | "loading" | "ready" | "error";
 type CopyState = "idle" | "copied" | "error";

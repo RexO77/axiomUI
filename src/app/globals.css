@@ -245,7 +245,7 @@ code {
   opacity: 0;
   will-change: opacity;
   transition:
-    opacity var(--skill-modal-close-duration) cubic-bezier(0.4, 0, 1, 1);
+    opacity var(--skill-modal-close-duration) var(--ease-out-strong);
 }
 
 .skill-modal-panel {
@@ -254,8 +254,8 @@ code {
   transform-origin: center top;
   will-change: transform, opacity;
   transition:
-    opacity var(--skill-modal-close-duration) cubic-bezier(0.4, 0, 1, 1),
-    transform var(--skill-modal-close-duration) cubic-bezier(0.4, 0, 1, 1);
+    opacity var(--skill-modal-close-duration) var(--ease-out-strong),
+    transform var(--skill-modal-close-duration) var(--ease-out-strong);
 }
 
 .skill-modal-content {
@@ -263,21 +263,21 @@ code {
   transform: translate3d(0, 10px, 0);
   will-change: transform, opacity;
   transition:
-    opacity var(--skill-modal-close-duration) cubic-bezier(0.4, 0, 1, 1),
-    transform var(--skill-modal-close-duration) cubic-bezier(0.4, 0, 1, 1);
+    opacity var(--skill-modal-close-duration) var(--ease-out-strong),
+    transform var(--skill-modal-close-duration) var(--ease-out-strong);
 }
 
 .skill-modal-root[data-state="open"] .skill-modal-scrim {
   opacity: 1;
   transition-duration: var(--skill-modal-open-duration);
-  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  transition-timing-function: var(--ease-out-strong);
 }
 
 .skill-modal-root[data-state="open"] .skill-modal-panel {
   opacity: 1;
   transform: translate3d(0, 0, 0) scale(1);
   transition-duration: var(--skill-modal-open-duration);
-  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  transition-timing-function: var(--ease-out-strong);
 }
 
 .skill-modal-root[data-state="open"] .skill-modal-content {
@@ -285,7 +285,7 @@ code {
   transform: translate3d(0, 0, 0);
   transition-delay: 36ms;
   transition-duration: var(--skill-modal-open-duration);
-  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  transition-timing-function: var(--ease-out-strong);
 }
 
 @keyframes fadeUp {
