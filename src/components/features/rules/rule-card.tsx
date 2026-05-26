@@ -82,7 +82,7 @@ export function RuleCard({ rule, activeRuleId, onDeepDive, style }: RuleCardProp
               onDeepDive(rule.id);
             }
           }}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 transition-colors duration-200 hover:border-neutral-400 sm:w-auto sm:py-1.5 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:border-neutral-500"
+          className="pressable inline-flex w-full items-center justify-center gap-2 rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 hover:border-neutral-400 sm:w-auto sm:py-1.5 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:border-neutral-500"
         >
           <Expand aria-hidden="true" className="h-4 w-4" />
           More About This

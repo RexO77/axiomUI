@@ -163,6 +163,16 @@ code {
   background: var(--color-bg-muted);
 }
 
+.pressable {
+  transition-property: transform, background-color, border-color, color;
+  transition-duration: var(--motion-fast);
+  transition-timing-function: var(--ease-out-strong);
+}
+
+.pressable:active {
+  transform: scale(0.97);
+}
+
 .badge-do {
   background: var(--color-success-muted);
   color: #0f766e;
@@ -295,6 +305,14 @@ code {
   }
 
   .rule-card:hover {
+    transform: none;
+  }
+
+  .pressable {
+    transition: none;
+  }
+
+  .pressable:active {
     transform: none;
   }
 

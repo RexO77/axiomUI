@@ -82,7 +82,7 @@ function SidebarContent({
                                 tapLight();
                                 onLinkClick?.();
                             }}
-                            className="group flex items-center gap-3 rounded-lg px-2 py-2.5 text-sm text-neutral-600 transition-colors duration-150 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
+                            className="pressable group flex items-center gap-3 rounded-lg px-2 py-2.5 text-sm text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
                         >
                             <span className="flex h-7 w-7 items-center justify-center rounded-md bg-neutral-100 text-neutral-500 transition-colors duration-150 group-hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:group-hover:bg-neutral-700">
                                 {(() => {
@@ -135,7 +135,7 @@ export function Sidebar({ filteredCount }: { filteredCount: number }) {
                     <ThemeToggle />
                     <button
                         onClick={() => { tapNudge(); setIsOpen(true); }}
-                        className="flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
+                        className="pressable flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
                         aria-label="Open menu"
                     >
                         <Menu className="h-5 w-5" />
@@ -173,7 +173,7 @@ export function Sidebar({ filteredCount }: { filteredCount: number }) {
                         extraHeaderAction={
                             <button
                                 onClick={() => { tapNudge(); setIsOpen(false); }}
-                                className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
+                                className="pressable flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
                                 aria-label="Close menu"
                             >
                                 <X className="h-5 w-5" />
