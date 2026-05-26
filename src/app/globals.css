@@ -149,13 +149,15 @@ code {
 }
 
 .rule-card {
-  transition: transform 200ms ease, box-shadow 200ms ease;
+  transition: transform var(--motion-medium) var(--ease-out-strong);
   content-visibility: auto;
   contain-intrinsic-size: 0 320px;
 }
 
-.rule-card:hover {
-  transform: translateY(-2px);
+@media (hover: hover) and (pointer: fine) {
+  .rule-card:hover {
+    transform: translateY(-2px);
+  }
 }
 
 .chip {
@@ -195,8 +197,8 @@ code {
 
 .reveal {
   opacity: 0;
-  transform: translateY(12px);
-  animation: fadeUp 0.6s ease forwards;
+  transform: translateY(8px);
+  animation: fadeUp 420ms var(--ease-out-strong) forwards;
   animation-delay: var(--delay, 0ms);
 }
 
