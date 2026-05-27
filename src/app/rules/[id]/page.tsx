@@ -103,7 +103,7 @@ export default async function RulePage({ params }: Props) {
                             <AxiomLogo className="h-4 w-4" />
                         </div>
                         <span className="text-sm font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-                            AXIOM
+                            Axiom
                         </span>
                     </div>
                 </div>
@@ -123,13 +123,13 @@ export default async function RulePage({ params }: Props) {
                 {/* Title Section */}
                 <article>
                     <header className="mb-12">
-                        <p className="text-xs font-medium uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400">
+                        <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                             {category?.name}
                         </p>
                         <h1 className="mt-4 text-4xl font-semibold text-neutral-900 dark:text-neutral-100">
                             {rule.title}
                         </h1>
-                        <p className="mt-4 text-lg text-neutral-600 dark:text-neutral-300">
+                        <p className="prose-justify mt-4 text-lg text-neutral-600 dark:text-neutral-300">
                             {rule.desc}
                         </p>
 
@@ -154,7 +154,7 @@ export default async function RulePage({ params }: Props) {
                                 <span className="badge-do flex h-6 w-6 items-center justify-center rounded-full">
                                     <Check className="h-3.5 w-3.5" />
                                 </span>
-                                <span className="text-xs font-semibold uppercase tracking-[0.15em] text-emerald-700 dark:text-teal-300">
+                                <span className="text-xs font-semibold text-emerald-700 dark:text-teal-300">
                                     Do
                                 </span>
                             </div>
@@ -171,7 +171,7 @@ export default async function RulePage({ params }: Props) {
                                 <span className="badge-dont flex h-6 w-6 items-center justify-center rounded-full">
                                     <X className="h-3.5 w-3.5" />
                                 </span>
-                                <span className="text-xs font-semibold uppercase tracking-[0.15em] text-red-700 dark:text-red-300">
+                                <span className="text-xs font-semibold text-red-700 dark:text-red-300">
                                     Don&apos;t
                                 </span>
                             </div>
@@ -194,7 +194,7 @@ export default async function RulePage({ params }: Props) {
                                     </h2>
                                 )}
                                 {section.type === "text" && (
-                                    <p className="text-neutral-600 dark:text-neutral-300">
+                                    <p className="prose-justify text-neutral-600 dark:text-neutral-300">
                                         {section.content}
                                     </p>
                                 )}

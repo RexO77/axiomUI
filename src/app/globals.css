@@ -92,6 +92,8 @@
 html {
   background-color: var(--color-bg);
   color-scheme: light;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .dark {
@@ -119,6 +121,18 @@ body {
   min-height: 100vh;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+}
+
+p,
+li,
+figcaption,
+blockquote {
+  text-wrap: pretty;
+}
+
+.prose-justify {
+  text-align: justify;
+  text-justify: inter-word;
 }
 
 h1,
@@ -165,6 +179,17 @@ code {
   background: var(--color-bg-muted);
 }
 
+.soft-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-stroke) 10%,
+    var(--color-stroke) 90%,
+    transparent
+  );
+}
+
 .pressable {
   transition-property: transform, background-color, border-color, color;
   transition-duration: var(--motion-fast);
@@ -172,13 +197,12 @@ code {
 }
 
 .pressable:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
 }
 
 .badge-do {
   background: var(--color-success-muted);
   color: #0f766e;
-  letter-spacing: 0.08em;
 }
 
 .dark .badge-do {
@@ -188,7 +212,6 @@ code {
 .badge-dont {
   background: var(--color-error-muted);
   color: #b91c1c;
-  letter-spacing: 0.08em;
 }
 
 .dark .badge-dont {
@@ -338,8 +361,6 @@ code {
   color: var(--color-text-primary);
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   border: 1px solid var(--color-stroke);
   transition: transform 160ms ease;
   z-index: 50;

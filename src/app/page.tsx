@@ -133,8 +133,8 @@ function HomeContent() {
                           <Icon aria-hidden="true" className="h-5 w-5" />
                         </div>
                         <div>
-                          <p className="text-xs uppercase tracking-[0.18em] text-neutral-500 dark:text-neutral-400">
-                            {group.id}
+                          <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+                            {group.name}
                           </p>
                           <h2 className="text-xl font-semibold text-neutral-900 sm:text-2xl dark:text-neutral-100">
                             {group.name}

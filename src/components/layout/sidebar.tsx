@@ -53,8 +53,8 @@ function SidebarContent({
                         <AxiomLogo className="h-5 w-5" />
                     </div>
                     <div>
-                        <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-neutral-400 dark:text-neutral-500">
-                            axiom
+                        <p className="text-xs font-medium text-neutral-400 dark:text-neutral-500">
+                            Axiom
                         </p>
                         <span className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
                             UI Logic
@@ -72,7 +72,7 @@ function SidebarContent({
 
             {/* Categories */}
             <div className="mt-6 flex flex-1 flex-col overflow-hidden">
-                <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-neutral-400 dark:text-neutral-500">
+                <p className="text-xs font-medium text-neutral-400 dark:text-neutral-500">
                     Categories
                 </p>
                 <nav className="sidebar-scroll mt-3 flex-1 space-y-0.5 overflow-y-auto">
@@ -130,7 +130,7 @@ export function Sidebar({ filteredCount }: { filteredCount: number }) {
                         <AxiomLogo className="h-4 w-4" />
                     </div>
                     <span className="text-sm font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-                        AXIOM
+                        Axiom
                     </span>
                 </div>
                 <div className="flex items-center gap-2">

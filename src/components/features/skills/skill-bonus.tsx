@@ -249,7 +249,7 @@ export function SkillBonus() {
               <div className="border-b border-neutral-200 px-4 py-3 sm:px-6 dark:border-white/10">
                 <div className="flex items-start justify-between gap-3 sm:hidden">
                   <div className="min-w-0">
-                    <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-neutral-400 dark:text-white/45">SKILL.md</p>
+                    <p className="text-xs font-medium text-neutral-400 dark:text-white/45">SKILL.md</p>
                     <p className="mt-2 text-lg font-semibold tracking-tight text-neutral-950 dark:text-white">
                       Website Playbook
                     </p>
@@ -356,13 +356,13 @@ export function SkillBonus() {
                 {loadState === "ready" ? (
                   <article className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-10">
                     <header className="border-b border-neutral-200 pb-6 sm:pb-8 dark:border-white/10">
-                      <p className="text-xs font-medium uppercase tracking-[0.18em] text-neutral-500 sm:text-sm sm:normal-case sm:tracking-normal dark:text-white/45">
+                      <p className="text-sm font-medium text-neutral-500 dark:text-white/45">
                         Bonus skill
                       </p>
                       <h3 className="mt-3 text-2xl font-semibold tracking-tight text-neutral-950 sm:text-3xl md:text-4xl dark:text-white">
                         Website Upgrade Playbook
                       </h3>
-                      <p className="mt-3 max-w-2xl text-sm leading-7 text-neutral-600 sm:mt-4 sm:text-base sm:leading-8 dark:text-white/68">
+                      <p className="prose-justify mt-3 max-w-2xl text-sm leading-7 text-neutral-600 sm:mt-4 sm:text-base sm:leading-8 dark:text-white/68">
                         A reusable skill for tightening hierarchy, spacing, components, forms, states, and accessibility.
                       </p>
                     </header>
@@ -388,14 +388,14 @@ export function SkillBonus() {
           onClick={openModal}
           className="w-full text-left"
         >
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-neutral-400 dark:text-white/45">Bonus skill</p>
+          <p className="text-xs font-medium text-neutral-400 dark:text-white/45">Bonus skill</p>
           <div className="mt-3 flex items-start justify-between gap-3">
             <h3 className="text-2xl font-semibold leading-tight tracking-tight text-neutral-950 dark:text-white">
               Website Playbook
             </h3>
             <ArrowUpRight aria-hidden="true" className="mt-1 h-4 w-4 shrink-0 text-neutral-400 dark:text-white/45" />
           </div>
-          <p className="mt-2 text-sm leading-relaxed text-neutral-600 dark:text-white/60">
+          <p className="prose-justify mt-2 text-sm leading-relaxed text-neutral-600 dark:text-white/60">
             Open a cleaner preview, then copy or download the raw file.
           </p>
         </button>
@@ -431,14 +431,14 @@ function renderPreviewNode(node: PreviewNode, index: number) {
 
     return (
       <section key={`heading-${index}`} className="space-y-3">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500 dark:text-white/45">{node.text}</p>
+        <p className="text-xs font-semibold text-neutral-500 dark:text-white/45">{node.text}</p>
       </section>
     );
   }
 
   if (node.type === "paragraph") {
     return (
-      <p key={`paragraph-${index}`} className="text-sm leading-7 text-neutral-700 dark:text-white/70 sm:text-base sm:leading-8">
+      <p key={`paragraph-${index}`} className="prose-justify text-sm leading-7 text-neutral-700 dark:text-white/70 sm:text-base sm:leading-8">
         {node.text}
       </p>
     );
