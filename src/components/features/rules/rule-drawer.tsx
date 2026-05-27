@@ -55,6 +55,10 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
             <div className="drawer-scroll flex-1 overflow-y-auto pb-2">
               {activeRule ? (
                 <div className="mx-auto max-w-5xl space-y-8 pb-8">
+                  <Drawer.Description className="sr-only">
+                    {summary}
+                  </Drawer.Description>
+
                   <header className="relative pt-2 sm:pt-4">
                     <Drawer.Close className="absolute right-0 top-0 inline-flex h-10 w-10 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100">
                       <X aria-hidden="true" className="h-4 w-4" />
