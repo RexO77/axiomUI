@@ -130,6 +130,24 @@ export const rules: Rule[] = [
     dont: "Body: 11px / Subtext: 9px",
     tags: ["Readability", "Mobile"],
   },
+  {
+    category: "typography",
+    title: "Balance Short Headings",
+    id: "typo-12",
+    desc: "Short headings should use balanced wrapping so line breaks feel intentional instead of leaving a single orphaned word.",
+    do: "h1, h2, h3 { text-wrap: balance }",
+    dont: "Default heading wrap creates orphans",
+    tags: ["Wrapping", "Headings"],
+  },
+  {
+    category: "typography",
+    title: "Pretty Wrap UI Copy",
+    id: "typo-13",
+    desc: "Short-to-medium descriptions, captions, list items, and card text should use pretty wrapping to avoid awkward final lines.",
+    do: "p.description { text-wrap: pretty }",
+    dont: "Single dangling word in card copy",
+    tags: ["Wrapping", "Readability"],
+  },
 
   // ── Layout & Spacing ─────────────────────────────────────────────
   {
@@ -322,6 +340,24 @@ export const rules: Rule[] = [
     do: "bg-blue-500/10 for tint",
     dont: "#e8f0fe custom hex per state",
     tags: ["States", "Efficiency"],
+  },
+  {
+    category: "color",
+    title: "Neutral Image Outlines",
+    id: "color-11",
+    desc: "Images need a subtle inset outline for edge definition. Use pure black at low opacity in light mode and pure white at low opacity in dark mode.",
+    do: "outline-black/10 dark:outline-white/10",
+    dont: "outline-slate-900/10 on images",
+    tags: ["Images", "Depth"],
+  },
+  {
+    category: "color",
+    title: "Shadows Can Replace Borders",
+    id: "color-12",
+    desc: "For cards, buttons, and elevated containers, layered transparent shadows often create cleaner depth than a hard border.",
+    do: "0 0 0 1px rgb(0 0 0 / 6%), 0 2px 4px rgb(0 0 0 / 4%)",
+    dont: "Heavy border on every raised card",
+    tags: ["Depth", "Surfaces"],
   },
 
   // ── Components & Actions ─────────────────────────────────────────
@@ -653,6 +689,24 @@ export const rules: Rule[] = [
     dont: "Bouncing logo on every page load",
     tags: ["Motion", "Intent"],
   },
+  {
+    category: "system",
+    title: "Transition Only What Changes",
+    id: "sys-13",
+    desc: "Never use transition: all. Specify the exact properties that should animate so unrelated style changes do not move unexpectedly.",
+    do: "transition-property: scale, background-color",
+    dont: "transition: all 150ms ease-out",
+    tags: ["Performance", "CSS"],
+  },
+  {
+    category: "system",
+    title: "Use Will-Change Sparingly",
+    id: "sys-14",
+    desc: "will-change is a targeted performance hint, not a default. Use it only for compositor-friendly properties when a real first-frame stutter appears.",
+    do: "will-change: transform, opacity",
+    dont: "will-change: all",
+    tags: ["Performance", "GPU"],
+  },
 
   // ── Motion & Interaction ────────────────────────────────────────
   // Start with frequency because repeated motion becomes latency.
@@ -729,8 +783,8 @@ export const rules: Rule[] = [
     title: "Press Feedback",
     id: "motion-8",
     desc: "Pressable controls should respond immediately with a tiny transform so users know the interface heard them.",
-    do: "button:active scale(0.97)",
-    dont: "No active state on buttons",
+    do: "button:active scale(0.96)",
+    dont: "scale(0.9) or no active state",
     tags: ["Buttons", "Feedback"],
   },
   {
@@ -889,6 +943,42 @@ export const rules: Rule[] = [
     do: "Inspect at 2x-5x duration",
     dont: "Judge only at full speed",
     tags: ["QA", "Polish"],
+  },
+  {
+    category: "motion",
+    title: "Split Enter Animations",
+    id: "motion-26",
+    desc: "Do not animate a whole page or panel as one object when its content has separate meaning. Split title, copy, and actions into short staggered groups.",
+    do: "Title, copy, actions staggered 80-100ms",
+    dont: "One giant container fade",
+    tags: ["Entry", "Stagger"],
+  },
+  {
+    category: "motion",
+    title: "Subtle Exit Motion",
+    id: "motion-27",
+    desc: "Exits should preserve context without stealing attention. Use shorter timing and a small fixed translate instead of dramatic movement.",
+    do: "opacity 0 + translateY(-12px) at 150ms",
+    dont: "translateY(-100%) scale(0.5)",
+    tags: ["Exit", "Continuity"],
+  },
+  {
+    category: "motion",
+    title: "Animate Contextual Icons",
+    id: "motion-28",
+    desc: "When icons appear, disappear, or swap state, animate opacity, scale, and blur rather than toggling visibility abruptly.",
+    do: "scale 0.25 -> 1, opacity 0 -> 1, blur 4px -> 0",
+    dont: "display: none to display: block",
+    tags: ["Icons", "State"],
+  },
+  {
+    category: "motion",
+    title: "Skip Default Load Animation",
+    id: "motion-29",
+    desc: "Default-state UI should not replay entrance motion on the first render. Save enter animations for intentional changes after the page is interactive.",
+    do: "AnimatePresence initial={false}",
+    dont: "Modal enter animation plays on page load",
+    tags: ["Page Load", "Motion"],
   },
 
   // ── Accessibility & Inclusivity ──────────────────────────────────
@@ -1070,18 +1160,8 @@ const categoryDeepDive: Record<string, CategoryDeepDive> = {
   },
 };
 
-const baseTips = [
-  "Use this decision consistently across the product surface.",
-  "Validate in both desktop and mobile contexts.",
-  "Break the rule only when you can articulate a measurable UX gain.",
-];
-
 export function buildDeepDive(rule: Rule): DeepDiveSection[] {
   const deepDive = categoryDeepDive[rule.category] ?? defaultDeepDive;
-  const relatedSignals =
-    rule.tags.length > 0
-      ? rule.tags.map((tag) => `${tag}: keep this pattern aligned.`)
-      : ["Cross-check this decision with adjacent components."];
 
   return [
     {
@@ -1102,17 +1182,12 @@ export function buildDeepDive(rule: Rule): DeepDiveSection[] {
     {
       type: "list",
       title: "Implementation notes",
-      items: [`Default pattern: ${rule.do}`, ...deepDive.implementation, ...baseTips],
+      items: buildImplementationNotes(rule, deepDive),
     },
     {
       type: "list",
       title: "Design review prompts",
       items: deepDive.reviewPrompts,
-    },
-    {
-      type: "list",
-      title: "Related signals",
-      items: relatedSignals,
     },
     {
       type: "code",
@@ -1126,5 +1201,18 @@ export function buildDeepDive(rule: Rule): DeepDiveSection[] {
       language: "text",
       code: rule.dont,
     },
+  ];
+}
+
+function buildImplementationNotes(rule: Rule, deepDive: CategoryDeepDive): string[] {
+  const primaryInstruction =
+    rule.id === "typo-1"
+      ? `Use sentence case for labels people read as phrases: "${rule.do}".`
+      : `Prefer "${rule.do}" when this pattern appears in product UI.`;
+
+  return [
+    primaryInstruction,
+    `Check nearby examples for the opposite pattern: "${rule.dont}" should feel intentionally avoided, not casually mixed in.`,
+    ...deepDive.implementation,
   ];
 }

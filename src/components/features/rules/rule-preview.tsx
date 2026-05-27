@@ -45,11 +45,11 @@ function getRulePreview(ruleId: string, variant: Variant, size: PreviewSize): Re
                     <span
                         className={cn(
                             textClass(size),
-                            "font-semibold uppercase text-neutral-700 dark:text-neutral-200",
-                            variant === "do" ? "tracking-[0.22em]" : "tracking-normal"
+                            "font-semibold text-neutral-700 dark:text-neutral-200",
+                            variant === "do" ? "tracking-normal" : "tracking-tight"
                         )}
                     >
-                        SETTINGS
+                        Settings
                     </span>
                 </PreviewFrame>
             );
@@ -1121,6 +1121,30 @@ function getRulePreview(ruleId: string, variant: Variant, size: PreviewSize): Re
                     </div>
                 </PreviewFrame>
             );
+        case "typo-12":
+            return (
+                <PreviewFrame size={size}>
+                    <div className={cn("max-w-[150px] text-neutral-800 dark:text-neutral-100", variant === "do" ? "text-balance" : "")}>
+                        <span className={cn(size === "lg" ? "text-base" : "text-sm", "font-semibold leading-tight")}>
+                            Make interfaces feel considered
+                        </span>
+                    </div>
+                </PreviewFrame>
+            );
+        case "typo-13":
+            return (
+                <PreviewFrame size={size}>
+                    <p
+                        className={cn(
+                            textClass(size),
+                            "max-w-[170px] text-neutral-600 dark:text-neutral-300",
+                            variant === "do" ? "text-pretty" : ""
+                        )}
+                    >
+                        Short interface copy should avoid awkward dangling words.
+                    </p>
+                </PreviewFrame>
+            );
 
         // ── Layout additions ────────────────────────────────────────────
         case "layout-9":
@@ -1305,6 +1329,37 @@ function getRulePreview(ruleId: string, variant: Variant, size: PreviewSize): Re
                         <div className="flex items-center gap-2">
                             <div className="h-5 w-12 rounded-md bg-[#e8f0fe]" />
                             <span className={cn(textClass(size), "text-neutral-400")}>#e8f0fe</span>
+                        </div>
+                    </div>
+                </PreviewFrame>
+            );
+        case "color-11":
+            return (
+                <PreviewFrame size={size} className="flex items-center justify-center">
+                    <div
+                        className={cn(
+                            "h-12 w-20 rounded-lg bg-gradient-to-br from-sky-200 via-white to-emerald-200 dark:from-sky-900 dark:via-neutral-800 dark:to-emerald-900",
+                            variant === "do"
+                                ? "outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10"
+                                : "outline outline-1 -outline-offset-1 outline-slate-900/20 dark:outline-slate-100/20"
+                        )}
+                    />
+                </PreviewFrame>
+            );
+        case "color-12":
+            return (
+                <PreviewFrame size={size} className="flex items-center justify-center">
+                    <div
+                        className={cn(
+                            "h-12 w-24 rounded-xl bg-white p-2 dark:bg-neutral-900",
+                            variant === "do"
+                                ? "shadow-[0_0_0_1px_rgba(0,0,0,0.06),0_2px_4px_rgba(0,0,0,0.04)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.1)]"
+                                : "border-2 border-neutral-300 dark:border-neutral-600"
+                        )}
+                    >
+                        <MiniLine widthClass="w-2/3" />
+                        <div className="mt-2">
+                            <MiniLine widthClass="w-full" className="h-1.5" />
                         </div>
                     </div>
                 </PreviewFrame>
@@ -1620,6 +1675,86 @@ function getRulePreview(ruleId: string, variant: Variant, size: PreviewSize): Re
                     <span className={cn(textClass(size), "text-neutral-400")}>Bouncing logo — why?</span>
                 </PreviewFrame>
             );
+        case "sys-13":
+            return (
+                <PreviewFrame size={size}>
+                    <div className="space-y-2">
+                        <code className={cn("block rounded-md bg-neutral-100 px-2 py-1 font-mono dark:bg-neutral-800", textClass(size))}>
+                            {variant === "do" ? "transition: scale, color" : "transition: all"}
+                        </code>
+                        <MiniLine widthClass={variant === "do" ? "w-24" : "w-full"} />
+                    </div>
+                </PreviewFrame>
+            );
+        case "sys-14":
+            return (
+                <PreviewFrame size={size}>
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                            <MiniPill label={variant === "do" ? "transform" : "all"} size={size} tone={variant === "do" ? "accent" : "danger"} />
+                            <MiniPill label={variant === "do" ? "opacity" : "layout"} size={size} />
+                        </div>
+                        <span className={cn(textClass(size), "text-neutral-500 dark:text-neutral-400")}>
+                            {variant === "do" ? "Targeted hint" : "Excess layers"}
+                        </span>
+                    </div>
+                </PreviewFrame>
+            );
+        case "motion-26":
+            if (variant === "do") {
+                return (
+                    <PreviewFrame size={size}>
+                        <div className="space-y-2">
+                            <MiniLine widthClass="w-28" />
+                            <div className="ml-3">
+                                <MiniLine widthClass="w-36" />
+                            </div>
+                            <div className="ml-6">
+                                <MiniButton label="Action" variant="primary" size={size} />
+                            </div>
+                        </div>
+                    </PreviewFrame>
+                );
+            }
+            return (
+                <PreviewFrame size={size}>
+                    <div className="rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-900">
+                        <MiniLine widthClass="w-full" />
+                        <div className="mt-2">
+                            <MiniLine widthClass="w-full" />
+                        </div>
+                    </div>
+                </PreviewFrame>
+            );
+        case "motion-27":
+            return (
+                <PreviewFrame size={size} className="flex items-center justify-center gap-2">
+                    <div className={cn("h-8 w-14 rounded-md bg-neutral-300 dark:bg-neutral-700", variant === "do" ? "-translate-y-1 opacity-70" : "-translate-y-6 scale-75 opacity-30")} />
+                    <span className={cn(textClass(size), "text-neutral-500 dark:text-neutral-400")}>
+                        {variant === "do" ? "-12px" : "-100%"}
+                    </span>
+                </PreviewFrame>
+            );
+        case "motion-28":
+            return (
+                <PreviewFrame size={size} className="flex items-center justify-center">
+                    <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
+                        <span className={cn("absolute text-sm", variant === "do" ? "scale-100 opacity-100 blur-0" : "scale-100 opacity-100")}>✓</span>
+                        <span className={cn("text-sm", variant === "do" ? "scale-[0.25] opacity-0 blur-[4px]" : "hidden")}>+</span>
+                    </div>
+                </PreviewFrame>
+            );
+        case "motion-29":
+            return (
+                <PreviewFrame size={size}>
+                    <div className="space-y-2">
+                        <MiniPill label={variant === "do" ? "initial={false}" : "initial={true}"} size={size} tone={variant === "do" ? "accent" : "danger"} />
+                        <span className={cn(textClass(size), "block text-neutral-500 dark:text-neutral-400")}>
+                            {variant === "do" ? "Stable first render" : "Replays on load"}
+                        </span>
+                    </div>
+                </PreviewFrame>
+            );
 
         // ── Accessibility & Inclusivity ─────────────────────────────────
         case "a11y-1":
@@ -1795,7 +1930,7 @@ function MiniLabel({ label, size }: { label: string; size: PreviewSize }) {
     return (
         <span
             className={cn(
-                "font-semibold uppercase tracking-[0.2em] text-neutral-500 dark:text-neutral-400",
+                "font-semibold text-neutral-500 dark:text-neutral-400",
                 size === "lg" ? "text-[10px]" : "text-[9px]"
             )}
         >
