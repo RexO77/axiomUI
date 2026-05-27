@@ -20,7 +20,7 @@ export function RuleCard({ rule, activeRuleId, onDeepDive, style }: RuleCardProp
       <div className="flex flex-wrap items-start justify-between gap-3 md:gap-4">
         <div className="min-w-0 max-w-2xl">
           <h4 className="text-lg font-semibold leading-snug text-neutral-900 sm:text-xl dark:text-neutral-100">{rule.title}</h4>
-          <p className="prose-justify mt-2 text-sm leading-6 text-neutral-600 dark:text-neutral-300">{rule.desc}</p>
+          <p className="mt-2 text-sm leading-6 text-neutral-600 dark:text-neutral-300">{rule.desc}</p>
         </div>
         <div className="flex flex-wrap gap-1.5 sm:gap-2">
           {rule.tags.map((tag) => (

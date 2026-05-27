@@ -69,7 +69,7 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
                       <h3 className="text-3xl font-semibold leading-tight text-neutral-900 sm:text-4xl dark:text-neutral-50">
                         {activeRule.title}
                       </h3>
-                      <p className="prose-justify mt-4 text-base leading-7 text-neutral-600 sm:text-lg sm:leading-8 dark:text-neutral-300">
+                      <p className="mt-4 text-base leading-7 text-neutral-600 sm:text-lg sm:leading-8 dark:text-neutral-300">
                         {summary}
                       </p>
                     </div>
@@ -120,7 +120,7 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
                                 <span className="mt-0.5 w-5 shrink-0 text-right text-sm text-neutral-400 dark:text-neutral-500">
                                   {index + 1}
                                 </span>
-                                <p className="prose-justify text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">{item}</p>
+                                <p className="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">{item}</p>
                               </li>
                             ))}
                           </ol>
@@ -132,7 +132,7 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
                       {whyItMatters ? (
                         <article>
                           <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">Why it works</p>
-                          <p className="prose-justify mt-3 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">{whyItMatters}</p>
+                          <p className="mt-3 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">{whyItMatters}</p>
                         </article>
                       ) : null}
 
@@ -144,7 +144,7 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
                               What breaks
                             </p>
                           </div>
-                          <p className="prose-justify mt-3 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">{riskWhenIgnored}</p>
+                          <p className="mt-3 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">{riskWhenIgnored}</p>
                         </article>
                       ) : null}
 
@@ -157,7 +157,7 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
                                 <span className="mt-0.5 w-5 shrink-0 text-right text-sm text-neutral-400 dark:text-neutral-500">
                                   {index + 1}
                                 </span>
-                                <p className="prose-justify text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">{item}</p>
+                                <p className="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">{item}</p>
                               </li>
                             ))}
                           </ol>
@@ -169,7 +169,7 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
               ) : (
                 <div className="mx-auto mt-16 max-w-xl rounded-2xl border border-neutral-200 bg-white p-10 text-center dark:border-neutral-800 dark:bg-neutral-900">
                   <h3 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-50">Select a Rule</h3>
-                  <p className="prose-justify mt-3 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">
+                  <p className="mt-3 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">
                     Open a rule card to view implementation guidance and visual comparisons.
                   </p>
                 </div>
