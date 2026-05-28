@@ -34,11 +34,9 @@ const categoryIcons = new Map([
 ]);
 
 function SidebarContent({
-    filteredCount,
     onLinkClick,
     extraHeaderAction,
 }: {
-    filteredCount: number;
     onLinkClick?: () => void;
     extraHeaderAction?: React.ReactNode;
 }) {
@@ -112,7 +110,7 @@ function SidebarContent({
             </div>
 
             {/* Search */}
-            <SearchInput itemCount={filteredCount} />
+            <SearchInput />
 
             {/* Categories */}
             <div className="mt-6 flex flex-1 flex-col overflow-hidden">
@@ -167,7 +165,7 @@ function SidebarContent({
     );
 }
 
-export function Sidebar({ filteredCount }: { filteredCount: number }) {
+export function Sidebar() {
     const [isOpen, setIsOpen] = useState(false);
     const { tapNudge } = useHaptics();
 
@@ -233,7 +231,6 @@ export function Sidebar({ filteredCount }: { filteredCount: number }) {
                     style={{ transitionTimingFunction: "var(--ease-drawer)" }}
                 >
                     <SidebarContent
-                        filteredCount={filteredCount}
                         onLinkClick={() => setIsOpen(false)}
                         extraHeaderAction={
                             <button
@@ -250,7 +247,7 @@ export function Sidebar({ filteredCount }: { filteredCount: number }) {
 
             {/* Desktop Sidebar */}
             <aside className="hidden border-r border-neutral-200 bg-white md:fixed md:inset-y-0 md:flex md:w-[280px] dark:border-neutral-800 dark:bg-neutral-900">
-                <SidebarContent filteredCount={filteredCount} />
+                <SidebarContent />
             </aside>
         </>
     );

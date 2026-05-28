@@ -4,7 +4,7 @@ import { Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useHaptics } from "@/hooks/use-haptics";
 
-export function SearchInput({ itemCount }: { itemCount: number }) {
+export function SearchInput() {
     const searchParams = useSearchParams();
     const pathname = usePathname();
     const router = useRouter();
@@ -50,9 +50,6 @@ export function SearchInput({ itemCount }: { itemCount: number }) {
                     className="w-full rounded-lg border border-neutral-200 bg-neutral-50 py-2 pl-9 pr-3 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none transition-colors duration-200 focus:border-neutral-300 focus:bg-white dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:border-neutral-600 dark:focus:bg-neutral-800"
                 />
             </div>
-            <p className="mt-2 text-xs text-neutral-400 dark:text-neutral-500">
-                {itemCount} decisions
-            </p>
         </div>
     );
 }

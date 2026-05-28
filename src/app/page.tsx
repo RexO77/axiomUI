@@ -97,7 +97,7 @@ function HomeContent() {
 
   return (
     <div className="flex min-h-screen flex-col bg-neutral-50 md:flex-row dark:bg-neutral-950">
-      <Sidebar filteredCount={filteredRules.length} />
+      <Sidebar />
 
       <main id="main-content" tabIndex={-1} className="flex-1 md:pl-[280px]">
         <div className="mx-auto max-w-6xl space-y-8 px-3 py-5 sm:px-4 sm:py-7 md:space-y-12 md:px-12 md:py-8">
