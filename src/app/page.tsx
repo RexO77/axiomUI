@@ -99,13 +99,19 @@ function HomeContent() {
     <div className="flex min-h-screen flex-col bg-neutral-50 md:flex-row dark:bg-neutral-950">
       <Sidebar />
 
-      <main id="main-content" tabIndex={-1} className="flex-1 md:pl-[280px]">
-        <div className="mx-auto max-w-6xl space-y-8 px-3 py-5 sm:px-4 sm:py-7 md:space-y-12 md:px-12 md:py-8">
-          <Header />
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="flex-1"
+      >
+        <div className="main-lane-shell w-full space-y-8 px-3 py-5 sm:px-4 sm:py-7 md:space-y-12 md:py-8">
+          <div className="mx-auto w-full max-w-[920px]">
+            <Header />
+          </div>
 
           <section className="space-y-8 md:space-y-10" id="rulesContainer">
             {grouped.length === 0 ? (
-              <div className="glass reveal rounded-2xl p-10 text-center" style={{ "--delay": "40ms" } as CSSProperties}>
+              <div className="glass reveal mx-auto w-full max-w-[920px] rounded-2xl p-10 text-center" style={{ "--delay": "40ms" } as CSSProperties}>
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
                   <SearchX aria-hidden="true" className="h-7 w-7 text-neutral-400 dark:text-neutral-500" />
                 </div>
@@ -124,7 +130,7 @@ function HomeContent() {
                   <section
                     key={group.id}
                     id={group.id}
-                    className="reveal scroll-mt-10"
+                    className="reveal mx-auto w-full max-w-[920px] scroll-mt-10"
                     style={{ "--delay": `${delayIndex * 40}ms` } as CSSProperties}
                   >
                     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -147,7 +153,7 @@ function HomeContent() {
                       </span>
                     </div>
 
-                    <div className="mt-4 grid gap-4 md:mt-6 md:gap-6">
+                    <div className="mt-4 grid grid-cols-1 gap-4 md:mt-6 md:gap-6">
                       {group.rules.map((rule) => {
                         delayIndex += 1;
                         return (
@@ -167,7 +173,7 @@ function HomeContent() {
             )}
           </section>
 
-          <footer className="glass rounded-2xl p-8 text-center text-sm text-neutral-500 dark:text-neutral-400">
+          <footer className="glass mx-auto w-full max-w-[920px] rounded-2xl p-8 text-center text-sm text-neutral-500 dark:text-neutral-400">
             Built for consistency. Break rules only after mastering them.
           </footer>
         </div>
@@ -210,7 +216,7 @@ function HomeLoading() {
         </div>
       </aside>
 
-      <main className="flex-1 md:pl-[280px]">
+      <main className="flex-1">
         <div className="mx-auto max-w-5xl space-y-12 px-4 py-8 md:px-12">
           <div className="glass animate-pulse rounded-3xl p-8 md:p-12">
             <div className="h-8 w-48 rounded bg-neutral-200 dark:bg-neutral-800" />

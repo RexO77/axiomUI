@@ -168,6 +168,18 @@ code {
   contain-intrinsic-size: 0 320px;
 }
 
+@media (min-width: 768px) {
+  :root {
+    --main-lane-open-shift: clamp(0px, calc((100vw - 1064px) / 2), 156px);
+  }
+
+  .main-lane-shell {
+    padding-left: calc(1rem + (var(--main-lane-shift, var(--main-lane-open-shift)) * 2));
+    padding-right: 1rem;
+    transition: padding-left 260ms var(--ease-drawer);
+  }
+}
+
 @media (hover: hover) and (pointer: fine) {
   .rule-card:hover {
     transform: translateY(-2px);
