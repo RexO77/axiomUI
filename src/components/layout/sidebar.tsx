@@ -10,6 +10,8 @@ import {
     LayoutGrid,
     Menu,
     Palette,
+    PanelLeftClose,
+    PanelLeftOpen,
     TextCursorInput,
     Type,
     X,
@@ -33,10 +35,17 @@ const categoryIcons = new Map([
     ["accessibility", Eye],
 ]);
 
+const sidebarControlClass =
+    "pressable flex h-9 w-9 items-center justify-center rounded-xl border border-transparent text-neutral-500 transition-[transform,background-color,border-color,color] duration-150 hover:border-neutral-200 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:border-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-100";
+
 function SidebarContent({
+    isFloating = false,
+    showHeaderTheme = true,
     onLinkClick,
     extraHeaderAction,
 }: {
+    isFloating?: boolean;
+    showHeaderTheme?: boolean;
     onLinkClick?: () => void;
     extraHeaderAction?: React.ReactNode;
 }) {
@@ -104,7 +113,7 @@ function SidebarContent({
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <ThemeToggle />
+                    {showHeaderTheme ? <ThemeToggle /> : null}
                     {extraHeaderAction}
                 </div>
             </div>
@@ -158,7 +167,7 @@ function SidebarContent({
                 </nav>
             </div>
 
-            <div className="mt-4">
+            <div className={cn("mt-4", isFloating && "pb-1")}>
                 <SkillBonus />
             </div>
         </div>
@@ -167,6 +176,7 @@ function SidebarContent({
 
 export function Sidebar() {
     const [isOpen, setIsOpen] = useState(false);
+    const [isDesktopOpen, setIsDesktopOpen] = useState(true);
     const { tapNudge } = useHaptics();
 
     // Prevent body scroll when mobile menu is open
@@ -180,6 +190,17 @@ export function Sidebar() {
             document.body.style.overflow = "";
         };
     }, [isOpen]);
+
+    useEffect(() => {
+        document.documentElement.style.setProperty(
+            "--main-lane-shift",
+            isDesktopOpen ? "var(--main-lane-open-shift)" : "0px"
+        );
+
+        return () => {
+            document.documentElement.style.removeProperty("--main-lane-shift");
+        };
+    }, [isDesktopOpen]);
 
     return (
         <>
@@ -246,9 +267,58 @@ export function Sidebar() {
             </div>
 
             {/* Desktop Sidebar */}
-            <aside className="hidden border-r border-neutral-200 bg-white md:fixed md:inset-y-0 md:flex md:w-[280px] dark:border-neutral-800 dark:bg-neutral-900">
-                <SidebarContent />
-            </aside>
+            <div className="pointer-events-none fixed inset-y-0 left-0 z-[80] hidden w-[312px] md:block">
+                <button
+                    type="button"
+                    aria-label="Expand sidebar"
+                    aria-expanded={isDesktopOpen}
+                    aria-hidden={isDesktopOpen}
+                    tabIndex={isDesktopOpen ? -1 : 0}
+                    onClick={() => {
+                        tapNudge();
+                        setIsDesktopOpen(true);
+                    }}
+                    className={cn(
+                        sidebarControlClass,
+                        "absolute left-5 top-5 z-20 transform-gpu bg-white/95 shadow-[0_12px_34px_rgba(0,0,0,0.10)] transition-[opacity,transform,filter,background-color,border-color,color] duration-300 will-change-[opacity,transform,filter] dark:bg-neutral-900/95 dark:shadow-[0_14px_42px_rgba(0,0,0,0.35)]",
+                        isDesktopOpen
+                            ? "pointer-events-none translate-x-1 scale-[0.88] opacity-0 blur-[4px]"
+                            : "pointer-events-auto translate-x-0 scale-100 opacity-100 blur-0"
+                    )}
+                    style={{ transitionTimingFunction: "var(--ease-drawer)" }}
+                >
+                    <PanelLeftOpen aria-hidden="true" className="h-4.5 w-4.5" strokeWidth={1.8} />
+                </button>
+
+                <aside
+                    aria-hidden={!isDesktopOpen}
+                    className={cn(
+                        "absolute bottom-5 left-5 top-5 flex w-[280px] transform-gpu overflow-hidden rounded-[28px] border border-neutral-200/80 bg-white/95 shadow-[0_24px_80px_rgba(0,0,0,0.14)] transition-[opacity,transform,filter] duration-300 will-change-[opacity,transform,filter] dark:border-neutral-800/80 dark:bg-neutral-900/95 dark:shadow-[0_28px_90px_rgba(0,0,0,0.42)]",
+                        isDesktopOpen
+                            ? "pointer-events-auto translate-x-0 scale-100 opacity-100 blur-0"
+                            : "pointer-events-none -translate-x-2 scale-[0.985] opacity-0 blur-[2px]"
+                    )}
+                    style={{ transitionTimingFunction: "var(--ease-drawer)" }}
+                >
+                    <SidebarContent
+                        isFloating
+                        extraHeaderAction={
+                            <button
+                                type="button"
+                                aria-label="Collapse sidebar"
+                                aria-expanded={isDesktopOpen}
+                                onClick={() => {
+                                    tapNudge();
+                                    setIsDesktopOpen(false);
+                                }}
+                                className={sidebarControlClass}
+                            >
+                                <PanelLeftClose aria-hidden="true" className="h-4.5 w-4.5" strokeWidth={1.8} />
+                            </button>
+                        }
+                    />
+                </aside>
+            </div>
         </>
     );
 }
