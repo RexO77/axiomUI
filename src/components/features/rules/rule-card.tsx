@@ -16,26 +16,31 @@ interface RuleCardProps {
 export function RuleCard({ rule, activeRuleId, onDeepDive, style }: RuleCardProps) {
   const { tapSuccess } = useHaptics();
   return (
-    <article className="rule-card glass reveal rounded-2xl p-4 sm:p-5 md:p-6" style={style}>
-      <div className="flex flex-wrap items-start justify-between gap-3 md:gap-4">
-        <div className="min-w-0 max-w-2xl">
+    <article className="rule-card glass reveal w-full max-w-[920px] rounded-2xl p-4 sm:p-5" style={style}>
+      <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-start md:gap-4">
+        <div className="min-w-0">
           <h4 className="text-lg font-semibold leading-snug text-neutral-900 sm:text-xl dark:text-neutral-100">{rule.title}</h4>
           <p className="mt-2 text-sm leading-6 text-neutral-600 dark:text-neutral-300">{rule.desc}</p>
         </div>
-        <div className="flex flex-wrap gap-1.5 sm:gap-2">
-          {rule.tags.map((tag) => (
-            <span
-              key={`${rule.id}-${tag}`}
-              className="chip rounded-full px-2.5 py-1 text-[11px] font-medium text-neutral-600 dark:text-neutral-300"
-            >
-              {tag}
-            </span>
-          ))}
+        <div className="flex items-start md:justify-end">
+          <button
+            type="button"
+            onClick={() => {
+              if (rule.id !== activeRuleId) {
+                tapSuccess();
+                onDeepDive(rule.id);
+              }
+            }}
+            className="pressable inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-950 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:border-neutral-500 dark:hover:bg-neutral-900 dark:hover:text-neutral-50"
+          >
+            Learn more
+            <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" />
+          </button>
         </div>
       </div>
 
-      <div className="mt-5 grid gap-3 md:grid-cols-2 md:gap-4">
-        <section className="rounded-xl border border-neutral-200/80 bg-neutral-50/70 p-3.5 sm:p-4 dark:border-neutral-700/80 dark:bg-neutral-900/70">
+      <div className="mt-5 grid gap-3 md:grid-cols-2">
+        <section className="rounded-xl border border-neutral-200/80 bg-neutral-50/70 p-3 dark:border-neutral-700/80 dark:bg-neutral-900/70">
           <div className="flex items-center gap-2">
             <CheckCircle2 aria-hidden="true" className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
             <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-200">
@@ -50,7 +55,7 @@ export function RuleCard({ rule, activeRuleId, onDeepDive, style }: RuleCardProp
           </code>
         </section>
 
-        <section className="rounded-xl border border-neutral-200/80 bg-neutral-50/70 p-3.5 sm:p-4 dark:border-neutral-700/80 dark:bg-neutral-900/70">
+        <section className="rounded-xl border border-neutral-200/80 bg-neutral-50/70 p-3 dark:border-neutral-700/80 dark:bg-neutral-900/70">
           <div className="flex items-center gap-2">
             <XCircle aria-hidden="true" className="h-4 w-4 text-rose-600 dark:text-rose-300" />
             <span className="text-xs font-semibold text-rose-700 dark:text-rose-200">
@@ -64,24 +69,6 @@ export function RuleCard({ rule, activeRuleId, onDeepDive, style }: RuleCardProp
             {rule.dont}
           </code>
         </section>
-      </div>
-
-      <div className="soft-divider mt-5" />
-
-      <div className="mt-4 flex justify-end">
-        <button
-          type="button"
-          onClick={() => {
-            if (rule.id !== activeRuleId) {
-              tapSuccess();
-              onDeepDive(rule.id);
-            }
-          }}
-          className="pressable inline-flex w-full items-center justify-center gap-2 rounded-full border border-neutral-300 bg-white px-4 py-2.5 text-sm font-medium text-neutral-800 hover:border-neutral-400 hover:bg-neutral-50 sm:w-auto sm:py-2 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-100 dark:hover:border-neutral-500 dark:hover:bg-neutral-900"
-        >
-          Learn more
-          <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
-        </button>
       </div>
     </article>
   );
