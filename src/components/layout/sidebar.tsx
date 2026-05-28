@@ -43,6 +43,50 @@ function SidebarContent({
     extraHeaderAction?: React.ReactNode;
 }) {
     const { tapLight } = useHaptics();
+    const [activeCategoryId, setActiveCategoryId] = useState(categories[0]?.id ?? "");
+
+    useEffect(() => {
+        const categoryIds = categories.map((category) => category.id);
+
+        const syncFromHash = () => {
+            const hashId = window.location.hash.replace("#", "");
+            if (categoryIds.includes(hashId)) {
+                setActiveCategoryId(hashId);
+            }
+        };
+
+        syncFromHash();
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const visibleEntry = entries
+                    .filter((entry) => entry.isIntersecting)
+                    .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+                if (visibleEntry?.target.id) {
+                    setActiveCategoryId(visibleEntry.target.id);
+                }
+            },
+            {
+                rootMargin: "-18% 0px -65% 0px",
+                threshold: [0.12, 0.28, 0.45],
+            }
+        );
+
+        categoryIds.forEach((id) => {
+            const section = document.getElementById(id);
+            if (section) {
+                observer.observe(section);
+            }
+        });
+
+        window.addEventListener("hashchange", syncFromHash);
+
+        return () => {
+            observer.disconnect();
+            window.removeEventListener("hashchange", syncFromHash);
+        };
+    }, []);
 
     return (
         <div className="flex h-full flex-col p-4 sm:p-6">
@@ -76,25 +120,43 @@ function SidebarContent({
                     Categories
                 </p>
                 <nav className="sidebar-scroll mt-3 flex-1 space-y-0.5 overflow-y-auto">
-                    {categories.map((cat) => (
-                        <a
-                            key={cat.id}
-                            href={`#${cat.id}`}
-                            onClick={() => {
-                                tapLight();
-                                onLinkClick?.();
-                            }}
-                            className="pressable group flex items-center gap-3 rounded-lg px-2 py-2.5 text-sm text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
-                        >
-                            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-neutral-100 text-neutral-500 transition-colors duration-150 group-hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:group-hover:bg-neutral-700">
-                                {(() => {
-                                    const Icon = categoryIcons.get(cat.id) ?? Layers;
-                                    return <Icon aria-hidden="true" className="h-3.5 w-3.5" />;
-                                })()}
-                            </span>
-                            <span className="font-medium">{cat.name}</span>
-                        </a>
-                    ))}
+                    {categories.map((cat) => {
+                        const isActive = cat.id === activeCategoryId;
+
+                        return (
+                            <a
+                                key={cat.id}
+                                href={`#${cat.id}`}
+                                aria-current={isActive ? "true" : undefined}
+                                onClick={() => {
+                                    setActiveCategoryId(cat.id);
+                                    tapLight();
+                                    onLinkClick?.();
+                                }}
+                                className={cn(
+                                    "pressable group flex items-center gap-3 rounded-lg px-2 py-2.5 text-sm transition-colors duration-150",
+                                    isActive
+                                        ? "bg-neutral-100 text-neutral-950 shadow-[inset_0_0_0_1px_rgba(23,23,23,0.08)] dark:bg-neutral-800 dark:text-neutral-50 dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+                                        : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
+                                )}
+                            >
+                                <span
+                                    className={cn(
+                                        "flex h-7 w-7 items-center justify-center rounded-md transition-colors duration-150",
+                                        isActive
+                                            ? "bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100"
+                                            : "bg-neutral-100 text-neutral-500 group-hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:group-hover:bg-neutral-700"
+                                    )}
+                                >
+                                    {(() => {
+                                        const Icon = categoryIcons.get(cat.id) ?? Layers;
+                                        return <Icon aria-hidden="true" className="h-3.5 w-3.5" />;
+                                    })()}
+                                </span>
+                                <span className="font-medium">{cat.name}</span>
+                            </a>
+                        );
+                    })}
                 </nav>
             </div>
 
