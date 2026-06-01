@@ -6,6 +6,7 @@ import {
   X,
   XCircle,
 } from "lucide-react";
+import type { CSSProperties } from "react";
 import { Drawer } from "vaul";
 import { RulePreview } from "@/components/features/rules/rule-preview";
 import type { DeepDiveSection, Rule } from "@/data/ui-logic";
@@ -34,6 +35,10 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
 
   return (
     <Drawer.Root
+      direction="right"
+      modal={false}
+      noBodyStyles
+      disablePreventScroll
       open={isOpen}
       onOpenChange={(open) => {
         if (!open && activeRuleId) {
@@ -43,23 +48,21 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
       }}
     >
       <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 bg-neutral-950/50 backdrop-blur-[1px] dark:bg-black/60" />
-        <Drawer.Content className="fixed inset-x-0 bottom-0 z-50 h-[96dvh] overscroll-contain rounded-t-[24px] border border-neutral-200 bg-neutral-50 outline-none sm:h-[94vh] dark:border-neutral-800 dark:bg-neutral-950">
-          <div className="mx-auto flex h-full w-full max-w-6xl flex-col px-4 pb-5 sm:pb-7 md:px-8">
+        <Drawer.Content
+          className="fixed inset-y-0 right-0 z-[70] flex w-full overscroll-contain p-0 outline-none xl:inset-y-6 xl:right-6 xl:w-[min(40vw,480px)]"
+          style={{ "--initial-transform": "100%" } as CSSProperties}
+        >
+          <div className="ml-auto flex h-full w-full flex-col overflow-hidden rounded-none border border-neutral-200/80 bg-white/95 shadow-[0_24px_80px_rgba(0,0,0,0.14)] xl:rounded-[28px] dark:border-neutral-800/80 dark:bg-neutral-900/95 dark:shadow-[0_28px_90px_rgba(0,0,0,0.42)]">
             <Drawer.Title className="sr-only">{activeRule?.title ?? "Rule details"}</Drawer.Title>
 
-            <div className="flex justify-center py-3 sm:py-4">
-              <Drawer.Handle className="h-1.5 w-14 rounded-full bg-neutral-300 dark:bg-neutral-600" />
-            </div>
-
-            <div className="drawer-scroll flex-1 overflow-y-auto pb-3">
+            <div className="drawer-scroll flex-1 overflow-y-auto px-5 pb-8 sm:px-7">
               {activeRule ? (
-                <div className="mx-auto max-w-5xl space-y-10 pb-12 sm:space-y-12 lg:pb-14">
+                <div key={activeRule.id} className="rule-drawer-content space-y-10 pt-6 pb-12 sm:space-y-12 sm:pt-8 lg:pb-14">
                   <Drawer.Description className="sr-only">
                     {summary}
                   </Drawer.Description>
 
-                  <header className="relative pt-3 sm:pt-5">
+                  <header className="rule-drawer-stagger relative">
                     <Drawer.Close className="absolute right-0 top-0 inline-flex h-10 w-10 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100">
                       <X aria-hidden="true" className="h-4 w-4" />
                       <span className="sr-only">Close</span>
@@ -75,9 +78,9 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
                     </div>
                   </header>
 
-                  <div className="grid gap-10 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:gap-12">
-                    <section className="space-y-10">
-                      <div className="grid gap-x-8 gap-y-8 md:grid-cols-2">
+                  <div className="grid gap-10">
+                    <section className="rule-drawer-stagger space-y-10">
+                      <div className="grid gap-x-8 gap-y-8">
                         <article>
                           <div className="flex items-center gap-2">
                             <CheckCircle2 aria-hidden="true" className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
@@ -128,7 +131,7 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
                       ) : null}
                     </section>
 
-                    <aside className="space-y-9 lg:pl-4">
+                    <aside className="rule-drawer-stagger space-y-9">
                       {whyItMatters ? (
                         <article>
                           <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">Why it works</p>

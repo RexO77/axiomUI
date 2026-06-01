@@ -192,13 +192,19 @@ export function Sidebar() {
     }, [isOpen]);
 
     useEffect(() => {
-        document.documentElement.style.setProperty(
+        const root = document.documentElement;
+        root.style.setProperty(
             "--main-lane-shift",
             isDesktopOpen ? "var(--main-lane-open-shift)" : "0px"
         );
+        // Expose open/closed as a 0/1 flag so the content lane can reserve
+        // sidebar clearance only when it's actually open (the shift amount
+        // alone can't tell open-on-wide-screen apart from closed).
+        root.style.setProperty("--sidebar-open", isDesktopOpen ? "1" : "0");
 
         return () => {
-            document.documentElement.style.removeProperty("--main-lane-shift");
+            root.style.removeProperty("--main-lane-shift");
+            root.style.removeProperty("--sidebar-open");
         };
     }, [isDesktopOpen]);
 

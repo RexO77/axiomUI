@@ -104,7 +104,10 @@ function HomeContent() {
         tabIndex={-1}
         className="flex-1"
       >
-        <div className="main-lane-shell w-full space-y-8 px-3 py-5 sm:px-4 sm:py-7 md:space-y-12 md:py-8">
+        <div
+          className="main-lane-shell w-full space-y-8 px-3 py-5 sm:px-4 sm:py-7 md:space-y-12 md:py-8"
+          data-drawer-open={activeRuleId ? "true" : undefined}
+        >
           <div className="mx-auto w-full max-w-[920px]">
             <Header />
           </div>

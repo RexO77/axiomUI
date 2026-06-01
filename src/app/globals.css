@@ -170,13 +170,63 @@ code {
 
 @media (min-width: 768px) {
   :root {
-    --main-lane-open-shift: clamp(0px, calc((100vw - 1064px) / 2), 156px);
+    /*
+     * Push content right ONLY enough to clear the floating sidebar, and only
+     * on narrower screens. As the viewport widens the content clears the
+     * sidebar on its own, so the shift falls to 0 and the lane simply centers
+     * — the sidebar floats over the empty left margin. (Derived from a ~40px
+     * gutter past the sidebar's ~300px right edge.)
+     */
+    --main-lane-open-shift: clamp(0px, calc((1600px - 100vw) / 2), 156px);
+    --lane-content: 920px;
+    --lane-gap: 28px;
+    /* Distance the lane must clear past the sidebar's right edge when open. */
+    --sidebar-clearance: 312px;
   }
 
   .main-lane-shell {
-    padding-left: calc(1rem + (var(--main-lane-shift, var(--main-lane-open-shift)) * 2));
-    padding-right: 1rem;
-    transition: padding-left 260ms var(--ease-drawer);
+    --lane-pad-left: calc(1rem + (var(--main-lane-shift, var(--main-lane-open-shift)) * 2));
+    --lane-pad-right: 1rem;
+    padding-left: var(--lane-pad-left);
+    padding-right: var(--lane-pad-right);
+    transition: padding-left 360ms var(--ease-drawer),
+      padding-right 360ms var(--ease-drawer);
+    will-change: padding-left, padding-right;
+  }
+}
+
+/*
+ * The drawer is a docked side panel only at xl+ (>=1280px). Below that it
+ * renders full-screen, so the content lane needs no right reservation and
+ * keeps its normal sidebar-aware padding.
+ */
+@media (min-width: 1280px) {
+  :root {
+    /* Panel width (min(40vw,480px)) + edge inset (1.5rem) at xl. */
+    --drawer-footprint: 504px;
+  }
+
+  .main-lane-shell[data-drawer-open="true"] {
+    /*
+     * Left: hold full sidebar clearance whenever the sidebar is open, so the
+     * lane can never slide under it even when the right reservation shrinks
+     * the lane below the content width. Falls to 1rem when the sidebar is
+     * closed. (--sidebar-open is a 0/1 flag set by the sidebar.)
+     */
+    --lane-pad-left: calc(1rem + (var(--sidebar-open, 0) * var(--sidebar-clearance)));
+    /*
+     * Right: reserve just enough to clear the panel. The middle term scales
+     * the shift to the actual collision (wide screens barely move); the upper
+     * bound (footprint + gap) guarantees clearance without over-squeezing.
+     */
+    --lane-pad-right: clamp(
+      1rem,
+      calc(
+        var(--lane-pad-left) + var(--lane-content) +
+          (var(--drawer-footprint) * 2) + (var(--lane-gap) * 2) - 100vw
+      ),
+      calc(var(--drawer-footprint) + var(--lane-gap))
+    );
   }
 }
 
@@ -269,6 +319,39 @@ code {
 
 .drawer-scroll::-webkit-scrollbar {
   display: none;
+}
+
+.rule-drawer-stagger {
+  opacity: 0;
+  transform: translateY(8px);
+  filter: blur(6px);
+  animation: rule-drawer-rise 420ms cubic-bezier(0.2, 0, 0, 1) forwards;
+  will-change: opacity, transform, filter;
+}
+
+.rule-drawer-content > .rule-drawer-stagger:nth-child(1) { animation-delay: 0ms; }
+.rule-drawer-content > .rule-drawer-stagger:nth-child(2) .rule-drawer-stagger,
+.rule-drawer-content > .rule-drawer-stagger:nth-child(2) {
+  animation-delay: 80ms;
+}
+.rule-drawer-content > div > .rule-drawer-stagger:nth-child(1) { animation-delay: 80ms; }
+.rule-drawer-content > div > .rule-drawer-stagger:nth-child(2) { animation-delay: 160ms; }
+
+@keyframes rule-drawer-rise {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rule-drawer-stagger {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
 }
 
 .skill-modal-root {
