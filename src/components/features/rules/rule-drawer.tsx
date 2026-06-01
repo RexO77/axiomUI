@@ -49,7 +49,7 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
     >
       <Drawer.Portal>
         <Drawer.Content
-          className="fixed inset-y-0 right-0 z-[70] flex w-full overscroll-contain p-0 outline-none xl:inset-y-6 xl:right-6 xl:w-[min(40vw,480px)]"
+          className="fixed inset-y-0 right-0 z-[90] flex w-full overscroll-contain p-0 outline-none xl:inset-y-6 xl:right-6 xl:w-[min(40vw,480px)]"
           style={{ "--initial-transform": "100%" } as CSSProperties}
         >
           <div className="ml-auto flex h-full w-full flex-col overflow-hidden rounded-none border border-neutral-200/80 bg-white/95 shadow-[0_24px_80px_rgba(0,0,0,0.14)] xl:rounded-[28px] dark:border-neutral-800/80 dark:bg-neutral-900/95 dark:shadow-[0_28px_90px_rgba(0,0,0,0.42)]">
