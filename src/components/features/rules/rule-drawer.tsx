@@ -192,11 +192,17 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
                   </div>
                 </div>
               ) : (
-                <div className="mx-auto mt-16 max-w-xl rounded-2xl border border-neutral-200 bg-white p-10 text-center dark:border-neutral-800 dark:bg-neutral-900">
-                  <h3 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-50">Select a Rule</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">
-                    Open a rule card to view implementation guidance and visual comparisons.
-                  </p>
+                <div className="relative pt-6">
+                  <Drawer.Close className="absolute right-0 top-0 inline-flex h-10 w-10 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100 dark:focus-visible:ring-neutral-500">
+                    <X aria-hidden="true" className="h-5 w-5" />
+                    <span className="sr-only">Close</span>
+                  </Drawer.Close>
+                  <div className="mx-auto mt-16 max-w-xl rounded-2xl border border-neutral-200 bg-white p-10 text-center dark:border-neutral-800 dark:bg-neutral-900">
+                    <h3 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-50">Select a Rule</h3>
+                    <p className="mt-3 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">
+                      Open a rule card to view implementation guidance and visual comparisons.
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
