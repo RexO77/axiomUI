@@ -21,6 +21,19 @@ interface RuleDrawerProps {
   onClose: () => void;
 }
 
+// Single source of truth for the icon-only close control so focus, size, and
+// label stay in sync across the loaded and empty states.
+function DrawerCloseButton({ className = "" }: { className?: string }) {
+  return (
+    <Drawer.Close
+      className={`inline-flex h-10 w-10 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100 dark:focus-visible:ring-neutral-500 ${className}`}
+    >
+      <X aria-hidden="true" className="h-5 w-5" />
+      <span className="sr-only">Close</span>
+    </Drawer.Close>
+  );
+}
+
 export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProps) {
   const { tapMedium } = useHaptics();
   const activeDeepDive = activeRule ? buildDeepDive(activeRule) : [];
@@ -85,10 +98,7 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
                   </Drawer.Description>
 
                   <header className="rule-drawer-stagger relative">
-                    <Drawer.Close className="absolute right-0 top-0 inline-flex h-10 w-10 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100 dark:focus-visible:ring-neutral-500">
-                      <X aria-hidden="true" className="h-5 w-5" />
-                      <span className="sr-only">Close</span>
-                    </Drawer.Close>
+                    <DrawerCloseButton className="absolute right-0 top-0" />
 
                     <div className="max-w-3xl pr-12">
                       <h3 className="text-3xl font-semibold leading-tight text-neutral-900 sm:text-4xl dark:text-neutral-50">
@@ -136,7 +146,7 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
 
                       {implementationNotes.length > 0 ? (
                         <article>
-                          <h4 className="drawer-label text-xs font-semibold text-neutral-600 dark:text-neutral-400">
+                          <h4 className="drawer-label text-xs font-semibold text-neutral-600 dark:text-neutral-300">
                             How to apply it
                           </h4>
                           <ol className="mt-5 space-y-4">
@@ -156,7 +166,7 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
                     <aside className="rule-drawer-stagger space-y-9">
                       {whyItMatters ? (
                         <article>
-                          <h4 className="drawer-label text-xs font-semibold text-neutral-600 dark:text-neutral-400">Why it works</h4>
+                          <h4 className="drawer-label text-xs font-semibold text-neutral-600 dark:text-neutral-300">Why it works</h4>
                           <p className="mt-4 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">{whyItMatters}</p>
                         </article>
                       ) : null}
@@ -175,7 +185,7 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
 
                       {reviewPrompts.length > 0 ? (
                         <article>
-                          <h4 className="drawer-label text-xs font-semibold text-neutral-600 dark:text-neutral-400">Review questions</h4>
+                          <h4 className="drawer-label text-xs font-semibold text-neutral-600 dark:text-neutral-300">Review questions</h4>
                           <ol className="mt-4 space-y-4">
                             {reviewPrompts.map((item, index) => (
                               <li key={`${item}-${index}`} className="flex gap-4">
@@ -193,15 +203,16 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
                 </div>
               ) : (
                 <div className="relative pt-6">
-                  <Drawer.Close className="absolute right-0 top-0 inline-flex h-10 w-10 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100 dark:focus-visible:ring-neutral-500">
-                    <X aria-hidden="true" className="h-5 w-5" />
-                    <span className="sr-only">Close</span>
-                  </Drawer.Close>
+                  <DrawerCloseButton className="absolute right-0 top-0" />
                   <div className="mx-auto mt-16 max-w-xl rounded-2xl border border-neutral-200 bg-white p-10 text-center dark:border-neutral-800 dark:bg-neutral-900">
                     <h3 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-50">Select a Rule</h3>
                     <p className="mt-3 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">
                       Open a rule card to view implementation guidance and visual comparisons.
                     </p>
+                    <Drawer.Close className="mt-6 inline-flex items-center gap-1.5 rounded-full bg-neutral-100 px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 dark:focus-visible:ring-neutral-500">
+                      <X aria-hidden="true" className="h-3.5 w-3.5" />
+                      Close panel
+                    </Drawer.Close>
                   </div>
                 </div>
               )}
