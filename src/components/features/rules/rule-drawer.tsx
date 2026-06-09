@@ -7,6 +7,7 @@ import {
   XCircle,
 } from "lucide-react";
 import type { CSSProperties } from "react";
+import { useEffect } from "react";
 import { Drawer } from "vaul";
 import { RulePreview } from "@/components/features/rules/rule-preview";
 import type { DeepDiveSection, Rule } from "@/data/ui-logic";
@@ -24,6 +25,27 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
   const { tapMedium } = useHaptics();
   const activeDeepDive = activeRule ? buildDeepDive(activeRule) : [];
   const isOpen = Boolean(activeRuleId);
+
+  // Vaul doesn't forward modal={false} to its underlying Radix Dialog, so the
+  // dismissable layer locks the page with `body { pointer-events: none }` every
+  // time the drawer opens — which kills clicks on the rule cards, so you can't
+  // click another card to switch the panel. Vaul's own reset only runs once on
+  // mount, so it never fires on later opens. Keep the body interactive while the
+  // (non-modal) drawer is open, re-asserting if Radix re-applies the lock.
+  useEffect(() => {
+    if (!isOpen) return;
+    const body = document.body;
+    const unlock = () => {
+      if (body.style.pointerEvents === "none") body.style.pointerEvents = "";
+    };
+    unlock();
+    const observer = new MutationObserver(unlock);
+    observer.observe(body, { attributes: true, attributeFilter: ["style"] });
+    return () => {
+      observer.disconnect();
+      body.style.pointerEvents = "";
+    };
+  }, [isOpen]);
 
   const summary = findTextSection(activeDeepDive, "Summary") ?? activeRule?.desc ?? "";
   const whyItMatters = findTextSection(activeDeepDive, "Why it matters");
