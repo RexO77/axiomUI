@@ -355,6 +355,15 @@ code {
   }
 }
 
+/*
+ * The drawer's section labels are real <h4> headings (for screen-reader
+ * outline), but globals forces all headings to the serif display face. These
+ * are small sans metadata labels, so restore the body sans face for them.
+ */
+.drawer-label {
+  font-family: var(--font-manrope), sans-serif;
+}
+
 .skill-modal-root {
   --skill-modal-open-duration: 360ms;
   --skill-modal-close-duration: 220ms;
