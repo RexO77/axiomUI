@@ -86,7 +86,7 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
 
                   <header className="rule-drawer-stagger relative">
                     <Drawer.Close className="absolute right-0 top-0 inline-flex h-10 w-10 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100">
-                      <X aria-hidden="true" className="h-4 w-4" />
+                      <X aria-hidden="true" className="h-5 w-5" />
                       <span className="sr-only">Close</span>
                     </Drawer.Close>
 
@@ -106,7 +106,7 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
                         <article>
                           <div className="flex items-center gap-2">
                             <CheckCircle2 aria-hidden="true" className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
-                            <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-200">
+                            <p role="heading" aria-level={4} className="text-xs font-semibold text-emerald-700 dark:text-emerald-200">
                               Recommended
                             </p>
                           </div>
@@ -121,14 +121,14 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
                         <article>
                           <div className="flex items-center gap-2">
                             <XCircle aria-hidden="true" className="h-4 w-4 text-rose-600 dark:text-rose-300" />
-                            <p className="text-xs font-semibold text-rose-700 dark:text-rose-200">
+                            <p role="heading" aria-level={4} className="text-xs font-semibold text-rose-700 dark:text-rose-200">
                               Avoid
                             </p>
                           </div>
                           <div className="mt-5">
                             <RulePreview rule={activeRule} variant="dont" size="lg" />
                           </div>
-                          <p className="mt-4 font-mono text-sm leading-6 text-neutral-500 dark:text-neutral-500">
+                          <p className="mt-4 font-mono text-sm leading-6 text-neutral-500 dark:text-neutral-400">
                             {avoid}
                           </p>
                         </article>
@@ -136,7 +136,7 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
 
                       {implementationNotes.length > 0 ? (
                         <article>
-                          <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
+                          <p role="heading" aria-level={4} className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
                             How to apply it
                           </p>
                           <ol className="mt-5 space-y-4">
@@ -156,7 +156,7 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
                     <aside className="rule-drawer-stagger space-y-9">
                       {whyItMatters ? (
                         <article>
-                          <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">Why it works</p>
+                          <p role="heading" aria-level={4} className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">Why it works</p>
                           <p className="mt-4 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">{whyItMatters}</p>
                         </article>
                       ) : null}
@@ -165,7 +165,7 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
                         <article>
                           <div className="flex items-center gap-2">
                             <AlertTriangle aria-hidden="true" className="h-4 w-4 text-amber-700 dark:text-amber-300" />
-                            <p className="text-xs font-semibold text-amber-800 dark:text-amber-200">
+                            <p role="heading" aria-level={4} className="text-xs font-semibold text-amber-800 dark:text-amber-200">
                               What breaks
                             </p>
                           </div>
@@ -175,7 +175,7 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
 
                       {reviewPrompts.length > 0 ? (
                         <article>
-                          <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">Review questions</p>
+                          <p role="heading" aria-level={4} className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">Review questions</p>
                           <ol className="mt-4 space-y-4">
                             {reviewPrompts.map((item, index) => (
                               <li key={`${item}-${index}`} className="flex gap-4">
