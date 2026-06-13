@@ -106,7 +106,7 @@ export function CopyRuleButton({ rule, variant = "pill", className }: CopyRuleBu
         aria-label={ariaLabel}
         title="Copy rule"
         className={cn(
-          "pressable inline-flex h-10 w-10 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100",
+          "pressable inline-flex size-11 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100",
           className
         )}
       >

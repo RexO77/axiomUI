@@ -27,7 +27,7 @@ interface RuleDrawerProps {
 function DrawerCloseButton({ className = "" }: { className?: string }) {
   return (
     <Drawer.Close
-      className={`inline-flex h-10 w-10 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100 dark:focus-visible:ring-neutral-500 ${className}`}
+      className={`inline-flex size-11 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100 dark:focus-visible:ring-neutral-500 ${className}`}
     >
       <X aria-hidden="true" className="h-5 w-5" />
       <span className="sr-only">Close</span>
