@@ -94,6 +94,8 @@ export function CopyRuleButton({ rule, variant = "pill", className }: CopyRuleBu
   }
 
   const label = state === "copied" ? "Copied" : state === "error" ? "Retry" : "Copy";
+  const ariaLabel =
+    state === "copied" ? "Copied" : state === "error" ? "Copy failed, retry" : "Copy rule";
   const isCopied = state === "copied";
 
   if (variant === "icon") {
@@ -101,7 +103,7 @@ export function CopyRuleButton({ rule, variant = "pill", className }: CopyRuleBu
       <button
         type="button"
         onClick={() => void handleCopy()}
-        aria-label={isCopied ? "Copied" : "Copy rule"}
+        aria-label={ariaLabel}
         title="Copy rule"
         className={cn(
           "pressable inline-flex h-10 w-10 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100",
@@ -117,7 +119,7 @@ export function CopyRuleButton({ rule, variant = "pill", className }: CopyRuleBu
     <button
       type="button"
       onClick={() => void handleCopy()}
-      aria-label={isCopied ? "Copied" : "Copy rule"}
+      aria-label={ariaLabel}
       className={cn(
         "pressable relative inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 text-xs font-medium text-neutral-700 after:absolute after:inset-x-0 after:-inset-y-[6px] hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-950 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:border-neutral-500 dark:hover:bg-neutral-900 dark:hover:text-neutral-50",
         className

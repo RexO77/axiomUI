@@ -110,7 +110,7 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
                         <span aria-hidden="true" />
                       )}
                       <div className="flex shrink-0 items-center gap-1">
-                        <CopyRuleButton rule={activeRule} variant="icon" />
+                        <CopyRuleButton key={activeRule.id} rule={activeRule} variant="icon" />
                         <DrawerCloseButton />
                       </div>
                     </div>

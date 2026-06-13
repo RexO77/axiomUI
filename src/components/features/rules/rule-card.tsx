@@ -27,6 +27,7 @@ export function RuleCard({ rule, activeRuleId, onDeepDive, style }: RuleCardProp
           <CopyRuleButton rule={rule} />
           <button
             type="button"
+            aria-label={`Learn more about ${rule.title}`}
             onClick={() => {
               if (rule.id !== activeRuleId) {
                 tapSuccess();
