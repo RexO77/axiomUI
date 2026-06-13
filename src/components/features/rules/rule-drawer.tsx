@@ -10,6 +10,7 @@ import type { CSSProperties } from "react";
 import { useEffect } from "react";
 import { Drawer } from "vaul";
 import { RulePreview } from "@/components/features/rules/rule-preview";
+import { CopyRuleButton } from "@/components/features/rules/copy-rule-button";
 import type { DeepDiveSection, Rule } from "@/data/ui-logic";
 import { buildDeepDive } from "@/data/ui-logic";
 import { useHaptics } from "@/hooks/use-haptics";
@@ -26,7 +27,7 @@ interface RuleDrawerProps {
 function DrawerCloseButton({ className = "" }: { className?: string }) {
   return (
     <Drawer.Close
-      className={`inline-flex h-10 w-10 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100 dark:focus-visible:ring-neutral-500 ${className}`}
+      className={`inline-flex size-11 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100 dark:focus-visible:ring-neutral-500 ${className}`}
     >
       <X aria-hidden="true" className="h-5 w-5" />
       <span className="sr-only">Close</span>
@@ -34,7 +35,7 @@ function DrawerCloseButton({ className = "" }: { className?: string }) {
   );
 }
 
-export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProps) {
+export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClose }: RuleDrawerProps) {
   const { tapMedium } = useHaptics();
   const activeDeepDive = activeRule ? buildDeepDive(activeRule) : [];
   const isOpen = Boolean(activeRuleId);
@@ -92,33 +93,46 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
 
             <div className="drawer-scroll flex-1 overflow-y-auto px-5 pb-8 sm:px-7">
               {activeRule ? (
-                <div key={activeRule.id} className="rule-drawer-content space-y-10 pt-6 pb-12 sm:space-y-12 sm:pt-8 lg:pb-14">
+                <div className="rule-drawer-content space-y-10 pt-6 pb-12 sm:space-y-12 sm:pt-8 lg:pb-14">
                   <Drawer.Description className="sr-only">
                     {summary}
                   </Drawer.Description>
 
-                  <header className="rule-drawer-stagger relative">
-                    <DrawerCloseButton className="absolute right-0 top-0" />
-
-                    <div className="max-w-3xl pr-12">
-                      <h3 className="text-3xl font-semibold leading-tight text-neutral-900 sm:text-4xl dark:text-neutral-50">
-                        {activeRule.title}
-                      </h3>
-                      <p className="mt-5 text-base leading-7 text-neutral-600 sm:text-lg sm:leading-8 dark:text-neutral-300">
-                        {summary}
-                      </p>
+                  {/* Keyed by category so the header only re-animates when the
+                      category changes; switching rules within a category leaves it put. */}
+                  <header key={activeRule.category} className="rule-drawer-stagger">
+                    <div className="-mt-1 mb-3 flex items-center justify-between gap-3">
+                      {activeCategoryName ? (
+                        <p className="min-w-0 truncate text-sm font-medium text-neutral-500 dark:text-neutral-400">
+                          {activeCategoryName}
+                        </p>
+                      ) : (
+                        <span aria-hidden="true" />
+                      )}
+                      <div className="flex shrink-0 items-center gap-1">
+                        <CopyRuleButton key={activeRule.id} rule={activeRule} variant="icon" />
+                        <DrawerCloseButton />
+                      </div>
                     </div>
+                    <h2 className="text-2xl font-semibold leading-tight text-neutral-900 sm:text-3xl dark:text-neutral-50">
+                      {activeRule.title}
+                    </h2>
+                    <p className="mt-4 text-base leading-7 text-neutral-600 sm:leading-8 dark:text-neutral-300">
+                      {summary}
+                    </p>
                   </header>
 
-                  <div className="grid gap-10">
+                  {/* Keyed by rule so the body re-animates on every rule change,
+                      even when the header stays put within a category. */}
+                  <div key={activeRule.id} className="grid gap-10">
                     <section className="rule-drawer-stagger space-y-10">
                       <div className="grid gap-x-8 gap-y-8">
                         <article>
                           <div className="flex items-center gap-2">
                             <CheckCircle2 aria-hidden="true" className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
-                            <h4 className="drawer-label text-xs font-semibold text-emerald-800 dark:text-emerald-200">
+                            <h3 className="drawer-label text-xs font-semibold text-emerald-800 dark:text-emerald-200">
                               Recommended
-                            </h4>
+                            </h3>
                           </div>
                           <div className="mt-5">
                             <RulePreview rule={activeRule} variant="do" size="lg" />
@@ -131,9 +145,9 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
                         <article>
                           <div className="flex items-center gap-2">
                             <XCircle aria-hidden="true" className="h-4 w-4 text-rose-600 dark:text-rose-300" />
-                            <h4 className="drawer-label text-xs font-semibold text-rose-800 dark:text-rose-200">
+                            <h3 className="drawer-label text-xs font-semibold text-rose-800 dark:text-rose-200">
                               Avoid
-                            </h4>
+                            </h3>
                           </div>
                           <div className="mt-5">
                             <RulePreview rule={activeRule} variant="dont" size="lg" />
@@ -146,9 +160,9 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
 
                       {implementationNotes.length > 0 ? (
                         <article>
-                          <h4 className="drawer-label text-xs font-semibold text-neutral-600 dark:text-neutral-300">
+                          <h3 className="drawer-label text-xs font-semibold text-neutral-600 dark:text-neutral-300">
                             How to apply it
-                          </h4>
+                          </h3>
                           <ol className="mt-5 space-y-4">
                             {implementationNotes.map((item, index) => (
                               <li key={`${item}-${index}`} className="flex gap-4">
@@ -166,7 +180,7 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
                     <aside className="rule-drawer-stagger space-y-9">
                       {whyItMatters ? (
                         <article>
-                          <h4 className="drawer-label text-xs font-semibold text-neutral-600 dark:text-neutral-300">Why it works</h4>
+                          <h3 className="drawer-label text-xs font-semibold text-neutral-600 dark:text-neutral-300">Why it works</h3>
                           <p className="mt-4 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">{whyItMatters}</p>
                         </article>
                       ) : null}
@@ -175,9 +189,9 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
                         <article>
                           <div className="flex items-center gap-2">
                             <AlertTriangle aria-hidden="true" className="h-4 w-4 text-amber-700 dark:text-amber-300" />
-                            <h4 className="drawer-label text-xs font-semibold text-amber-800 dark:text-amber-200">
+                            <h3 className="drawer-label text-xs font-semibold text-amber-800 dark:text-amber-200">
                               What breaks
-                            </h4>
+                            </h3>
                           </div>
                           <p className="mt-4 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">{riskWhenIgnored}</p>
                         </article>
@@ -185,7 +199,7 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
 
                       {reviewPrompts.length > 0 ? (
                         <article>
-                          <h4 className="drawer-label text-xs font-semibold text-neutral-600 dark:text-neutral-300">Review questions</h4>
+                          <h3 className="drawer-label text-xs font-semibold text-neutral-600 dark:text-neutral-300">Review questions</h3>
                           <ol className="mt-4 space-y-4">
                             {reviewPrompts.map((item, index) => (
                               <li key={`${item}-${index}`} className="flex gap-4">

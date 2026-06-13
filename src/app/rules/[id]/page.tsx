@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, Check, X, Tag } from "lucide-react";
 import { AxiomLogo } from "@/components/ui/axiom-logo";
 import { RulePreview } from "@/components/features/rules/rule-preview";
+import { CopyRuleButton } from "@/components/features/rules/copy-rule-button";
 
 import { rules, categories, buildDeepDive } from "@/data/ui-logic";
 
@@ -133,8 +134,8 @@ export default async function RulePage({ params }: Props) {
                             {rule.desc}
                         </p>
 
-                        {/* Tags */}
-                        <div className="mt-6 flex flex-wrap gap-2">
+                        {/* Tags + Cite */}
+                        <div className="mt-6 flex flex-wrap items-center gap-2">
                             {rule.tags.map((tag) => (
                                 <span
                                     key={tag}
@@ -144,6 +145,7 @@ export default async function RulePage({ params }: Props) {
                                     {tag}
                                 </span>
                             ))}
+                            <CopyRuleButton rule={rule} className="ml-auto" />
                         </div>
                     </header>
 
