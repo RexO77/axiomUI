@@ -10,6 +10,7 @@ import type { CSSProperties } from "react";
 import { useEffect } from "react";
 import { Drawer } from "vaul";
 import { RulePreview } from "@/components/features/rules/rule-preview";
+import { CopyRuleButton } from "@/components/features/rules/copy-rule-button";
 import type { DeepDiveSection, Rule } from "@/data/ui-logic";
 import { buildDeepDive } from "@/data/ui-logic";
 import { useHaptics } from "@/hooks/use-haptics";
@@ -34,7 +35,7 @@ function DrawerCloseButton({ className = "" }: { className?: string }) {
   );
 }
 
-export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProps) {
+export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClose }: RuleDrawerProps) {
   const { tapMedium } = useHaptics();
   const activeDeepDive = activeRule ? buildDeepDive(activeRule) : [];
   const isOpen = Boolean(activeRuleId);
@@ -92,25 +93,38 @@ export function RuleDrawer({ activeRule, activeRuleId, onClose }: RuleDrawerProp
 
             <div className="drawer-scroll flex-1 overflow-y-auto px-5 pb-8 sm:px-7">
               {activeRule ? (
-                <div key={activeRule.id} className="rule-drawer-content space-y-10 pt-6 pb-12 sm:space-y-12 sm:pt-8 lg:pb-14">
+                <div className="rule-drawer-content space-y-10 pt-6 pb-12 sm:space-y-12 sm:pt-8 lg:pb-14">
                   <Drawer.Description className="sr-only">
                     {summary}
                   </Drawer.Description>
 
-                  <header className="rule-drawer-stagger relative">
-                    <DrawerCloseButton className="absolute right-0 top-0" />
-
-                    <div className="max-w-3xl pr-12">
-                      <h3 className="text-3xl font-semibold leading-tight text-neutral-900 sm:text-4xl dark:text-neutral-50">
-                        {activeRule.title}
-                      </h3>
-                      <p className="mt-5 text-base leading-7 text-neutral-600 sm:text-lg sm:leading-8 dark:text-neutral-300">
-                        {summary}
-                      </p>
+                  {/* Keyed by category so the header only re-animates when the
+                      category changes; switching rules within a category leaves it put. */}
+                  <header key={activeRule.category} className="rule-drawer-stagger">
+                    <div className="-mt-1 mb-3 flex items-center justify-between gap-3">
+                      {activeCategoryName ? (
+                        <p className="min-w-0 truncate text-sm font-medium text-neutral-500 dark:text-neutral-400">
+                          {activeCategoryName}
+                        </p>
+                      ) : (
+                        <span aria-hidden="true" />
+                      )}
+                      <div className="flex shrink-0 items-center gap-1">
+                        <CopyRuleButton rule={activeRule} variant="icon" />
+                        <DrawerCloseButton />
+                      </div>
                     </div>
+                    <h3 className="text-2xl font-semibold leading-tight text-neutral-900 sm:text-3xl dark:text-neutral-50">
+                      {activeRule.title}
+                    </h3>
+                    <p className="mt-4 text-base leading-7 text-neutral-600 sm:leading-8 dark:text-neutral-300">
+                      {summary}
+                    </p>
                   </header>
 
-                  <div className="grid gap-10">
+                  {/* Keyed by rule so the body re-animates on every rule change,
+                      even when the header stays put within a category. */}
+                  <div key={activeRule.id} className="grid gap-10">
                     <section className="rule-drawer-stagger space-y-10">
                       <div className="grid gap-x-8 gap-y-8">
                         <article>
