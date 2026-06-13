@@ -34,7 +34,7 @@ export function RuleCard({ rule, activeRuleId, onDeepDive, style }: RuleCardProp
                 onDeepDive(rule.id);
               }
             }}
-            className="pressable relative inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 text-xs font-medium text-neutral-700 after:absolute after:inset-x-0 after:-inset-y-[6px] hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-950 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:border-neutral-500 dark:hover:bg-neutral-900 dark:hover:text-neutral-50"
+            className="pressable relative inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 text-xs font-medium text-neutral-700 after:absolute after:inset-x-0 after:-inset-y-1.5 hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-950 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:border-neutral-500 dark:hover:bg-neutral-900 dark:hover:text-neutral-50"
           >
             Learn more
             <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" />

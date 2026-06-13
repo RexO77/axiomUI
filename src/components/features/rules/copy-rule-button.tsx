@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, Copy } from "lucide-react";
+import { AlertCircle, Check, Copy } from "lucide-react";
 import { categories, type Rule } from "@/data/ui-logic";
 import { useHaptics } from "@/hooks/use-haptics";
 import { cn } from "@/lib/utils";
@@ -97,6 +97,7 @@ export function CopyRuleButton({ rule, variant = "pill", className }: CopyRuleBu
   const ariaLabel =
     state === "copied" ? "Copied" : state === "error" ? "Copy failed, retry" : "Copy rule";
   const isCopied = state === "copied";
+  const isError = state === "error";
 
   if (variant === "icon") {
     return (
@@ -110,7 +111,7 @@ export function CopyRuleButton({ rule, variant = "pill", className }: CopyRuleBu
           className
         )}
       >
-        <CopyGlyph isCopied={isCopied} className="size-4" />
+        <CopyGlyph isCopied={isCopied} isError={isError} className="size-4" />
       </button>
     );
   }
@@ -121,17 +122,28 @@ export function CopyRuleButton({ rule, variant = "pill", className }: CopyRuleBu
       onClick={() => void handleCopy()}
       aria-label={ariaLabel}
       className={cn(
-        "pressable relative inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 text-xs font-medium text-neutral-700 after:absolute after:inset-x-0 after:-inset-y-[6px] hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-950 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:border-neutral-500 dark:hover:bg-neutral-900 dark:hover:text-neutral-50",
+        "pressable relative inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 text-xs font-medium text-neutral-700 after:absolute after:inset-x-0 after:-inset-y-1.5 hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-950 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:border-neutral-500 dark:hover:bg-neutral-900 dark:hover:text-neutral-50",
         className
       )}
     >
-      <CopyGlyph isCopied={isCopied} className="size-3.5" />
+      <CopyGlyph isCopied={isCopied} isError={isError} className="size-3.5" />
       {label}
     </button>
   );
 }
 
-function CopyGlyph({ isCopied, className }: { isCopied: boolean; className: string }) {
+function CopyGlyph({
+  isCopied,
+  isError,
+  className,
+}: {
+  isCopied: boolean;
+  isError: boolean;
+  className: string;
+}) {
+  // The base layer carries the resting icon and swaps to an alert on failure,
+  // so success and error are each distinguished by icon — not label text alone.
+  const BaseIcon = isError ? AlertCircle : Copy;
   return (
     <span className={cn("relative shrink-0", className)} aria-hidden="true">
       <span
@@ -145,10 +157,11 @@ function CopyGlyph({ isCopied, className }: { isCopied: boolean; className: stri
       <span
         className={cn(
           "flex items-center justify-center transition-[opacity,filter,scale] duration-300 ease-in-out will-change-[opacity,filter,scale]",
-          isCopied ? "blur-xs scale-[0.25] opacity-0" : "scale-100 opacity-100 blur-0"
+          isCopied ? "blur-xs scale-[0.25] opacity-0" : "scale-100 opacity-100 blur-0",
+          isError && "text-rose-600 dark:text-rose-300"
         )}
       >
-        <Copy className={className} />
+        <BaseIcon className={className} />
       </span>
     </span>
   );
