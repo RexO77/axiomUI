@@ -108,7 +108,7 @@ export function CopyRuleButton({ rule, variant = "pill", className }: CopyRuleBu
           className
         )}
       >
-        <CopyGlyph isCopied={isCopied} className="h-4 w-4" />
+        <CopyGlyph isCopied={isCopied} className="size-4" />
       </button>
     );
   }
@@ -119,11 +119,11 @@ export function CopyRuleButton({ rule, variant = "pill", className }: CopyRuleBu
       onClick={() => void handleCopy()}
       aria-label={isCopied ? "Copied" : "Copy rule"}
       className={cn(
-        "pressable inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 text-xs font-medium text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-950 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:border-neutral-500 dark:hover:bg-neutral-900 dark:hover:text-neutral-50",
+        "pressable relative inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 text-xs font-medium text-neutral-700 after:absolute after:inset-x-0 after:-inset-y-[6px] hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-950 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:border-neutral-500 dark:hover:bg-neutral-900 dark:hover:text-neutral-50",
         className
       )}
     >
-      <CopyGlyph isCopied={isCopied} className="h-3.5 w-3.5" />
+      <CopyGlyph isCopied={isCopied} className="size-3.5" />
       {label}
     </button>
   );
