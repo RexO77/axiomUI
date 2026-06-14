@@ -39,7 +39,7 @@ function DemoStage({
         hoverOnly,
     });
     return (
-        <div ref={ref} {...handlers} className="motion-demo">
+        <div ref={ref} {...handlers} className="motion-demo cursor-pointer">
             <PreviewFrame size={size}>
                 <div className="flex h-full flex-col justify-center gap-2">
                     {children({ settled, reducedMotion })}

@@ -117,6 +117,7 @@ export function MiniAvatar({ shape, size }: { shape: "circle" | "square"; size: 
 export function MiniSwitch({ on, size }: { on?: boolean; size: PreviewSize }) {
     return (
         <div
+            aria-hidden="true"
             className={cn(
                 "relative rounded-full",
                 size === "lg" ? "h-4 w-8" : "h-3.5 w-7",
@@ -137,6 +138,7 @@ export function MiniSwitch({ on, size }: { on?: boolean; size: PreviewSize }) {
 export function MiniCheckbox({ checked, size }: { checked?: boolean; size: PreviewSize }) {
     return (
         <div
+            aria-hidden="true"
             className={cn(
                 "flex items-center justify-center rounded-sm border",
                 size === "lg" ? "size-4" : "size-3.5",
@@ -153,6 +155,7 @@ export function MiniCheckbox({ checked, size }: { checked?: boolean; size: Previ
 export function MiniRadio({ checked, size }: { checked?: boolean; size: PreviewSize }) {
     return (
         <div
+            aria-hidden="true"
             className={cn(
                 "flex items-center justify-center rounded-full border",
                 size === "lg" ? "size-4" : "size-3.5",
@@ -169,6 +172,7 @@ export function MiniRadio({ checked, size }: { checked?: boolean; size: PreviewS
 export function MiniDot({ active, size }: { active?: boolean; size: PreviewSize }) {
     return (
         <span
+            aria-hidden="true"
             className={cn(
                 "rounded-full",
                 size === "lg" ? "size-2.5" : "size-2",
