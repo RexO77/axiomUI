@@ -161,7 +161,7 @@ export default async function RulePage({ params }: Props) {
                                 </span>
                             </div>
                             <div className="mb-3">
-                                <RulePreview rule={rule} variant="do" size="lg" />
+                                <RulePreview rule={rule} variant="do" size="lg" animate />
                             </div>
                             <p className="font-mono text-sm text-neutral-900 dark:text-neutral-100">
                                 {rule.do}
@@ -178,7 +178,7 @@ export default async function RulePage({ params }: Props) {
                                 </span>
                             </div>
                             <div className="mb-3">
-                                <RulePreview rule={rule} variant="dont" size="lg" />
+                                <RulePreview rule={rule} variant="dont" size="lg" animate />
                             </div>
                             <p className="font-mono text-sm text-neutral-900 dark:text-neutral-100">
                                 {rule.dont}
