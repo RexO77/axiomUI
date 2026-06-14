@@ -211,8 +211,10 @@ export function MiniPlayCircle({ nudge }: { nudge: boolean }) {
     return (
         <div className="relative h-12 w-12 rounded-full border border-neutral-300 dark:border-neutral-700">
             <span
-                className="absolute left-1/2 top-1/2 block h-0 w-0 -translate-x-1/2 -translate-y-1/2 border-y-[6px] border-y-transparent border-l-[10px] border-l-neutral-700 dark:border-l-neutral-200"
-                style={nudge ? { left: "calc(50% + 1px)" } : undefined}
+                className={cn(
+                    "absolute top-1/2 block h-0 w-0 -translate-x-1/2 -translate-y-1/2 border-y-[6px] border-y-transparent border-l-[10px] border-l-neutral-700 dark:border-l-neutral-200",
+                    nudge ? "left-[calc(50%_+_1px)]" : "left-1/2"
+                )}
             />
         </div>
     );

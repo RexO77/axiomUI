@@ -31,7 +31,7 @@ function DemoStage({
                 <div className="flex h-full flex-col justify-center gap-2">
                     {children({ settled })}
                     {caption ? (
-                        <span className={cn("text-neutral-500 dark:text-neutral-400", textClass(size))}>{caption}</span>
+                        <span className={cn("text-neutral-600 dark:text-neutral-300", textClass(size))}>{caption}</span>
                     ) : null}
                 </div>
             </PreviewFrame>
@@ -51,6 +51,7 @@ export function ColorHoverDemo({ variant, size }: DemoProps) {
             {({ settled }) => (
                 <div className="flex justify-center">
                     <span
+                        aria-hidden="true"
                         className={cn(
                             "inline-flex items-center justify-center rounded-md font-semibold text-white will-change-[background-color]",
                             size === "lg" ? "px-3 py-1.5 text-xs" : "px-2.5 py-1 text-[10px]"
@@ -81,7 +82,7 @@ export function LoadingButtonDemo({ variant, size }: DemoProps) {
             <DemoStage size={size} caption="stays clickable (double-submit)">
                 {() => (
                     <div className="flex justify-center">
-                        <span className={cn("inline-flex items-center justify-center rounded-md bg-neutral-900 font-semibold text-white dark:bg-neutral-100 dark:text-neutral-900", pad)}>
+                        <span aria-hidden="true" className={cn("inline-flex items-center justify-center rounded-md bg-neutral-900 font-semibold text-white dark:bg-neutral-100 dark:text-neutral-900", pad)}>
                             Submit
                         </span>
                     </div>
@@ -94,6 +95,7 @@ export function LoadingButtonDemo({ variant, size }: DemoProps) {
             {({ settled }) => (
                 <div className="flex justify-center">
                     <span
+                        aria-hidden="true"
                         className={cn(
                             "relative inline-flex items-center justify-center rounded-md font-semibold will-change-[background-color]",
                             pad
