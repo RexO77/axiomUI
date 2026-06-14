@@ -2,17 +2,41 @@ import type { ReactNode } from "react";
 
 import type { Rule } from "@/data/ui-logic";
 import { cn } from "@/lib/utils";
-
-type Variant = "do" | "dont";
-type PreviewSize = "sm" | "lg";
+import {
+    MiniAvatar,
+    MiniBlock,
+    MiniButton,
+    MiniCheckbox,
+    MiniDot,
+    MiniInput,
+    MiniLabel,
+    MiniLine,
+    MiniPill,
+    MiniPlayCircle,
+    MiniRadio,
+    MiniSwitch,
+    PreviewFrame,
+    textClass,
+    type PreviewSize,
+    type Variant,
+} from "@/components/features/rules/preview-primitives";
+import { motionDemos } from "@/components/features/rules/demos/registry";
 
 interface RulePreviewProps {
     rule: Rule;
     variant: Variant;
     size?: PreviewSize;
+    animate?: boolean;
 }
 
-export function RulePreview({ rule, variant, size = "sm" }: RulePreviewProps) {
+export function RulePreview({ rule, variant, size = "sm", animate = false }: RulePreviewProps) {
+    if (animate) {
+        const Demo = motionDemos[rule.id];
+        if (Demo) {
+            return <Demo variant={variant} size={size} />;
+        }
+    }
+
     const preview = getRulePreview(rule.id, variant, size);
     if (preview) {
         return preview;
@@ -1861,214 +1885,3 @@ function GenericPreview({ label, size }: { label: string; size: PreviewSize }) {
     );
 }
 
-function PreviewFrame({
-    children,
-    size,
-    className,
-}: {
-    children: ReactNode;
-    size: PreviewSize;
-    className?: string;
-}) {
-    return (
-        <div
-            aria-hidden="true"
-            className={cn(
-                "relative overflow-hidden rounded-lg border border-neutral-200 bg-white text-neutral-700 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200",
-                size === "lg" ? "min-h-[96px] p-3 text-xs" : "min-h-[54px] p-2 text-[10px] sm:min-h-[64px]",
-                className
-            )}
-        >
-            {children}
-        </div>
-    );
-}
-
-function MiniButton({
-    label,
-    variant,
-    size,
-    className,
-}: {
-    label: string;
-    variant: "primary" | "secondary" | "ghost" | "danger" | "disabled";
-    size: PreviewSize;
-    className?: string;
-}) {
-    return (
-        <span
-            className={cn(
-                "inline-flex max-w-full items-center justify-center truncate rounded-md font-semibold",
-                size === "lg" ? "px-3 py-1.5 text-xs" : "px-2.5 py-1 text-[10px]",
-                variant === "primary" && "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900",
-                variant === "secondary" &&
-                    "border border-neutral-300 text-neutral-700 dark:border-neutral-700 dark:text-neutral-200",
-                variant === "ghost" && "text-neutral-500 dark:text-neutral-400",
-                variant === "danger" && "bg-rose-600 text-white",
-                variant === "disabled" && "bg-neutral-200 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500",
-                className
-            )}
-        >
-            {label}
-        </span>
-    );
-}
-
-function MiniInput({ size, widthClass = "w-full" }: { size: PreviewSize; widthClass?: string }) {
-    return (
-        <div
-            className={cn(
-                "rounded-md border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900",
-                size === "lg" ? "h-6" : "h-5",
-                widthClass
-            )}
-        />
-    );
-}
-
-function MiniLabel({ label, size }: { label: string; size: PreviewSize }) {
-    return (
-        <span
-            className={cn(
-                "font-semibold text-neutral-500 dark:text-neutral-400",
-                size === "lg" ? "text-[10px]" : "text-[9px]"
-            )}
-        >
-            {label}
-        </span>
-    );
-}
-
-function MiniLine({
-    widthClass,
-    className,
-}: {
-    widthClass: string;
-    className?: string;
-}) {
-    return <div className={cn("h-2 rounded bg-neutral-200 dark:bg-neutral-800", widthClass, className)} />;
-}
-
-function MiniBlock({ className }: { className?: string }) {
-    return <div className={cn("h-4 w-4 rounded bg-neutral-300 dark:bg-neutral-700", className)} />;
-}
-
-function MiniAvatar({ shape, size }: { shape: "circle" | "square"; size: PreviewSize }) {
-    return (
-        <div
-            className={cn(
-                shape === "circle" ? "rounded-full" : "rounded-md",
-                size === "lg" ? "h-7 w-7" : "h-6 w-6",
-                "bg-neutral-300 dark:bg-neutral-700"
-            )}
-        />
-    );
-}
-
-function MiniSwitch({ on, size }: { on?: boolean; size: PreviewSize }) {
-    return (
-        <div
-            className={cn(
-                "relative rounded-full",
-                size === "lg" ? "h-4 w-8" : "h-3.5 w-7",
-                on ? "bg-neutral-900 dark:bg-neutral-100" : "bg-neutral-300 dark:bg-neutral-700"
-            )}
-        >
-            <span
-                className={cn(
-                    "absolute top-0.5 block rounded-full bg-white",
-                    size === "lg" ? "h-3 w-3" : "h-2.5 w-2.5",
-                    on ? "right-0.5" : "left-0.5"
-                )}
-            />
-        </div>
-    );
-}
-
-function MiniCheckbox({ checked, size }: { checked?: boolean; size: PreviewSize }) {
-    return (
-        <div
-            className={cn(
-                "flex items-center justify-center rounded-sm border",
-                size === "lg" ? "h-4 w-4" : "h-3.5 w-3.5",
-                checked
-                    ? "border-neutral-900 bg-neutral-900 text-white dark:border-neutral-100 dark:bg-neutral-100 dark:text-neutral-900"
-                    : "border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-900"
-            )}
-        >
-            {checked ? <span className="block h-1.5 w-1.5 rounded-sm bg-white dark:bg-neutral-900" /> : null}
-        </div>
-    );
-}
-
-function MiniRadio({ checked, size }: { checked?: boolean; size: PreviewSize }) {
-    return (
-        <div
-            className={cn(
-                "flex items-center justify-center rounded-full border",
-                size === "lg" ? "h-4 w-4" : "h-3.5 w-3.5",
-                checked
-                    ? "border-neutral-900 bg-neutral-900 dark:border-neutral-100 dark:bg-neutral-100"
-                    : "border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-900"
-            )}
-        >
-            {checked ? <div className="h-1.5 w-1.5 rounded-full bg-white dark:bg-neutral-900" /> : null}
-        </div>
-    );
-}
-
-function MiniDot({ active, size }: { active?: boolean; size: PreviewSize }) {
-    return (
-        <span
-            className={cn(
-                "rounded-full",
-                size === "lg" ? "h-2.5 w-2.5" : "h-2 w-2",
-                active ? "bg-neutral-900 dark:bg-neutral-100" : "bg-neutral-300 dark:bg-neutral-700"
-            )}
-        />
-    );
-}
-
-function MiniPill({
-    label,
-    size,
-    tone = "neutral",
-}: {
-    label: string;
-    size: PreviewSize;
-    tone?: "neutral" | "accent" | "danger" | "success";
-}) {
-    return (
-        <span
-            className={cn(
-                "inline-flex items-center rounded-full border px-2 py-0.5 font-semibold",
-                size === "lg" ? "text-[10px]" : "text-[9px]",
-                tone === "neutral" &&
-                    "border-neutral-200 bg-neutral-100 text-neutral-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300",
-                tone === "accent" &&
-                    "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-300",
-                tone === "danger" &&
-                    "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-300",
-                tone === "success" &&
-                    "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300"
-            )}
-        >
-            {label}
-        </span>
-    );
-}
-
-function MiniPlayCircle({ nudge }: { nudge: boolean }) {
-    return (
-        <div className="relative h-12 w-12 rounded-full border border-neutral-300 dark:border-neutral-700">
-            <span
-                className="absolute left-1/2 top-1/2 block h-0 w-0 -translate-x-1/2 -translate-y-1/2 border-y-[6px] border-y-transparent border-l-[10px] border-l-neutral-700 dark:border-l-neutral-200"
-                style={nudge ? { left: "calc(50% + 1px)" } : undefined}
-            />
-        </div>
-    );
-}
-
-function textClass(size: PreviewSize) {
-    return size === "lg" ? "text-xs" : "text-[10px]";
-}

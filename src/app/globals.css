@@ -453,6 +453,18 @@ code {
     opacity: 1;
     transform: none;
   }
+
+  /*
+   * Motion-rule demos: kill movement only. The demos render their final/resting
+   * frame by default (the hook keeps `settled` true and never plays under reduced
+   * motion), so disabling transitions/animations lands them on that frame
+   * instantly — without overriding the inline transforms used for layout.
+   */
+  .motion-demo,
+  .motion-demo * {
+    transition: none !important;
+    animation: none !important;
+  }
 }
 
 .skip-link {
