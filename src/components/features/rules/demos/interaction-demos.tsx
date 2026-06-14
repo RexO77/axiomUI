@@ -44,8 +44,9 @@ function DemoStage({
 // Resting frame is the "hovered" colour; play transitions from the base blue.
 export function ColorHoverDemo({ variant, size }: DemoProps) {
     const isDo = variant === "do";
-    const base = "#2563eb"; // blue-600
-    const hovered = isDo ? "#1d4ed8" /* blue-700 */ : "#16a34a" /* green-600 */;
+    // Colours come from Tailwind tokens (not hardcoded hex) so the demo tracks
+    // the palette. do = same hue, darker; dont = a jarring hue jump.
+    const hoveredBg = isDo ? "bg-blue-700" : "bg-green-600";
     return (
         <DemoStage size={size} caption={isDo ? "blue-600 → blue-700" : "blue → green (hue jump)"}>
             {({ settled }) => (
@@ -53,14 +54,13 @@ export function ColorHoverDemo({ variant, size }: DemoProps) {
                     <span
                         aria-hidden="true"
                         className={cn(
-                            "inline-flex items-center justify-center rounded-md font-semibold text-white will-change-[background-color]",
-                            size === "lg" ? "px-3 py-1.5 text-xs" : "px-2.5 py-1 text-[10px]"
+                            "inline-flex items-center justify-center rounded-md font-semibold text-white transition-colors will-change-[background-color]",
+                            size === "lg" ? "px-3 py-1.5 text-xs" : "px-2.5 py-1 text-[10px]",
+                            settled ? hoveredBg : "bg-blue-600"
                         )}
                         style={{
-                            transitionProperty: "background-color",
                             transitionTimingFunction: "var(--ease-out-strong)",
                             transitionDuration: "var(--motion-medium)",
-                            backgroundColor: settled ? hovered : base,
                         }}
                     >
                         Hover me
