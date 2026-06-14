@@ -23,7 +23,12 @@ import {
     TransformOpacityDemo,
     WaapiDemo,
 } from "@/components/features/rules/demos/motion-demos";
-import { ColorHoverDemo } from "@/components/features/rules/demos/interaction-demos";
+import {
+    ColorHoverDemo,
+    LoadingButtonDemo,
+    OptimisticDemo,
+    SkeletonDemo,
+} from "@/components/features/rules/demos/interaction-demos";
 
 export type DemoProps = { variant: Variant; size: PreviewSize };
 
@@ -59,4 +64,7 @@ export const motionDemos: Record<string, ComponentType<DemoProps>> = {
 
     // Opportunistic motion for non-motion rules where it clarifies the point.
     "color-7": ColorHoverDemo,
+    "comp-9": LoadingButtonDemo,
+    "sys-9": OptimisticDemo,
+    "sys-1": SkeletonDemo,
 };
