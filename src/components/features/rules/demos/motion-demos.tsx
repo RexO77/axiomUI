@@ -24,14 +24,20 @@ function DemoStage({
     size,
     children,
     caption,
+    hoverOnly = false,
 }: {
     size: PreviewSize;
     caption?: ReactNode;
+    hoverOnly?: boolean;
     children: (state: { settled: boolean; reducedMotion: boolean }) => ReactNode;
 }) {
     // Focused contexts (drawer / standalone page) render at lg and play once on
     // open; the sm card grid stays hover-only on desktop to keep the grid calm.
-    const { ref, settled, reducedMotion, handlers } = useDemoPlayback({ autoPlayOnView: size === "lg" });
+    // hoverOnly demos never auto-play on touch (see motion-16).
+    const { ref, settled, reducedMotion, handlers } = useDemoPlayback({
+        autoPlayOnView: size === "lg",
+        hoverOnly,
+    });
     return (
         <div ref={ref} {...handlers} className="motion-demo">
             <PreviewFrame size={size}>
@@ -468,8 +474,14 @@ export function PercentTransformDemo({ variant, size }: DemoProps) {
 // ── motion-16: Gate Hover Motion ─────────────────────────────────────
 export function HoverGateDemo({ variant, size }: DemoProps) {
     const isDo = variant === "do";
+    // The "do" example is gated to hover devices — so it must not auto-play on
+    // touch, exactly as the rule prescribes. The "dont" scales everywhere.
     return (
-        <DemoStage size={size} caption={isDo ? "@media (hover: hover)" : "scales on touch too"}>
+        <DemoStage
+            size={size}
+            hoverOnly={isDo}
+            caption={isDo ? "@media (hover: hover)" : "scales on touch too"}
+        >
             {({ settled }) => (
                 <ScalePop settled={settled} size={size} label={isDo ? "Hover" : "Tap"} fromScale={0.92} duration="var(--motion-fast)" />
             )}

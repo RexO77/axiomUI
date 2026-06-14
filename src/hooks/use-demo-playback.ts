@@ -18,7 +18,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * (jump to start) then back to true on the next frame, so a CSS transition runs.
  * Replay just calls `play` again.
  */
-export function useDemoPlayback({ autoPlayOnView = false }: { autoPlayOnView?: boolean } = {}) {
+export function useDemoPlayback({
+    autoPlayOnView = false,
+    hoverOnly = false,
+}: { autoPlayOnView?: boolean; hoverOnly?: boolean } = {}) {
     const ref = useRef<HTMLDivElement | null>(null);
     const [settled, setSettled] = useState(true);
     const [reducedMotion, setReducedMotion] = useState(false);
@@ -60,9 +63,19 @@ export function useDemoPlayback({ autoPlayOnView = false }: { autoPlayOnView?: b
     // Play once when the demo scrolls into view — always on touch (no hover to
     // trigger it) and, when autoPlayOnView is set, on desktop too (focused
     // contexts like the drawer / standalone page).
+    //
+    // hoverOnly suppresses the touch path entirely: a demo about hover-gated
+    // motion (motion-16) must NOT animate on touch, or it would contradict the
+    // very rule it illustrates. On hover devices it still plays.
     useEffect(() => {
         const el = ref.current;
-        if (!el || reducedRef.current || (canHoverRef.current && !autoPlayOnView)) {
+        const canHover = canHoverRef.current;
+        if (
+            !el ||
+            reducedRef.current ||
+            (canHover && !autoPlayOnView) ||
+            (!canHover && hoverOnly)
+        ) {
             return;
         }
 
@@ -80,7 +93,7 @@ export function useDemoPlayback({ autoPlayOnView = false }: { autoPlayOnView?: b
 
         observer.observe(el);
         return () => observer.disconnect();
-    }, [play, autoPlayOnView]);
+    }, [play, autoPlayOnView, hoverOnly]);
 
     useEffect(() => () => cancelAnimationFrame(rafRef.current), []);
 

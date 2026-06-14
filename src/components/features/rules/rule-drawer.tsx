@@ -134,7 +134,7 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
                               Recommended
                             </h3>
                           </div>
-                          <div className="mt-5">
+                          <div className="mt-4">
                             <RulePreview rule={activeRule} variant="do" size="lg" animate />
                           </div>
                           <p className="mt-4 font-mono text-sm leading-6 text-neutral-500 dark:text-neutral-400">
@@ -149,7 +149,7 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
                               Avoid
                             </h3>
                           </div>
-                          <div className="mt-5">
+                          <div className="mt-4">
                             <RulePreview rule={activeRule} variant="dont" size="lg" animate />
                           </div>
                           <p className="mt-4 font-mono text-sm leading-6 text-neutral-500 dark:text-neutral-400">

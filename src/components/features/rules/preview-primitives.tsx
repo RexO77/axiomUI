@@ -45,6 +45,7 @@ export function MiniButton({
 }) {
     return (
         <span
+            aria-hidden="true"
             className={cn(
                 "inline-flex max-w-full items-center justify-center truncate rounded-md font-semibold",
                 size === "lg" ? "px-3 py-1.5 text-xs" : "px-2.5 py-1 text-[10px]",
