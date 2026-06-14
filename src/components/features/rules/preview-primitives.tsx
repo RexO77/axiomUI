@@ -98,7 +98,7 @@ export function MiniLine({
 }
 
 export function MiniBlock({ className }: { className?: string }) {
-    return <div className={cn("h-4 w-4 rounded bg-neutral-300 dark:bg-neutral-700", className)} />;
+    return <div className={cn("size-4 rounded bg-neutral-300 dark:bg-neutral-700", className)} />;
 }
 
 export function MiniAvatar({ shape, size }: { shape: "circle" | "square"; size: PreviewSize }) {
@@ -106,7 +106,7 @@ export function MiniAvatar({ shape, size }: { shape: "circle" | "square"; size: 
         <div
             className={cn(
                 shape === "circle" ? "rounded-full" : "rounded-md",
-                size === "lg" ? "h-7 w-7" : "h-6 w-6",
+                size === "lg" ? "size-7" : "size-6",
                 "bg-neutral-300 dark:bg-neutral-700"
             )}
         />
@@ -125,7 +125,7 @@ export function MiniSwitch({ on, size }: { on?: boolean; size: PreviewSize }) {
             <span
                 className={cn(
                     "absolute top-0.5 block rounded-full bg-white",
-                    size === "lg" ? "h-3 w-3" : "h-2.5 w-2.5",
+                    size === "lg" ? "size-3" : "size-2.5",
                     on ? "right-0.5" : "left-0.5"
                 )}
             />
@@ -138,13 +138,13 @@ export function MiniCheckbox({ checked, size }: { checked?: boolean; size: Previ
         <div
             className={cn(
                 "flex items-center justify-center rounded-sm border",
-                size === "lg" ? "h-4 w-4" : "h-3.5 w-3.5",
+                size === "lg" ? "size-4" : "size-3.5",
                 checked
                     ? "border-neutral-900 bg-neutral-900 text-white dark:border-neutral-100 dark:bg-neutral-100 dark:text-neutral-900"
                     : "border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-900"
             )}
         >
-            {checked ? <span className="block h-1.5 w-1.5 rounded-sm bg-white dark:bg-neutral-900" /> : null}
+            {checked ? <span className="block size-1.5 rounded-sm bg-white dark:bg-neutral-900" /> : null}
         </div>
     );
 }
@@ -154,13 +154,13 @@ export function MiniRadio({ checked, size }: { checked?: boolean; size: PreviewS
         <div
             className={cn(
                 "flex items-center justify-center rounded-full border",
-                size === "lg" ? "h-4 w-4" : "h-3.5 w-3.5",
+                size === "lg" ? "size-4" : "size-3.5",
                 checked
                     ? "border-neutral-900 bg-neutral-900 dark:border-neutral-100 dark:bg-neutral-100"
                     : "border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-900"
             )}
         >
-            {checked ? <div className="h-1.5 w-1.5 rounded-full bg-white dark:bg-neutral-900" /> : null}
+            {checked ? <div className="size-1.5 rounded-full bg-white dark:bg-neutral-900" /> : null}
         </div>
     );
 }
@@ -170,7 +170,7 @@ export function MiniDot({ active, size }: { active?: boolean; size: PreviewSize 
         <span
             className={cn(
                 "rounded-full",
-                size === "lg" ? "h-2.5 w-2.5" : "h-2 w-2",
+                size === "lg" ? "size-2.5" : "size-2",
                 active ? "bg-neutral-900 dark:bg-neutral-100" : "bg-neutral-300 dark:bg-neutral-700"
             )}
         />

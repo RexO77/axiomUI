@@ -38,7 +38,7 @@ function DemoStage({
                 <div className="flex h-full flex-col justify-center gap-2">
                     {children({ settled, reducedMotion })}
                     {caption ? (
-                        <span className={cn("text-neutral-400 dark:text-neutral-500", textClass(size))}>
+                        <span className={cn("text-neutral-500 dark:text-neutral-400", textClass(size))}>
                             {caption}
                         </span>
                     ) : null}
