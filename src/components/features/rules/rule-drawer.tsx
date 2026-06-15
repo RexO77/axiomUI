@@ -6,8 +6,8 @@ import {
   X,
   XCircle,
 } from "lucide-react";
-import type { CSSProperties } from "react";
-import { useEffect } from "react";
+import type { CSSProperties, UIEvent } from "react";
+import { useEffect, useRef } from "react";
 import { Drawer } from "vaul";
 import { RulePreview } from "@/components/features/rules/rule-preview";
 import { CopyRuleButton } from "@/components/features/rules/copy-rule-button";
@@ -39,6 +39,31 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
   const { tapMedium } = useHaptics();
   const activeDeepDive = activeRule ? buildDeepDive(activeRule) : [];
   const isOpen = Boolean(activeRuleId);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const restoreBlur = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  // Sticky-header behaviour for the right pane: surface a hairline once the
+  // content scrolls under the bar, and lighten its backdrop blur while the
+  // pane is in motion — heavy blur during scroll smears the moving content and
+  // taxes the GPU. Full blur fades back ~120ms after the scroll settles. Driven
+  // imperatively off the header node so per-frame scroll events never re-render.
+  const handleScroll = (event: UIEvent<HTMLDivElement>) => {
+    const header = headerRef.current;
+    if (!header) return;
+    header.dataset.stuck = event.currentTarget.scrollTop > 4 ? "true" : "false";
+    // Set backdrop-filter directly (not via a CSS var) so the transition on
+    // .drawer-sticky-header actually animates — changing an unregistered custom
+    // property updates the dependent property instantly, with no fade.
+    header.style.backdropFilter = "blur(6px)";
+    header.style.webkitBackdropFilter = "blur(6px)";
+    clearTimeout(restoreBlur.current);
+    restoreBlur.current = setTimeout(() => {
+      header.style.backdropFilter = "blur(24px)";
+      header.style.webkitBackdropFilter = "blur(24px)";
+    }, 120);
+  };
+
+  useEffect(() => () => clearTimeout(restoreBlur.current), []);
 
   // Vaul doesn't forward modal={false} to its underlying Radix Dialog, so the
   // dismissable layer locks the page with `body { pointer-events: none }` every
@@ -88,39 +113,48 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
           className="fixed inset-y-0 right-0 z-[90] flex w-full overscroll-contain p-0 outline-none xl:inset-y-6 xl:right-6 xl:w-[min(40vw,480px)]"
           style={{ "--initial-transform": "100%" } as CSSProperties}
         >
-          <div className="ml-auto flex h-full w-full flex-col overflow-hidden rounded-none border border-neutral-200/80 bg-white/95 shadow-[0_24px_80px_rgba(0,0,0,0.14)] xl:rounded-[28px] dark:border-neutral-800/80 dark:bg-neutral-900/95 dark:shadow-[0_28px_90px_rgba(0,0,0,0.42)]">
+          <div className="panel-shadow ml-auto flex h-full w-full flex-col overflow-hidden rounded-none border border-neutral-200/80 bg-white/95 xl:rounded-[28px] dark:border-neutral-800/80 dark:bg-neutral-900/95">
             <Drawer.Title className="sr-only">{activeRule?.title ?? "Rule details"}</Drawer.Title>
 
-            <div className="drawer-scroll flex-1 overflow-y-auto px-5 pb-8 sm:px-7">
+            <div onScroll={handleScroll} className="drawer-scroll flex-1 overflow-y-auto px-5 pb-8 sm:px-7">
               {activeRule ? (
-                <div className="rule-drawer-content space-y-10 pt-6 pb-12 sm:space-y-12 sm:pt-8 lg:pb-14">
-                  <Drawer.Description className="sr-only">
-                    {summary}
-                  </Drawer.Description>
-
-                  {/* Keyed by category so the header only re-animates when the
-                      category changes; switching rules within a category leaves it put. */}
-                  <header key={activeRule.category} className="rule-drawer-stagger">
-                    <div className="-mt-1 mb-3 flex items-center justify-between gap-3">
-                      {activeCategoryName ? (
-                        <p className="min-w-0 truncate text-sm font-medium text-neutral-500 dark:text-neutral-400">
-                          {activeCategoryName}
-                        </p>
-                      ) : (
-                        <span aria-hidden="true" />
-                      )}
-                      <div className="flex shrink-0 items-center gap-1">
-                        <CopyRuleButton key={activeRule.id} rule={activeRule} variant="icon" />
-                        <DrawerCloseButton />
-                      </div>
+                <>
+                  {/* Sticky header: keeps the category + copy/close reachable
+                      while the body scrolls. Bleeds past the scroll padding so
+                      its backdrop spans the full pane width. */}
+                  <div
+                    ref={headerRef}
+                    data-stuck="false"
+                    className="drawer-sticky-header sticky top-0 z-20 -mx-5 flex items-center justify-between gap-3 border-b border-transparent bg-white/70 px-5 py-3.5 data-[stuck=true]:border-neutral-200/80 sm:-mx-7 sm:px-7 dark:bg-neutral-900/70 dark:data-[stuck=true]:border-neutral-800/80"
+                  >
+                    {activeCategoryName ? (
+                      <p className="min-w-0 truncate text-sm font-medium text-neutral-500 dark:text-neutral-400">
+                        {activeCategoryName}
+                      </p>
+                    ) : (
+                      <span aria-hidden="true" />
+                    )}
+                    <div className="flex shrink-0 items-center gap-1">
+                      <CopyRuleButton key={activeRule.id} rule={activeRule} variant="icon" />
+                      <DrawerCloseButton />
                     </div>
-                    <h2 className="text-2xl font-semibold leading-tight text-neutral-900 sm:text-3xl dark:text-neutral-50">
-                      {activeRule.title}
-                    </h2>
-                    <p className="mt-4 text-base leading-7 text-neutral-600 sm:leading-8 dark:text-neutral-300">
+                  </div>
+
+                  <div className="rule-drawer-content space-y-10 pt-4 pb-12 sm:space-y-12 sm:pt-5 lg:pb-14">
+                    <Drawer.Description className="sr-only">
                       {summary}
-                    </p>
-                  </header>
+                    </Drawer.Description>
+
+                    {/* Keyed by category so the header only re-animates when the
+                        category changes; switching rules within a category leaves it put. */}
+                    <header key={activeRule.category} className="rule-drawer-stagger">
+                      <h2 className="text-2xl font-semibold leading-tight text-neutral-900 sm:text-3xl dark:text-neutral-50">
+                        {activeRule.title}
+                      </h2>
+                      <p className="mt-4 text-base leading-7 text-neutral-600 sm:leading-8 dark:text-neutral-300">
+                        {summary}
+                      </p>
+                    </header>
 
                   {/* Keyed by rule so the body re-animates on every rule change,
                       even when the header stays put within a category. */}
@@ -214,7 +248,8 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
                       ) : null}
                     </aside>
                   </div>
-                </div>
+                  </div>
+                </>
               ) : (
                 <div className="relative pt-6">
                   <DrawerCloseButton className="absolute right-0 top-0" />

@@ -338,6 +338,29 @@ code {
   display: none;
 }
 
+/*
+ * Sticky header for the right-side rule drawer. The backdrop blur eases between
+ * a resting strength and a lighter one while the pane is actively scrolling —
+ * heavy blur during motion smears the moving content underneath and taxes the
+ * GPU, so we drop it mid-scroll and fade it back once the scroll settles. The
+ * backdrop-filter is set imperatively from the scroll handler; this transition
+ * is what turns those discrete changes into a fade.
+ */
+.drawer-sticky-header {
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  transition:
+    -webkit-backdrop-filter var(--motion-medium) var(--ease-out-strong),
+    backdrop-filter var(--motion-medium) var(--ease-out-strong),
+    border-color var(--motion-medium) var(--ease-out-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer-sticky-header {
+    transition: border-color var(--motion-medium) var(--ease-out-strong);
+  }
+}
+
 .rule-drawer-stagger {
   opacity: 0;
   transform: translateY(8px);
