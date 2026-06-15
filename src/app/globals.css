@@ -41,6 +41,12 @@
   --shadow-md: none;
   --shadow-lg: none;
 
+  /* Elevation for floating panels (sidebar, rule drawer) - the one place the
+     flat design intentionally lifts off the page. */
+  --shadow-panel:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 10px 30px rgba(15, 23, 42, 0.07);
+
   /* Radius tokens */
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -83,6 +89,9 @@
   --shadow-sm: none;
   --shadow-md: none;
   --shadow-lg: none;
+  --shadow-panel:
+    0 1px 2px rgba(0, 0, 0, 0.3),
+    0 14px 40px rgba(0, 0, 0, 0.32);
 }
 
 /* ==========================================================================
@@ -168,15 +177,7 @@ code {
  * panels read as gently lifted instead of casting a hard cloud.
  */
 .panel-shadow {
-  box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.04),
-    0 10px 30px rgba(15, 23, 42, 0.07);
-}
-
-.dark .panel-shadow {
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.3),
-    0 14px 40px rgba(0, 0, 0, 0.32);
+  box-shadow: var(--shadow-panel);
 }
 
 .rule-card {
