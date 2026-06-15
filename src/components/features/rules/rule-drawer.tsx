@@ -132,9 +132,9 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
                     className="drawer-sticky-header sticky top-0 z-20 -mx-5 flex items-center justify-between gap-3 border-b border-transparent bg-white/70 px-5 py-3.5 data-[stuck=true]:border-neutral-200/80 sm:-mx-7 sm:px-7 dark:bg-neutral-900/70 dark:data-[stuck=true]:border-neutral-800/80"
                   >
                     {activeCategoryName ? (
-                      <p className="min-w-0 truncate text-sm font-medium text-neutral-500 dark:text-neutral-400">
+                      <h2 className="min-w-0 truncate text-sm font-medium text-neutral-500 dark:text-neutral-400">
                         {activeCategoryName}
-                      </p>
+                      </h2>
                     ) : (
                       <span aria-hidden="true" />
                     )}
@@ -152,9 +152,9 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
                     {/* Keyed by category so the header only re-animates when the
                         category changes; switching rules within a category leaves it put. */}
                     <header key={activeRule.category} className="rule-drawer-stagger">
-                      <h2 className="text-2xl font-semibold leading-tight text-neutral-900 sm:text-3xl dark:text-neutral-50">
+                      <h3 className="text-2xl font-semibold leading-tight text-neutral-900 sm:text-3xl dark:text-neutral-50">
                         {activeRule.title}
-                      </h2>
+                      </h3>
                       <p className="mt-4 text-base leading-7 text-neutral-600 sm:leading-8 dark:text-neutral-300">
                         {summary}
                       </p>
@@ -168,9 +168,9 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
                         <article>
                           <div className="flex items-center gap-2">
                             <CheckCircle2 aria-hidden="true" className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
-                            <h3 className="drawer-label text-xs font-semibold text-emerald-800 dark:text-emerald-200">
+                            <h4 className="drawer-label text-xs font-semibold text-emerald-800 dark:text-emerald-200">
                               Recommended
-                            </h3>
+                            </h4>
                           </div>
                           <div className="mt-4">
                             <RulePreview rule={activeRule} variant="do" size="lg" animate />
@@ -183,9 +183,9 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
                         <article>
                           <div className="flex items-center gap-2">
                             <XCircle aria-hidden="true" className="h-4 w-4 text-rose-600 dark:text-rose-300" />
-                            <h3 className="drawer-label text-xs font-semibold text-rose-800 dark:text-rose-200">
+                            <h4 className="drawer-label text-xs font-semibold text-rose-800 dark:text-rose-200">
                               Avoid
-                            </h3>
+                            </h4>
                           </div>
                           <div className="mt-4">
                             <RulePreview rule={activeRule} variant="dont" size="lg" animate />
@@ -198,9 +198,9 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
 
                       {implementationNotes.length > 0 ? (
                         <article>
-                          <h3 className="drawer-label text-xs font-semibold text-neutral-600 dark:text-neutral-300">
+                          <h4 className="drawer-label text-xs font-semibold text-neutral-600 dark:text-neutral-300">
                             How to apply it
-                          </h3>
+                          </h4>
                           <ol className="mt-5 space-y-4">
                             {implementationNotes.map((item, index) => (
                               <li key={`${item}-${index}`} className="flex gap-4">
@@ -218,7 +218,7 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
                     <aside className="rule-drawer-stagger space-y-9">
                       {whyItMatters ? (
                         <article>
-                          <h3 className="drawer-label text-xs font-semibold text-neutral-600 dark:text-neutral-300">Why it works</h3>
+                          <h4 className="drawer-label text-xs font-semibold text-neutral-600 dark:text-neutral-300">Why it works</h4>
                           <p className="mt-4 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">{whyItMatters}</p>
                         </article>
                       ) : null}
@@ -227,9 +227,9 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
                         <article>
                           <div className="flex items-center gap-2">
                             <AlertTriangle aria-hidden="true" className="h-4 w-4 text-amber-700 dark:text-amber-300" />
-                            <h3 className="drawer-label text-xs font-semibold text-amber-800 dark:text-amber-200">
+                            <h4 className="drawer-label text-xs font-semibold text-amber-800 dark:text-amber-200">
                               What breaks
-                            </h3>
+                            </h4>
                           </div>
                           <p className="mt-4 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">{riskWhenIgnored}</p>
                         </article>
@@ -237,7 +237,7 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
 
                       {reviewPrompts.length > 0 ? (
                         <article>
-                          <h3 className="drawer-label text-xs font-semibold text-neutral-600 dark:text-neutral-300">Review questions</h3>
+                          <h4 className="drawer-label text-xs font-semibold text-neutral-600 dark:text-neutral-300">Review questions</h4>
                           <ol className="mt-4 space-y-4">
                             {reviewPrompts.map((item, index) => (
                               <li key={`${item}-${index}`} className="flex gap-4">
