@@ -67,7 +67,7 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
     // property updates the dependent property instantly, with no fade.
     setHeaderBlur(header, "6px");
     clearTimeout(restoreBlur.current);
-    restoreBlur.current = setTimeout(() => setHeaderBlur(header, "24px"), 120);
+    restoreBlur.current = setTimeout(() => setHeaderBlur(header, "20px"), 120);
   };
 
   useEffect(() => () => clearTimeout(restoreBlur.current), []);

@@ -348,8 +348,11 @@ code {
  * is what turns those discrete changes into a fade.
  */
 .drawer-sticky-header {
-  -webkit-backdrop-filter: blur(24px);
-  backdrop-filter: blur(24px);
+  /* 20px is the safe ceiling — above it Safari can fall back to CPU
+     compositing and jank the scroll. The handler drops this to 6px while
+     scrolling, so the heavier resting blur never paints mid-scroll. */
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   transition:
     -webkit-backdrop-filter var(--motion-medium) var(--ease-out-strong),
     backdrop-filter var(--motion-medium) var(--ease-out-strong),
