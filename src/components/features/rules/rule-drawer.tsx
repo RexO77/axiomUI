@@ -59,6 +59,9 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
     const header = headerRef.current;
     if (!header) return;
     header.dataset.stuck = event.currentTarget.scrollTop > 4 ? "true" : "false";
+    // Skip the scroll-driven blur change entirely under reduced motion — keep
+    // the bar at its resting blur (the stuck hairline above is non-motion).
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     // Set backdrop-filter directly (not via a CSS var) so the transition on
     // .drawer-sticky-header actually animates — changing an unregistered custom
     // property updates the dependent property instantly, with no fade.
