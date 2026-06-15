@@ -22,6 +22,14 @@ interface RuleDrawerProps {
   onClose: () => void;
 }
 
+// Set both the standard and -webkit-prefixed backdrop-filter (older Safari).
+// Uses setProperty since `webkitBackdropFilter` isn't in the typed CSSOM.
+function setHeaderBlur(header: HTMLElement, radius: string) {
+  const value = `blur(${radius})`;
+  header.style.setProperty("backdrop-filter", value);
+  header.style.setProperty("-webkit-backdrop-filter", value);
+}
+
 // Single source of truth for the icon-only close control so focus, size, and
 // label stay in sync across the loaded and empty states.
 function DrawerCloseButton({ className = "" }: { className?: string }) {
@@ -54,13 +62,9 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
     // Set backdrop-filter directly (not via a CSS var) so the transition on
     // .drawer-sticky-header actually animates — changing an unregistered custom
     // property updates the dependent property instantly, with no fade.
-    header.style.backdropFilter = "blur(6px)";
-    header.style.webkitBackdropFilter = "blur(6px)";
+    setHeaderBlur(header, "6px");
     clearTimeout(restoreBlur.current);
-    restoreBlur.current = setTimeout(() => {
-      header.style.backdropFilter = "blur(24px)";
-      header.style.webkitBackdropFilter = "blur(24px)";
-    }, 120);
+    restoreBlur.current = setTimeout(() => setHeaderBlur(header, "24px"), 120);
   };
 
   useEffect(() => () => clearTimeout(restoreBlur.current), []);
