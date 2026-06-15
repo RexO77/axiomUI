@@ -298,8 +298,12 @@ export function Sidebar() {
 
                 <aside
                     aria-hidden={!isDesktopOpen}
+                    // When collapsed the panel is only visually hidden (opacity/transform),
+                    // so its controls stay in the tab order — `inert` pulls all descendants
+                    // out of focus order and the a11y tree in one standards-compliant step.
+                    inert={!isDesktopOpen ? true : undefined}
                     className={cn(
-                        "absolute bottom-5 left-5 top-5 flex w-[280px] transform-gpu overflow-hidden rounded-[28px] border border-neutral-200/80 bg-white/95 shadow-[0_24px_80px_rgba(0,0,0,0.14)] transition-[opacity,transform,filter] duration-300 will-change-[opacity,transform,filter] dark:border-neutral-800/80 dark:bg-neutral-900/95 dark:shadow-[0_28px_90px_rgba(0,0,0,0.42)]",
+                        "panel-shadow absolute bottom-5 left-5 top-5 flex w-[280px] transform-gpu overflow-hidden rounded-[28px] border border-neutral-200/80 bg-white/95 transition-[opacity,transform,filter] duration-300 will-change-[opacity,transform,filter] dark:border-neutral-800/80 dark:bg-neutral-900/95",
                         isDesktopOpen
                             ? "pointer-events-auto translate-x-0 scale-100 opacity-100 blur-0"
                             : "pointer-events-none -translate-x-2 scale-[0.985] opacity-0 blur-[2px]"

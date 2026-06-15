@@ -41,6 +41,12 @@
   --shadow-md: none;
   --shadow-lg: none;
 
+  /* Elevation for floating panels (sidebar, rule drawer) - the one place the
+     flat design intentionally lifts off the page. */
+  --shadow-panel:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 10px 30px rgba(15, 23, 42, 0.07);
+
   /* Radius tokens */
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -83,6 +89,9 @@
   --shadow-sm: none;
   --shadow-md: none;
   --shadow-lg: none;
+  --shadow-panel:
+    0 1px 2px rgba(0, 0, 0, 0.3),
+    0 14px 40px rgba(0, 0, 0, 0.32);
 }
 
 /* ==========================================================================
@@ -160,6 +169,15 @@ code {
 
 .dark .glass {
   background: var(--color-bg-elevated);
+}
+
+/*
+ * Shared elevation for the floating sidebar and the right-side rule drawer.
+ * A soft two-layer ambient + key shadow rather than one heavy drop, so the
+ * panels read as gently lifted instead of casting a hard cloud.
+ */
+.panel-shadow {
+  box-shadow: var(--shadow-panel);
 }
 
 .rule-card {
@@ -319,6 +337,32 @@ code {
 
 .drawer-scroll::-webkit-scrollbar {
   display: none;
+}
+
+/*
+ * Sticky header for the right-side rule drawer. The backdrop blur eases between
+ * a resting strength and a lighter one while the pane is actively scrolling —
+ * heavy blur during motion smears the moving content underneath and taxes the
+ * GPU, so we drop it mid-scroll and fade it back once the scroll settles. The
+ * backdrop-filter is set imperatively from the scroll handler; this transition
+ * is what turns those discrete changes into a fade.
+ */
+.drawer-sticky-header {
+  /* 20px is the safe ceiling — above it Safari can fall back to CPU
+     compositing and jank the scroll. The handler drops this to 6px while
+     scrolling, so the heavier resting blur never paints mid-scroll. */
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  transition:
+    -webkit-backdrop-filter var(--motion-medium) var(--ease-out-strong),
+    backdrop-filter var(--motion-medium) var(--ease-out-strong),
+    border-color var(--motion-medium) var(--ease-out-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer-sticky-header {
+    transition: border-color var(--motion-medium) var(--ease-out-strong);
+  }
 }
 
 .rule-drawer-stagger {
