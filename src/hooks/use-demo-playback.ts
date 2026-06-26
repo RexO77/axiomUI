@@ -5,26 +5,21 @@ import { useCallback, useEffect, useRef, useState } from "react";
 /**
  * Drives a rule's motion demo.
  *
- * Trigger model (confirmed with product):
- * - Desktop (hover + fine pointer): hover the preview to play; re-hover replays.
- *   In focused contexts (drawer / standalone page) it also plays once on open
- *   via `autoPlayOnView`, so the motion is seen without requiring a hover. The
- *   card grid leaves `autoPlayOnView` off so it stays calm until hovered.
- * - Touch / no-hover: auto-play once when scrolled into view, then settle.
- * - prefers-reduced-motion: never animate — the demo rests at its final state.
+ * A demo renders its "start" frame and animates to the final frame when it
+ * scrolls into view; on hover devices, re-hovering replays it. Under
+ * prefers-reduced-motion it rests at the final frame and never moves.
  *
- * Demos read `settled` to choose between their "start" and "end" class sets.
- * `settled` rests at true (final frame). A play flips it to false for one frame
- * (jump to start) then back to true on the next frame, so a CSS transition runs.
- * Replay just calls `play` again.
+ * `hoverOnly` opts a demo out of touch autoplay: motion-16 illustrates
+ * hover-gated motion, so animating it on touch would contradict the rule it
+ * shows. It still autoplays and replays on hover devices.
+ *
+ * Demos read `settled` to pick between their start (false) and end (true) styles.
+ * A play flips it to false for one frame (jump to start) then back to true on the
+ * next, so the CSS transition runs.
  */
-export function useDemoPlayback({
-    autoPlayOnView = false,
-    hoverOnly = false,
-}: { autoPlayOnView?: boolean; hoverOnly?: boolean } = {}) {
+export function useDemoPlayback({ hoverOnly = false }: { hoverOnly?: boolean } = {}) {
     const ref = useRef<HTMLDivElement | null>(null);
-    const [settled, setSettled] = useState(true);
-    const [reducedMotion, setReducedMotion] = useState(false);
+    const [settled, setSettled] = useState(false);
 
     const canHoverRef = useRef(false);
     const reducedRef = useRef(false);
@@ -32,12 +27,27 @@ export function useDemoPlayback({
 
     const play = useCallback(() => {
         if (reducedRef.current) {
+            setSettled(true);
             return;
         }
+        const el = ref.current;
         cancelAnimationFrame(rafRef.current);
+        if (el) {
+            el.dataset.motionReset = "true";
+        }
         setSettled(false);
         rafRef.current = requestAnimationFrame(() => {
-            rafRef.current = requestAnimationFrame(() => setSettled(true));
+            if (el) {
+                el.getAnimations({ subtree: true }).forEach((animation) => animation.cancel());
+                void el.offsetHeight;
+            }
+            rafRef.current = requestAnimationFrame(() => {
+                if (el) {
+                    void el.offsetHeight;
+                    delete el.dataset.motionReset;
+                }
+                rafRef.current = requestAnimationFrame(() => setSettled(true));
+            });
         });
     }, []);
 
@@ -48,7 +58,9 @@ export function useDemoPlayback({
         const sync = () => {
             reducedRef.current = reduced.matches;
             canHoverRef.current = hover.matches;
-            setReducedMotion(reduced.matches);
+            if (reduced.matches) {
+                setSettled(true); // rest at the final frame; never animate
+            }
         };
 
         sync();
@@ -60,22 +72,11 @@ export function useDemoPlayback({
         };
     }, []);
 
-    // Play once when the demo scrolls into view — always on touch (no hover to
-    // trigger it) and, when autoPlayOnView is set, on desktop too (focused
-    // contexts like the drawer / standalone page).
-    //
-    // hoverOnly suppresses the touch path entirely: a demo about hover-gated
-    // motion (motion-16) must NOT animate on touch, or it would contradict the
-    // very rule it illustrates. On hover devices it still plays.
+    // Autoplay once when scrolled into view. hoverOnly demos skip this on touch
+    // (see motion-16) but still play on hover devices.
     useEffect(() => {
         const el = ref.current;
-        const canHover = canHoverRef.current;
-        if (
-            !el ||
-            reducedRef.current ||
-            (canHover && !autoPlayOnView) ||
-            (!canHover && hoverOnly)
-        ) {
+        if (!el || reducedRef.current || (!canHoverRef.current && hoverOnly)) {
             return;
         }
 
@@ -93,9 +94,12 @@ export function useDemoPlayback({
 
         observer.observe(el);
         return () => observer.disconnect();
-    }, [play, autoPlayOnView, hoverOnly]);
+    }, [play, hoverOnly]);
 
-    useEffect(() => () => cancelAnimationFrame(rafRef.current), []);
+    useEffect(() => () => {
+        cancelAnimationFrame(rafRef.current);
+        delete ref.current?.dataset.motionReset;
+    }, []);
 
     const handlers = {
         onPointerEnter: () => {
@@ -105,5 +109,5 @@ export function useDemoPlayback({
         },
     };
 
-    return { ref, settled, reducedMotion, replay: play, handlers };
+    return { ref, settled, handlers };
 }

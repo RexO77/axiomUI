@@ -408,6 +408,13 @@ code {
   font-family: var(--font-manrope), sans-serif;
 }
 
+.motion-demo[data-motion-reset="true"],
+.motion-demo[data-motion-reset="true"] * {
+  animation-delay: 0ms !important;
+  animation-duration: 0ms !important;
+  transition: none !important;
+}
+
 .skill-modal-root {
   --skill-modal-open-duration: 360ms;
   --skill-modal-close-duration: 220ms;
