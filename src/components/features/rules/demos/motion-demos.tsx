@@ -1,58 +1,15 @@
 "use client";
 
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties } from "react";
 
 import { cn } from "@/lib/utils";
-import { useDemoPlayback } from "@/hooks/use-demo-playback";
+import { DemoStage } from "@/components/features/rules/demos/demo-stage";
 import {
     MiniButton,
     MiniLine,
-    PreviewFrame,
-    textClass,
+    type DemoProps,
     type PreviewSize,
-    type Variant,
 } from "@/components/features/rules/preview-primitives";
-
-type DemoProps = { variant: Variant; size: PreviewSize };
-
-/**
- * Wires the playback hook to a PreviewFrame. The render-prop hands each demo the
- * current `settled` flag (true = final/resting frame). Hover (desktop) /
- * scroll-into-view (touch) replay; reduced motion rests at the final frame.
- */
-function DemoStage({
-    size,
-    children,
-    caption,
-    hoverOnly = false,
-}: {
-    size: PreviewSize;
-    caption?: ReactNode;
-    hoverOnly?: boolean;
-    children: (state: { settled: boolean; reducedMotion: boolean }) => ReactNode;
-}) {
-    // Focused contexts (drawer / standalone page) render at lg and play once on
-    // open; the sm card grid stays hover-only on desktop to keep the grid calm.
-    // hoverOnly demos never auto-play on touch (see motion-16).
-    const { ref, settled, reducedMotion, handlers } = useDemoPlayback({
-        autoPlayOnView: size === "lg",
-        hoverOnly,
-    });
-    return (
-        <div ref={ref} {...handlers} className="motion-demo cursor-pointer">
-            <PreviewFrame size={size}>
-                <div className="flex h-full flex-col justify-center gap-2">
-                    {children({ settled, reducedMotion })}
-                    {caption ? (
-                        <span className={cn("text-neutral-600 dark:text-neutral-300", textClass(size))}>
-                            {caption}
-                        </span>
-                    ) : null}
-                </div>
-            </PreviewFrame>
-        </div>
-    );
-}
 
 // ── Shared movers ────────────────────────────────────────────────────
 
@@ -233,7 +190,7 @@ function StaggerList({
 export function FrequencyDemo({ variant, size }: DemoProps) {
     const isDo = variant === "do";
     return (
-        <DemoStage size={size} caption={isDo ? "rare modal · 220ms" : "frequent palette · 220ms (too slow)"}>
+        <DemoStage size={size} trigger="replay" caption={isDo ? "rare modal · 220ms" : "frequent palette · 220ms (too slow)"}>
             {({ settled }) => (
                 <FadeBox settled={settled} size={size} label={isDo ? "Modal" : "Palette"} duration="220ms" rise />
             )}
@@ -245,7 +202,7 @@ export function FrequencyDemo({ variant, size }: DemoProps) {
 export function KeyboardInstantDemo({ variant, size }: DemoProps) {
     const isDo = variant === "do";
     return (
-        <DemoStage size={size} caption={isDo ? "instant (0ms)" : "waits 240ms"}>
+        <DemoStage size={size} trigger="action" control="Run" caption={isDo ? "instant (0ms)" : "waits 240ms"}>
             {({ settled }) => (
                 <FadeBox settled={settled} size={size} label="⌘K" duration={isDo ? "0ms" : "240ms"} />
             )}
@@ -257,7 +214,7 @@ export function KeyboardInstantDemo({ variant, size }: DemoProps) {
 export function PurposeDemo({ variant, size }: DemoProps) {
     const isDo = variant === "do";
     return (
-        <DemoStage size={size} caption={isDo ? "drawer slides from origin" : "decorative bounce"}>
+        <DemoStage size={size} trigger="action" control="Open" caption={isDo ? "drawer slides from origin" : "decorative bounce"}>
             {({ settled }) =>
                 isDo ? (
                     <SlidePanel settled={settled} size={size} from="right" label="Panel" />
@@ -273,7 +230,7 @@ export function PurposeDemo({ variant, size }: DemoProps) {
 export function EasingDemo({ variant, size }: DemoProps) {
     const isDo = variant === "do";
     return (
-        <DemoStage size={size} caption={isDo ? "ease-out (0.23, 1, 0.32, 1)" : "ease-in"}>
+        <DemoStage size={size} trigger="replay" caption={isDo ? "ease-out (0.23, 1, 0.32, 1)" : "ease-in"}>
             {({ settled }) => (
                 <SlideRail
                     settled={settled}
@@ -290,7 +247,7 @@ export function EasingDemo({ variant, size }: DemoProps) {
 export function EaseInDemo({ variant, size }: DemoProps) {
     const isDo = variant === "do";
     return (
-        <DemoStage size={size} caption={isDo ? "ease-out — moves immediately" : "ease-in — feels delayed"}>
+        <DemoStage size={size} trigger="replay" caption={isDo ? "ease-out — moves immediately" : "ease-in — feels delayed"}>
             {({ settled }) => (
                 <SlideRail
                     settled={settled}
@@ -307,7 +264,7 @@ export function EaseInDemo({ variant, size }: DemoProps) {
 export function DurationDemo({ variant, size }: DemoProps) {
     const isDo = variant === "do";
     return (
-        <DemoStage size={size} caption={isDo ? "180ms" : "500ms"}>
+        <DemoStage size={size} trigger="replay" caption={isDo ? "180ms" : "500ms"}>
             {({ settled }) => (
                 <SlideRail
                     settled={settled}
@@ -324,7 +281,7 @@ export function DurationDemo({ variant, size }: DemoProps) {
 export function AsymmetricDemo({ variant, size }: DemoProps) {
     const isDo = variant === "do";
     return (
-        <DemoStage size={size} caption={isDo ? "enter 220ms · exit 160ms" : "enter 360ms · exit 360ms"}>
+        <DemoStage size={size} trigger="toggle" control="Toggle" caption={isDo ? "enter 220ms · exit 160ms" : "enter 360ms · exit 360ms"}>
             {({ settled }) => (
                 <FadeBox settled={settled} size={size} label="Enter" duration={isDo ? "220ms" : "360ms"} rise />
             )}
@@ -337,7 +294,7 @@ export function PressDemo({ variant, size }: DemoProps) {
     const isDo = variant === "do";
     const pressed = isDo ? "scale(0.96)" : "scale(0.9)";
     return (
-        <DemoStage size={size} caption={isDo ? "active: scale(0.96)" : "scale(0.9) — overshoots"}>
+        <DemoStage size={size} trigger="press" caption={isDo ? "active: scale(0.96)" : "scale(0.9) — overshoots"}>
             {({ settled }) => (
                 <div className="flex justify-center">
                     <span
@@ -361,7 +318,7 @@ export function PressDemo({ variant, size }: DemoProps) {
 export function ScaleFromZeroDemo({ variant, size }: DemoProps) {
     const isDo = variant === "do";
     return (
-        <DemoStage size={size} caption={isDo ? "scale(0.95) + opacity" : "scale(0) — pops from nothing"}>
+        <DemoStage size={size} trigger="action" control="Open menu" caption={isDo ? "scale(0.95) + opacity" : "scale(0) — pops from nothing"}>
             {({ settled }) => (
                 <ScalePop settled={settled} size={size} label="Menu" fromScale={isDo ? 0.95 : 0} />
             )}
@@ -373,7 +330,7 @@ export function ScaleFromZeroDemo({ variant, size }: DemoProps) {
 export function OriginDemo({ variant, size }: DemoProps) {
     const isDo = variant === "do";
     return (
-        <DemoStage size={size} caption={isDo ? "origin: from trigger" : "origin: center"}>
+        <DemoStage size={size} trigger="action" control="Open" caption={isDo ? "origin: from trigger" : "origin: center"}>
             {({ settled }) => (
                 <ScalePop
                     settled={settled}
@@ -391,7 +348,7 @@ export function OriginDemo({ variant, size }: DemoProps) {
 export function TooltipDelayDemo({ variant, size }: DemoProps) {
     const isDo = variant === "do";
     return (
-        <DemoStage size={size} caption={isDo ? "no delay after first" : "every tooltip waits"}>
+        <DemoStage size={size} trigger="hover" caption={isDo ? "no delay after first" : "every tooltip waits"}>
             {({ settled }) => (
                 <FadeBox settled={settled} size={size} label="Tip" duration={isDo ? "60ms" : "320ms"} />
             )}
@@ -403,7 +360,7 @@ export function TooltipDelayDemo({ variant, size }: DemoProps) {
 export function InterruptibleDemo({ variant, size }: DemoProps) {
     const isDo = variant === "do";
     return (
-        <DemoStage size={size} caption={isDo ? "transition — retargets" : "keyframe — restarts"}>
+        <DemoStage size={size} trigger="replay" caption={isDo ? "transition — retargets" : "keyframe — restarts"}>
             {({ settled }) => (
                 <SlideRail
                     settled={settled}
@@ -420,7 +377,7 @@ export function InterruptibleDemo({ variant, size }: DemoProps) {
 export function StartingStyleDemo({ variant, size }: DemoProps) {
     const isDo = variant === "do";
     return (
-        <DemoStage size={size} caption={isDo ? "@starting-style" : "useEffect state flip"}>
+        <DemoStage size={size} trigger="action" control="Add" caption={isDo ? "@starting-style" : "useEffect state flip"}>
             {({ settled }) => (
                 <FadeBox settled={settled} size={size} label="New" duration="var(--motion-medium)" rise />
             )}
@@ -433,14 +390,14 @@ export function TransformOpacityDemo({ variant, size }: DemoProps) {
     const isDo = variant === "do";
     if (isDo) {
         return (
-            <DemoStage size={size} caption="translateY + opacity (smooth)">
+            <DemoStage size={size} trigger="replay" caption="translateY + opacity (smooth)">
                 {({ settled }) => <FadeBox settled={settled} size={size} label="Card" duration="var(--motion-medium)" rise />}
             </DemoStage>
         );
     }
     // dont: animates height (layout work).
     return (
-        <DemoStage size={size} caption="height + top (layout thrash)">
+        <DemoStage size={size} trigger="replay" caption="height + top (layout thrash)">
             {({ settled }) => (
                 <div className="flex justify-center">
                     <div
@@ -463,7 +420,7 @@ export function TransformOpacityDemo({ variant, size }: DemoProps) {
 export function PercentTransformDemo({ variant, size }: DemoProps) {
     const isDo = variant === "do";
     return (
-        <DemoStage size={size} caption={isDo ? "translateY(100%)" : "translateY(240px) hardcoded"}>
+        <DemoStage size={size} trigger="action" control="Show toast" caption={isDo ? "translateY(100%)" : "translateY(240px) hardcoded"}>
             {({ settled }) => (
                 <SlidePanel settled={settled} size={size} from="bottom" percent={isDo} label="Toast" />
             )}
@@ -480,6 +437,7 @@ export function HoverGateDemo({ variant, size }: DemoProps) {
         <DemoStage
             size={size}
             hoverOnly={isDo}
+            trigger="hover"
             caption={isDo ? "@media (hover: hover)" : "scales on touch too"}
         >
             {({ settled }) => (
@@ -493,7 +451,7 @@ export function HoverGateDemo({ variant, size }: DemoProps) {
 export function WaapiDemo({ variant, size }: DemoProps) {
     const isDo = variant === "do";
     return (
-        <DemoStage size={size} caption={isDo ? "element.animate — smooth" : "setInterval — stepped"}>
+        <DemoStage size={size} trigger="replay" caption={isDo ? "element.animate — smooth" : "setInterval — stepped"}>
             {({ settled }) => (
                 <SlideRail
                     settled={settled}
@@ -510,7 +468,7 @@ export function WaapiDemo({ variant, size }: DemoProps) {
 export function StaggerDemo({ variant, size }: DemoProps) {
     const isDo = variant === "do";
     return (
-        <DemoStage size={size} caption={isDo ? "30–80ms between rows" : "long cascade before usable"}>
+        <DemoStage size={size} trigger="replay" caption={isDo ? "30–80ms between rows" : "long cascade before usable"}>
             {({ settled }) => <StaggerList settled={settled} size={size} stepMs={isDo ? 60 : 220} />}
         </DemoStage>
     );
@@ -520,7 +478,7 @@ export function StaggerDemo({ variant, size }: DemoProps) {
 export function SlowReviewDemo({ variant, size }: DemoProps) {
     const isDo = variant === "do";
     return (
-        <DemoStage size={size} caption={isDo ? "review at 3× duration" : "judged only at full speed"}>
+        <DemoStage size={size} trigger="replay" caption={isDo ? "review at 3× duration" : "judged only at full speed"}>
             {({ settled }) => (
                 <SlideRail
                     settled={settled}
@@ -537,7 +495,7 @@ export function SlowReviewDemo({ variant, size }: DemoProps) {
 export function ReducedMotionDemo({ variant, size }: DemoProps) {
     const isDo = variant === "do";
     return (
-        <DemoStage size={size} caption={isDo ? "fade, no movement" : "slides regardless"}>
+        <DemoStage size={size} trigger="replay" caption={isDo ? "fade, no movement" : "slides regardless"}>
             {({ settled }) => (
                 <div className="flex justify-center">
                     <span

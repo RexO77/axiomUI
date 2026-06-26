@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 
 export type Variant = "do" | "dont";
 export type PreviewSize = "sm" | "lg";
+export type DemoProps = { variant: Variant; size: PreviewSize };
 
 export function textClass(size: PreviewSize) {
     return size === "lg" ? "text-xs" : "text-[10px]";
@@ -75,12 +76,12 @@ export function MiniInput({ size, widthClass = "w-full" }: { size: PreviewSize; 
     );
 }
 
-export function MiniLabel({ label }: { label: string; size?: PreviewSize }) {
+export function MiniLabel({ label, size }: { label: string; size: PreviewSize }) {
     return (
         <span
             className={cn(
                 "font-semibold text-neutral-500 dark:text-neutral-400",
-                "text-[10px]"
+                size === "lg" ? "text-[10px]" : "text-[9px]"
             )}
         >
             {label}
@@ -184,17 +185,18 @@ export function MiniDot({ active, size }: { active?: boolean; size: PreviewSize 
 
 export function MiniPill({
     label,
+    size,
     tone = "neutral",
 }: {
     label: string;
-    size?: PreviewSize;
+    size: PreviewSize;
     tone?: "neutral" | "accent" | "danger" | "success";
 }) {
     return (
         <span
             className={cn(
                 "inline-flex items-center rounded-full border px-2 py-0.5 font-semibold",
-                "text-[10px]",
+                size === "lg" ? "text-[10px]" : "text-[9px]",
                 tone === "neutral" &&
                     "border-neutral-200 bg-neutral-100 text-neutral-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300",
                 tone === "accent" &&

@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
 
-import type { PreviewSize, Variant } from "@/components/features/rules/preview-primitives";
+import type { DemoProps } from "@/components/features/rules/preview-primitives";
 import {
     AsymmetricDemo,
     DurationDemo,
@@ -30,11 +30,9 @@ import {
     SkeletonDemo,
 } from "@/components/features/rules/demos/interaction-demos";
 
-export type DemoProps = { variant: Variant; size: PreviewSize };
-
 /**
- * Rule id → animated demo. RulePreview consults this first (only when `animate`
- * is set); rules without an entry fall back to the static `getRulePreview`.
+ * Rule id -> animated demo. RulePreview consults this first; rules without an
+ * entry fall back to the static getRulePreview implementation.
  *
  * Intentionally NOT registered (kept as static text — motion would mislead or
  * adds nothing the caption can't): motion-18/19/20 (gesture velocity, damping,

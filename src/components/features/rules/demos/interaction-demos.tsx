@@ -1,54 +1,19 @@
 "use client";
 
-import type { ReactNode } from "react";
 import { Heart } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { useDemoPlayback } from "@/hooks/use-demo-playback";
-import {
-    MiniLine,
-    PreviewFrame,
-    textClass,
-    type PreviewSize,
-    type Variant,
-} from "@/components/features/rules/preview-primitives";
-
-type DemoProps = { variant: Variant; size: PreviewSize };
-
-function DemoStage({
-    size,
-    caption,
-    children,
-}: {
-    size: PreviewSize;
-    caption?: ReactNode;
-    children: (state: { settled: boolean }) => ReactNode;
-}) {
-    const { ref, settled, handlers } = useDemoPlayback({ autoPlayOnView: size === "lg" });
-    return (
-        <div ref={ref} {...handlers} className="motion-demo cursor-pointer">
-            <PreviewFrame size={size}>
-                <div className="flex h-full flex-col justify-center gap-2">
-                    {children({ settled })}
-                    {caption ? (
-                        <span className={cn("text-neutral-600 dark:text-neutral-300", textClass(size))}>{caption}</span>
-                    ) : null}
-                </div>
-            </PreviewFrame>
-        </div>
-    );
-}
+import { DemoStage } from "@/components/features/rules/demos/demo-stage";
+import { MiniLine, type DemoProps } from "@/components/features/rules/preview-primitives";
 
 // ── color-7: Hover State Stays in Hue ────────────────────────────────
 // do = blue-600 → blue-700 (same hue, darker). dont = blue → green (hue jump).
 // Resting frame is the "hovered" colour; play transitions from the base blue.
 export function ColorHoverDemo({ variant, size }: DemoProps) {
     const isDo = variant === "do";
-    // Colours come from Tailwind tokens (not hardcoded hex) so the demo tracks
-    // the palette. do = same hue, darker; dont = a jarring hue jump.
     const hoveredBg = isDo ? "bg-blue-700" : "bg-green-600";
     return (
-        <DemoStage size={size} caption={isDo ? "blue-600 → blue-700" : "blue → green (hue jump)"}>
+        <DemoStage size={size} trigger="hover" caption={isDo ? "blue-600 → blue-700" : "blue → green (hue jump)"}>
             {({ settled }) => (
                 <div className="flex justify-center">
                     <span
@@ -79,7 +44,7 @@ export function LoadingButtonDemo({ variant, size }: DemoProps) {
     const pad = size === "lg" ? "px-3 py-1.5 text-xs" : "px-2.5 py-1 text-[10px]";
     if (!isDo) {
         return (
-            <DemoStage size={size} caption="stays clickable (double-submit)">
+            <DemoStage size={size} trigger="action" control="Submit" caption="stays clickable (double-submit)">
                 {() => (
                     <div className="flex justify-center">
                         <span aria-hidden="true" className={cn("inline-flex items-center justify-center rounded-md bg-neutral-900 font-semibold text-white dark:bg-neutral-100 dark:text-neutral-900", pad)}>
@@ -91,7 +56,7 @@ export function LoadingButtonDemo({ variant, size }: DemoProps) {
         );
     }
     return (
-        <DemoStage size={size} caption="spinner + disabled on submit">
+        <DemoStage size={size} trigger="action" control="Submit" caption="spinner + disabled on submit">
             {({ settled }) => (
                 <div className="flex justify-center">
                     <span
@@ -133,7 +98,7 @@ export function OptimisticDemo({ variant, size }: DemoProps) {
     const isDo = variant === "do";
     const px = size === "lg" ? 22 : 18;
     return (
-        <DemoStage size={size} caption={isDo ? "fills instantly, syncs async" : "waits ~560ms for server"}>
+        <DemoStage size={size} trigger="action" control="Like" caption={isDo ? "fills instantly, syncs async" : "waits ~560ms for server"}>
             {({ settled }) => (
                 <div className="relative flex justify-center" style={{ height: px }}>
                     <Heart className="absolute text-neutral-400 dark:text-neutral-600" style={{ width: px, height: px }} />
@@ -162,7 +127,7 @@ export function SkeletonDemo({ variant, size }: DemoProps) {
     const isDo = variant === "do";
     if (isDo) {
         return (
-            <DemoStage size={size} caption="skeleton implies structure">
+            <DemoStage size={size} trigger="action" control="Reload" caption="skeleton implies structure">
                 {({ settled }) => (
                     <div className="space-y-1.5" style={{ transition: "opacity var(--motion-slow)", opacity: settled ? 1 : 0.4 }}>
                         <MiniLine widthClass="w-full" />
@@ -174,7 +139,7 @@ export function SkeletonDemo({ variant, size }: DemoProps) {
         );
     }
     return (
-        <DemoStage size={size} caption="spinner highlights the wait">
+        <DemoStage size={size} trigger="action" control="Reload" caption="spinner highlights the wait">
             {({ settled }) => (
                 <div className="flex justify-center">
                     <span

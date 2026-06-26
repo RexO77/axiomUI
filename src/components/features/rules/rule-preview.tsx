@@ -26,15 +26,13 @@ interface RulePreviewProps {
     rule: Rule;
     variant: Variant;
     size?: PreviewSize;
-    animate?: boolean;
 }
 
-export function RulePreview({ rule, variant, size = "sm", animate = false }: RulePreviewProps) {
-    if (animate) {
-        const Demo = motionDemos[rule.id];
-        if (Demo) {
-            return <Demo variant={variant} size={size} />;
-        }
+export function RulePreview({ rule, variant, size = "sm" }: RulePreviewProps) {
+    // Animated demo when the rule has one registered; otherwise the static preview.
+    const Demo = motionDemos[rule.id];
+    if (Demo) {
+        return <Demo variant={variant} size={size} />;
     }
 
     const preview = getRulePreview(rule.id, variant, size);

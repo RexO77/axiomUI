@@ -51,7 +51,7 @@ export function RuleCard({ rule, activeRuleId, onDeepDive, style }: RuleCardProp
             </span>
           </div>
           <div className="mt-3">
-            <RulePreview rule={rule} variant="do" animate />
+            <RulePreview rule={rule} variant="do" />
           </div>
           <code className="mt-2 block break-words rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs leading-5 text-neutral-700 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200">
             {rule.do}
@@ -66,7 +66,7 @@ export function RuleCard({ rule, activeRuleId, onDeepDive, style }: RuleCardProp
             </span>
           </div>
           <div className="mt-3">
-            <RulePreview rule={rule} variant="dont" animate />
+            <RulePreview rule={rule} variant="dont" />
           </div>
           <code className="mt-2 block break-words rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs leading-5 text-neutral-700 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200">
             {rule.dont}
