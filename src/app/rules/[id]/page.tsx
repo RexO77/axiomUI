@@ -7,6 +7,9 @@ import { RulePreview } from "@/components/features/rules/rule-preview";
 import { CopyRuleButton } from "@/components/features/rules/copy-rule-button";
 
 import { rules, categories, buildDeepDive } from "@/data/ui-logic";
+import { absoluteUrl } from "@/lib/site";
+
+export const dynamicParams = false;
 
 type Props = {
     params: Promise<{ id: string }>;
@@ -38,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             title: `${rule.title} | Axiom`,
             description: rule.desc,
             type: "article",
-            url: `https://axiom.design/rules/${rule.id}`,
+            url: absoluteUrl(`/rules/${rule.id}`),
         },
         twitter: {
             card: "summary",
@@ -46,7 +49,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description: rule.desc,
         },
         alternates: {
-            canonical: `https://axiom.design/rules/${rule.id}`,
+            canonical: absoluteUrl(`/rules/${rule.id}`),
         },
     };
 }

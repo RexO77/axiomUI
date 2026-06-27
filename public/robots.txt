@@ -2,4 +2,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://axiom.design/sitemap.xml
+Sitemap: https://axiomui.nischal.fyi/sitemap.xml

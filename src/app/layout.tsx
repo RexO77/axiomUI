@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Manrope, Source_Serif_4 } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { rules } from "@/data/ui-logic";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { absoluteUrl, siteConfig } from "@/lib/site";
 import "./globals.css";
 
-const siteUrl = "https://axiomui.vercel.app";
 const ruleCount = rules.length;
 
 const sourceSerif = Source_Serif_4({
@@ -47,11 +48,11 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Nischal Skanda" }],
   creator: "Nischal Skanda",
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(siteConfig.origin),
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: siteUrl,
+    url: siteConfig.origin,
     title: "Axiom — UI Logic Repository",
     description:
       `${ruleCount} actionable UI design rules for consistent, sharp interfaces. Master typography, layout, color, component patterns, forms, and accessibility.`,
@@ -117,34 +118,34 @@ export default function RootLayout({
     "@graph": [
       {
         "@type": "WebSite",
-        "@id": `${siteUrl}/#website`,
-        url: siteUrl,
+        "@id": `${siteConfig.origin}/#website`,
+        url: siteConfig.origin,
         name: "Axiom",
         description:
           "UI Logic Repository of repeatable design decisions for consistent, sharp interfaces",
         publisher: {
-          "@id": `${siteUrl}/#organization`,
+          "@id": `${siteConfig.origin}/#organization`,
         },
       },
       {
         "@type": "Organization",
-        "@id": `${siteUrl}/#organization`,
+        "@id": `${siteConfig.origin}/#organization`,
         name: "Axiom",
-        url: siteUrl,
+        url: siteConfig.origin,
         logo: {
           "@type": "ImageObject",
-          url: `${siteUrl}/og-image.png`,
+          url: absoluteUrl("/og-image.png"),
         },
       },
       {
         "@type": "CollectionPage",
-        "@id": `${siteUrl}/#collection`,
-        url: siteUrl,
+        "@id": `${siteConfig.origin}/#collection`,
+        url: siteConfig.origin,
         name: "UI Logic Rules",
         description:
           `${ruleCount} actionable UI design rules covering typography, layout, color, components, forms, system behavior, and accessibility`,
         isPartOf: {
-          "@id": `${siteUrl}/#website`,
+          "@id": `${siteConfig.origin}/#website`,
         },
         about: {
           "@type": "Thing",
@@ -170,6 +171,7 @@ export default function RootLayout({
         </a>
         <ThemeProvider>{children}</ThemeProvider>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

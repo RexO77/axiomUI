@@ -5,10 +5,10 @@ import { AlertCircle, Check, Copy } from "lucide-react";
 import { categories, type Rule } from "@/data/ui-logic";
 import { useHaptics } from "@/hooks/use-haptics";
 import { cn } from "@/lib/utils";
+import { absoluteUrl } from "@/lib/site";
 
 type CopyState = "idle" | "copied" | "error";
 
-const FALLBACK_ORIGIN = "https://axiom.design";
 const RESET_DELAY_MS = 1800;
 
 const categoryNameById = new Map(categories.map((category) => [category.id, category.name]));
@@ -48,7 +48,7 @@ function buildText(rule: Rule): string {
   const origin =
     typeof window !== "undefined" && window.location.origin
       ? window.location.origin
-      : FALLBACK_ORIGIN;
+      : absoluteUrl("/").replace(/\/$/, "");
   const url = `${origin}/rules/${rule.id}`;
   const categoryName = categoryNameById.get(rule.category) ?? "Axiom";
 
