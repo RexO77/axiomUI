@@ -105,16 +105,16 @@ function HomeContent() {
         className="flex-1"
       >
         <div
-          className="main-lane-shell w-full space-y-8 px-3 py-5 sm:px-4 sm:py-7 md:space-y-12 md:py-8"
+          className="main-lane-shell w-full space-y-8 py-5 sm:py-7 md:space-y-12 md:py-8"
           data-drawer-open={activeRuleId ? "true" : undefined}
         >
-          <div className="mx-auto w-full max-w-[920px]">
+          <div className="lane-boundary mx-auto w-full max-w-[920px]">
             <Header />
           </div>
 
           <section className="space-y-8 md:space-y-10" id="rulesContainer">
             {grouped.length === 0 ? (
-              <div className="glass reveal mx-auto w-full max-w-[920px] rounded-2xl p-10 text-center" style={{ "--delay": "40ms" } as CSSProperties}>
+              <div className="glass reveal lane-boundary mx-auto w-full max-w-[920px] rounded-2xl p-10 text-center" style={{ "--delay": "40ms" } as CSSProperties}>
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
                   <SearchX aria-hidden="true" className="h-7 w-7 text-neutral-400 dark:text-neutral-500" />
                 </div>
@@ -133,7 +133,7 @@ function HomeContent() {
                   <section
                     key={group.id}
                     id={group.id}
-                    className="reveal mx-auto w-full max-w-[920px] scroll-mt-10"
+                    className="reveal lane-boundary mx-auto w-full max-w-[920px] scroll-mt-10"
                     style={{ "--delay": `${delayIndex * 40}ms` } as CSSProperties}
                   >
                     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -176,7 +176,7 @@ function HomeContent() {
             )}
           </section>
 
-          <footer className="glass mx-auto w-full max-w-[920px] rounded-2xl p-8 text-center text-sm text-neutral-500 dark:text-neutral-400">
+          <footer className="glass lane-boundary mx-auto w-full max-w-[920px] rounded-2xl p-8 text-center text-sm text-neutral-500 dark:text-neutral-400">
             Built for consistency. Break rules only after mastering them.
           </footer>
         </div>

@@ -186,6 +186,22 @@ code {
   contain-intrinsic-size: 0 320px;
 }
 
+.main-lane-shell {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+#main-content {
+  overflow-x: clip;
+}
+
+@media (min-width: 640px) {
+  .main-lane-shell {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
 @media (min-width: 768px) {
   :root {
     /*
@@ -203,13 +219,20 @@ code {
   }
 
   .main-lane-shell {
-    --lane-pad-left: calc(1rem + (var(--main-lane-shift, var(--main-lane-open-shift)) * 2));
-    --lane-pad-right: 1rem;
-    padding-left: var(--lane-pad-left);
-    padding-right: var(--lane-pad-right);
-    transition: padding-left 360ms var(--ease-drawer),
-      padding-right 360ms var(--ease-drawer);
-    will-change: padding-left, padding-right;
+    --lane-shift-active: var(--main-lane-shift, var(--main-lane-open-shift));
+    padding-left: 1rem;
+    padding-right: 1rem;
+    transform: translate3d(var(--lane-shift-active), 0, 0);
+    transition: transform 360ms var(--ease-drawer);
+    will-change: transform;
+  }
+
+  .main-lane-shell .lane-boundary {
+    max-width: min(
+      var(--lane-content),
+      calc(100vw - var(--lane-shift-active) - var(--lane-shift-active) - 2rem)
+    );
+    transition: max-width 360ms var(--ease-drawer);
   }
 }
 
@@ -225,6 +248,8 @@ code {
   }
 
   .main-lane-shell[data-drawer-open="true"] {
+    --lane-shift-active: 0px;
+    transform: none;
     /*
      * Left: hold full sidebar clearance whenever the sidebar is open, so the
      * lane can never slide under it even when the right reservation shrinks
@@ -245,6 +270,8 @@ code {
       ),
       calc(var(--drawer-footprint) + var(--lane-gap))
     );
+    padding-left: var(--lane-pad-left);
+    padding-right: var(--lane-pad-right);
   }
 }
 

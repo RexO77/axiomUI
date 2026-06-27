@@ -19,7 +19,7 @@ export function ColorHoverDemo({ variant, size }: DemoProps) {
                     <span
                         aria-hidden="true"
                         className={cn(
-                            "inline-flex items-center justify-center rounded-md font-semibold text-white transition-colors will-change-[background-color]",
+                            "inline-flex items-center justify-center rounded-md font-semibold text-white transition-colors",
                             size === "lg" ? "px-3 py-1.5 text-xs" : "px-2.5 py-1 text-[10px]",
                             settled ? hoveredBg : "bg-blue-600"
                         )}
@@ -62,7 +62,7 @@ export function LoadingButtonDemo({ variant, size }: DemoProps) {
                     <span
                         aria-hidden="true"
                         className={cn(
-                            "relative inline-flex items-center justify-center rounded-md font-semibold will-change-[background-color]",
+                            "relative inline-flex items-center justify-center rounded-md font-semibold",
                             pad
                         )}
                         style={{

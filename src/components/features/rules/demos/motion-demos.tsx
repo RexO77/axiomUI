@@ -401,7 +401,7 @@ export function TransformOpacityDemo({ variant, size }: DemoProps) {
             {({ settled }) => (
                 <div className="flex justify-center">
                     <div
-                        className="overflow-hidden rounded bg-neutral-300 will-change-[height] dark:bg-neutral-700"
+                        className="overflow-hidden rounded bg-neutral-300 dark:bg-neutral-700"
                         style={{
                             width: size === "lg" ? "48px" : "40px",
                             transitionProperty: "height",
