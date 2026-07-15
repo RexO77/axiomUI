@@ -2,38 +2,19 @@
 
 import { useEffect, useState } from "react";
 import {
-    Activity,
-    BoxSelect,
-    Cpu,
-    Eye,
-    Layers,
-    LayoutGrid,
     Menu,
-    Palette,
     PanelLeftClose,
     PanelLeftOpen,
-    TextCursorInput,
-    Type,
     X,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { SearchInput } from "@/components/features/search/search-input";
 import { SkillBonus } from "@/components/features/skills/skill-bonus";
 import { AxiomLogo } from "@/components/ui/axiom-logo";
+import { CategoryIcon } from "@/components/ui/category-icon";
 import { categories } from "@/data/ui-logic";
 import { cn } from "@/lib/utils";
 import { useHaptics } from "@/hooks/use-haptics";
-
-const categoryIcons = new Map([
-    ["typography", Type],
-    ["layout", LayoutGrid],
-    ["color", Palette],
-    ["components", BoxSelect],
-    ["forms", TextCursorInput],
-    ["system", Cpu],
-    ["motion", Activity],
-    ["accessibility", Eye],
-]);
 
 const sidebarControlClass =
     "pressable flex h-9 w-9 items-center justify-center rounded-xl border border-transparent text-neutral-500 transition-[transform,background-color,border-color,color] duration-150 hover:border-neutral-200 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:border-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-100";
@@ -122,11 +103,11 @@ function SidebarContent({
             <SearchInput />
 
             {/* Categories */}
-            <div className="mt-6 flex flex-1 flex-col overflow-hidden">
-                <p className="text-xs font-medium text-neutral-400 dark:text-neutral-500">
-                    Categories
+            <div className="mt-7 flex min-h-0 flex-1 flex-col overflow-hidden">
+                <p className="px-1 text-sm font-medium text-neutral-400 dark:text-neutral-500">
+                    Index
                 </p>
-                <nav className="sidebar-scroll mt-3 flex-1 space-y-0.5 overflow-y-auto">
+                <nav className="sidebar-scroll mt-4 flex-1 space-y-2 overflow-y-auto pr-1">
                     {categories.map((cat) => {
                         const isActive = cat.id === activeCategoryId;
 
@@ -141,26 +122,16 @@ function SidebarContent({
                                     onLinkClick?.();
                                 }}
                                 className={cn(
-                                    "pressable group flex items-center gap-3 rounded-lg px-2 py-2.5 text-sm transition-colors duration-150",
+                                    "pressable group flex min-h-10 items-center gap-3 rounded-xl px-2 text-sm transition-[transform,background-color,color] duration-150",
                                     isActive
-                                        ? "bg-neutral-100 text-neutral-950 shadow-[inset_0_0_0_1px_rgba(23,23,23,0.08)] dark:bg-neutral-800 dark:text-neutral-50 dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
-                                        : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
+                                        ? "bg-neutral-100/80 text-neutral-950 dark:bg-neutral-800/80 dark:text-neutral-50"
+                                        : "text-neutral-700 hover:bg-neutral-100/70 hover:text-neutral-950 dark:text-neutral-300 dark:hover:bg-neutral-800/70 dark:hover:text-neutral-50"
                                 )}
                             >
-                                <span
-                                    className={cn(
-                                        "flex h-7 w-7 items-center justify-center rounded-md transition-colors duration-150",
-                                        isActive
-                                            ? "bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100"
-                                            : "bg-neutral-100 text-neutral-500 group-hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:group-hover:bg-neutral-700"
-                                    )}
-                                >
-                                    {(() => {
-                                        const Icon = categoryIcons.get(cat.id) ?? Layers;
-                                        return <Icon aria-hidden="true" className="h-3.5 w-3.5" />;
-                                    })()}
+                                <span className="flex h-6 w-6 shrink-0 items-center justify-center">
+                                    <CategoryIcon categoryId={cat.id} />
                                 </span>
-                                <span className="font-medium">{cat.name}</span>
+                                <span className="font-semibold tracking-[-0.01em]">{cat.name}</span>
                             </a>
                         );
                     })}
@@ -168,7 +139,7 @@ function SidebarContent({
             </div>
 
             <div className={cn("mt-4", isFloating && "pb-1")}>
-                <SkillBonus />
+                <SkillBonus compact />
             </div>
         </div>
     );

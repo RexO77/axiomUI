@@ -3,35 +3,14 @@
 import type { CSSProperties } from "react";
 import { Suspense, useMemo } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import {
-  Activity,
-  BoxSelect,
-  Cpu,
-  Eye,
-  Layers,
-  LayoutGrid,
-  Palette,
-  SearchX,
-  TextCursorInput,
-  Type,
-} from "lucide-react";
+import { SearchX } from "lucide-react";
 
 import { categories, rules } from "@/data/ui-logic";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { RuleCard } from "@/components/features/rules/rule-card";
 import { RuleDrawer } from "@/components/features/rules/rule-drawer";
-
-const sectionIcons = new Map([
-  ["typography", Type],
-  ["layout", LayoutGrid],
-  ["color", Palette],
-  ["components", BoxSelect],
-  ["forms", TextCursorInput],
-  ["system", Cpu],
-  ["motion", Activity],
-  ["accessibility", Eye],
-]);
+import { CategoryIcon } from "@/components/ui/category-icon";
 
 function HomeContent() {
   const searchParams = useSearchParams();
@@ -127,7 +106,6 @@ function HomeContent() {
               </div>
             ) : (
               grouped.map((group) => {
-                const Icon = sectionIcons.get(group.id) ?? Layers;
                 delayIndex += 1;
                 return (
                   <section
@@ -138,17 +116,15 @@ function HomeContent() {
                   >
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-neutral-900 text-white md:h-11 md:w-11 dark:bg-neutral-100 dark:text-neutral-900">
-                          <Icon aria-hidden="true" className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
-                            {group.name}
-                          </p>
-                          <h2 className="text-xl font-semibold text-neutral-900 sm:text-2xl dark:text-neutral-100">
-                            {group.name}
-                          </h2>
-                        </div>
+                        <span className="flex h-7 w-6 shrink-0 items-center justify-center sm:h-8">
+                          <CategoryIcon
+                            categoryId={group.id}
+                            className="h-5 w-5 -translate-y-px"
+                          />
+                        </span>
+                        <h2 className="text-xl font-semibold leading-7 text-neutral-900 sm:text-2xl sm:leading-8 dark:text-neutral-100">
+                          {group.name}
+                        </h2>
                       </div>
 
                       <span className="rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-medium text-neutral-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400">

@@ -333,7 +333,7 @@ code {
 }
 
 .sidebar-scroll::-webkit-scrollbar {
-  width: 8px;
+  width: 4px;
 }
 
 .sidebar-scroll::-webkit-scrollbar-track {
@@ -341,20 +341,24 @@ code {
 }
 
 .sidebar-scroll::-webkit-scrollbar-thumb {
-  background: rgba(23, 23, 23, 0.2);
+  background: transparent;
   border-radius: 999px;
 }
 
-.dark .sidebar-scroll::-webkit-scrollbar-thumb {
-  background: rgba(163, 163, 163, 0.35);
+.sidebar-scroll:hover::-webkit-scrollbar-thumb {
+  background: rgba(23, 23, 23, 0.18);
 }
 
 .sidebar-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(23, 23, 23, 0.35);
+  background: rgba(23, 23, 23, 0.3);
+}
+
+.dark .sidebar-scroll:hover::-webkit-scrollbar-thumb {
+  background: rgba(163, 163, 163, 0.28);
 }
 
 .dark .sidebar-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(163, 163, 163, 0.5);
+  background: rgba(163, 163, 163, 0.42);
 }
 
 .drawer-scroll {

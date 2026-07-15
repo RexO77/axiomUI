@@ -21,7 +21,7 @@ type PreviewNode =
   | { type: "unordered-list"; items: string[] }
   | { type: "ordered-list"; items: string[] };
 
-export function SkillBonus() {
+export function SkillBonus({ compact = false }: { compact?: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -382,33 +382,49 @@ export function SkillBonus() {
 
   return (
     <>
-      <section className="rounded-[24px] border border-neutral-200 bg-white px-4 py-4 text-neutral-950 shadow-[0_1px_0_rgba(17,24,39,0.04)] dark:border-neutral-800 dark:bg-neutral-950 dark:text-white dark:shadow-none">
-        <button
-          type="button"
-          onClick={openModal}
-          className="w-full text-left"
-        >
-          <p className="text-xs font-medium text-neutral-400 dark:text-white/45">Bonus skill</p>
-          <div className="mt-3 flex items-start justify-between gap-3">
-            <h3 className="text-2xl font-semibold leading-tight tracking-tight text-neutral-950 dark:text-white">
-              Website Playbook
-            </h3>
-            <ArrowUpRight aria-hidden="true" className="mt-1 h-4 w-4 shrink-0 text-neutral-400 dark:text-white/45" />
-          </div>
-          <p className="prose-justify mt-2 text-sm leading-relaxed text-neutral-600 dark:text-white/60">
-            Open a cleaner preview, then copy or download the raw file.
-          </p>
-        </button>
+      {compact ? (
+        <div className="border-t border-neutral-200/80 pt-3 dark:border-neutral-800/80">
+          <button
+            type="button"
+            onClick={openModal}
+            className="pressable group flex min-h-10 w-full items-center justify-between rounded-xl px-2 text-left text-xs font-medium text-neutral-500 transition-[transform,background-color,color] duration-150 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
+          >
+            <span>
+              <span className="block text-[11px] font-normal text-neutral-400 dark:text-neutral-500">Bonus skill</span>
+              <span className="mt-0.5 block">Website Playbook</span>
+            </span>
+            <ArrowUpRight aria-hidden="true" className="h-4 w-4 shrink-0 transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+          </button>
+        </div>
+      ) : (
+        <section className="rounded-[24px] border border-neutral-200 bg-white px-4 py-4 text-neutral-950 shadow-[0_1px_0_rgba(17,24,39,0.04)] dark:border-neutral-800 dark:bg-neutral-950 dark:text-white dark:shadow-none">
+          <button
+            type="button"
+            onClick={openModal}
+            className="w-full text-left"
+          >
+            <p className="text-xs font-medium text-neutral-400 dark:text-white/45">Bonus skill</p>
+            <div className="mt-3 flex items-start justify-between gap-3">
+              <h3 className="text-2xl font-semibold leading-tight tracking-tight text-neutral-950 dark:text-white">
+                Website Playbook
+              </h3>
+              <ArrowUpRight aria-hidden="true" className="mt-1 h-4 w-4 shrink-0 text-neutral-400 dark:text-white/45" />
+            </div>
+            <p className="prose-justify mt-2 text-sm leading-relaxed text-neutral-600 dark:text-white/60">
+              Open a cleaner preview, then copy or download the raw file.
+            </p>
+          </button>
 
-        <a
-          href={skillPath}
-          download="SKILL.md"
-          className="mt-4 inline-flex items-center gap-2 text-xs font-medium text-neutral-600 transition-colors hover:text-neutral-950 dark:text-white/72 dark:hover:text-white"
-        >
-          <Download aria-hidden="true" className="h-3.5 w-3.5" />
-          Download .md
-        </a>
-      </section>
+          <a
+            href={skillPath}
+            download="SKILL.md"
+            className="mt-4 inline-flex items-center gap-2 text-xs font-medium text-neutral-600 transition-colors hover:text-neutral-950 dark:text-white/72 dark:hover:text-white"
+          >
+            <Download aria-hidden="true" className="h-3.5 w-3.5" />
+            Download .md
+          </a>
+        </section>
+      )}
 
       {modal}
     </>
