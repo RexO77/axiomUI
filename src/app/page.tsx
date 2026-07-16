@@ -1,8 +1,15 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { Suspense, useMemo } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  Suspense,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import { SearchX } from "lucide-react";
 
 import { categories, rules } from "@/data/ui-logic";
@@ -15,26 +22,40 @@ import { CategoryIcon } from "@/components/ui/category-icon";
 function HomeContent() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const router = useRouter();
   const query = searchParams.get("q") ?? "";
-  const activeRuleId = searchParams.get("rule");
+  const routeRuleId = searchParams.get("rule");
+  const [activeRuleId, setActiveRuleId] = useState(routeRuleId);
+  const deferredRuleId = useDeferredValue(activeRuleId);
   const searchLower = query.trim().toLowerCase();
 
-  const updateParams = (updates: { rule?: string | null }) => {
-    const nextParams = new URLSearchParams(searchParams.toString());
+  useEffect(() => {
+    setActiveRuleId(routeRuleId);
+  }, [routeRuleId]);
 
-    if (updates.rule !== undefined) {
-      if (updates.rule) {
-        nextParams.set("rule", updates.rule);
-      } else {
-        nextParams.delete("rule");
-      }
+  const syncRuleParam = useCallback((ruleId: string | null) => {
+    const nextParams = new URLSearchParams(window.location.search);
+
+    if (ruleId) {
+      nextParams.set("rule", ruleId);
+    } else {
+      nextParams.delete("rule");
     }
 
     const next = nextParams.toString();
-    const nextUrl = next ? `${pathname}?${next}` : pathname;
-    router.replace(nextUrl, { scroll: false });
-  };
+    const nextUrl = `${pathname}${next ? `?${next}` : ""}${window.location.hash}`;
+
+    window.history.replaceState(null, "", nextUrl);
+  }, [pathname]);
+
+  const openRule = useCallback((ruleId: string) => {
+    setActiveRuleId(ruleId);
+    syncRuleParam(ruleId);
+  }, [syncRuleParam]);
+
+  const closeRule = useCallback(() => {
+    setActiveRuleId(null);
+    syncRuleParam(null);
+  }, [syncRuleParam]);
 
   const filteredRules = useMemo(() => {
     if (!searchLower) {
@@ -65,8 +86,8 @@ function HomeContent() {
   }, []);
 
   const activeRule = useMemo(() => {
-    return rules.find((rule) => rule.id === activeRuleId) ?? null;
-  }, [activeRuleId]);
+    return rules.find((rule) => rule.id === deferredRuleId) ?? null;
+  }, [deferredRuleId]);
 
   const activeCategoryName = activeRule
     ? categoryById.get(activeRule.category) ?? ""
@@ -140,7 +161,7 @@ function HomeContent() {
                             key={rule.id}
                             rule={rule}
                             activeRuleId={activeRuleId}
-                            onDeepDive={(id) => updateParams({ rule: id })}
+                            onDeepDive={openRule}
                             style={{ "--delay": `${delayIndex * 40}ms` } as CSSProperties}
                           />
                         );
@@ -162,7 +183,8 @@ function HomeContent() {
         activeRule={activeRule}
         activeCategoryName={activeCategoryName}
         activeRuleId={activeRuleId}
-        onClose={() => updateParams({ rule: null })}
+        contentPending={Boolean(activeRuleId && activeRuleId !== deferredRuleId)}
+        onClose={closeRule}
       />
     </div>
   );

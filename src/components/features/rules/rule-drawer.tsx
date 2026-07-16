@@ -7,7 +7,7 @@ import {
   XCircle,
 } from "lucide-react";
 import type { CSSProperties, UIEvent } from "react";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Drawer } from "vaul";
 import { RulePreview } from "@/components/features/rules/rule-preview";
 import { CopyRuleButton } from "@/components/features/rules/copy-rule-button";
@@ -19,6 +19,7 @@ interface RuleDrawerProps {
   activeRule: Rule | null;
   activeCategoryName: string;
   activeRuleId: string | null;
+  contentPending: boolean;
   onClose: () => void;
 }
 
@@ -43,9 +44,18 @@ function DrawerCloseButton({ className = "" }: { className?: string }) {
   );
 }
 
-export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClose }: RuleDrawerProps) {
+export function RuleDrawer({
+  activeRule,
+  activeCategoryName,
+  activeRuleId,
+  contentPending,
+  onClose,
+}: RuleDrawerProps) {
   const { tapMedium } = useHaptics();
-  const activeDeepDive = activeRule ? buildDeepDive(activeRule) : [];
+  const activeDeepDive = useMemo(
+    () => activeRule ? buildDeepDive(activeRule) : [],
+    [activeRule]
+  );
   const isOpen = Boolean(activeRuleId);
   const headerRef = useRef<HTMLDivElement>(null);
   const restoreBlur = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -257,6 +267,8 @@ export function RuleDrawer({ activeRule, activeCategoryName, activeRuleId, onClo
                   </div>
                   </div>
                 </>
+              ) : contentPending ? (
+                <div aria-hidden="true" className="min-h-full" />
               ) : (
                 <div className="relative pt-6">
                   <DrawerCloseButton className="absolute right-0 top-0" />
