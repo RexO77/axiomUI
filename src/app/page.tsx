@@ -160,9 +160,9 @@ function HomeContent() {
                           <RuleCard
                             key={rule.id}
                             rule={rule}
-                            activeRuleId={activeRuleId}
+                            isActive={rule.id === activeRuleId}
                             onDeepDive={openRule}
-                            style={{ "--delay": `${delayIndex * 40}ms` } as CSSProperties}
+                            delay={`${delayIndex * 40}ms`}
                           />
                         );
                       })}

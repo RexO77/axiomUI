@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowUpRight, CheckCircle2, XCircle } from "lucide-react";
-import type { CSSProperties } from "react";
+import { memo, type CSSProperties } from "react";
 import type { Rule } from "@/data/ui-logic";
 import { RulePreview } from "@/components/features/rules/rule-preview";
 import { CopyRuleButton } from "@/components/features/rules/copy-rule-button";
@@ -9,17 +9,17 @@ import { useHaptics } from "@/hooks/use-haptics";
 
 interface RuleCardProps {
   rule: Rule;
-  activeRuleId: string | null;
+  isActive: boolean;
   onDeepDive: (ruleId: string) => void;
-  style?: CSSProperties;
+  delay: string;
 }
 
-export function RuleCard({ rule, activeRuleId, onDeepDive, style }: RuleCardProps) {
+function RuleCardComponent({ rule, isActive, onDeepDive, delay }: RuleCardProps) {
   const { tapSuccess } = useHaptics();
   return (
     <article
       className="rule-card reveal w-full max-w-[920px] rounded-[28px] p-4 sm:p-5"
-      style={style}
+      style={{ "--delay": delay } as CSSProperties}
     >
       <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-start md:gap-4">
         <div className="min-w-0">
@@ -32,9 +32,9 @@ export function RuleCard({ rule, activeRuleId, onDeepDive, style }: RuleCardProp
             type="button"
             aria-label={`Learn more about ${rule.title}`}
             onClick={() => {
-              if (rule.id !== activeRuleId) {
-                tapSuccess();
+              if (!isActive) {
                 onDeepDive(rule.id);
+                window.setTimeout(tapSuccess, 0);
               }
             }}
             className="pressable relative inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 text-xs font-medium text-neutral-700 after:absolute after:inset-x-0 after:-inset-y-1.5 hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-950 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:border-neutral-500 dark:hover:bg-neutral-900 dark:hover:text-neutral-50"
@@ -52,6 +52,8 @@ export function RuleCard({ rule, activeRuleId, onDeepDive, style }: RuleCardProp
     </article>
   );
 }
+
+export const RuleCard = memo(RuleCardComponent);
 
 function ComparisonPanel({ rule, variant }: { rule: Rule; variant: "do" | "dont" }) {
   const isDo = variant === "do";
