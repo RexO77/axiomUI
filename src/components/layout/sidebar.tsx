@@ -158,6 +158,12 @@ function SidebarContent({
 
             <div className={cn("mt-4", isFloating && "pb-1")}>
                 <SkillBonus compact />
+                <a
+                    href="/llms-full.txt"
+                    className="mt-3 inline-flex items-center text-xs text-neutral-400 transition-colors hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300"
+                >
+                    For AI tools: llms.txt
+                </a>
             </div>
         </div>
     );

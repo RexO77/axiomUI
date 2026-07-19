@@ -2,16 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { AlertCircle, Check, Copy } from "lucide-react";
-import { categories, type Rule } from "@/data/ui-logic";
+import type { Rule } from "@/data/ui-logic";
 import { useHaptics } from "@/hooks/use-haptics";
 import { cn } from "@/lib/utils";
 import { absoluteUrl } from "@/lib/site";
+import { ruleToText } from "@/lib/rule-text";
 
 type CopyState = "idle" | "copied" | "error";
 
 const RESET_DELAY_MS = 1800;
-
-const categoryNameById = new Map(categories.map((category) => [category.id, category.name]));
 
 async function copyText(text: string): Promise<boolean> {
   // Prefer the async Clipboard API, which only exists in secure contexts (https/localhost).
@@ -49,18 +48,8 @@ function buildText(rule: Rule): string {
     typeof window !== "undefined" && window.location.origin
       ? window.location.origin
       : absoluteUrl("/").replace(/\/$/, "");
-  const url = `${origin}/rules/${rule.id}`;
-  const categoryName = categoryNameById.get(rule.category) ?? "Axiom";
 
-  return [
-    `${rule.title} (${categoryName})`,
-    rule.desc,
-    ``,
-    `Do: ${rule.do}`,
-    `Don't: ${rule.dont}`,
-    ``,
-    url,
-  ].join("\n");
+  return ruleToText(rule, origin);
 }
 
 interface CopyRuleButtonProps {

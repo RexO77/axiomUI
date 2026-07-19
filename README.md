@@ -15,7 +15,7 @@ Axiom is a reference-ready collection of product UI best practices structured as
 
 ## Coverage
 
-- **96 curated decisions** grounded in product UI best practices
+- **106 curated decisions** grounded in product UI best practices
 - **8 system categories**: Typography, Layout, Color, Components, Forms, System Logic, Motion, Accessibility
 - **Fast scanning** with tag filters and encoded patterns
 
@@ -36,6 +36,14 @@ Each axiom follows a consistent format:
 - **Rule**: The specific guideline
 - **Do/Avoid**: Visual comparison with values
 - **Deep dive**: Extended rationale and edge cases
+
+## Machine-readable
+
+Axiom is meant to be pasted into an AI tool as much as read in a browser. Three generated endpoints, always in sync with the ruleset:
+
+- `/llms.txt` — index: what the site is, plus links to the other two
+- `/llms-full.txt` — the entire ruleset as markdown, one rule per section
+- `/rules.json` — the entire ruleset as structured JSON
 
 ---
 
