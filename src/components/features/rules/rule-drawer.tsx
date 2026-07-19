@@ -11,6 +11,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { Drawer } from "vaul";
 import { RulePreview } from "@/components/features/rules/rule-preview";
 import { CopyRuleButton } from "@/components/features/rules/copy-rule-button";
+import { hasShowcase, MotionShowcase } from "@/components/features/rules/demos/registry";
 import type { DeepDiveSection, Rule } from "@/data/ui-logic";
 import { buildDeepDive } from "@/data/ui-logic";
 import { useHaptics } from "@/hooks/use-haptics";
@@ -178,6 +179,10 @@ export function RuleDrawer({
                   <div key={activeRule.id} className="grid gap-10">
                     <section className="rule-drawer-stagger space-y-10">
                       <div className="grid gap-x-8 gap-y-8">
+                        {hasShowcase(activeRule.id) ? (
+                          <MotionShowcase ruleId={activeRule.id} />
+                        ) : null}
+
                         <article>
                           <div className="flex items-center gap-2">
                             <CheckCircle2 aria-hidden="true" className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
@@ -185,9 +190,11 @@ export function RuleDrawer({
                               Recommended
                             </h4>
                           </div>
-                          <div className="mt-4">
-                            <RulePreview rule={activeRule} variant="do" size="lg" />
-                          </div>
+                          {!hasShowcase(activeRule.id) && (
+                            <div className="mt-4">
+                              <RulePreview rule={activeRule} variant="do" size="lg" />
+                            </div>
+                          )}
                           <p className="mt-4 font-mono text-sm leading-6 text-neutral-500 dark:text-neutral-400">
                             {recommended}
                           </p>
@@ -200,9 +207,11 @@ export function RuleDrawer({
                               Avoid
                             </h4>
                           </div>
-                          <div className="mt-4">
-                            <RulePreview rule={activeRule} variant="dont" size="lg" />
-                          </div>
+                          {!hasShowcase(activeRule.id) && (
+                            <div className="mt-4">
+                              <RulePreview rule={activeRule} variant="dont" size="lg" />
+                            </div>
+                          )}
                           <p className="mt-4 font-mono text-sm leading-6 text-neutral-500 dark:text-neutral-400">
                             {avoid}
                           </p>

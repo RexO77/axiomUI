@@ -1,68 +1,13 @@
-import type { ComponentType } from "react";
-
-import type { DemoProps } from "@/components/features/rules/preview-primitives";
-import {
-    AsymmetricDemo,
-    DurationDemo,
-    EaseInDemo,
-    EasingDemo,
-    FrequencyDemo,
-    HoverGateDemo,
-    InterruptibleDemo,
-    KeyboardInstantDemo,
-    OriginDemo,
-    PercentTransformDemo,
-    PressDemo,
-    PurposeDemo,
-    ReducedMotionDemo,
-    ScaleFromZeroDemo,
-    SlowReviewDemo,
-    StaggerDemo,
-    StartingStyleDemo,
-    TooltipDelayDemo,
-    TransformOpacityDemo,
-    WaapiDemo,
-} from "@/components/features/rules/demos/motion-demos";
-import {
-    ColorHoverDemo,
-    LoadingButtonDemo,
-    OptimisticDemo,
-    SkeletonDemo,
-} from "@/components/features/rules/demos/interaction-demos";
-
 /**
- * Rule id -> animated demo. RulePreview consults this first; rules without an
- * entry fall back to the static getRulePreview implementation.
+ * Every rule with motion now renders through the WAAPI showcase system:
+ * - Grid cards: `PanePreview` (autoplay once on view, replay on hover).
+ * - Deep dives (drawer + /rules/[id]): `MotionShowcase` — one control or
+ *   gesture drives the Do and Don't panes side by side, in sync.
+ * - motion-18/19/20 render real drag prototypes (drag-showcases.tsx).
  *
- * Intentionally NOT registered (kept as static text — motion would mislead or
- * adds nothing the caption can't): motion-18/19/20 (gesture velocity, damping,
- * pointer capture), motion-21/23 (CSS-vs-JS / variable internals are invisible).
+ * `hasShowcase` is re-exported from showcase-specs (a shared module) so
+ * server components can call it — client-module functions cannot run on
+ * the server.
  */
-export const motionDemos: Record<string, ComponentType<DemoProps>> = {
-    "motion-1": FrequencyDemo,
-    "motion-2": KeyboardInstantDemo,
-    "motion-3": PurposeDemo,
-    "motion-4": EasingDemo,
-    "motion-5": EaseInDemo,
-    "motion-6": DurationDemo,
-    "motion-7": AsymmetricDemo,
-    "motion-8": PressDemo,
-    "motion-9": ScaleFromZeroDemo,
-    "motion-10": OriginDemo,
-    "motion-11": TooltipDelayDemo,
-    "motion-12": InterruptibleDemo,
-    "motion-13": StartingStyleDemo,
-    "motion-14": TransformOpacityDemo,
-    "motion-15": PercentTransformDemo,
-    "motion-16": HoverGateDemo,
-    "motion-17": ReducedMotionDemo,
-    "motion-22": WaapiDemo,
-    "motion-24": StaggerDemo,
-    "motion-25": SlowReviewDemo,
-
-    // Opportunistic motion for non-motion rules where it clarifies the point.
-    "color-7": ColorHoverDemo,
-    "comp-9": LoadingButtonDemo,
-    "sys-9": OptimisticDemo,
-    "sys-1": SkeletonDemo,
-};
+export { hasShowcase, showcaseSpecs } from "@/components/features/rules/demos/showcase-specs";
+export { MotionShowcase, PanePreview } from "@/components/features/rules/demos/motion-showcase";

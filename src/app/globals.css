@@ -439,13 +439,6 @@ code {
   font-family: var(--font-manrope), sans-serif;
 }
 
-.motion-demo[data-motion-reset="true"],
-.motion-demo[data-motion-reset="true"] * {
-  animation-delay: 0ms !important;
-  animation-duration: 0ms !important;
-  transition: none !important;
-}
-
 .skill-modal-root {
   --skill-modal-open-duration: 360ms;
   --skill-modal-close-duration: 220ms;
@@ -537,15 +530,15 @@ code {
   }
 
   /*
-   * Motion-rule demos: kill movement only. The demos render their final/resting
-   * frame by default (the hook keeps `settled` true and never plays under reduced
-   * motion), so disabling transitions/animations lands them on that frame
-   * instantly — without overriding the inline transforms used for layout.
+   * Motion showcases enforce reduced motion in the WAAPI engine (animations
+   * run at duration 0 → end states apply instantly). CSS-level decoration
+   * inside scenes (spinners, pulses) and the drag prototypes' release
+   * transitions are stilled here; 1:1 pointer tracking is inline transforms,
+   * so user-driven drags keep working (WCAG-exempt).
    */
-  .motion-demo,
-  .motion-demo * {
+  .motion-showcase * {
+    animation-duration: 0s !important;
     transition: none !important;
-    animation: none !important;
   }
 }
 

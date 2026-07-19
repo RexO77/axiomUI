@@ -20,7 +20,7 @@ import {
     type PreviewSize,
     type Variant,
 } from "@/components/features/rules/preview-primitives";
-import { motionDemos } from "@/components/features/rules/demos/registry";
+import { hasShowcase, PanePreview } from "@/components/features/rules/demos/registry";
 
 interface RulePreviewProps {
     rule: Rule;
@@ -29,10 +29,11 @@ interface RulePreviewProps {
 }
 
 export function RulePreview({ rule, variant, size = "sm" }: RulePreviewProps) {
-    // Animated demo when the rule has one registered; otherwise the static preview.
-    const Demo = motionDemos[rule.id];
-    if (Demo) {
-        return <Demo variant={variant} size={size} />;
+    // Rules with a motion showcase render its pane preview here (grid cards).
+    // The lg deep-dive renders <MotionShowcase> directly — see rule-drawer /
+    // rules/[id]/page, which skip RulePreview for showcase rules.
+    if (hasShowcase(rule.id)) {
+        return <PanePreview ruleId={rule.id} variant={variant} size={size} />;
     }
 
     const preview = getRulePreview(rule.id, variant, size);

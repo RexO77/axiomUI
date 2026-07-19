@@ -5,6 +5,7 @@ import { ArrowLeft, Check, X, Tag } from "lucide-react";
 import { AxiomLogo } from "@/components/ui/axiom-logo";
 import { RulePreview } from "@/components/features/rules/rule-preview";
 import { CopyRuleButton } from "@/components/features/rules/copy-rule-button";
+import { hasShowcase, MotionShowcase } from "@/components/features/rules/demos/registry";
 
 import { rules, categories, buildDeepDive } from "@/data/ui-logic";
 import { absoluteUrl } from "@/lib/site";
@@ -152,6 +153,13 @@ export default async function RulePage({ params }: Props) {
                         </div>
                     </header>
 
+                    {/* Motion showcase (interactive do/don't comparison) */}
+                    {hasShowcase(rule.id) ? (
+                        <div className="mb-6 rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+                            <MotionShowcase ruleId={rule.id} />
+                        </div>
+                    ) : null}
+
                     {/* Do / Don't Cards */}
                     <div className="mb-12 grid gap-4 md:grid-cols-2">
                         <div className="rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
@@ -163,9 +171,11 @@ export default async function RulePage({ params }: Props) {
                                     Do
                                 </span>
                             </div>
-                            <div className="mb-3">
-                                <RulePreview rule={rule} variant="do" size="lg" />
-                            </div>
+                            {!hasShowcase(rule.id) && (
+                                <div className="mb-3">
+                                    <RulePreview rule={rule} variant="do" size="lg" />
+                                </div>
+                            )}
                             <p className="font-mono text-sm text-neutral-900 dark:text-neutral-100">
                                 {rule.do}
                             </p>
@@ -180,9 +190,11 @@ export default async function RulePage({ params }: Props) {
                                     Don&apos;t
                                 </span>
                             </div>
-                            <div className="mb-3">
-                                <RulePreview rule={rule} variant="dont" size="lg" />
-                            </div>
+                            {!hasShowcase(rule.id) && (
+                                <div className="mb-3">
+                                    <RulePreview rule={rule} variant="dont" size="lg" />
+                                </div>
+                            )}
                             <p className="font-mono text-sm text-neutral-900 dark:text-neutral-100">
                                 {rule.dont}
                             </p>
