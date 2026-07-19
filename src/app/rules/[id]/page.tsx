@@ -1,13 +1,13 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Check, X, Tag } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, X, Tag } from "lucide-react";
 import { AxiomLogo } from "@/components/ui/axiom-logo";
 import { RulePreview } from "@/components/features/rules/rule-preview";
 import { CopyRuleButton } from "@/components/features/rules/copy-rule-button";
 import { hasShowcase, MotionShowcase } from "@/components/features/rules/demos/registry";
 
-import { rules, categories, buildDeepDive } from "@/data/ui-logic";
+import { rules, categories, buildDeepDive, getAdjacentRules, getRelatedRules } from "@/data/ui-logic";
 import { absoluteUrl } from "@/lib/site";
 
 export const dynamicParams = false;
@@ -65,6 +65,8 @@ export default async function RulePage({ params }: Props) {
 
     const category = categories.find((c) => c.id === rule.category);
     const deepDive = buildDeepDive(rule);
+    const { prev, next } = getAdjacentRules(rule);
+    const related = getRelatedRules(rule);
 
     // Generate JSON-LD for this specific rule
     const jsonLd = {
@@ -86,11 +88,25 @@ export default async function RulePage({ params }: Props) {
         ],
     };
 
+    const breadcrumbJsonLd = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: [
+            { "@type": "ListItem", position: 1, name: "All Rules", item: absoluteUrl("/") },
+            { "@type": "ListItem", position: 2, name: category?.name ?? "Rules", item: absoluteUrl(`/#${rule.category}`) },
+            { "@type": "ListItem", position: 3, name: rule.title, item: absoluteUrl(`/rules/${rule.id}`) },
+        ],
+    };
+
     return (
         <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
             />
 
             {/* Header */}
@@ -122,7 +138,12 @@ export default async function RulePage({ params }: Props) {
                         All Rules
                     </Link>
                     <span className="mx-2">/</span>
-                    <span className="text-neutral-900 dark:text-neutral-100">{category?.name}</span>
+                    <Link
+                        href={`/#${rule.category}`}
+                        className="text-neutral-900 hover:text-neutral-600 dark:text-neutral-100 dark:hover:text-neutral-300"
+                    >
+                        {category?.name}
+                    </Link>
                 </nav>
 
                 {/* Title Section */}
@@ -232,15 +253,59 @@ export default async function RulePage({ params }: Props) {
                     </div>
                 </article>
 
+                {/* Related rules */}
+                {related.length > 0 && (
+                    <section className="mt-16">
+                        <h2 className="mb-4 text-xl font-semibold text-neutral-900 dark:text-neutral-100">Related rules</h2>
+                        <ul className="grid gap-3 sm:grid-cols-3">
+                            {related.map((r) => (
+                                <li key={r.id}>
+                                    <Link
+                                        href={`/rules/${r.id}`}
+                                        className="block h-full rounded-2xl border border-neutral-200 bg-white p-4 transition-colors hover:border-neutral-300 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700"
+                                    >
+                                        <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{r.title}</p>
+                                        <p className="mt-1 line-clamp-2 text-xs leading-5 text-neutral-500 dark:text-neutral-400">{r.desc}</p>
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+                )}
+
                 {/* Navigation */}
                 <nav className="mt-16 border-t border-neutral-200 pt-8 dark:border-neutral-800">
-                    <Link
-                        href="/"
-                        className="inline-flex items-center gap-2 text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
-                    >
-                        <ArrowLeft className="h-4 w-4" />
-                        Back to all rules
-                    </Link>
+                    <div className="flex items-center justify-between gap-4">
+                        {prev ? (
+                            <Link
+                                href={`/rules/${prev.id}`}
+                                rel="prev"
+                                className="group inline-flex max-w-[45%] items-center gap-2 text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+                            >
+                                <ArrowLeft className="h-4 w-4 shrink-0" />
+                                <span className="truncate">{prev.title}</span>
+                            </Link>
+                        ) : <span />}
+                        {next ? (
+                            <Link
+                                href={`/rules/${next.id}`}
+                                rel="next"
+                                className="group inline-flex max-w-[45%] items-center gap-2 text-right text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+                            >
+                                <span className="truncate">{next.title}</span>
+                                <ArrowRight className="h-4 w-4 shrink-0" />
+                            </Link>
+                        ) : <span />}
+                    </div>
+                    <div className="mt-6">
+                        <Link
+                            href="/"
+                            className="inline-flex items-center gap-2 text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                            Back to all rules
+                        </Link>
+                    </div>
                 </nav>
             </main>
         </div>

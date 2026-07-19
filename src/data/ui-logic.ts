@@ -1216,3 +1216,28 @@ function buildImplementationNotes(rule: Rule, deepDive: CategoryDeepDive): strin
     ...deepDive.implementation,
   ];
 }
+
+/** Previous/next rule within the same category, in data order. Null at the ends. */
+export function getAdjacentRules(rule: Rule): { prev: Rule | null; next: Rule | null } {
+  const siblings = rules.filter((r) => r.category === rule.category);
+  const index = siblings.findIndex((r) => r.id === rule.id);
+  return {
+    prev: index > 0 ? siblings[index - 1] : null,
+    next: index >= 0 && index < siblings.length - 1 ? siblings[index + 1] : null,
+  };
+}
+
+/** Up to `limit` rules sharing a tag with `rule` (excluding itself), then same-category fillers. */
+export function getRelatedRules(rule: Rule, limit = 3): Rule[] {
+  const tagSet = new Set(rule.tags.map((t) => t.toLowerCase()));
+  const scored = rules
+    .filter((r) => r.id !== rule.id)
+    .map((r) => ({
+      rule: r,
+      shared: r.tags.filter((t) => tagSet.has(t.toLowerCase())).length,
+      sameCategory: r.category === rule.category ? 1 : 0,
+    }))
+    .filter((entry) => entry.shared > 0 || entry.sameCategory > 0)
+    .sort((a, b) => b.shared - a.shared || b.sameCategory - a.sameCategory);
+  return scored.slice(0, limit).map((entry) => entry.rule);
+}

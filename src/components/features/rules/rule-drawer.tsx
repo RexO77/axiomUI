@@ -2,6 +2,7 @@
 
 import {
   AlertTriangle,
+  ArrowUpRight,
   CheckCircle2,
   X,
   XCircle,
@@ -153,6 +154,14 @@ export function RuleDrawer({
                       <span aria-hidden="true" />
                     )}
                     <div className="flex shrink-0 items-center gap-1">
+                      <a
+                        href={`/rules/${activeRule.id}`}
+                        aria-label={`Open full page for ${activeRule.title}`}
+                        title="Open full page"
+                        className="pressable inline-flex size-11 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100"
+                      >
+                        <ArrowUpRight aria-hidden="true" className="size-4" />
+                      </a>
                       <CopyRuleButton key={activeRule.id} rule={activeRule} variant="icon" />
                       <DrawerCloseButton />
                     </div>
