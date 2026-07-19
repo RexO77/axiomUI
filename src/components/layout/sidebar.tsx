@@ -15,22 +15,26 @@ import { CategoryIcon } from "@/components/ui/category-icon";
 import { categories } from "@/data/ui-logic";
 import { cn } from "@/lib/utils";
 import { useHaptics } from "@/hooks/use-haptics";
+import { useSearch } from "@/components/providers/search-provider";
 
 const sidebarControlClass =
     "pressable flex h-9 w-9 items-center justify-center rounded-xl border border-transparent text-neutral-500 transition-[transform,background-color,border-color,color] duration-150 hover:border-neutral-200 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:border-neutral-700 dark:hover:bg-neutral-800 dark:hover:text-neutral-100";
 
 function SidebarContent({
+    instance,
     isFloating = false,
     showHeaderTheme = true,
     onLinkClick,
     extraHeaderAction,
 }: {
+    instance: "desktop" | "mobile";
     isFloating?: boolean;
     showHeaderTheme?: boolean;
     onLinkClick?: () => void;
     extraHeaderAction?: React.ReactNode;
 }) {
     const { tapLight } = useHaptics();
+    const { query } = useSearch();
     const [activeCategoryId, setActiveCategoryId] = useState(categories[0]?.id ?? "");
 
     useEffect(() => {
@@ -61,12 +65,23 @@ function SidebarContent({
             }
         );
 
+        let observedAny = false;
         categoryIds.forEach((id) => {
             const section = document.getElementById(id);
             if (section) {
                 observer.observe(section);
+                observedAny = true;
             }
         });
+
+        // Filtering unmounts and remounts section DOM nodes, so the active
+        // category may no longer be observed (or may no longer exist). Reset
+        // the highlight to the first rendered category rather than leaving
+        // it stuck on a hidden one.
+        if (observedAny && !document.getElementById(activeCategoryId)) {
+            const firstRendered = categoryIds.find((id) => document.getElementById(id));
+            if (firstRendered) setActiveCategoryId(firstRendered);
+        }
 
         window.addEventListener("hashchange", syncFromHash);
 
@@ -74,7 +89,10 @@ function SidebarContent({
             observer.disconnect();
             window.removeEventListener("hashchange", syncFromHash);
         };
-    }, []);
+        // Re-subscribe whenever the query changes: filtering mounts new
+        // section DOM nodes that the effect above needs to re-observe.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [query]);
 
     return (
         <div className="flex h-full flex-col p-4 sm:p-6">
@@ -100,7 +118,7 @@ function SidebarContent({
             </div>
 
             {/* Search */}
-            <SearchInput />
+            <SearchInput instance={instance} />
 
             {/* Categories */}
             <div className="mt-7 flex min-h-0 flex-1 flex-col overflow-hidden">
@@ -161,6 +179,34 @@ export function Sidebar() {
             document.body.style.overflow = "";
         };
     }, [isOpen]);
+
+    // Fallback for the global "/" or Cmd/Ctrl+K shortcut when neither search
+    // input could be focused directly (desktop sidebar collapsed via `inert`,
+    // or the mobile drawer closed): open the right surface, then focus its
+    // input. `inert` is removed on commit, so a bare focus() call racing the
+    // commit silently fails — double-rAF waits for that paint to land.
+    useEffect(() => {
+        const onOpenSearch = () => {
+            if (window.matchMedia("(min-width: 768px)").matches) {
+                setIsDesktopOpen(true);
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        document.getElementById("searchInput-desktop")?.focus();
+                    });
+                });
+            } else {
+                setIsOpen(true);
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        document.getElementById("searchInput-mobile")?.focus();
+                    });
+                });
+            }
+        };
+
+        window.addEventListener("axiom:open-search", onOpenSearch);
+        return () => window.removeEventListener("axiom:open-search", onOpenSearch);
+    }, []);
 
     useEffect(() => {
         const root = document.documentElement;
@@ -229,6 +275,7 @@ export function Sidebar() {
                     style={{ transitionTimingFunction: "var(--ease-drawer)" }}
                 >
                     <SidebarContent
+                        instance="mobile"
                         onLinkClick={() => setIsOpen(false)}
                         extraHeaderAction={
                             <button
@@ -282,6 +329,7 @@ export function Sidebar() {
                     style={{ transitionTimingFunction: "var(--ease-drawer)" }}
                 >
                     <SidebarContent
+                        instance="desktop"
                         isFloating
                         extraHeaderAction={
                             <button

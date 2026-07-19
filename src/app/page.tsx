@@ -18,19 +18,47 @@ import { Header } from "@/components/layout/header";
 import { RuleCard } from "@/components/features/rules/rule-card";
 import { RuleDrawer } from "@/components/features/rules/rule-drawer";
 import { CategoryIcon } from "@/components/ui/category-icon";
+import { SearchProvider, useSearch } from "@/components/providers/search-provider";
 
 function HomeContent() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const query = searchParams.get("q") ?? "";
   const routeRuleId = searchParams.get("rule");
   const [activeRuleId, setActiveRuleId] = useState(routeRuleId);
   const deferredRuleId = useDeferredValue(activeRuleId);
+
+  return (
+    <SearchProvider>
+      <HomeBody
+        pathname={pathname}
+        routeRuleId={routeRuleId}
+        activeRuleId={activeRuleId}
+        setActiveRuleId={setActiveRuleId}
+        deferredRuleId={deferredRuleId}
+      />
+    </SearchProvider>
+  );
+}
+
+function HomeBody({
+  pathname,
+  routeRuleId,
+  activeRuleId,
+  setActiveRuleId,
+  deferredRuleId,
+}: {
+  pathname: string;
+  routeRuleId: string | null;
+  activeRuleId: string | null;
+  setActiveRuleId: (id: string | null) => void;
+  deferredRuleId: string | null;
+}) {
+  const { query } = useSearch();
   const searchLower = query.trim().toLowerCase();
 
   useEffect(() => {
     setActiveRuleId(routeRuleId);
-  }, [routeRuleId]);
+  }, [routeRuleId, setActiveRuleId]);
 
   const syncRuleParam = useCallback((ruleId: string | null) => {
     const nextParams = new URLSearchParams(window.location.search);
@@ -50,12 +78,12 @@ function HomeContent() {
   const openRule = useCallback((ruleId: string) => {
     setActiveRuleId(ruleId);
     syncRuleParam(ruleId);
-  }, [syncRuleParam]);
+  }, [syncRuleParam, setActiveRuleId]);
 
   const closeRule = useCallback(() => {
     setActiveRuleId(null);
     syncRuleParam(null);
-  }, [syncRuleParam]);
+  }, [syncRuleParam, setActiveRuleId]);
 
   const filteredRules = useMemo(() => {
     if (!searchLower) {
@@ -66,6 +94,9 @@ function HomeContent() {
       (rule) =>
         rule.title.toLowerCase().includes(searchLower) ||
         rule.desc.toLowerCase().includes(searchLower) ||
+        rule.do.toLowerCase().includes(searchLower) ||
+        rule.dont.toLowerCase().includes(searchLower) ||
+        rule.id === searchLower ||
         rule.tags.some((tag) => tag.toLowerCase().includes(searchLower))
     );
   }, [searchLower]);
