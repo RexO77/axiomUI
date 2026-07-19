@@ -1,3 +1,5 @@
+import { ruleDeepDives } from "@/data/deep-dives";
+
 export type Category = {
   id: string;
   name: string;
@@ -1162,6 +1164,7 @@ const categoryDeepDive: Record<string, CategoryDeepDive> = {
 
 export function buildDeepDive(rule: Rule): DeepDiveSection[] {
   const deepDive = categoryDeepDive[rule.category] ?? defaultDeepDive;
+  const override = ruleDeepDives[rule.id];
 
   return [
     {
@@ -1172,22 +1175,24 @@ export function buildDeepDive(rule: Rule): DeepDiveSection[] {
     {
       type: "text",
       title: "Why it matters",
-      content: deepDive.impact,
+      content: override?.whyItMatters ?? deepDive.impact,
     },
     {
       type: "text",
       title: "Risk when ignored",
-      content: `${deepDive.failureMode} Anti-pattern example: ${rule.dont}.`,
+      content:
+        override?.riskWhenIgnored ??
+        `${deepDive.failureMode} Anti-pattern example: ${rule.dont}.`,
     },
     {
       type: "list",
       title: "Implementation notes",
-      items: buildImplementationNotes(rule, deepDive),
+      items: override?.implementationNotes ?? buildImplementationNotes(rule, deepDive),
     },
     {
       type: "list",
       title: "Design review prompts",
-      items: deepDive.reviewPrompts,
+      items: override?.reviewPrompts ?? deepDive.reviewPrompts,
     },
     {
       type: "code",
