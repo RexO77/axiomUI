@@ -6,6 +6,7 @@ import {
     ButtonScene,
     EdgePanelScene,
     GrowBoxScene,
+    IconSwapScene,
     LikeScene,
     ListScene,
     LoadingScene,
@@ -566,6 +567,123 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
             caption: "judged only at full speed",
             scene: (size) => <RaceScene size={size} />,
             tracks: [t("panel", kf.race(), 180)],
+        },
+    },
+
+    /* motion-26 · Split Enter Animations — semantic rows arrive in a short
+     * sequence instead of one undifferentiated container fade. */
+    "motion-26": {
+        trigger: "replay",
+        do: {
+            caption: "title, copy, actions · 90ms stagger",
+            scene: (size) => <ListScene size={size} hiddenAtRest />,
+            tracks: [t("row", kf.riseIn(8), DUR.medium, { staggerMs: 90 })],
+        },
+        dont: {
+            caption: "one giant container fade",
+            scene: (size) => <ListScene size={size} hiddenAtRest />,
+            tracks: [t("row", kf.fadeIn(), DUR.slow)],
+        },
+    },
+
+    /* motion-27 · Subtle Exit Motion — a short fixed offset preserves context;
+     * the exaggerated comparison shrinks and flies away. */
+    "motion-27": {
+        trigger: "replay",
+        do: {
+            caption: "opacity + translateY(-12px) · 150ms",
+            scene: (size) => <ButtonScene size={size} label="Dismiss" variant="secondary" />,
+            tracks: [t("panel", kf.dropOut(-12), 150, { easing: EASE.in })],
+        },
+        dont: {
+            caption: "full-height exit + scale · 400ms",
+            scene: (size) => <ButtonScene size={size} label="Dismiss" variant="secondary" />,
+            tracks: [
+                t(
+                    "panel",
+                    [
+                        { opacity: 1, transform: "translateY(0) scale(1)" },
+                        { opacity: 0, transform: "translateY(-100%) scale(0.5)" },
+                    ],
+                    400,
+                    { easing: EASE.in },
+                ),
+            ],
+        },
+    },
+
+    /* motion-28 · Animate Contextual Icons — keep both icons mounted and
+     * cross-fade with the prescribed scale/opacity/blur combination. */
+    "motion-28": {
+        trigger: "toggle",
+        control: "Change state",
+        do: {
+            caption: "opacity + scale 0.25→1 + blur 4px→0",
+            scene: (size) => <IconSwapScene size={size} />,
+            tracks: [
+                t(
+                    "icon-out",
+                    [
+                        { opacity: 1, transform: "scale(1)", filter: "blur(0px)" },
+                        { opacity: 0, transform: "scale(0.25)", filter: "blur(4px)" },
+                    ],
+                    300,
+                ),
+                t(
+                    "icon-in",
+                    [
+                        { opacity: 0, transform: "scale(0.25)", filter: "blur(4px)" },
+                        { opacity: 1, transform: "scale(1)", filter: "blur(0px)" },
+                    ],
+                    300,
+                ),
+            ],
+            exitTracks: [
+                t(
+                    "icon-out",
+                    [
+                        { opacity: 0, transform: "scale(0.25)", filter: "blur(4px)" },
+                        { opacity: 1, transform: "scale(1)", filter: "blur(0px)" },
+                    ],
+                    300,
+                ),
+                t(
+                    "icon-in",
+                    [
+                        { opacity: 1, transform: "scale(1)", filter: "blur(0px)" },
+                        { opacity: 0, transform: "scale(0.25)", filter: "blur(4px)" },
+                    ],
+                    300,
+                ),
+            ],
+        },
+        dont: {
+            caption: "abrupt visibility swap",
+            scene: (size) => <IconSwapScene size={size} />,
+            tracks: [
+                t("icon-out", [{ opacity: 1 }, { opacity: 0 }], 0),
+                t("icon-in", [{ opacity: 0 }, { opacity: 1 }], 0),
+            ],
+            exitTracks: [
+                t("icon-out", [{ opacity: 0 }, { opacity: 1 }], 0),
+                t("icon-in", [{ opacity: 1 }, { opacity: 0 }], 0),
+            ],
+        },
+    },
+
+    /* motion-29 · Skip Default Load Animation — the default state is already
+     * present on load; the comparison needlessly replays an entrance. */
+    "motion-29": {
+        trigger: "replay",
+        do: {
+            caption: "default state is present immediately",
+            scene: (size) => <ButtonScene size={size} label="Ready" variant="secondary" />,
+            tracks: [t("panel", [{ opacity: 1 }, { opacity: 1 }], 0)],
+        },
+        dont: {
+            caption: "default state re-enters on every load",
+            scene: (size) => <ButtonScene size={size} label="Ready" variant="secondary" />,
+            tracks: [t("panel", kf.riseIn(8), DUR.medium)],
         },
     },
 

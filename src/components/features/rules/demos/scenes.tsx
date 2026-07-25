@@ -288,6 +288,49 @@ export function ButtonScene({
     );
 }
 
+/** Two contextual icons occupying the same visual slot. Both stay mounted so
+ * the showcase can compare a composed cross-fade with an abrupt state swap. */
+export function IconSwapScene({ size }: { size: PreviewSize }) {
+    const iconSize = size === "lg" ? 22 : 18;
+
+    return (
+        <div className={cn("flex items-center justify-center", size === "lg" ? "h-24" : "h-16")}>
+            <div
+                className="relative text-neutral-700 dark:text-neutral-200"
+                style={{ width: iconSize, height: iconSize }}
+            >
+                <svg
+                    data-anim="icon-out"
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                    className="absolute inset-0"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                >
+                    <path d="M12 5v14M5 12h14" />
+                </svg>
+                <svg
+                    data-anim="icon-in"
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                    className="absolute inset-0"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    style={{ opacity: 0, transform: "scale(0.25)", filter: "blur(4px)" }}
+                >
+                    <path d="m5 12 4 4L19 6" />
+                </svg>
+            </div>
+        </div>
+    );
+}
+
 /** Submit button whose label crossfades to a spinner (rest: idle label). */
 export function SubmitScene({ size, spinner }: { size: PreviewSize; spinner: boolean }) {
     return (
