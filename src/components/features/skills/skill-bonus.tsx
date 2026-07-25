@@ -63,7 +63,7 @@ export function SkillBonus({ compact = false }: { compact?: boolean }) {
 
       try {
         const response = await fetch(skillPath, {
-          cache: "force-cache",
+          cache: "no-store",
           signal: controller.signal,
         });
 
@@ -363,7 +363,7 @@ export function SkillBonus({ compact = false }: { compact?: boolean }) {
                         Website Upgrade Playbook
                       </h3>
                       <p className="prose-justify mt-3 max-w-2xl text-sm leading-7 text-neutral-600 sm:mt-4 sm:text-base sm:leading-8 dark:text-white/68">
-                        A reusable skill for tightening hierarchy, spacing, components, forms, states, and accessibility.
+                        A decision framework for auditing, implementing, and verifying sharper interfaces.
                       </p>
                     </header>
 
