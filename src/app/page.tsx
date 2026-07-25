@@ -76,6 +76,8 @@ function HomeBody({
   }, [pathname]);
 
   const openRule = useCallback((ruleId: string) => {
+    // Start the async prose chunk before the state update renders the drawer.
+    void import("@/data/deep-dive-builder");
     setActiveRuleId(ruleId);
     syncRuleParam(ruleId);
   }, [syncRuleParam, setActiveRuleId]);
@@ -216,6 +218,7 @@ function HomeBody({
         activeRuleId={activeRuleId}
         contentPending={Boolean(activeRuleId && activeRuleId !== deferredRuleId)}
         onClose={closeRule}
+        onNavigate={openRule}
       />
     </div>
   );

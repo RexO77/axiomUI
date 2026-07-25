@@ -2,20 +2,27 @@
 
 import {
   AlertTriangle,
+  ArrowLeft,
+  ArrowRight,
   ArrowUpRight,
   CheckCircle2,
   X,
   XCircle,
 } from "lucide-react";
 import type { CSSProperties, UIEvent } from "react";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Drawer } from "vaul";
 import { RulePreview } from "@/components/features/rules/rule-preview";
 import { CopyRuleButton } from "@/components/features/rules/copy-rule-button";
 import { hasShowcase, MotionShowcase } from "@/components/features/rules/demos/registry";
 import type { DeepDiveSection, Rule } from "@/data/ui-logic";
-import { buildDeepDive } from "@/data/ui-logic";
+import { getAdjacentRules } from "@/data/ui-logic";
 import { useHaptics } from "@/hooks/use-haptics";
+import {
+  findCodeSection,
+  findListSection,
+  findTextSection,
+} from "@/lib/deep-dive-sections";
 
 interface RuleDrawerProps {
   activeRule: Rule | null;
@@ -23,6 +30,7 @@ interface RuleDrawerProps {
   activeRuleId: string | null;
   contentPending: boolean;
   onClose: () => void;
+  onNavigate: (ruleId: string) => void;
 }
 
 // Set both the standard and -webkit-prefixed backdrop-filter (older Safari).
@@ -52,14 +60,23 @@ export function RuleDrawer({
   activeRuleId,
   contentPending,
   onClose,
+  onNavigate,
 }: RuleDrawerProps) {
   const { tapMedium } = useHaptics();
-  const activeDeepDive = useMemo(
-    () => activeRule ? buildDeepDive(activeRule) : [],
-    [activeRule]
-  );
+  const [loadedDeepDive, setLoadedDeepDive] = useState<{
+    ruleId: string;
+    sections: DeepDiveSection[];
+  } | null>(null);
+  const activeDeepDive =
+    loadedDeepDive && loadedDeepDive.ruleId === activeRule?.id
+      ? loadedDeepDive.sections
+      : [];
   const isOpen = Boolean(activeRuleId);
+  const { prev, next } = activeRule
+    ? getAdjacentRules(activeRule)
+    : { prev: null, next: null };
   const headerRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const restoreBlur = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // Sticky-header behaviour for the right pane: surface a hairline once the
@@ -84,6 +101,26 @@ export function RuleDrawer({
 
   useEffect(() => () => clearTimeout(restoreBlur.current), []);
 
+  // The authored prose lives in an async chunk. Key the loaded value to the
+  // rule so a slow, stale import can never flash beneath a newer rule title.
+  useEffect(() => {
+    if (!activeRule) return;
+
+    let cancelled = false;
+    import("@/data/deep-dive-builder").then(({ buildDeepDive }) => {
+      if (!cancelled) {
+        setLoadedDeepDive({
+          ruleId: activeRule.id,
+          sections: buildDeepDive(activeRule),
+        });
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeRule]);
+
   // Vaul doesn't forward modal={false} to its underlying Radix Dialog, so the
   // dismissable layer locks the page with `body { pointer-events: none }` every
   // time the drawer opens — which kills clicks on the rule cards, so you can't
@@ -104,6 +141,33 @@ export function RuleDrawer({
       body.style.pointerEvents = "";
     };
   }, [isOpen]);
+
+  // Arrow keys page through the current category while the drawer is open.
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+
+      const target = event.target instanceof Element ? event.target : null;
+      if (target?.closest("input, textarea, [contenteditable]")) return;
+
+      const targetRule = event.key === "ArrowLeft" ? prev : next;
+      if (!targetRule) return;
+
+      event.preventDefault();
+      onNavigate(targetRule.id);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, next, onNavigate, prev]);
+
+  // A content swap starts at the top immediately; it is not a scroll animation.
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: 0, behavior: "instant" });
+  }, [activeRuleId]);
 
   const summary = findTextSection(activeDeepDive, "Summary") ?? activeRule?.desc ?? "";
   const whyItMatters = findTextSection(activeDeepDive, "Why it matters");
@@ -132,10 +196,17 @@ export function RuleDrawer({
           className="fixed inset-y-0 right-0 z-[90] flex w-full overscroll-contain p-0 outline-none xl:inset-y-6 xl:right-6 xl:w-[min(40vw,480px)]"
           style={{ "--initial-transform": "100%" } as CSSProperties}
         >
-          <div className="panel-shadow ml-auto flex h-full w-full flex-col overflow-hidden rounded-none border border-neutral-200/80 bg-white/95 xl:rounded-[28px] dark:border-neutral-800/80 dark:bg-neutral-900/95">
+          <div className="panel-shadow ml-auto flex h-full w-full flex-col overflow-hidden rounded-none border border-neutral-200/80 bg-white xl:rounded-[28px] xl:bg-white/95 dark:border-neutral-800/80 dark:bg-neutral-900 xl:dark:bg-neutral-900/95">
             <Drawer.Title className="sr-only">{activeRule?.title ?? "Rule details"}</Drawer.Title>
+            <Drawer.Description className="sr-only">
+              {activeRule?.desc ?? "Implementation guidance and visual comparisons for the selected rule."}
+            </Drawer.Description>
 
-            <div onScroll={handleScroll} className="drawer-scroll flex-1 overflow-y-auto px-5 pb-8 sm:px-7">
+            <div
+              ref={scrollRef}
+              onScroll={handleScroll}
+              className="drawer-scroll flex-1 overflow-y-auto px-5 pb-8 sm:px-7"
+            >
               {activeRule ? (
                 <>
                   {/* Sticky header: keeps the category + copy/close reachable
@@ -168,10 +239,6 @@ export function RuleDrawer({
                   </div>
 
                   <div className="rule-drawer-content space-y-10 pt-4 pb-12 sm:space-y-12 sm:pt-5 lg:pb-14">
-                    <Drawer.Description className="sr-only">
-                      {summary}
-                    </Drawer.Description>
-
                     {/* Keyed by category so the header only re-animates when the
                         category changes; switching rules within a category leaves it put. */}
                     <header key={activeRule.category} className="rule-drawer-stagger">
@@ -283,6 +350,40 @@ export function RuleDrawer({
                       ) : null}
                     </aside>
                   </div>
+
+                  {(prev || next) && (
+                    <nav
+                      aria-label="Adjacent rules"
+                      className="flex items-center justify-between gap-4 border-t border-neutral-200 pt-6 dark:border-neutral-800"
+                    >
+                      {prev ? (
+                        <button
+                          type="button"
+                          onClick={() => onNavigate(prev.id)}
+                          className="pressable group inline-flex min-h-11 max-w-[45%] items-center gap-2 rounded-full text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+                          aria-label={`Previous rule: ${prev.title}`}
+                        >
+                          <ArrowLeft aria-hidden="true" className="h-4 w-4 shrink-0" />
+                          <span className="truncate">{prev.title}</span>
+                        </button>
+                      ) : (
+                        <span />
+                      )}
+                      {next ? (
+                        <button
+                          type="button"
+                          onClick={() => onNavigate(next.id)}
+                          className="pressable group inline-flex min-h-11 max-w-[45%] items-center gap-2 rounded-full text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+                          aria-label={`Next rule: ${next.title}`}
+                        >
+                          <span className="truncate">{next.title}</span>
+                          <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0" />
+                        </button>
+                      ) : (
+                        <span />
+                      )}
+                    </nav>
+                  )}
                   </div>
                 </>
               ) : contentPending ? (
@@ -308,19 +409,4 @@ export function RuleDrawer({
       </Drawer.Portal>
     </Drawer.Root>
   );
-}
-
-function findTextSection(sections: DeepDiveSection[], title: string): string | null {
-  const section = sections.find((item) => item.type === "text" && item.title === title);
-  return section?.type === "text" ? section.content : null;
-}
-
-function findListSection(sections: DeepDiveSection[], title: string): string[] {
-  const section = sections.find((item) => item.type === "list" && item.title === title);
-  return section?.type === "list" ? section.items : [];
-}
-
-function findCodeSection(sections: DeepDiveSection[], title: string): string | null {
-  const section = sections.find((item) => item.type === "code" && item.title === title);
-  return section?.type === "code" ? section.code : null;
 }

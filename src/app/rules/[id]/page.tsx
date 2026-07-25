@@ -1,13 +1,15 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Check, X, Tag } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, Check, X, Tag } from "lucide-react";
 import { AxiomLogo } from "@/components/ui/axiom-logo";
 import { RulePreview } from "@/components/features/rules/rule-preview";
 import { CopyRuleButton } from "@/components/features/rules/copy-rule-button";
 import { hasShowcase, MotionShowcase } from "@/components/features/rules/demos/registry";
 
-import { rules, categories, buildDeepDive, getAdjacentRules, getRelatedRules } from "@/data/ui-logic";
+import { buildDeepDive } from "@/data/deep-dive-builder";
+import { rules, categories, getAdjacentRules, getRelatedRules } from "@/data/ui-logic";
+import { findListSection, findTextSection } from "@/lib/deep-dive-sections";
 import { absoluteUrl } from "@/lib/site";
 
 export const dynamicParams = false;
@@ -45,7 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             url: absoluteUrl(`/rules/${rule.id}`),
         },
         twitter: {
-            card: "summary",
+            card: "summary_large_image",
             title: `${rule.title} | Axiom`,
             description: rule.desc,
         },
@@ -65,6 +67,10 @@ export default async function RulePage({ params }: Props) {
 
     const category = categories.find((c) => c.id === rule.category);
     const deepDive = buildDeepDive(rule);
+    const whyItMatters = findTextSection(deepDive, "Why it matters");
+    const riskWhenIgnored = findTextSection(deepDive, "Risk when ignored");
+    const implementationNotes = findListSection(deepDive, "Implementation notes");
+    const reviewPrompts = findListSection(deepDive, "Design review prompts");
     const { prev, next } = getAdjacentRules(rule);
     const related = getRelatedRules(rule);
 
@@ -222,34 +228,63 @@ export default async function RulePage({ params }: Props) {
                         </div>
                     </div>
 
-                    {/* Deep Dive Sections */}
-                    <div className="space-y-8">
-                        {deepDive.map((section, idx) => (
-                            <section key={idx}>
-                                {section.title && (
-                                    <h2 className="mb-4 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
-                                        {section.title}
-                                    </h2>
-                                )}
-                                {section.type === "text" && (
-                                    <p className="prose-justify text-neutral-600 dark:text-neutral-300">
-                                        {section.content}
-                                    </p>
-                                )}
-                                {section.type === "list" && (
-                                    <ul className="list-inside list-disc space-y-2 text-neutral-600 dark:text-neutral-300">
-                                        {section.items.map((item, i) => (
-                                            <li key={i}>{item}</li>
-                                        ))}
-                                    </ul>
-                                )}
-                                {section.type === "code" && (
-                                    <pre className="rounded-xl border border-neutral-200 bg-neutral-100 p-4 font-mono text-sm text-neutral-900 dark:border-neutral-800 dark:bg-neutral-800 dark:text-neutral-100">
-                                        {section.code}
-                                    </pre>
-                                )}
+                    {/* Summary and Recommended/Avoid are omitted here because
+                        the page header and comparison cards already show them. */}
+                    <div className="space-y-10">
+                        {implementationNotes.length > 0 && (
+                            <section>
+                                <h2 className="mb-4 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+                                    How to apply it
+                                </h2>
+                                <ol className="space-y-4">
+                                    {implementationNotes.map((item, index) => (
+                                        <li key={`${item}-${index}`} className="flex gap-4">
+                                            <span className="mt-0.5 w-5 shrink-0 text-right text-sm text-neutral-400 dark:text-neutral-500">
+                                                {index + 1}
+                                            </span>
+                                            <p className="text-neutral-600 dark:text-neutral-300">{item}</p>
+                                        </li>
+                                    ))}
+                                </ol>
                             </section>
-                        ))}
+                        )}
+
+                        {whyItMatters && (
+                            <section>
+                                <h2 className="mb-4 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+                                    Why it works
+                                </h2>
+                                <p className="prose-justify text-neutral-600 dark:text-neutral-300">{whyItMatters}</p>
+                            </section>
+                        )}
+
+                        {riskWhenIgnored && (
+                            <section>
+                                <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+                                    <AlertTriangle aria-hidden="true" className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                                    What breaks
+                                </h2>
+                                <p className="prose-justify text-neutral-600 dark:text-neutral-300">{riskWhenIgnored}</p>
+                            </section>
+                        )}
+
+                        {reviewPrompts.length > 0 && (
+                            <section>
+                                <h2 className="mb-4 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+                                    Review questions
+                                </h2>
+                                <ol className="space-y-4">
+                                    {reviewPrompts.map((item, index) => (
+                                        <li key={`${item}-${index}`} className="flex gap-4">
+                                            <span className="mt-0.5 w-5 shrink-0 text-right text-sm text-neutral-400 dark:text-neutral-500">
+                                                {index + 1}
+                                            </span>
+                                            <p className="text-neutral-600 dark:text-neutral-300">{item}</p>
+                                        </li>
+                                    ))}
+                                </ol>
+                            </section>
+                        )}
                     </div>
                 </article>
 
