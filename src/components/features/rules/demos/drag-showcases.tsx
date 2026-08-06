@@ -237,7 +237,7 @@ function DragCard({
                     size === "md" ? "h-14 w-28" : "h-10 w-16"
                 )}
             >
-                <span className="mb-1 text-[10px] font-semibold tracking-tight text-blue-700 dark:text-blue-300">
+                <span className="mb-1 text-xs font-semibold leading-none tracking-tight text-blue-700 dark:text-blue-300">
                     Message
                 </span>
                 <MiniLine widthClass="w-3/4" className="mb-1 h-1 !bg-blue-500/40" />
