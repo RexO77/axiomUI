@@ -4,6 +4,8 @@ import type { PointerEvent as ReactPointerEvent, ReactNode, RefObject } from "re
 import { useEffect, useRef } from "react";
 
 import { cn } from "@/lib/utils";
+import { springLinear } from "@/lib/showcase-engine";
+import { useHaptics } from "@/hooks/use-haptics";
 import { MiniLine } from "@/components/features/rules/preview-primitives";
 import { Hint, PaneChrome } from "@/components/features/rules/demos/showcase-chrome";
 import { showcaseSpecs } from "@/components/features/rules/demos/showcase-specs";
@@ -31,6 +33,12 @@ import { showcaseSpecs } from "@/components/features/rules/demos/showcase-specs"
 
 const RELEASE_TRANSITION =
     "transform 220ms var(--ease-out-strong), opacity 220ms var(--ease-out-strong)";
+
+const SUPPORTS_LINEAR =
+    typeof CSS !== "undefined" &&
+    CSS.supports("transition-timing-function", "linear(0, 1)");
+const SPRING_SOFT = SUPPORTS_LINEAR ? springLinear(0.15) : "var(--ease-out-strong)";
+const SPRING_SETTLE = SUPPORTS_LINEAR ? springLinear(0.2) : "var(--ease-out-strong)";
 
 export function DragShowcase({ ruleId }: { ruleId: string }) {
     switch (ruleId) {
@@ -116,11 +124,15 @@ function useMirroredDrag(handlers: DragHandlers) {
 function DragSurface({
     hint,
     surfaceRef,
+    readoutRef,
     children,
     ...pointerProps
 }: {
     hint: string;
     surfaceRef?: RefObject<HTMLDivElement | null>;
+    /** Live gesture readout (velocity / damping / capture) — written
+     *  imperatively from onFrame, never through React state. */
+    readoutRef?: RefObject<HTMLSpanElement | null>;
     children: ReactNode;
 } & ReturnType<typeof useMirroredDrag>) {
     return (
@@ -134,44 +146,102 @@ function DragSurface({
             >
                 {children}
             </div>
-            <div className="mt-3 flex min-h-[28px] items-center">
+            <div className="mt-3 flex min-h-[28px] flex-wrap items-center gap-x-3 gap-y-1">
                 <Hint>{hint}</Hint>
+                {readoutRef ? (
+                    <span
+                        ref={readoutRef}
+                        aria-hidden="true"
+                        className="font-mono text-[10px] tabular-nums text-blue-600 dark:text-blue-400"
+                    />
+                ) : null}
             </div>
         </div>
     );
 }
 
-function setCardX(el: HTMLElement | null, x: number, animate: boolean) {
+function setCardX(
+    el: HTMLElement | null,
+    x: number,
+    animate: boolean,
+    releaseStyle?: { durationMs: number; easing: string }
+) {
     if (!el) return;
-    el.style.transition = animate ? RELEASE_TRANSITION : "none";
+    el.style.transition = animate
+        ? releaseStyle
+            ? `transform ${releaseStyle.durationMs}ms ${releaseStyle.easing}, opacity ${releaseStyle.durationMs}ms ${releaseStyle.easing}`
+            : RELEASE_TRANSITION
+        : "none";
     el.style.transform = `translateX(${x}px)`;
 }
 
 /* ── motion-18 · Gesture Dismissal Uses Velocity ────────────────────── */
 
+function DragGrip() {
+    return (
+        <div
+            aria-hidden="true"
+            className="absolute right-1 top-1/2 grid -translate-y-1/2 grid-cols-2 gap-0.5"
+        >
+            {Array.from({ length: 6 }).map((_, i) => (
+                <span
+                    key={i}
+                    className="size-0.5 rounded-full bg-neutral-300 dark:bg-neutral-600"
+                />
+            ))}
+        </div>
+    );
+}
+
 function DragCard({
     cardRef,
     railRef,
     size = "md",
+    showThreshold = false,
+    showWall = false,
 }: {
     cardRef: RefObject<HTMLDivElement | null>;
     railRef?: RefObject<HTMLDivElement | null>;
     size?: "md" | "sm";
+    /** Visual 60% dismiss mark for the velocity demo. */
+    showThreshold?: boolean;
+    /** Solid right-edge cap — the "wall" the damping demo drags against. */
+    showWall?: boolean;
 }) {
     return (
         <div
             ref={railRef}
-            className="relative flex h-24 items-center overflow-hidden rounded-md border border-dashed border-neutral-200 px-1.5 dark:border-neutral-800"
+            className="relative flex h-36 items-center overflow-hidden rounded-lg border border-dashed border-neutral-300 bg-neutral-50/80 px-2 dark:border-neutral-700 dark:bg-neutral-900/50"
         >
+            {showThreshold ? (
+                <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-y-2 left-[60%] w-px border-l border-dashed border-rose-400/70"
+                >
+                    <span className="absolute -top-0.5 left-1 text-[8px] font-medium uppercase tracking-wide text-rose-400/90">
+                        60%
+                    </span>
+                </div>
+            ) : null}
+            {showWall ? (
+                <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-y-1.5 right-1 w-0.5 rounded-full bg-neutral-400/80 dark:bg-neutral-500/80"
+                />
+            ) : null}
             <div
                 ref={cardRef}
                 className={cn(
-                    "rounded-md border border-neutral-300 bg-white p-1.5 shadow-sm dark:border-neutral-600 dark:bg-neutral-800",
-                    size === "md" ? "h-14 w-20" : "h-10 w-14"
+                    "relative flex flex-col justify-center rounded-lg border border-blue-500 bg-blue-500/10 p-2 shadow-sm dark:border-blue-400 dark:bg-blue-400/10",
+                    size === "md" ? "h-14 w-28" : "h-10 w-16"
                 )}
             >
-                <MiniLine widthClass="w-3/4" className="mb-1 h-1.5" />
-                <MiniLine widthClass="w-1/2" className="h-1.5" />
+                <span className="mb-1 text-[10px] font-semibold tracking-tight text-blue-700 dark:text-blue-300">
+                    Message
+                </span>
+                <MiniLine widthClass="w-3/4" className="mb-1 h-1 !bg-blue-500/40" />
+                <MiniLine widthClass="w-1/2" className="h-1 !bg-blue-500/40" />
+                <DragGrip />
             </div>
         </div>
     );
@@ -179,10 +249,16 @@ function DragCard({
 
 function VelocityDismiss() {
     const spec = showcaseSpecs["motion-18"];
+    const { tapLight, tapSuccess } = useHaptics();
     const doCard = useRef<HTMLDivElement | null>(null);
     const dontCard = useRef<HTMLDivElement | null>(null);
     const rail = useRef<HTMLDivElement | null>(null);
+    const readout = useRef<HTMLSpanElement | null>(null);
     const travel = useRef(120);
+    const currentX = useRef(0);
+    const ticked = useRef(false);
+    const prevSample = useRef({ x: 0, t: 0 });
+    const liveVelocity = useRef(0);
     const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
     useEffect(() => {
@@ -190,17 +266,25 @@ function VelocityDismiss() {
         return () => pending.forEach(clearTimeout);
     }, []);
 
-    const dismiss = (el: HTMLElement | null) => {
+    const writeReadout = (text: string) => {
+        if (readout.current) readout.current.textContent = text;
+    };
+
+    const dismiss = (el: HTMLElement | null, velocity: number) => {
         if (!el) return;
-        el.style.transition = RELEASE_TRANSITION;
+        const remaining = Math.max(8, travel.current + 48 - currentX.current);
+        const durationMs = Math.min(
+            260,
+            Math.max(120, remaining / Math.max(velocity, 0.8))
+        );
+        el.style.transition = `transform ${durationMs}ms var(--ease-out-strong), opacity ${durationMs}ms var(--ease-out-strong)`;
         el.style.transform = `translateX(${travel.current + 48}px)`;
         el.style.opacity = "0";
-        // Fade back in so the demo is infinitely repeatable.
         timers.current.push(
             setTimeout(() => {
                 el.style.transition = "none";
                 el.style.transform = "translateX(0)";
-                void el.offsetHeight; // commit the jump before fading back in
+                void el.offsetHeight;
                 el.style.transition = "opacity 220ms var(--ease-out-strong)";
                 el.style.opacity = "1";
             }, 700)
@@ -209,6 +293,10 @@ function VelocityDismiss() {
 
     const surface = useMirroredDrag({
         onStart: () => {
+            ticked.current = false;
+            currentX.current = 0;
+            liveVelocity.current = 0;
+            prevSample.current = { x: 0, t: performance.now() };
             const railEl = rail.current;
             const cardEl = doCard.current;
             if (railEl && cardEl) {
@@ -217,28 +305,70 @@ function VelocityDismiss() {
         },
         onFrame: (dx) => {
             const x = Math.min(Math.max(dx, 0), travel.current);
+            currentX.current = x;
             setCardX(doCard.current, x, false);
             setCardX(dontCard.current, x, false);
+            // Live physics readout — smoothed frame-to-frame velocity.
+            const now = performance.now();
+            const dt = now - prevSample.current.t;
+            if (dt > 0) {
+                const instant = (dx - prevSample.current.x) / dt;
+                liveVelocity.current = liveVelocity.current * 0.7 + instant * 0.3;
+            }
+            prevSample.current = { x: dx, t: now };
+            writeReadout(
+                `v ${liveVelocity.current.toFixed(2)} px/ms · x ${Math.round(
+                    (x / Math.max(1, travel.current)) * 100
+                )}%`
+            );
+            if (!ticked.current && x > travel.current * 0.6) {
+                ticked.current = true;
+                tapLight();
+            }
         },
         onRelease: (dx, velocity) => {
             const x = Math.min(Math.max(dx, 0), travel.current);
+            currentX.current = x;
             const farEnough = x > travel.current * 0.6;
-            // Do: a quick short flick dismisses — velocity OR distance.
-            if (velocity > 0.5 || farEnough) dismiss(doCard.current);
-            else setCardX(doCard.current, 0, true);
-            // Don't: distance is the only signal — the same flick snaps back.
-            if (farEnough) dismiss(dontCard.current);
+            const flick = velocity > 0.5;
+            if (flick || farEnough) {
+                dismiss(doCard.current, Math.abs(velocity));
+                tapSuccess();
+            } else {
+                setCardX(doCard.current, 0, true, {
+                    durationMs: 350,
+                    easing: SPRING_SOFT,
+                });
+            }
+            if (farEnough) dismiss(dontCard.current, Math.abs(velocity));
             else setCardX(dontCard.current, 0, true);
+            // Freeze the release verdict as evidence, then clear.
+            writeReadout(
+                `v ${velocity.toFixed(2)} px/ms · x ${Math.round(
+                    (x / Math.max(1, travel.current)) * 100
+                )}% — ${
+                    flick && !farEnough
+                        ? "dismissed by flick"
+                        : farEnough
+                          ? "dismissed by distance"
+                          : "no flick, not far — snapped back"
+                }`
+            );
+            timers.current.push(setTimeout(() => writeReadout(""), 2500));
         },
     });
 
     return (
-        <DragSurface {...surface} hint="Drag or flick the cards right — a quick short flick should dismiss">
+        <DragSurface
+            {...surface}
+            readoutRef={readout}
+            hint="Flick short and fast: the left card reads intent, the right demands mileage"
+        >
             <PaneChrome variant="do" caption={spec.do.caption}>
-                <DragCard cardRef={doCard} railRef={rail} />
+                <DragCard cardRef={doCard} railRef={rail} showThreshold />
             </PaneChrome>
             <PaneChrome variant="dont" caption={spec.dont.caption}>
-                <DragCard cardRef={dontCard} />
+                <DragCard cardRef={dontCard} showThreshold />
             </PaneChrome>
         </DragSurface>
     );
@@ -251,7 +381,18 @@ function DampedBoundary() {
     const doCard = useRef<HTMLDivElement | null>(null);
     const dontCard = useRef<HTMLDivElement | null>(null);
     const rail = useRef<HTMLDivElement | null>(null);
+    const readout = useRef<HTMLSpanElement | null>(null);
     const max = useRef(120);
+    const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+    useEffect(() => {
+        const pending = timers.current;
+        return () => pending.forEach(clearTimeout);
+    }, []);
+
+    const writeReadout = (text: string) => {
+        if (readout.current) readout.current.textContent = text;
+    };
 
     const surface = useMirroredDrag({
         onStart: () => {
@@ -263,28 +404,42 @@ function DampedBoundary() {
         },
         onFrame: (dx) => {
             const limit = max.current;
-            // Do: past the boundary, movement continues at a third of the
-            // pointer's pace — the rubber-band the rule prescribes.
             const damped =
                 dx < 0 ? dx / 3 : dx <= limit ? dx : limit + (dx - limit) / 3;
-            // Don't: a hard clamp — the card pins dead at the edge.
             const clamped = Math.min(Math.max(dx, 0), limit);
             setCardX(doCard.current, damped, false);
             setCardX(dontCard.current, clamped, false);
+            // The damping math, made visible while you're past the wall.
+            if (dx > limit) {
+                const over = Math.round(dx - limit);
+                writeReadout(`pointer +${over}px past the wall → card +${Math.round(over / 3)}px`);
+            } else if (dx < 0) {
+                writeReadout(`pointer ${Math.round(dx)}px → card ${Math.round(dx / 3)}px`);
+            } else {
+                writeReadout("");
+            }
         },
         onRelease: () => {
-            setCardX(doCard.current, 0, true);
+            setCardX(doCard.current, 0, true, {
+                durationMs: 450,
+                easing: SPRING_SETTLE,
+            });
             setCardX(dontCard.current, 0, true);
+            timers.current.push(setTimeout(() => writeReadout(""), 2000));
         },
     });
 
     return (
-        <DragSurface {...surface} hint="Drag the cards past the frame edge, then release">
+        <DragSurface
+            {...surface}
+            readoutRef={readout}
+            hint="Drag past the edge and let go — one card is physical, one is a clamp"
+        >
             <PaneChrome variant="do" caption={spec.do.caption}>
-                <DragCard cardRef={doCard} railRef={rail} />
+                <DragCard cardRef={doCard} railRef={rail} showWall />
             </PaneChrome>
             <PaneChrome variant="dont" caption={spec.dont.caption}>
-                <DragCard cardRef={dontCard} />
+                <DragCard cardRef={dontCard} showWall />
             </PaneChrome>
         </DragSurface>
     );
@@ -300,11 +455,14 @@ function SliderPane({
     trackRef?: RefObject<HTMLDivElement | null>;
 }) {
     return (
-        <div className="flex h-24 items-center px-2">
-            <div ref={trackRef} className="relative h-1.5 w-full rounded-full bg-neutral-200 dark:bg-neutral-800">
+        <div className="flex h-36 items-center px-2">
+            <div
+                ref={trackRef}
+                className="relative h-1.5 w-full rounded-full bg-neutral-200 dark:bg-neutral-800"
+            >
                 <div
                     ref={knobRef}
-                    className="absolute size-4 rounded-full border border-neutral-300 bg-white shadow-sm dark:border-neutral-500 dark:bg-neutral-200"
+                    className="absolute size-4 rounded-full border border-blue-600 bg-blue-600 shadow-sm"
                     style={{ top: "calc(50% - 8px)", left: 0 }}
                 />
             </div>
@@ -318,10 +476,15 @@ function PointerCaptureSlider() {
     const dontKnob = useRef<HTMLDivElement | null>(null);
     const track = useRef<HTMLDivElement | null>(null);
     const surfaceEl = useRef<HTMLDivElement | null>(null);
+    const readout = useRef<HTMLSpanElement | null>(null);
     const max = useRef(120);
     const bounds = useRef<DOMRect | null>(null);
     const base = useRef({ do: 0, dont: 0 });
     const current = useRef({ do: 0, dont: 0 });
+
+    const writeReadout = (text: string) => {
+        if (readout.current) readout.current.textContent = text;
+    };
 
     const surface = useMirroredDrag({
         onStart: () => {
@@ -350,10 +513,14 @@ function PointerCaptureSlider() {
             if (inside) {
                 current.current.dont = clamp(base.current.dont + dx);
                 setCardX(dontKnob.current, current.current.dont, false);
+                writeReadout("pointer inside — both knobs tracking");
+            } else {
+                writeReadout("pointer outside — left knob still tracking, right knob lost");
             }
         },
         onRelease: () => {
             // Sliders keep their value; the next drag continues from here.
+            writeReadout("");
         },
     });
 
@@ -361,7 +528,8 @@ function PointerCaptureSlider() {
         <DragSurface
             {...surface}
             surfaceRef={surfaceEl}
-            hint="Drag the knobs, then move the pointer outside the frame mid-drag"
+            readoutRef={readout}
+            hint="Drag a knob, then swing your pointer outside the panes mid-drag"
         >
             <PaneChrome variant="do" caption={spec.do.caption}>
                 <SliderPane knobRef={doKnob} trackRef={track} />
