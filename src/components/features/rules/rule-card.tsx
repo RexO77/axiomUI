@@ -4,6 +4,7 @@ import { ArrowUpRight, CheckCircle2, XCircle } from "lucide-react";
 import { memo, type CSSProperties } from "react";
 import type { Rule } from "@/data/ui-logic";
 import { RulePreview } from "@/components/features/rules/rule-preview";
+import { hasShowcase } from "@/components/features/rules/demos/registry";
 import { CopyRuleButton } from "@/components/features/rules/copy-rule-button";
 import { useHaptics } from "@/hooks/use-haptics";
 
@@ -58,6 +59,9 @@ export const RuleCard = memo(RuleCardComponent);
 function ComparisonPanel({ rule, variant }: { rule: Rule; variant: "do" | "dont" }) {
   const isDo = variant === "do";
   const Icon = isDo ? CheckCircle2 : XCircle;
+  // Motion showcases carry their own caption (richer than rule.do/dont);
+  // static previews get the rule's shorthand as a single flat footer line.
+  const showFooter = !hasShowcase(rule.id);
 
   return (
     <section className="rule-card-panel flex min-w-0 flex-col rounded-[20px] bg-neutral-50/80 p-3 dark:bg-neutral-950/45">
@@ -76,15 +80,16 @@ function ComparisonPanel({ rule, variant }: { rule: Rule; variant: "do" | "dont"
         </span>
       </div>
 
-      <div className="mt-3">
-        <RulePreview rule={rule} variant={variant} />
+      {/* The preview IS the card — full deep-dive detail, first impression. */}
+      <div className="mt-3 flex-1">
+        <RulePreview rule={rule} variant={variant} size="lg" />
       </div>
 
-      <div className="mt-auto pt-2">
-        <code className="rule-card-code block min-h-9 break-words rounded-[8px] bg-white/90 px-3 py-2 text-xs leading-5 text-neutral-700 dark:bg-neutral-950/90 dark:text-neutral-200">
+      {showFooter ? (
+        <p className="mt-2.5 break-words px-0.5 font-mono text-[11px] leading-4 text-neutral-500 dark:text-neutral-400">
           {isDo ? rule.do : rule.dont}
-        </code>
-      </div>
+        </p>
+      ) : null}
     </section>
   );
 }
