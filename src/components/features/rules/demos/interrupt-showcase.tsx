@@ -3,6 +3,7 @@
 import { useRef, useState, type RefObject } from "react";
 
 import { EASE } from "@/lib/showcase-engine";
+import { prefersReducedMotion } from "@/lib/media";
 import {
     ControlButton,
     Hint,
@@ -26,21 +27,28 @@ export function InterruptShowcase() {
     const toggle = () => {
         const next = !atFar;
         setAtFar(next);
+        // Read at play time, matching the engine — see media.ts.
+        const reduced = prefersReducedMotion();
 
         const doEl = doCard.current;
         if (doEl) {
-            doEl.style.transition = `transform ${DURATION}ms ${EASE.inOut}`;
+            doEl.style.transition = reduced
+                ? "none"
+                : `transform ${DURATION}ms ${EASE.inOut}`;
             doEl.style.transform = next ? FAR : REST;
         }
 
         const dontEl = dontCard.current;
         if (dontEl) {
             dontAnim.current?.cancel();
+            // A script-created effect is immune to the global reduced-motion
+            // CSS override, so the duration has to be zeroed here — otherwise
+            // this pane animates for users who asked for no motion.
             dontAnim.current = dontEl.animate(
                 next
                     ? [{ transform: REST }, { transform: FAR }]
                     : [{ transform: FAR }, { transform: REST }],
-                { duration: DURATION, easing: EASE.inOut, fill: "forwards" }
+                { duration: reduced ? 0 : DURATION, easing: EASE.inOut, fill: "forwards" }
             );
         }
     };
