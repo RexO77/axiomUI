@@ -86,7 +86,7 @@ function ComparisonPanel({ rule, variant }: { rule: Rule; variant: "do" | "dont"
       </div>
 
       {showFooter ? (
-        <p className="mt-2.5 break-words px-0.5 font-mono text-[11px] leading-4 text-neutral-500 dark:text-neutral-400">
+        <p className="mt-2.5 break-words px-0.5 font-mono text-xs leading-5 text-neutral-500 dark:text-neutral-400">
           {isDo ? rule.do : rule.dont}
         </p>
       ) : null}

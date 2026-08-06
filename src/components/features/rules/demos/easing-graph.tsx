@@ -31,7 +31,7 @@ export function EasingGraph({
         <div
             className={cn(
                 "relative overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900/60",
-                size === "lg" ? "h-[120px]" : "h-14"
+                size === "lg" ? "h-32" : "h-14"
             )}
             aria-hidden="true"
         >

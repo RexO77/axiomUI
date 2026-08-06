@@ -152,7 +152,7 @@ function DragSurface({
                     <span
                         ref={readoutRef}
                         aria-hidden="true"
-                        className="font-mono text-[10px] tabular-nums text-blue-600 dark:text-blue-400"
+                        className="font-mono text-xs tabular-nums text-blue-700 dark:text-blue-300"
                     />
                 ) : null}
             </div>
@@ -218,7 +218,8 @@ function DragCard({
                     aria-hidden="true"
                     className="pointer-events-none absolute inset-y-2 left-[60%] w-px border-l border-dashed border-rose-400/70"
                 >
-                    <span className="absolute -top-0.5 left-1 text-[8px] font-medium uppercase tracking-wide text-rose-400/90">
+                    {/* Reader-facing annotation, not depicted UI — keep it legible. */}
+                    <span className="absolute -top-1.5 left-1 text-xs font-medium tabular-nums text-rose-500 dark:text-rose-300">
                         60%
                     </span>
                 </div>
