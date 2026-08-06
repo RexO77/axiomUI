@@ -28,19 +28,13 @@ export function EasingGraph({
     const area = `${path} L ${w - pad} ${h - pad} L ${pad} ${h - pad} Z`;
 
     return (
-        <div
-            className={cn(
-                "relative overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900/60",
-                size === "lg" ? "h-32" : "h-14"
-            )}
-            aria-hidden="true"
-        >
-            {label ? (
-                <span className="pointer-events-none absolute left-1.5 top-1.5 z-10 rounded bg-neutral-50/85 px-1 py-0.5 font-mono text-[9px] leading-none text-neutral-500 backdrop-blur-[1px] dark:bg-neutral-900/85 dark:text-neutral-400">
-                    {label}
-                </span>
-            ) : null}
-
+        <div aria-hidden="true">
+            <div
+                className={cn(
+                    "relative overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900/60",
+                    size === "lg" ? "h-28" : "h-14"
+                )}
+            >
             <svg
                 viewBox={`0 0 ${w} ${h}`}
                 preserveAspectRatio="none"
@@ -74,9 +68,19 @@ export function EasingGraph({
                 </div>
             </div>
 
-            <span className="pointer-events-none absolute bottom-1 right-2 z-10 text-[8px] text-neutral-400 dark:text-neutral-500">
+            <span className="pointer-events-none absolute bottom-1 right-2 z-10 text-xs leading-none text-neutral-600 dark:text-neutral-300">
                 time →
             </span>
+            </div>
+
+            {/* The curve's spec reads as a full-width caption rather than an
+                overlay pill: at 12px the bezier string wants the whole pane,
+                and on a narrow one it wraps instead of crossing the curve. */}
+            {label ? (
+                <p className="mt-1.5 break-words font-mono text-xs leading-4 text-neutral-600 dark:text-neutral-300">
+                    {label}
+                </p>
+            ) : null}
         </div>
     );
 }
