@@ -409,9 +409,7 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
                     <div
                         role="group"
                         aria-label="Playback speed"
-                        // No overflow-hidden: it would clip the segments'
-                        // touch-target overhang. Segments round their own ends.
-                        className="flex rounded-md border border-neutral-300 dark:border-neutral-700"
+                        className="flex overflow-hidden rounded-md border border-neutral-300 dark:border-neutral-700"
                     >
                         {RATES.map((r) => (
                             <button
@@ -420,9 +418,9 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
                                 aria-pressed={rate === r}
                                 onClick={() => setRate(r)}
                                 className={cn(
-                                    // 36px visual, 44px touch: the ::after overhang
-                                    // grows the hit area without bloating the row.
-                                    "relative inline-flex min-h-9 items-center justify-center px-3 text-xs font-medium tabular-nums transition-colors after:absolute after:inset-x-0 after:-inset-y-1 first:rounded-l-[5px] last:rounded-r-[5px]",
+                                    // 44px on touch, where the guideline applies;
+                                    // 36px keeps the row dense for a mouse.
+                                    "inline-flex min-h-9 items-center justify-center px-3 text-xs font-medium tabular-nums transition-colors pointer-coarse:min-h-11 pointer-coarse:px-4",
                                     rate === r
                                         ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
                                         : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"

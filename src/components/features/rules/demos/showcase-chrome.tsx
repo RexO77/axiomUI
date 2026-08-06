@@ -74,7 +74,8 @@ export function ControlButton({
             onClick={onClick}
             disabled={disabled}
             className={cn(
-                "inline-flex items-center gap-1.5 rounded-md border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800",
+                // Matches the speed segments: 44px on touch, dense for a mouse.
+                "inline-flex min-h-9 items-center gap-1.5 rounded-md border border-neutral-300 px-3 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-100 pointer-coarse:min-h-11 pointer-coarse:px-4 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800",
                 disabled && "pointer-events-none opacity-50"
             )}
         >
