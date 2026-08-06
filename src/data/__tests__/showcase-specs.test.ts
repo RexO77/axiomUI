@@ -5,7 +5,17 @@ import {
 } from "@/components/features/rules/demos/showcase-specs";
 import { rules } from "@/data/ui-logic";
 
-const TRIGGERS = new Set(["replay", "action", "toggle", "press", "hover", "drag"]);
+const TRIGGERS = new Set([
+  "replay",
+  "action",
+  "toggle",
+  "press",
+  "hover",
+  "drag",
+  "interrupt",
+  "load",
+  "toolbar",
+]);
 
 describe("showcase specs", () => {
   it("every spec key is a real rule id", () => {

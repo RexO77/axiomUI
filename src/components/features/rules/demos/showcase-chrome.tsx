@@ -42,19 +42,15 @@ export function PaneChrome({
                     {isDo ? "Do" : "Don't"}
                 </span>
             </div>
-            <div
-                ref={paneRef}
-                aria-hidden="true"
-                className="rounded-lg border border-neutral-200 bg-white p-2.5 dark:border-neutral-800 dark:bg-neutral-950"
-            >
+            {/* No stage border — lg scenes carry their own frame; wrapping
+                them again reads as box-in-box. */}
+            <div ref={paneRef} aria-hidden="true">
                 {children}
             </div>
-            {bar ? (
-                <div className="mt-1.5 h-0.5 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800">
-                    {bar}
-                </div>
-            ) : null}
-            <p className="mt-1.5 text-[11px] leading-4 text-neutral-500 dark:text-neutral-400">{caption}</p>
+            {bar ? <div className="mt-2">{bar}</div> : null}
+            <p className="mt-1.5 text-xs leading-snug text-neutral-500 dark:text-neutral-400">
+                {caption}
+            </p>
         </div>
     );
 }
@@ -63,12 +59,25 @@ export function Hint({ children }: { children: ReactNode }) {
     return <span className="text-xs text-neutral-500 dark:text-neutral-400">{children}</span>;
 }
 
-export function ControlButton({ onClick, children }: { onClick: () => void; children: ReactNode }) {
+export function ControlButton({
+    onClick,
+    children,
+    disabled = false,
+}: {
+    onClick: () => void;
+    children: ReactNode;
+    disabled?: boolean;
+}) {
     return (
         <button
             type="button"
             onClick={onClick}
-            className="inline-flex items-center gap-1.5 rounded-md border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
+            disabled={disabled}
+            className={cn(
+                // Matches the speed segments: 44px on touch, dense for a mouse.
+                "inline-flex min-h-9 items-center gap-1.5 rounded-md border border-neutral-300 px-3 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-100 pointer-coarse:min-h-11 pointer-coarse:px-4 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800",
+                disabled && "pointer-events-none opacity-50"
+            )}
         >
             {children}
         </button>

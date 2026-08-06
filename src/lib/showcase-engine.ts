@@ -85,11 +85,40 @@ export function tracksDurationMs(tracks: Track[], staggerCount = 3): number {
     );
 }
 
+/**
+ * CSS linear() easing sampling a damped spring settling to 1.
+ * bounce 0.1–0.3 = subtle overshoot; pair with ~350–500ms duration.
+ */
+export function springLinear(bounce = 0.2, points = 24): string {
+    const zeta = 1 - bounce;
+    const omega = 8;
+    const omegaD = omega * Math.sqrt(1 - zeta * zeta);
+    const samples: string[] = [];
+    for (let i = 0; i <= points; i++) {
+        const tNorm = i / points;
+        const decay = Math.exp(-zeta * omega * tNorm);
+        const x =
+            1 -
+            decay *
+                (Math.cos(omegaD * tNorm) +
+                    ((zeta * omega) / omegaD) * Math.sin(omegaD * tNorm));
+        samples.push(x.toFixed(4));
+    }
+    samples[samples.length - 1] = "1";
+    return `linear(${samples.join(", ")})`;
+}
+
 // ── Keyframe builders ────────────────────────────────────────────────
 // Every builder returns BOTH endpoints so replays are deterministic.
 
 export const kf = {
     fadeIn: (): Keyframe[] => [{ opacity: 0 }, { opacity: 1 }],
+    /** Kbd-chip depression (motion-2): down fast, back up — one keystroke. */
+    keyPress: (): Keyframe[] => [
+        { transform: "scale(1)" },
+        { transform: "scale(0.88)", offset: 0.35 },
+        { transform: "scale(1)" },
+    ],
     riseIn: (px: number): Keyframe[] => [
         { opacity: 0, transform: `translateY(${px}px)` },
         { opacity: 1, transform: "translateY(0)" },

@@ -203,7 +203,7 @@ code {
     transform var(--motion-medium) var(--ease-out-strong),
     box-shadow var(--motion-fast) var(--ease-out-strong);
   content-visibility: auto;
-  contain-intrinsic-size: 0 320px;
+  contain-intrinsic-size: 0 560px;
 }
 
 .rule-card-panel,

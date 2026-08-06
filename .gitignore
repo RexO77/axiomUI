@@ -43,3 +43,6 @@ next-env.d.ts
 
 # Local Claude Code preview/dev config
 .claude/
+
+# Local verification screenshots
+/output/
