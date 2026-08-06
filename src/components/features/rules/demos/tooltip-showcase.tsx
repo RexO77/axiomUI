@@ -50,15 +50,18 @@ export function TooltipToolbarShowcase() {
         }, GRACE_MS);
     };
 
+    /**
+     * Real hit-testing against the buttons themselves. Splitting the surface
+     * into geometric thirds would arm a tooltip while the pointer sits on
+     * padding, the gaps between buttons, or the gap between panes — the demo
+     * would claim a hover the user never made.
+     */
     const indexFromEvent = (e: ReactPointerEvent<HTMLDivElement>) => {
-        const el = surfaceRef.current;
-        if (!el) return null;
-        const rect = el.getBoundingClientRect();
-        const localX = e.clientX - rect.left;
-        const half = rect.width / 2;
-        const inColumn = localX < half ? localX : localX - half;
-        const third = half / LABELS.length;
-        return Math.min(LABELS.length - 1, Math.max(0, Math.floor(inColumn / third)));
+        const target = e.target instanceof Element ? e.target : null;
+        const hit = target?.closest<HTMLElement>("[data-tool-index]");
+        if (!hit) return null;
+        const index = Number(hit.dataset.toolIndex);
+        return Number.isInteger(index) ? index : null;
     };
 
     return (
@@ -185,15 +188,16 @@ function ToolbarPane({
                                     ref={(el) => {
                                         tipRefs.current[i] = el;
                                     }}
-                                    className="absolute bottom-full mb-1.5 whitespace-nowrap rounded-md bg-neutral-900 px-2 py-1 text-[9px] font-medium text-white shadow-md dark:bg-neutral-100 dark:text-neutral-900"
+                                    className="pointer-events-none absolute bottom-full mb-1.5 whitespace-nowrap rounded-md bg-neutral-900 px-2 py-1 text-[10px] font-medium text-white shadow-md dark:bg-neutral-100 dark:text-neutral-900"
                                     style={{ opacity: 0 }}
                                 >
                                     {label}
                                     <span className="absolute left-1/2 top-full -mt-px h-0 w-0 -translate-x-1/2 border-x-4 border-t-4 border-x-transparent border-t-neutral-900 dark:border-t-neutral-100" />
                                 </div>
                                 <span
+                                    data-tool-index={i}
                                     className={cn(
-                                        "inline-flex min-w-[2.75rem] items-center justify-center rounded-md border px-2.5 py-1.5 text-[11px] font-semibold transition-colors",
+                                        "inline-flex min-h-9 min-w-[2.75rem] items-center justify-center rounded-md border px-2.5 text-xs font-semibold transition-colors",
                                         active
                                             ? "border-blue-500 bg-blue-500/10 text-blue-700 dark:border-blue-400 dark:text-blue-300"
                                             : "border-neutral-300 bg-white text-neutral-700 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200"
