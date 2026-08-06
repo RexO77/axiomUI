@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useState, type RefObject } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 
 import { EASE } from "@/lib/showcase-engine";
-import { prefersReducedMotion } from "@/lib/media";
+import { prefersReducedMotion, REDUCED_MOTION_QUERY } from "@/lib/media";
 import {
     ControlButton,
     Hint,
@@ -23,6 +23,23 @@ export function InterruptShowcase() {
     const doCard = useRef<HTMLDivElement | null>(null);
     const dontCard = useRef<HTMLDivElement | null>(null);
     const dontAnim = useRef<Animation | null>(null);
+
+    // Sampling the preference at play time covers the common case, but a user
+    // who switches reduced motion on *during* a 420ms run would otherwise be
+    // left watching it finish. Land both cards the moment the preference flips.
+    useEffect(() => {
+        const mql = window.matchMedia(REDUCED_MOTION_QUERY);
+        const onChange = () => {
+            if (!mql.matches) return;
+            const anim = dontAnim.current;
+            // finish() lands the end state; cancel() would snap it back to the
+            // start and leave the two panes disagreeing.
+            if (anim && anim.playState === "running") anim.finish();
+            if (doCard.current) doCard.current.style.transition = "none";
+        };
+        mql.addEventListener("change", onChange);
+        return () => mql.removeEventListener("change", onChange);
+    }, []);
 
     const toggle = () => {
         const next = !atFar;
