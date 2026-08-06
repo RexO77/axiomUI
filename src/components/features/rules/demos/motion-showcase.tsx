@@ -168,7 +168,8 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
         []
     );
 
-    const enter = useCallback(() => {
+    const enter = useCallback((options?: { countsAsInteraction?: boolean }) => {
+        const counts = options?.countsAsInteraction !== false;
         clearTimeout(settleTimer.current);
         stopMsClocks();
 
@@ -182,7 +183,9 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
         }
         setEngaged(true);
 
-        if (spec.tallyDontMs) {
+        // The tally is evidence of what the user cost themselves — the mount
+        // autoplay is not a user action, so it must not count.
+        if (spec.tallyDontMs && counts) {
             setPlays((p) => p + 1);
         }
 
@@ -255,7 +258,7 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
         if (spec.trigger !== "replay" && spec.trigger !== "action") return;
         if (autoplayed.current) return;
         autoplayed.current = true;
-        const t = window.setTimeout(() => enter(), 350);
+        const t = window.setTimeout(() => enter({ countsAsInteraction: false }), 350);
         return () => window.clearTimeout(t);
         // Only re-run when the rule changes; rate/enter identity intentionally omitted.
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -295,7 +298,7 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
                 }
                 onPointerUp={isPress ? exit : undefined}
                 onPointerCancel={isPress ? exit : undefined}
-                onPointerEnter={isHover ? enter : undefined}
+                onPointerEnter={isHover ? () => enter() : undefined}
                 onPointerLeave={
                     isPress
                         ? () => {
@@ -331,7 +334,7 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
                           }
                         : undefined
                 }
-                onFocus={isHover ? enter : undefined}
+                onFocus={isHover ? () => enter() : undefined}
                 onBlur={isHover ? exit : undefined}
                 role={isGesture ? "button" : undefined}
                 tabIndex={isGesture ? 0 : undefined}
@@ -381,11 +384,11 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
                               : "Tap the panes to preview the hover state"}
                     </Hint>
                 ) : spec.trigger === "toggle" ? (
-                    <ControlButton onClick={engaged ? exit : enter}>
+                    <ControlButton onClick={engaged ? exit : () => enter()}>
                         {spec.control ?? "Toggle"}
                     </ControlButton>
                 ) : (
-                    <ControlButton onClick={enter}>
+                    <ControlButton onClick={() => enter()}>
                         <Play aria-hidden="true" className="size-3.5" />
                         {controlLabel}
                     </ControlButton>
@@ -415,7 +418,7 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
                                 aria-pressed={rate === r}
                                 onClick={() => setRate(r)}
                                 className={cn(
-                                    "px-2.5 py-1.5 text-xs font-medium tabular-nums transition-colors",
+                                    "inline-flex min-h-9 items-center justify-center px-3 text-xs font-medium tabular-nums transition-colors",
                                     rate === r
                                         ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
                                         : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
@@ -467,7 +470,7 @@ function ShowcasePane({
                         </div>
                         <span
                             ref={msRef}
-                            className="w-10 shrink-0 text-right text-[11px] font-medium tabular-nums text-neutral-500 dark:text-neutral-400"
+                            className="w-12 shrink-0 text-right text-xs font-medium tabular-nums text-neutral-500 dark:text-neutral-400"
                         />
                     </div>
                 }
@@ -475,7 +478,7 @@ function ShowcasePane({
                 {pane.scene("lg")}
             </PaneChrome>
             {tally ? (
-                <p className="mt-1 text-[11px] font-medium tabular-nums text-rose-600 dark:text-rose-300">
+                <p className="mt-1 text-xs font-medium tabular-nums text-rose-600 dark:text-rose-300">
                     {tally}
                 </p>
             ) : null}
@@ -565,7 +568,7 @@ export function PanePreview({
             className="motion-showcase cursor-pointer"
         >
             {pane.scene(size)}
-            <p className="mt-2 px-0.5 font-mono text-[11px] leading-4 text-neutral-500 dark:text-neutral-400">
+            <p className="mt-2 px-0.5 font-mono text-xs leading-5 text-neutral-500 dark:text-neutral-400">
                 {pane.caption}
             </p>
         </div>
