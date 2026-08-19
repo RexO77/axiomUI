@@ -65,23 +65,25 @@ function ComparisonPanel({ rule, variant }: { rule: Rule; variant: "do" | "dont"
 
   return (
     <section className="rule-card-panel flex min-w-0 flex-col rounded-[20px] bg-neutral-50/80 p-3 dark:bg-neutral-950/45">
-      <div className="flex items-center gap-2">
+      {/* Same chrome voice as the motion panes (PaneChrome): 3.5 icon,
+          11px semibold label, 1.5 gap — the grid reads as one system. */}
+      <div className="flex items-center gap-1.5">
         <Icon
           aria-hidden="true"
           className={isDo
-            ? "h-4 w-4 text-emerald-600 dark:text-emerald-300"
-            : "h-4 w-4 text-rose-600 dark:text-rose-300"}
+            ? "size-3.5 text-emerald-600 dark:text-emerald-400"
+            : "size-3.5 text-rose-600 dark:text-rose-300"}
         />
         <span className={isDo
-          ? "text-xs font-semibold text-emerald-700 dark:text-emerald-200"
-          : "text-xs font-semibold text-rose-700 dark:text-rose-200"}
+          ? "text-[11px] font-semibold text-emerald-700 dark:text-emerald-300"
+          : "text-[11px] font-semibold text-rose-700 dark:text-rose-200"}
         >
           {isDo ? "Do this" : "Avoid this"}
         </span>
       </div>
 
       {/* The preview IS the card — full deep-dive detail, first impression. */}
-      <div className="mt-3 flex-1">
+      <div className="mt-2 flex-1">
         <RulePreview rule={rule} variant={variant} size="lg" />
       </div>
 
