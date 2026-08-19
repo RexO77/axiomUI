@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { AlertTriangle, ArrowLeft, ArrowRight, Check, X, Tag } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, CheckCircle2, XCircle, Tag } from "lucide-react";
 import { AxiomLogo } from "@/components/ui/axiom-logo";
 import { RulePreview } from "@/components/features/rules/rule-preview";
 import { CopyRuleButton } from "@/components/features/rules/copy-rule-button";
@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     if (!rule) {
         return {
-            title: "Rule Not Found",
+            title: "Rule not found",
         };
     }
 
@@ -98,7 +98,7 @@ export default async function RulePage({ params }: Props) {
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
         itemListElement: [
-            { "@type": "ListItem", position: 1, name: "All Rules", item: absoluteUrl("/") },
+            { "@type": "ListItem", position: 1, name: "All rules", item: absoluteUrl("/") },
             { "@type": "ListItem", position: 2, name: category?.name ?? "Rules", item: absoluteUrl(`/#${rule.category}`) },
             { "@type": "ListItem", position: 3, name: rule.title, item: absoluteUrl(`/rules/${rule.id}`) },
         ],
@@ -141,7 +141,7 @@ export default async function RulePage({ params }: Props) {
                 {/* Breadcrumb */}
                 <nav className="mb-8 text-sm text-neutral-500 dark:text-neutral-400">
                     <Link href="/" className="hover:text-neutral-900 dark:hover:text-neutral-100">
-                        All Rules
+                        All rules
                     </Link>
                     <span className="mx-2">/</span>
                     <Link
@@ -158,21 +158,25 @@ export default async function RulePage({ params }: Props) {
                         <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
                             {category?.name}
                         </p>
-                        <h1 className="mt-4 text-4xl font-semibold text-neutral-900 dark:text-neutral-100">
+                        {/* Eyebrow couples tightly to the title (mt-3); the
+                            description and tags step away in growing increments. */}
+                        <h1 className="mt-3 text-4xl font-semibold text-neutral-900 dark:text-neutral-100">
                             {rule.title}
                         </h1>
-                        <p className="prose-justify mt-4 text-lg text-neutral-600 dark:text-neutral-300">
+                        <p className="mt-4 text-lg leading-8 text-pretty text-neutral-600 dark:text-neutral-300">
                             {rule.desc}
                         </p>
 
-                        {/* Tags + Cite */}
+                        {/* Tags + Cite: one muted Tag glyph labels the whole
+                            group; repeating it per pill reads as noise. */}
                         <div className="mt-6 flex flex-wrap items-center gap-2">
+                            <Tag aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-neutral-400 dark:text-neutral-500" />
+                            <span className="sr-only">Tags</span>
                             {rule.tags.map((tag) => (
                                 <span
                                     key={tag}
-                                    className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
+                                    className="inline-flex items-center rounded-full border border-neutral-200 bg-neutral-100 px-3 py-1 text-xs font-medium whitespace-nowrap text-neutral-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
                                 >
-                                    <Tag className="h-3 w-3" />
                                     {tag}
                                 </span>
                             ))}
@@ -187,42 +191,40 @@ export default async function RulePage({ params }: Props) {
                         </div>
                     ) : null}
 
-                    {/* Do / Don't Cards */}
+                    {/* Recommended / Avoid cards: same voice as the drawer's
+                        comparison articles — 4px circle icons, xs semibold
+                        emerald/rose labels, muted mono shorthand. */}
                     <div className="mb-12 grid gap-4 md:grid-cols-2">
                         <div className="rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-                            <div className="mb-4 flex items-center gap-2">
-                                <span className="badge-do flex h-6 w-6 items-center justify-center rounded-full">
-                                    <Check className="h-3.5 w-3.5" />
-                                </span>
-                                <span className="text-xs font-semibold text-emerald-700 dark:text-teal-300">
-                                    Do
+                            <div className="flex items-center gap-2">
+                                <CheckCircle2 aria-hidden="true" className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
+                                <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-200">
+                                    Recommended
                                 </span>
                             </div>
                             {!hasShowcase(rule.id) && (
-                                <div className="mb-3">
+                                <div className="mt-3">
                                     <RulePreview rule={rule} variant="do" size="lg" />
                                 </div>
                             )}
-                            <p className="font-mono text-sm text-neutral-900 dark:text-neutral-100">
+                            <p className="mt-3 font-mono text-sm leading-6 text-neutral-500 dark:text-neutral-400">
                                 {rule.do}
                             </p>
                         </div>
 
                         <div className="rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-                            <div className="mb-4 flex items-center gap-2">
-                                <span className="badge-dont flex h-6 w-6 items-center justify-center rounded-full">
-                                    <X className="h-3.5 w-3.5" />
-                                </span>
-                                <span className="text-xs font-semibold text-red-700 dark:text-red-300">
-                                    Don&apos;t
+                            <div className="flex items-center gap-2">
+                                <XCircle aria-hidden="true" className="h-4 w-4 text-rose-600 dark:text-rose-300" />
+                                <span className="text-xs font-semibold text-rose-800 dark:text-rose-200">
+                                    Avoid
                                 </span>
                             </div>
                             {!hasShowcase(rule.id) && (
-                                <div className="mb-3">
+                                <div className="mt-3">
                                     <RulePreview rule={rule} variant="dont" size="lg" />
                                 </div>
                             )}
-                            <p className="font-mono text-sm text-neutral-900 dark:text-neutral-100">
+                            <p className="mt-3 font-mono text-sm leading-6 text-neutral-500 dark:text-neutral-400">
                                 {rule.dont}
                             </p>
                         </div>
@@ -238,11 +240,11 @@ export default async function RulePage({ params }: Props) {
                                 </h2>
                                 <ol className="space-y-4">
                                     {implementationNotes.map((item, index) => (
-                                        <li key={`${item}-${index}`} className="flex gap-4">
-                                            <span className="mt-0.5 w-5 shrink-0 text-right text-sm text-neutral-400 dark:text-neutral-500">
+                                        <li key={`${item}-${index}`} className="flex gap-3">
+                                            <span className="mt-0.5 w-5 shrink-0 text-right text-sm tabular-nums text-neutral-400 dark:text-neutral-500">
                                                 {index + 1}
                                             </span>
-                                            <p className="text-neutral-600 dark:text-neutral-300">{item}</p>
+                                            <p className="leading-relaxed text-neutral-600 dark:text-neutral-300">{item}</p>
                                         </li>
                                     ))}
                                 </ol>
@@ -254,7 +256,7 @@ export default async function RulePage({ params }: Props) {
                                 <h2 className="mb-4 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
                                     Why it works
                                 </h2>
-                                <p className="prose-justify text-neutral-600 dark:text-neutral-300">{whyItMatters}</p>
+                                <p className="leading-relaxed text-neutral-600 dark:text-neutral-300">{whyItMatters}</p>
                             </section>
                         )}
 
@@ -264,7 +266,7 @@ export default async function RulePage({ params }: Props) {
                                     <AlertTriangle aria-hidden="true" className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                                     What breaks
                                 </h2>
-                                <p className="prose-justify text-neutral-600 dark:text-neutral-300">{riskWhenIgnored}</p>
+                                <p className="leading-relaxed text-neutral-600 dark:text-neutral-300">{riskWhenIgnored}</p>
                             </section>
                         )}
 
@@ -275,11 +277,11 @@ export default async function RulePage({ params }: Props) {
                                 </h2>
                                 <ol className="space-y-4">
                                     {reviewPrompts.map((item, index) => (
-                                        <li key={`${item}-${index}`} className="flex gap-4">
-                                            <span className="mt-0.5 w-5 shrink-0 text-right text-sm text-neutral-400 dark:text-neutral-500">
+                                        <li key={`${item}-${index}`} className="flex gap-3">
+                                            <span className="mt-0.5 w-5 shrink-0 text-right text-sm tabular-nums text-neutral-400 dark:text-neutral-500">
                                                 {index + 1}
                                             </span>
-                                            <p className="text-neutral-600 dark:text-neutral-300">{item}</p>
+                                            <p className="leading-relaxed text-neutral-600 dark:text-neutral-300">{item}</p>
                                         </li>
                                     ))}
                                 </ol>
@@ -315,7 +317,7 @@ export default async function RulePage({ params }: Props) {
                             <Link
                                 href={`/rules/${prev.id}`}
                                 rel="prev"
-                                className="group inline-flex max-w-[45%] items-center gap-2 text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+                                className="group inline-flex min-h-11 max-w-[45%] items-center gap-2 text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
                             >
                                 <ArrowLeft className="h-4 w-4 shrink-0" />
                                 <span className="truncate">{prev.title}</span>
@@ -325,7 +327,7 @@ export default async function RulePage({ params }: Props) {
                             <Link
                                 href={`/rules/${next.id}`}
                                 rel="next"
-                                className="group inline-flex max-w-[45%] items-center gap-2 text-right text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+                                className="group inline-flex min-h-11 max-w-[45%] items-center gap-2 text-right text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
                             >
                                 <span className="truncate">{next.title}</span>
                                 <ArrowRight className="h-4 w-4 shrink-0" />
@@ -335,7 +337,7 @@ export default async function RulePage({ params }: Props) {
                     <div className="mt-6">
                         <Link
                             href="/"
-                            className="inline-flex items-center gap-2 text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+                            className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
                         >
                             <ArrowLeft className="h-4 w-4" />
                             Back to all rules

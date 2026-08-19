@@ -162,7 +162,7 @@ function SidebarContent({
                     href="/llms-full.txt"
                     className="mt-3 inline-flex items-center text-xs text-neutral-400 transition-colors hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300"
                 >
-                    For AI tools: llms.txt
+                    llms.txt for AI tools
                 </a>
             </div>
         </div>
@@ -239,7 +239,7 @@ export function Sidebar() {
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-900 text-white dark:bg-white dark:text-neutral-900">
                         <AxiomLogo className="h-4 w-4" />
                     </div>
-                    <span className="text-sm font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+                    <span className="text-sm font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
                         Axiom
                     </span>
                 </div>

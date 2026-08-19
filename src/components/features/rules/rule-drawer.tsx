@@ -267,11 +267,11 @@ export function RuleDrawer({
                             </h4>
                           </div>
                           {!hasShowcase(activeRule.id) && (
-                            <div className="mt-4">
+                            <div className="mt-3">
                               <RulePreview rule={activeRule} variant="do" size="lg" />
                             </div>
                           )}
-                          <p className="mt-4 font-mono text-sm leading-6 text-neutral-500 dark:text-neutral-400">
+                          <p className="mt-3 font-mono text-sm leading-6 text-neutral-500 dark:text-neutral-400">
                             {recommended}
                           </p>
                         </article>
@@ -284,11 +284,11 @@ export function RuleDrawer({
                             </h4>
                           </div>
                           {!hasShowcase(activeRule.id) && (
-                            <div className="mt-4">
+                            <div className="mt-3">
                               <RulePreview rule={activeRule} variant="dont" size="lg" />
                             </div>
                           )}
-                          <p className="mt-4 font-mono text-sm leading-6 text-neutral-500 dark:text-neutral-400">
+                          <p className="mt-3 font-mono text-sm leading-6 text-neutral-500 dark:text-neutral-400">
                             {avoid}
                           </p>
                         </article>
@@ -299,10 +299,10 @@ export function RuleDrawer({
                           <h4 className="drawer-label text-xs font-semibold text-neutral-600 dark:text-neutral-300">
                             How to apply it
                           </h4>
-                          <ol className="mt-5 space-y-4">
+                          <ol className="mt-4 space-y-4">
                             {implementationNotes.map((item, index) => (
-                              <li key={`${item}-${index}`} className="flex gap-4">
-                                <span className="mt-0.5 w-5 shrink-0 text-right text-sm text-neutral-400 dark:text-neutral-500">
+                              <li key={`${item}-${index}`} className="flex gap-3">
+                                <span className="mt-0.5 w-5 shrink-0 text-right text-sm tabular-nums text-neutral-400 dark:text-neutral-500">
                                   {index + 1}
                                 </span>
                                 <p className="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">{item}</p>
@@ -313,7 +313,7 @@ export function RuleDrawer({
                       ) : null}
                     </section>
 
-                    <aside className="rule-drawer-stagger space-y-9">
+                    <aside className="rule-drawer-stagger space-y-10">
                       {whyItMatters ? (
                         <article>
                           <h4 className="drawer-label text-xs font-semibold text-neutral-600 dark:text-neutral-300">Why it works</h4>
@@ -338,8 +338,8 @@ export function RuleDrawer({
                           <h4 className="drawer-label text-xs font-semibold text-neutral-600 dark:text-neutral-300">Review questions</h4>
                           <ol className="mt-4 space-y-4">
                             {reviewPrompts.map((item, index) => (
-                              <li key={`${item}-${index}`} className="flex gap-4">
-                                <span className="mt-0.5 w-5 shrink-0 text-right text-sm text-neutral-400 dark:text-neutral-500">
+                              <li key={`${item}-${index}`} className="flex gap-3">
+                                <span className="mt-0.5 w-5 shrink-0 text-right text-sm tabular-nums text-neutral-400 dark:text-neutral-500">
                                   {index + 1}
                                 </span>
                                 <p className="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">{item}</p>
@@ -392,7 +392,7 @@ export function RuleDrawer({
                 <div className="relative pt-6">
                   <DrawerCloseButton className="absolute right-0 top-0" />
                   <div className="mx-auto mt-16 max-w-xl rounded-2xl border border-neutral-200 bg-white p-10 text-center dark:border-neutral-800 dark:bg-neutral-900">
-                    <h2 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-50">Select a Rule</h2>
+                    <h2 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-50">Select a rule</h2>
                     <p className="mt-3 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">
                       Open a rule card to view implementation guidance and visual comparisons.
                     </p>

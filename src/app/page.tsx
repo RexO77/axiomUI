@@ -7,6 +7,7 @@ import {
   useDeferredValue,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -53,8 +54,16 @@ function HomeBody({
   setActiveRuleId: (id: string | null) => void;
   deferredRuleId: string | null;
 }) {
-  const { query } = useSearch();
+  const { query, setQuery } = useSearch();
+  const rulesContainerRef = useRef<HTMLElement>(null);
   const searchLower = query.trim().toLowerCase();
+
+  function clearSearch() {
+    setQuery("");
+    requestAnimationFrame(() => {
+      rulesContainerRef.current?.focus({ preventScroll: true });
+    });
+  }
 
   useEffect(() => {
     setActiveRuleId(routeRuleId);
@@ -145,18 +154,31 @@ function HomeBody({
             <Header />
           </div>
 
-          <section className="space-y-8 md:space-y-10" id="rulesContainer">
+          <section
+            ref={rulesContainerRef}
+            aria-label="Rule results"
+            className="space-y-8 outline-none md:space-y-10"
+            id="rulesContainer"
+            tabIndex={-1}
+          >
             {grouped.length === 0 ? (
               <div className="glass reveal mx-auto w-full max-w-[920px] rounded-2xl p-10 text-center" style={{ "--delay": "40ms" } as CSSProperties}>
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
-                  <SearchX aria-hidden="true" className="h-7 w-7 text-neutral-400 dark:text-neutral-500" />
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
+                  <SearchX aria-hidden="true" className="h-6 w-6 text-neutral-400 dark:text-neutral-500" />
                 </div>
-                <h3 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
-                  No Logical Decisions Found
-                </h3>
-                <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
+                <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+                  No rules match your search
+                </h2>
+                <p className="mx-auto mt-2 max-w-sm text-pretty text-sm leading-6 text-neutral-600 dark:text-neutral-400">
                   Try searching for “button”, “font”, or “color”.
                 </p>
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  className="pressable mt-6 inline-flex min-h-11 items-center justify-center rounded-full border border-neutral-200 bg-white px-4 text-xs font-medium text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-950 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:border-neutral-500 dark:hover:bg-neutral-900 dark:hover:text-neutral-50"
+                >
+                  Clear search
+                </button>
               </div>
             ) : (
               grouped.map((group) => {
@@ -181,8 +203,8 @@ function HomeBody({
                         </h2>
                       </div>
 
-                      <span className="rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-medium text-neutral-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400">
-                        {group.rules.length} rules
+                      <span className="whitespace-nowrap rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-medium tabular-nums text-neutral-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400">
+                        {group.rules.length} {group.rules.length === 1 ? "rule" : "rules"}
                       </span>
                     </div>
 
@@ -206,8 +228,11 @@ function HomeBody({
             )}
           </section>
 
-          <footer className="glass mx-auto w-full max-w-[920px] rounded-2xl p-8 text-center text-sm text-neutral-500 dark:text-neutral-400">
-            Built for consistency. Break rules only after mastering them.
+          <footer className="glass mx-auto w-full max-w-[920px] rounded-2xl px-8 py-7 text-center">
+            <div aria-hidden="true" className="mx-auto mb-4 h-px w-10 bg-neutral-200 dark:bg-neutral-800" />
+            <p className="text-pretty text-sm leading-6 text-neutral-500 dark:text-neutral-400">
+              Built for consistency. Break rules only after mastering them.
+            </p>
           </footer>
         </div>
       </main>
@@ -228,35 +253,62 @@ function HomeLoading() {
   return (
     <div className="flex min-h-screen flex-col bg-neutral-50 md:flex-row dark:bg-neutral-950">
       {/* Mobile Header Skeleton */}
-      <div className="sticky top-0 z-40 flex h-[60px] items-center justify-between border-b border-neutral-200 bg-white/80 px-4 backdrop-blur-md md:hidden dark:border-neutral-800 dark:bg-neutral-900/80">
-        <div className="flex items-center gap-3">
+      <div className="sticky top-0 z-40 flex items-center justify-between border-b border-neutral-200 bg-white/80 px-4 py-3 backdrop-blur-md md:hidden dark:border-neutral-800 dark:bg-neutral-900/80">
+        <div className="flex animate-pulse items-center gap-3">
           <div className="h-8 w-8 rounded-lg bg-neutral-200 dark:bg-neutral-800" />
-          <div className="h-4 w-20 rounded bg-neutral-200 dark:bg-neutral-800" />
+          <div className="h-4 w-16 rounded bg-neutral-200 dark:bg-neutral-800" />
         </div>
-        <div className="h-9 w-9 rounded-lg bg-neutral-200 dark:bg-neutral-800" />
+        <div className="flex animate-pulse items-center gap-2">
+          <div className="h-9 w-9 rounded-lg bg-neutral-200 dark:bg-neutral-800" />
+          <div className="h-9 w-9 rounded-lg bg-neutral-200 dark:bg-neutral-800" />
+        </div>
       </div>
 
-      {/* Desktop Sidebar Skeleton */}
-      <aside className="hidden border-r border-neutral-200 bg-white md:fixed md:inset-y-0 md:flex md:w-[280px] dark:border-neutral-800 dark:bg-neutral-900">
-        <div className="flex h-full w-full flex-col p-6">
-          <div className="animate-pulse space-y-4">
+      {/* Floating Sidebar Skeleton */}
+      <div className="pointer-events-none fixed inset-y-0 left-0 z-[80] hidden w-[312px] md:block">
+        <aside className="panel-shadow absolute bottom-5 left-5 top-5 w-[280px] overflow-hidden rounded-[28px] border border-neutral-200/80 bg-white/95 dark:border-neutral-800/80 dark:bg-neutral-900/95">
+          <div className="flex h-full w-full animate-pulse flex-col p-4 sm:p-6">
             <div className="flex items-center gap-3">
               <div className="h-9 w-9 rounded-lg bg-neutral-200 dark:bg-neutral-800" />
-              <div className="space-y-2">
-                <div className="h-3 w-16 rounded bg-neutral-200 dark:bg-neutral-800" />
-                <div className="h-4 w-32 rounded bg-neutral-200 dark:bg-neutral-800" />
+              <div className="space-y-1.5">
+                <div className="h-3 w-12 rounded bg-neutral-200 dark:bg-neutral-800" />
+                <div className="h-4 w-16 rounded bg-neutral-200 dark:bg-neutral-800" />
               </div>
             </div>
+            <div className="mt-6 h-9 rounded-lg bg-neutral-100 dark:bg-neutral-800" />
+            <div className="mt-7 h-4 w-12 rounded bg-neutral-200 dark:bg-neutral-800" />
+            <div className="mt-4 space-y-2">
+              <div className="h-10 rounded-xl bg-neutral-100 dark:bg-neutral-800/60" />
+              <div className="h-10 rounded-xl bg-neutral-100 dark:bg-neutral-800/60" />
+              <div className="h-10 rounded-xl bg-neutral-100 dark:bg-neutral-800/60" />
+              <div className="h-10 rounded-xl bg-neutral-100 dark:bg-neutral-800/60" />
+              <div className="h-10 rounded-xl bg-neutral-100 dark:bg-neutral-800/60" />
+            </div>
           </div>
-        </div>
-      </aside>
+        </aside>
+      </div>
 
       <main className="flex-1">
-        <div className="mx-auto max-w-5xl space-y-12 px-4 py-8 md:px-12">
-          <div className="glass animate-pulse rounded-3xl p-8 md:p-12">
-            <div className="h-8 w-48 rounded bg-neutral-200 dark:bg-neutral-800" />
-            <div className="mt-6 h-12 w-3/4 rounded bg-neutral-200 dark:bg-neutral-800" />
-            <div className="mt-4 h-6 w-1/2 rounded bg-neutral-200 dark:bg-neutral-800" />
+        <div className="main-lane-shell w-full space-y-8 px-3 py-5 sm:px-4 sm:py-7 md:space-y-12 md:py-8">
+          {/* Header Skeleton */}
+          <div className="mx-auto w-full max-w-[920px] animate-pulse py-5 sm:py-7 md:py-10">
+            <div className="h-9 w-4/5 max-w-xl rounded bg-neutral-200 md:h-12 dark:bg-neutral-800" />
+            <div className="mt-4 h-5 w-2/3 max-w-lg rounded bg-neutral-200 dark:bg-neutral-800" />
+          </div>
+
+          {/* Category Section Skeleton */}
+          <div className="mx-auto w-full max-w-[920px] animate-pulse">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-6 w-6 rounded bg-neutral-200 dark:bg-neutral-800" />
+                <div className="h-7 w-40 rounded bg-neutral-200 dark:bg-neutral-800" />
+              </div>
+              <div className="h-6 w-16 rounded-full bg-neutral-200 dark:bg-neutral-800" />
+            </div>
+            <div className="mt-4 grid grid-cols-1 gap-4 md:mt-6 md:gap-6">
+              <div className="h-40 rounded-[28px] border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900" />
+              <div className="h-40 rounded-[28px] border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900" />
+            </div>
           </div>
         </div>
       </main>

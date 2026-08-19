@@ -155,11 +155,6 @@ blockquote {
   text-wrap: pretty;
 }
 
-.prose-justify {
-  text-align: justify;
-  text-justify: inter-word;
-}
-
 h1,
 h2,
 h3,
@@ -305,24 +300,6 @@ code {
 
 .pressable:active {
   transform: scale(0.96);
-}
-
-.badge-do {
-  background: var(--color-success-muted);
-  color: #0f766e;
-}
-
-.dark .badge-do {
-  color: #99f6e4;
-}
-
-.badge-dont {
-  background: var(--color-error-muted);
-  color: #b91c1c;
-}
-
-.dark .badge-dont {
-  color: #fecaca;
 }
 
 .reveal {
