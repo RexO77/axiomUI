@@ -417,8 +417,10 @@ code {
 }
 
 .skill-modal-root {
-  --skill-modal-open-duration: 360ms;
-  --skill-modal-close-duration: 220ms;
+  /* Defaults match the component's inline values (skill-bonus.tsx) — the
+     inline style is the source of truth; keep these in sync. */
+  --skill-modal-open-duration: 280ms;
+  --skill-modal-close-duration: 180ms;
 }
 
 .skill-modal-scrim {
