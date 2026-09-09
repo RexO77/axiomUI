@@ -46,3 +46,6 @@ next-env.d.ts
 
 # Local verification screenshots
 /output/
+
+# Local render-parity baseline (machine-specific build output)
+scripts/.render-parity.json
