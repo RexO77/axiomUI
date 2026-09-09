@@ -10,6 +10,22 @@ import { MiniLine } from "@/components/features/rules/preview-primitives";
 import { Hint, PaneChrome } from "@/components/features/rules/demos/showcase-chrome";
 import { showcaseSpecs } from "@/components/features/rules/demos/showcase-specs";
 
+/** `setTimeout` that drops its own id from `bucket` once it fires, so a long
+ *  session of drags doesn't accumulate dead ids. The unmount effect in each
+ *  component still clears whatever is genuinely pending. */
+function deferOn(
+    bucket: RefObject<ReturnType<typeof setTimeout>[]>,
+    fn: () => void,
+    ms: number
+) {
+    const id = setTimeout(() => {
+        const at = bucket.current.indexOf(id);
+        if (at !== -1) bucket.current.splice(at, 1);
+        fn();
+    }, ms);
+    bucket.current.push(id);
+}
+
 /* ─────────────────────────────────────────────────────────
  * DRAG SHOWCASE STORYBOARD (motion-18 / 19 / 20)
  *
@@ -175,7 +191,7 @@ function setCardX(
     el.style.transform = `translateX(${x}px)`;
 }
 
-/* ── motion-18 · Gesture Dismissal Uses Velocity ────────────────────── */
+/* ── motion-18 · Gesture dismissal uses velocity ────────────────────── */
 
 function DragGrip() {
     return (
@@ -281,14 +297,16 @@ function VelocityDismiss() {
         el.style.transition = `transform ${durationMs}ms var(--ease-out-strong), opacity ${durationMs}ms var(--ease-out-strong)`;
         el.style.transform = `translateX(${travel.current + 48}px)`;
         el.style.opacity = "0";
-        timers.current.push(
-            setTimeout(() => {
+        deferOn(
+            timers,
+            () => {
                 el.style.transition = "none";
                 el.style.transform = "translateX(0)";
                 void el.offsetHeight;
                 el.style.transition = "opacity 220ms var(--ease-out-strong)";
                 el.style.opacity = "1";
-            }, 700)
+            },
+            700
         );
     };
 
@@ -355,7 +373,7 @@ function VelocityDismiss() {
                           : "no flick, not far — snapped back"
                 }`
             );
-            timers.current.push(setTimeout(() => writeReadout(""), 2500));
+            deferOn(timers, () => writeReadout(""), 2500);
         },
     });
 
@@ -375,7 +393,7 @@ function VelocityDismiss() {
     );
 }
 
-/* ── motion-19 · Damp Drag Boundaries ───────────────────────────────── */
+/* ── motion-19 · Damp drag boundaries ───────────────────────────────── */
 
 function DampedBoundary() {
     const spec = showcaseSpecs["motion-19"];
@@ -426,7 +444,7 @@ function DampedBoundary() {
                 easing: SPRING_SETTLE,
             });
             setCardX(dontCard.current, 0, true);
-            timers.current.push(setTimeout(() => writeReadout(""), 2000));
+            deferOn(timers, () => writeReadout(""), 2000);
         },
     });
 
@@ -446,17 +464,39 @@ function DampedBoundary() {
     );
 }
 
-/* ── motion-20 · Capture Pointer During Drag ────────────────────────── */
+/* ── motion-20 · Capture pointer during drag ────────────────────────── */
+
+/** Chip classes for the capture state. Written imperatively on the don't pane
+ *  (see PointerCaptureSlider) so the failure is dated to the exact frame the
+ *  pointer leaves the surface. */
+const CHIP_BASE =
+    "rounded-full px-1.5 py-0.5 font-mono text-[10px] font-medium tabular-nums";
+const CHIP_IDLE = "bg-neutral-200/80 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400";
+const CHIP_LOST = "bg-rose-500/15 text-rose-600 dark:text-rose-300";
 
 function SliderPane({
     knobRef,
     trackRef,
+    chipRef,
+    capture,
 }: {
     knobRef: RefObject<HTMLDivElement | null>;
     trackRef?: RefObject<HTMLDivElement | null>;
+    chipRef?: RefObject<HTMLSpanElement | null>;
+    /** Whether this pane calls setPointerCapture — printed on the chip so the
+     *  one variable under test is readable before anything moves. */
+    capture: boolean;
 }) {
     return (
-        <div className="flex h-36 items-center px-2">
+        <div className="flex h-36 flex-col justify-center gap-2.5 rounded-lg border border-neutral-200 bg-neutral-50/80 px-3 dark:border-neutral-800 dark:bg-neutral-900/50">
+            <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] font-medium text-neutral-500 dark:text-neutral-400">
+                    Volume
+                </span>
+                <span ref={chipRef} className={cn(CHIP_BASE, CHIP_IDLE)}>
+                    {capture ? "capture ON" : "capture OFF"}
+                </span>
+            </div>
             <div
                 ref={trackRef}
                 className="relative h-1.5 w-full rounded-full bg-neutral-200 dark:bg-neutral-800"
@@ -478,13 +518,33 @@ function PointerCaptureSlider() {
     const track = useRef<HTMLDivElement | null>(null);
     const surfaceEl = useRef<HTMLDivElement | null>(null);
     const readout = useRef<HTMLSpanElement | null>(null);
+    const dontChip = useRef<HTMLSpanElement | null>(null);
     const max = useRef(120);
     const bounds = useRef<DOMRect | null>(null);
     const base = useRef({ do: 0, dont: 0 });
     const current = useRef({ do: 0, dont: 0 });
+    const lostAtRelease = useRef(false);
+    const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+    useEffect(() => {
+        const pending = timers.current;
+        return () => pending.forEach(clearTimeout);
+    }, []);
 
     const writeReadout = (text: string) => {
         if (readout.current) readout.current.textContent = text;
+    };
+
+    /** The don't pane's chip is the receipt: the frame the pointer crosses the
+     *  border is the frame its knob stops hearing about the gesture. */
+    const writeDontChip = (lost: boolean) => {
+        const el = dontChip.current;
+        if (!el) return;
+        lostAtRelease.current = lost;
+        el.textContent = lost ? "pointer lost" : "capture OFF";
+        // Wholesale write, so this must stay in sync with the chip's JSX
+        // className in SliderPane — both are cn(CHIP_BASE, <state>).
+        el.className = cn(CHIP_BASE, lost ? CHIP_LOST : CHIP_IDLE);
     };
 
     const surface = useMirroredDrag({
@@ -514,14 +574,21 @@ function PointerCaptureSlider() {
             if (inside) {
                 current.current.dont = clamp(base.current.dont + dx);
                 setCardX(dontKnob.current, current.current.dont, false);
-                writeReadout("pointer inside — both knobs tracking");
+                writeReadout("pointer inside the frame");
+                writeDontChip(false);
             } else {
-                writeReadout("pointer outside — left knob still tracking, right knob lost");
+                writeReadout("pointer outside the frame");
+                writeDontChip(true);
             }
         },
         onRelease: () => {
             // Sliders keep their value; the next drag continues from here.
             writeReadout("");
+            // Hold "pointer lost" as the verdict, then return the chip to its
+            // resting truth — the pane isn't losing a pointer it doesn't have.
+            if (lostAtRelease.current) {
+                deferOn(timers, () => writeDontChip(false), 2000);
+            }
         },
     });
 
@@ -533,10 +600,10 @@ function PointerCaptureSlider() {
             hint="Drag a knob, then swing your pointer outside the panes mid-drag"
         >
             <PaneChrome variant="do" caption={spec.do.caption}>
-                <SliderPane knobRef={doKnob} trackRef={track} />
+                <SliderPane knobRef={doKnob} trackRef={track} capture />
             </PaneChrome>
             <PaneChrome variant="dont" caption={spec.dont.caption}>
-                <SliderPane knobRef={dontKnob} />
+                <SliderPane knobRef={dontKnob} chipRef={dontChip} capture={false} />
             </PaneChrome>
         </DragSurface>
     );

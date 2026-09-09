@@ -2,6 +2,9 @@
   "name": "axiom",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -9,7 +12,11 @@
     "lint": "eslint",
     "check": "node scripts/check-deep-dives.mjs",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "check:attribution": "scripts/check-attribution.sh",
+    "prepare": "husky",
+    "parity:save": "node scripts/render-parity.mjs save",
+    "parity:check": "node scripts/render-parity.mjs check"
   },
   "dependencies": {
     "@vercel/analytics": "^1.6.1",
@@ -29,6 +36,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
+    "husky": "^9.1.7",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.10"

@@ -83,41 +83,75 @@ export function CopyRuleButton({ rule, variant = "pill", className }: CopyRuleBu
   }
 
   const label = state === "copied" ? "Copied" : state === "error" ? "Retry" : "Copy";
+  // The icon-only variant lives in the drawer header, already scoped to one
+  // rule; the pill repeats on every card in a 106-item grid, where only the
+  // title tells a screen-reader user which rule they are about to copy.
+  const target = variant === "icon" ? "rule" : rule.title;
   const ariaLabel =
-    state === "copied" ? "Copied" : state === "error" ? "Copy failed, retry" : "Copy rule";
+    state === "copied"
+      ? `Copied ${target} to clipboard`
+      : state === "error"
+        ? `Retry copying ${target}`
+        : `Copy ${target} to clipboard`;
+  // A changed accessible name is not reliably announced, so the transient
+  // result also lands in a polite live region. Empty while idle, so the next
+  // copy is a content change and gets announced again.
+  const announcement =
+    state === "copied"
+      ? "Copied to clipboard"
+      : state === "error"
+        ? "Copy failed, try again"
+        : "";
   const isCopied = state === "copied";
   const isError = state === "error";
 
   if (variant === "icon") {
     return (
-      <button
-        type="button"
-        onClick={() => void handleCopy()}
-        aria-label={ariaLabel}
-        title="Copy rule"
-        className={cn(
-          "pressable inline-flex size-11 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100",
-          className
-        )}
-      >
-        <CopyGlyph isCopied={isCopied} isError={isError} className="size-4" />
-      </button>
+      <>
+        <button
+          type="button"
+          onClick={() => void handleCopy()}
+          aria-label={ariaLabel}
+          title="Copy rule"
+          className={cn(
+            "pressable inline-flex size-11 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100",
+            className
+          )}
+        >
+          <CopyGlyph isCopied={isCopied} isError={isError} className="size-4" />
+        </button>
+        <CopyAnnouncer message={announcement} />
+      </>
     );
   }
 
   return (
-    <button
-      type="button"
-      onClick={() => void handleCopy()}
-      aria-label={ariaLabel}
-      className={cn(
-        "pressable relative inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 text-xs font-medium text-neutral-700 after:absolute after:inset-x-0 after:-inset-y-1.5 hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-950 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:border-neutral-500 dark:hover:bg-neutral-900 dark:hover:text-neutral-50",
-        className
-      )}
-    >
-      <CopyGlyph isCopied={isCopied} isError={isError} className="size-3.5" />
-      {label}
-    </button>
+    <>
+      <button
+        type="button"
+        onClick={() => void handleCopy()}
+        aria-label={ariaLabel}
+        className={cn(
+          "pressable relative inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 text-xs font-medium text-neutral-700 after:absolute after:inset-x-0 after:-inset-y-1.5 hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-950 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:border-neutral-500 dark:hover:bg-neutral-900 dark:hover:text-neutral-50",
+          className
+        )}
+      >
+        <CopyGlyph isCopied={isCopied} isError={isError} className="size-3.5" />
+        {label}
+      </button>
+      <CopyAnnouncer message={announcement} />
+    </>
+  );
+}
+
+// Sibling rather than child: a live region inside the button would join its
+// accessible name. `sr-only` is absolutely positioned, so it is not a flex
+// item and never affects the gap of the row it sits in.
+function CopyAnnouncer({ message }: { message: string }) {
+  return (
+    <span role="status" className="sr-only">
+      {message}
+    </span>
   );
 }
 

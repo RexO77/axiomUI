@@ -13,6 +13,9 @@ import { Hint, PaneChrome } from "@/components/features/rules/demos/showcase-chr
 import { showcaseSpecs } from "@/components/features/rules/demos/showcase-specs";
 
 const LABELS = ["Cut", "Copy", "Paste"] as const;
+/** The tooltip must carry something the button doesn't — otherwise the demo
+ *  is arguing about the delay on a tooltip nobody needed. */
+const SHORTCUTS = ["⌘X", "⌘C", "⌘V"] as const;
 const FIRST_DELAY_MS = 300;
 const FADE_MS = 100;
 const GRACE_MS = 300;
@@ -191,7 +194,10 @@ function ToolbarPane({
                                     className="pointer-events-none absolute bottom-full mb-1.5 whitespace-nowrap rounded-md bg-neutral-900 px-2 py-1 text-[10px] font-medium text-white shadow-md dark:bg-neutral-100 dark:text-neutral-900"
                                     style={{ opacity: 0 }}
                                 >
-                                    {label}
+                                    {label}{" "}
+                                    <span className="font-mono opacity-60">
+                                        {SHORTCUTS[i]}
+                                    </span>
                                     <span className="absolute left-1/2 top-full -mt-px h-0 w-0 -translate-x-1/2 border-x-4 border-t-4 border-x-transparent border-t-neutral-900 dark:border-t-neutral-100" />
                                 </div>
                                 <span

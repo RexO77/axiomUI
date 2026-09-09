@@ -1,6 +1,6 @@
 # 013 — Craft pass on the scenes: real miniature UI, an accent protagonist, legible graphs, present chrome
 
-- **Status**: TODO
+- **Status**: DONE (completed 2026-09-07 — the round-4 audit found the accent protagonist on `RailCardScene`/`SliderScene` and the shared rail treatment had never landed, and finished them)
 - **Commit**: c885413 (working tree includes executed plans 001-007; token migration may be in flight)
 - **Severity**: HIGH
 - **Category**: Round 2 — illustration & stage quality ("not sure about the illustrations / the showcase part")

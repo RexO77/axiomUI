@@ -1,0 +1,5 @@
+# Mirror the CI "Verify" job so a red CI is caught before the push, not after.
+npm run lint
+npm run typecheck
+npm run check
+npm test

@@ -5,18 +5,79 @@ on:
     branches: [main]
   pull_request:
 
+# Supersede in-flight runs for the same ref. Without this, eight full runs
+# piled up on a single PR branch because every push started another.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least privilege. Nothing here writes to the repository, so the default
+# read/write token is more access than any job needs.
+permissions:
+  contents: read
+
 jobs:
   verify:
+    name: Verify
     runs-on: ubuntu-latest
+    # The one historical failure was a runner-allocation flake that hung for
+    # 15 minutes before giving up. This whole job runs in well under a minute.
+    timeout-minutes: 10
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
         with:
-          node-version: 22
+          # Single source of truth, shared with local dev — see .nvmrc.
+          node-version-file: .nvmrc
           cache: npm
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run typecheck
-      - run: npm run check
-      - run: npm test
-      - run: npm run build
+
+      # Restore Next's build cache so `next build` reuses compilation work.
+      # Keyed on the lockfile plus source, so it invalidates when either moves.
+      - name: Restore Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: ${{ runner.os }}-next-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**/*.[jt]s', 'src/**/*.[jt]sx') }}
+          restore-keys: |
+            ${{ runner.os }}-next-${{ hashFiles('package-lock.json') }}-
+            ${{ runner.os }}-next-
+
+      - name: Install
+        run: npm ci
+
+      # Each check is its own step so a red X names the failure in the UI
+      # instead of pointing at one opaque script.
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Deep-dive coverage
+        run: npm run check
+
+      - name: Tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+  attribution:
+    name: No model attribution
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # Need history to diff this branch against its base.
+          fetch-depth: 0
+
+      # Guards the rule in AGENTS.md: no commit may credit a model or AI tool.
+      # Scans only commits new to this ref, so existing history is untouched.
+      - name: Scan new commits
+        env:
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: ./scripts/check-attribution.sh "$BASE_SHA" HEAD

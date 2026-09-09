@@ -1,0 +1,2 @@
+# Enforce AGENTS.md: no commit may credit a model or AI tool.
+scripts/check-attribution.sh --message "$1"

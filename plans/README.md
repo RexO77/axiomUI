@@ -66,6 +66,35 @@ npm run typecheck && npm run lint && npm test
 
 plus the plan's feel check in `npm run dev`. Feel checks that involve gestures (004, 007) should be done on a real trackpad/touch device — synthetic drags don't produce honest velocity.
 
+## Round 4 — full audit (2026-09-07)
+
+Six parallel agents audited the previews, showcases, deep-dive prose, and app chrome. What the
+earlier rounds left behind was not missing content — coverage was already 106/106 on both prose
+and previews — but craft residue and a handful of real defects:
+
+- **`plans/013` was mis-tracked.** This table said DONE; the plan's own header said TODO. Several
+  of its targets had genuinely never landed. Both are now DONE and consistent.
+- **A silent CSS override.** `globals.css` declared `p, li, figcaption, blockquote
+  { text-wrap: pretty }` *outside* any cascade layer, so every layered Tailwind utility lost to
+  it — `text-balance` on a `<p>` was emitted but had no effect, which is why the typo-12 and
+  typo-13 preview pairs rendered identically. The heading `font-family` block had the same
+  latent defect (it would beat `font-mono`), though no heading in the repo currently uses
+  `font-mono`, so nothing visible was broken by that half. Both blocks now live in `@layer base`.
+- **Related rules was largely fake.** 61 of 101 tags were used exactly once, so `getRelatedRules`
+  fell through to same-category order for 31% of slots. Tag vocabulary is now 55, none single-use,
+  0 fallback slots.
+- **Rule titles are sentence case** as of this round, per `typo-1`. Category names, the site
+  metadata in `layout.tsx`, and the skill `SKILL.md` headings are still Title Case — a deliberate
+  open question, not an oversight.
+- **`llms-full.txt` shipped none of the authored prose** and had a blank-line join bug. It now
+  carries all four deep-dive sections per rule via the server-only `src/lib/rule-corpus.ts`
+  (kept out of `rule-text.ts`, which a client component imports).
+
+Still open, deliberately: the `size="sm"` preview branch is dead code at every call site (61
+size-conditional expressions), `cn` in `src/lib/utils.ts` is plain concatenation with no
+tailwind-merge (so a `className` passed to a shared primitive silently loses to source order),
+`sys-12`/`motion-3` are the same rule filed twice, and plans 008-010 remain parked.
+
 ## Vetted but not planned (deliberately)
 
 - **motion-8 press feedback uses one-shot WAAPI tracks** rather than a retargeting transition — at 140ms the restart is imperceptible; not worth churn. Revisit only if press demos gain longer durations.

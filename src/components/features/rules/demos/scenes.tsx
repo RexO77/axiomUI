@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
-import { Archive, CheckCircle2, FileText, Inbox, Moon, Pencil } from "lucide-react";
+import { Archive, CheckCircle2, ChevronDown, FileText, Inbox, Moon, Pencil } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { MiniButton, MiniLine, type PreviewSize } from "@/components/features/rules/preview-primitives";
@@ -333,16 +333,29 @@ export function ListScene({ size, hiddenAtRest }: { size: PreviewSize; hiddenAtR
     return (
         <div
             className={cn(
-                "flex flex-col justify-center gap-2 rounded-lg border border-neutral-200 bg-neutral-50/50 px-2 dark:border-neutral-800 dark:bg-neutral-900/40",
+                "relative flex flex-col justify-center gap-2 rounded-lg border border-neutral-200 bg-neutral-50/50 px-2 dark:border-neutral-800 dark:bg-neutral-900/40",
                 size === "lg" ? "h-40" : "h-16"
             )}
         >
+            {rows && hiddenAtRest ? (
+                <div
+                    aria-hidden="true"
+                    className="absolute inset-x-2 inset-y-0 flex flex-col justify-center gap-2"
+                >
+                    {rows.map(({ label }) => (
+                        <div
+                            key={label}
+                            className="h-[26px] rounded-md border border-dashed border-neutral-300 dark:border-neutral-700"
+                        />
+                    ))}
+                </div>
+            ) : null}
             {rows
                 ? rows.map(({ icon: Icon, label }) => (
                       <div
                           key={label}
                           data-anim="row"
-                          className="flex items-center gap-2 rounded-md px-1.5 py-1"
+                          className="relative flex h-[26px] items-center gap-2 rounded-md px-1.5"
                           style={hiddenAtRest ? { opacity: 0 } : undefined}
                       >
                           <Icon aria-hidden="true" className="size-3.5 shrink-0 text-blue-500/80" />
@@ -397,21 +410,27 @@ export function RaceScene({ size, label = "Item" }: { size: PreviewSize; label?:
 /** A dismissable card on a clipped rail (motion-18/19 grid previews simulate
  *  the gesture; the lg deep-dive renders the real drag prototype instead). */
 export function RailCardScene({ size }: { size: PreviewSize }) {
+    const isLg = size === "lg";
     return (
-        <div className={cn("flex flex-col justify-center", size === "lg" ? "h-36 px-1" : "h-16")}>
+        <div className={cn("flex flex-col justify-center", isLg ? "h-36 px-1" : "h-16")}>
             <div
-                className="relative w-full overflow-hidden rounded-md border border-dashed border-neutral-200 p-1 dark:border-neutral-800"
+                className="relative flex w-full items-center overflow-hidden rounded-lg border border-dashed border-neutral-300 bg-neutral-50/80 p-2 dark:border-neutral-700 dark:bg-neutral-900/50"
                 style={{ containerType: "inline-size" }}
             >
                 <div
                     data-anim="card"
                     className={cn(
-                        "rounded-sm border border-neutral-300 bg-white shadow-sm dark:border-neutral-600 dark:bg-neutral-800",
-                        size === "lg" ? "h-9 w-14" : "h-6 w-10"
+                        "flex flex-col justify-center rounded-md border border-blue-500 bg-blue-500/10 shadow-sm dark:border-blue-400 dark:bg-blue-400/10",
+                        isLg ? "h-11 w-20 p-1.5" : "h-6 w-10 p-1"
                     )}
                 >
-                    <div className="m-1 h-1 w-1/2 rounded bg-neutral-300 dark:bg-neutral-600" />
-                    <div className="mx-1 h-1 w-1/3 rounded bg-neutral-200 dark:bg-neutral-700" />
+                    {isLg ? (
+                        <span className="mb-1 text-[10px] font-semibold leading-none tracking-tight text-blue-700 dark:text-blue-300">
+                            Message
+                        </span>
+                    ) : null}
+                    <div className="h-1 w-3/4 rounded bg-blue-500/40 dark:bg-blue-400/40" />
+                    <div className="mt-1 h-1 w-1/2 rounded bg-blue-500/40 dark:bg-blue-400/40" />
                 </div>
             </div>
         </div>
@@ -420,23 +439,29 @@ export function RailCardScene({ size }: { size: PreviewSize }) {
 
 /** A slider knob on a track (motion-20 grid preview simulates the drag). */
 export function SliderScene({ size }: { size: PreviewSize }) {
-    const knobPx = size === "lg" ? 16 : 12;
+    const isLg = size === "lg";
+    const knobPx = isLg ? 16 : 12;
     return (
         <div
             className={cn(
-                "flex items-center",
-                size === "lg"
+                "flex flex-col justify-center gap-2.5",
+                isLg
                     ? "h-36 rounded-lg border border-neutral-200 bg-neutral-50/80 px-3 dark:border-neutral-800 dark:bg-neutral-900/50"
                     : "h-16 px-1"
             )}
         >
+            {isLg ? (
+                <span className="text-[10px] font-medium text-neutral-400 dark:text-neutral-500">
+                    Volume
+                </span>
+            ) : null}
             <div
                 className="relative h-1.5 w-full rounded-full bg-neutral-200 dark:bg-neutral-800"
                 style={{ containerType: "inline-size" }}
             >
                 <div
                     data-anim="knob"
-                    className="absolute rounded-full border border-neutral-300 bg-white shadow-sm dark:border-neutral-500 dark:bg-neutral-200"
+                    className="absolute rounded-full border border-blue-600 bg-blue-600 shadow-sm dark:border-blue-500 dark:bg-blue-500"
                     style={{ width: knobPx, height: knobPx, top: `calc(50% - ${knobPx / 2}px)`, left: 0 }}
                 />
             </div>
@@ -701,20 +726,47 @@ export function LoadingScene({ size, kind }: { size: PreviewSize; kind: "skeleto
     );
 }
 
-/** For motion-14's don't: a box that animates height (layout work). */
+/** For motion-14's don't: a disclosure panel that animates its own height
+ *  (layout work on every frame) instead of transforming into place. The body
+ *  grows 2px -> 30px — the content's laid-out height plus its own border — so
+ *  the reveal lands on a real layout, not an arbitrary number. */
 export function GrowBoxScene({ size }: { size: PreviewSize }) {
+    const isLg = size === "lg";
     return (
         <div
             className={cn(
-                "flex items-center justify-center rounded-lg border border-neutral-200 bg-neutral-50/80 dark:border-neutral-800 dark:bg-neutral-900/50",
-                size === "lg" ? "h-36" : "h-16"
+                "flex flex-col justify-center rounded-lg border border-neutral-200 bg-neutral-50/80 px-3 dark:border-neutral-800 dark:bg-neutral-900/50",
+                // h-44 matches AppSurface: motion-14's panes must be the same
+                // size so the animated property is the only difference.
+                isLg ? "h-44" : "h-16"
             )}
         >
-            <div
-                data-anim="panel"
-                className="overflow-hidden rounded border border-blue-500 bg-blue-500/10 dark:border-blue-400 dark:bg-blue-400/10"
-                style={{ width: size === "lg" ? 64 : 40, height: 2 }}
-            />
+            {isLg ? (
+                <div className="rounded-lg border border-neutral-200 bg-white p-2 dark:border-neutral-800 dark:bg-neutral-900">
+                    <div className="mb-1.5 flex items-center justify-between">
+                        <span className="text-[10px] font-semibold tracking-tight text-neutral-800 dark:text-neutral-100">
+                            Details
+                        </span>
+                        <ChevronDown aria-hidden="true" className="size-3 text-neutral-400" />
+                    </div>
+                    <div
+                        data-anim="panel"
+                        className="overflow-hidden rounded border border-blue-500 bg-blue-500/10 dark:border-blue-400 dark:bg-blue-400/10"
+                        style={{ height: 2 }}
+                    >
+                        <div className="space-y-1 p-1.5">
+                            <div className="h-1.5 w-3/4 rounded bg-blue-500/40 dark:bg-blue-400/40" />
+                            <div className="h-1.5 w-1/2 rounded bg-blue-500/40 dark:bg-blue-400/40" />
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <div
+                    data-anim="panel"
+                    className="overflow-hidden rounded border border-blue-500 bg-blue-500/10 dark:border-blue-400 dark:bg-blue-400/10"
+                    style={{ width: 40, height: 2 }}
+                />
+            )}
         </div>
     );
 }

@@ -1,15 +1,40 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { createPortal } from "react-dom";
 import { ArrowUpRight, Check, Copy, Download, LoaderCircle, X } from "lucide-react";
+
+import { cn } from "@/lib/utils";
 
 const skillPath = "/skills/axiom-website-upgrade/SKILL.md";
 const skillLoadTimeoutMs = 8000;
 const modalOpenDurationMs = 280;
 const modalCloseDurationMs = 180;
+
+// House focus treatment (matches rule-drawer.tsx).
+const FOCUS_RING =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 dark:focus-visible:ring-neutral-500";
+
+// Header pills share one recipe; min-h-11 (44px) on touch, min-h-10 (40px)
+// where the pointer is fine. `pressable` supplies the tokenized
+// transform/color transition and scale(0.96) press.
+const PILL_PRIMARY = cn(
+  "pressable inline-flex min-h-11 items-center gap-2 rounded-full border border-neutral-900 bg-neutral-950 px-4 text-xs font-medium text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:border-neutral-200 disabled:bg-neutral-100 disabled:text-neutral-400 sm:min-h-10 dark:border-white/10 dark:bg-white dark:text-neutral-950 dark:hover:bg-white/90 dark:disabled:border-white/10 dark:disabled:bg-white/15 dark:disabled:text-white/50",
+  FOCUS_RING
+);
+const PILL_SECONDARY = cn(
+  "pressable inline-flex min-h-11 items-center gap-2 rounded-full border border-neutral-200 px-4 text-xs font-medium text-neutral-700 hover:border-neutral-300 hover:bg-neutral-100 hover:text-neutral-950 sm:min-h-10 dark:border-white/10 dark:text-white/80 dark:hover:border-white/20 dark:hover:bg-white/5 dark:hover:text-white",
+  FOCUS_RING
+);
+const CLOSE_BUTTON = cn(
+  "pressable inline-flex shrink-0 items-center justify-center rounded-full border border-neutral-200 text-neutral-500 hover:border-neutral-300 hover:bg-neutral-100 hover:text-neutral-950 dark:border-white/10 dark:text-white/70 dark:hover:border-white/20 dark:hover:bg-white/5 dark:hover:text-white",
+  FOCUS_RING
+);
+
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 type LoadState = "idle" | "loading" | "ready" | "error";
 type CopyState = "idle" | "copied" | "error";
@@ -30,6 +55,8 @@ export function SkillBonus({ compact = false }: { compact?: boolean }) {
   const [skillText, setSkillText] = useState("");
   const [loadState, setLoadState] = useState<LoadState>("idle");
   const [copyState, setCopyState] = useState<CopyState>("idle");
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
   const isModalVisible = modalState !== "closed";
 
   useEffect(() => {
@@ -107,20 +134,66 @@ export function SkillBonus({ compact = false }: { compact?: boolean }) {
     const previousBodyOverflow = document.body.style.overflow;
     const previousHtmlOverflow = document.documentElement.style.overflow;
 
+    returnFocusRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         closeModal();
+        return;
+      }
+
+      if (event.key !== "Tab") {
+        return;
+      }
+
+      const panel = panelRef.current;
+
+      if (!panel) {
+        return;
+      }
+
+      const focusable = Array.from(
+        panel.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
+      ).filter((element) => element.offsetParent !== null);
+
+      if (focusable.length === 0) {
+        event.preventDefault();
+        panel.focus();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement;
+      const activeInPanel = active instanceof HTMLElement && panel.contains(active);
+
+      if (event.shiftKey) {
+        if (!activeInPanel || active === first) {
+          event.preventDefault();
+          last.focus();
+        }
+
+        return;
+      }
+
+      if (!activeInPanel || active === last) {
+        event.preventDefault();
+        first.focus();
       }
     }
 
     document.body.style.overflow = "hidden";
     document.documentElement.style.overflow = "hidden";
     window.addEventListener("keydown", handleKeyDown);
+    panelRef.current?.focus({ preventScroll: true });
 
     return () => {
       document.body.style.overflow = previousBodyOverflow;
       document.documentElement.style.overflow = previousHtmlOverflow;
       window.removeEventListener("keydown", handleKeyDown);
+      returnFocusRef.current?.focus({ preventScroll: true });
+      returnFocusRef.current = null;
     };
   }, [isModalVisible]);
 
@@ -230,37 +303,42 @@ export function SkillBonus({ compact = false }: { compact?: boolean }) {
         >
           <button
             type="button"
-            aria-label="Close skill preview"
+            aria-hidden="true"
+            tabIndex={-1}
             onClick={closeModal}
-            className="skill-modal-scrim absolute inset-0 bg-neutral-950/30 backdrop-blur-md dark:bg-black/72"
+            className="skill-modal-scrim absolute inset-0 cursor-default bg-neutral-950/30 backdrop-blur-md dark:bg-black/72"
           />
 
           <div
+            ref={panelRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="skill-preview-title"
-            className="skill-modal-panel relative mx-auto flex h-[100dvh] max-w-5xl flex-col overflow-hidden rounded-none border-y border-neutral-200 bg-white text-neutral-950 shadow-[0_24px_80px_rgba(15,23,42,0.14)] sm:h-full sm:rounded-[28px] sm:border dark:border-white/10 dark:bg-[#111216] dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]"
+            tabIndex={-1}
+            className="skill-modal-panel relative mx-auto flex h-[100dvh] max-w-5xl flex-col overflow-hidden rounded-none border-y border-neutral-200 bg-white text-neutral-950 shadow-[0_24px_80px_rgba(15,23,42,0.14)] outline-none sm:h-full sm:rounded-[28px] sm:border dark:border-white/10 dark:bg-[#111216] dark:text-white dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]"
           >
             <div className="skill-modal-content flex h-full min-h-0 flex-col">
               <h2 id="skill-preview-title" className="sr-only">
-                Website Playbook
+                Website playbook
               </h2>
 
               <div className="border-b border-neutral-200 px-4 py-3 sm:px-6 dark:border-white/10">
-                <div className="flex items-start justify-between gap-3 sm:hidden">
+                <div className="flex items-center justify-between gap-3 sm:hidden">
                   <div className="min-w-0">
                     <p className="text-xs font-medium text-neutral-400 dark:text-white/45">SKILL.md</p>
-                    <p className="mt-2 text-lg font-semibold tracking-tight text-neutral-950 dark:text-white">
-                      Website Playbook
+                    <p className="mt-1 truncate text-lg font-semibold tracking-tight text-neutral-950 dark:text-white">
+                      Website playbook
                     </p>
                   </div>
 
                   <button
                     type="button"
+                    aria-label="Close preview"
+                    title="Close preview"
                     onClick={closeModal}
-                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-neutral-200 text-neutral-500 transition-colors hover:border-neutral-300 hover:bg-neutral-100 hover:text-neutral-950 dark:border-white/10 dark:text-white/70 dark:hover:border-white/20 dark:hover:bg-white/5 dark:hover:text-white"
+                    className={cn(CLOSE_BUTTON, "size-11")}
                   >
-                    <X aria-hidden="true" className="h-4.5 w-4.5" />
+                    <X aria-hidden="true" className="size-4.5" />
                   </button>
                 </div>
 
@@ -269,22 +347,14 @@ export function SkillBonus({ compact = false }: { compact?: boolean }) {
                     type="button"
                     onClick={() => void handleCopy()}
                     disabled={loadState !== "ready"}
-                    className="inline-flex items-center gap-2 rounded-full border border-neutral-900 bg-neutral-950 px-3.5 py-2 text-xs font-medium text-white transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:border-neutral-200 disabled:bg-neutral-100 disabled:text-neutral-400 dark:border-white/10 dark:bg-white dark:text-neutral-950 dark:hover:bg-white/90 dark:disabled:border-white/10 dark:disabled:bg-white/15 dark:disabled:text-white/50"
+                    className={PILL_PRIMARY}
                   >
-                    {copyState === "copied" ? (
-                      <Check aria-hidden="true" className="h-3.5 w-3.5" />
-                    ) : (
-                      <Copy aria-hidden="true" className="h-3.5 w-3.5" />
-                    )}
-                    {copyLabel}
+                    <CopyGlyph copied={copyState === "copied"} />
+                    <span aria-live="polite">{copyLabel}</span>
                   </button>
 
-                  <a
-                    href={skillPath}
-                    download="SKILL.md"
-                    className="inline-flex items-center gap-2 rounded-full border border-neutral-200 px-3.5 py-2 text-xs font-medium text-neutral-700 transition-colors hover:border-neutral-300 hover:bg-neutral-100 hover:text-neutral-950 dark:border-white/10 dark:text-white/80 dark:hover:border-white/20 dark:hover:bg-white/5 dark:hover:text-white"
-                  >
-                    <Download aria-hidden="true" className="h-3.5 w-3.5" />
+                  <a href={skillPath} download="SKILL.md" className={PILL_SECONDARY}>
+                    <Download aria-hidden="true" className="size-3.5" />
                     Download
                   </a>
                 </div>
@@ -292,7 +362,7 @@ export function SkillBonus({ compact = false }: { compact?: boolean }) {
                 <div className="hidden sm:grid sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:gap-3">
                   <p className="text-sm font-medium text-neutral-400 dark:text-white/45">SKILL.md</p>
                   <p className="text-sm font-semibold tracking-tight text-neutral-950 dark:text-white md:text-base">
-                    Website Playbook
+                    Website playbook
                   </p>
 
                   <div className="ml-auto flex items-center gap-2">
@@ -300,31 +370,25 @@ export function SkillBonus({ compact = false }: { compact?: boolean }) {
                       type="button"
                       onClick={() => void handleCopy()}
                       disabled={loadState !== "ready"}
-                      className="inline-flex items-center gap-2 rounded-full border border-neutral-900 bg-neutral-950 px-3.5 py-2 text-xs font-medium text-white transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:border-neutral-200 disabled:bg-neutral-100 disabled:text-neutral-400 dark:border-white/10 dark:bg-white dark:text-neutral-950 dark:hover:bg-white/90 dark:disabled:border-white/10 dark:disabled:bg-white/15 dark:disabled:text-white/50"
+                      className={PILL_PRIMARY}
                     >
-                      {copyState === "copied" ? (
-                        <Check aria-hidden="true" className="h-3.5 w-3.5" />
-                      ) : (
-                        <Copy aria-hidden="true" className="h-3.5 w-3.5" />
-                      )}
-                      {copyLabel}
+                      <CopyGlyph copied={copyState === "copied"} />
+                      <span aria-live="polite">{copyLabel}</span>
                     </button>
 
-                    <a
-                      href={skillPath}
-                      download="SKILL.md"
-                      className="inline-flex items-center gap-2 rounded-full border border-neutral-200 px-3.5 py-2 text-xs font-medium text-neutral-700 transition-colors hover:border-neutral-300 hover:bg-neutral-100 hover:text-neutral-950 dark:border-white/10 dark:text-white/80 dark:hover:border-white/20 dark:hover:bg-white/5 dark:hover:text-white"
-                    >
-                      <Download aria-hidden="true" className="h-3.5 w-3.5" />
+                    <a href={skillPath} download="SKILL.md" className={PILL_SECONDARY}>
+                      <Download aria-hidden="true" className="size-3.5" />
                       Download
                     </a>
 
                     <button
                       type="button"
+                      aria-label="Close preview"
+                      title="Close preview"
                       onClick={closeModal}
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200 text-neutral-500 transition-colors hover:border-neutral-300 hover:bg-neutral-100 hover:text-neutral-950 dark:border-white/10 dark:text-white/70 dark:hover:border-white/20 dark:hover:bg-white/5 dark:hover:text-white"
+                      className={cn(CLOSE_BUTTON, "size-10")}
                     >
-                      <X aria-hidden="true" className="h-4.5 w-4.5" />
+                      <X aria-hidden="true" className="size-4.5" />
                     </button>
                   </div>
                 </div>
@@ -332,23 +396,32 @@ export function SkillBonus({ compact = false }: { compact?: boolean }) {
 
               <div className="min-h-0 flex-1 overflow-y-auto">
                 {loadState === "loading" || loadState === "idle" ? (
-                  <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center text-sm text-neutral-500 dark:text-white/65">
-                    <LoaderCircle aria-hidden="true" className="h-5 w-5 animate-spin" />
-                    <p>Loading preview...</p>
+                  <div
+                    role="status"
+                    className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center text-sm text-neutral-500 dark:text-white/70"
+                  >
+                    <LoaderCircle
+                      aria-hidden="true"
+                      className="size-5 animate-spin motion-reduce:animate-none"
+                    />
+                    <p>Loading preview…</p>
                   </div>
                 ) : null}
 
                 {loadState === "error" ? (
-                  <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center text-sm text-neutral-500 dark:text-white/65">
+                  <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center text-sm text-neutral-500 dark:text-white/70">
                     <p>Preview unavailable. The raw file still works.</p>
                     <a
                       href={skillPath}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-2 rounded-full border border-neutral-200 px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:border-neutral-300 hover:bg-neutral-100 hover:text-neutral-950 dark:border-white/10 dark:text-white/80 dark:hover:border-white/20 dark:hover:bg-white/5 dark:hover:text-white"
+                      className={cn(
+                        "pressable inline-flex min-h-11 items-center gap-2 rounded-full border border-neutral-200 px-5 text-sm font-medium text-neutral-700 hover:border-neutral-300 hover:bg-neutral-100 hover:text-neutral-950 dark:border-white/10 dark:text-white/80 dark:hover:border-white/20 dark:hover:bg-white/5 dark:hover:text-white",
+                        FOCUS_RING
+                      )}
                     >
-                      <Download aria-hidden="true" className="h-4 w-4" />
-                      Open file
+                      <ArrowUpRight aria-hidden="true" className="size-4" />
+                      Open raw file
                     </a>
                   </div>
                 ) : null}
@@ -359,10 +432,10 @@ export function SkillBonus({ compact = false }: { compact?: boolean }) {
                       <p className="text-sm font-medium text-neutral-500 dark:text-white/45">
                         Bonus skill
                       </p>
-                      <h3 className="mt-3 text-2xl font-semibold tracking-tight text-neutral-950 sm:text-3xl md:text-4xl dark:text-white">
-                        Website Upgrade Playbook
+                      <h3 className="mt-2 text-2xl font-semibold tracking-tight text-neutral-950 sm:text-3xl md:text-4xl dark:text-white">
+                        Website playbook
                       </h3>
-                      <p className="prose-justify mt-3 max-w-2xl text-sm leading-7 text-neutral-600 sm:mt-4 sm:text-base sm:leading-8 dark:text-white/68">
+                      <p className="mt-3 max-w-2xl text-pretty text-sm leading-7 text-neutral-600 sm:mt-4 sm:text-base sm:leading-8 dark:text-white/70">
                         A decision framework for auditing, implementing, and verifying sharper interfaces.
                       </p>
                     </header>
@@ -387,47 +460,84 @@ export function SkillBonus({ compact = false }: { compact?: boolean }) {
           <button
             type="button"
             onClick={openModal}
-            className="pressable group flex min-h-10 w-full items-center justify-between rounded-xl px-2 text-left text-xs font-medium text-neutral-500 transition-[transform,background-color,color] duration-150 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
+            className={cn(
+              "pressable group flex min-h-11 w-full items-center justify-between rounded-xl px-2 text-left text-xs font-medium text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100",
+              FOCUS_RING
+            )}
           >
             <span>
               <span className="block text-[11px] font-normal text-neutral-400 dark:text-neutral-500">Bonus skill</span>
-              <span className="mt-0.5 block">Website Playbook</span>
+              <span className="mt-0.5 block">Website playbook</span>
             </span>
-            <ArrowUpRight aria-hidden="true" className="h-4 w-4 shrink-0 transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+            <ArrowUpRight
+              aria-hidden="true"
+              className="size-4 shrink-0 transition-transform duration-150 ease-out motion-safe:group-hover:-translate-y-0.5 motion-safe:group-hover:translate-x-0.5"
+            />
           </button>
         </div>
       ) : (
-        <section className="rounded-[24px] border border-neutral-200 bg-white px-4 py-4 text-neutral-950 shadow-[0_1px_0_rgba(17,24,39,0.04)] dark:border-neutral-800 dark:bg-neutral-950 dark:text-white dark:shadow-none">
+        <section className="rounded-[24px] border border-neutral-200 bg-white p-5 text-neutral-950 shadow-[0_1px_0_rgba(17,24,39,0.04)] dark:border-neutral-800 dark:bg-neutral-950 dark:text-white dark:shadow-none">
           <button
             type="button"
             onClick={openModal}
-            className="w-full text-left"
+            className={cn("group w-full rounded-xl text-left", FOCUS_RING)}
           >
-            <p className="text-xs font-medium text-neutral-400 dark:text-white/45">Bonus skill</p>
-            <div className="mt-3 flex items-start justify-between gap-3">
+            <p className="text-xs font-medium text-neutral-400 dark:text-neutral-500">Bonus skill</p>
+            <div className="mt-2 flex items-start justify-between gap-3">
               <h3 className="text-2xl font-semibold leading-tight tracking-tight text-neutral-950 dark:text-white">
-                Website Playbook
+                Website playbook
               </h3>
-              <ArrowUpRight aria-hidden="true" className="mt-1 h-4 w-4 shrink-0 text-neutral-400 dark:text-white/45" />
+              <ArrowUpRight
+                aria-hidden="true"
+                className="mt-1 size-4 shrink-0 text-neutral-400 transition-[translate,color] duration-150 ease-out group-hover:text-neutral-600 motion-safe:group-hover:-translate-y-0.5 motion-safe:group-hover:translate-x-0.5 dark:text-neutral-500 dark:group-hover:text-neutral-300"
+              />
             </div>
-            <p className="prose-justify mt-2 text-sm leading-relaxed text-neutral-600 dark:text-white/60">
-              Open a cleaner preview, then copy or download the raw file.
+            <p className="mt-2 text-pretty text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
+              The decision framework behind these rules — preview it, then copy or download the raw file.
             </p>
           </button>
 
           <a
             href={skillPath}
             download="SKILL.md"
-            className="mt-4 inline-flex items-center gap-2 text-xs font-medium text-neutral-600 transition-colors hover:text-neutral-950 dark:text-white/72 dark:hover:text-white"
+            className={cn(
+              "pressable mt-3 inline-flex min-h-11 items-center gap-2 rounded-full text-xs font-medium text-neutral-600 hover:text-neutral-950 dark:text-neutral-400 dark:hover:text-neutral-100",
+              FOCUS_RING
+            )}
           >
-            <Download aria-hidden="true" className="h-3.5 w-3.5" />
-            Download .md
+            <Download aria-hidden="true" className="size-3.5" />
+            Download SKILL.md
           </a>
         </section>
       )}
 
       {modal}
     </>
+  );
+}
+
+// Cross-fades the copy/check glyphs instead of hard-swapping them: both stay
+// in the DOM and trade opacity + scale + blur, so rapid re-clicks retarget
+// smoothly (transitions, not keyframes).
+const GLYPH_TRANSITION =
+  "absolute inset-0 size-3.5 transition-[opacity,scale,filter] duration-200 ease-[cubic-bezier(0.2,0,0,1)] motion-reduce:transition-none";
+
+function CopyGlyph({ copied }: { copied: boolean }) {
+  return (
+    <span aria-hidden="true" className="relative size-3.5">
+      <Copy
+        className={cn(
+          GLYPH_TRANSITION,
+          copied ? "scale-[0.25] opacity-0 blur-[4px]" : "scale-100 opacity-100 blur-[0px]"
+        )}
+      />
+      <Check
+        className={cn(
+          GLYPH_TRANSITION,
+          copied ? "scale-100 opacity-100 blur-[0px]" : "scale-[0.25] opacity-0 blur-[4px]"
+        )}
+      />
+    </span>
   );
 }
 
@@ -454,7 +564,7 @@ function renderPreviewNode(node: PreviewNode, index: number) {
 
   if (node.type === "paragraph") {
     return (
-      <p key={`paragraph-${index}`} className="prose-justify text-sm leading-7 text-neutral-700 dark:text-white/70 sm:text-base sm:leading-8">
+      <p key={`paragraph-${index}`} className="text-pretty text-sm leading-7 text-neutral-700 dark:text-white/70 sm:text-base sm:leading-8">
         {node.text}
       </p>
     );

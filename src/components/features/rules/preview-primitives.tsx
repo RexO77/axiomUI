@@ -6,6 +6,14 @@ export type Variant = "do" | "dont";
 export type PreviewSize = "sm" | "lg";
 export type DemoProps = { variant: Variant; size: PreviewSize };
 
+// One renderer per rule category (previews/*.tsx). Returns null for ids the
+// module doesn't own so the dispatcher can fall through to the generic card.
+export type PreviewRenderer = (
+    ruleId: string,
+    variant: Variant,
+    size: PreviewSize
+) => ReactNode | null;
+
 export function textClass(size: PreviewSize) {
     return size === "lg" ? "text-xs" : "text-[10px]";
 }

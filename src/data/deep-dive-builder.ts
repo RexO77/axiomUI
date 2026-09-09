@@ -197,6 +197,10 @@ export function buildDeepDive(rule: Rule): DeepDiveSection[] {
   ];
 }
 
+/** Fallback for a rule whose prose has not been authored yet. Unreachable in
+ *  shipped code — `npm run check` (scripts/check-deep-dives.mjs) fails CI unless
+ *  all 106 rules override all four fields — but it keeps a newly added rule
+ *  rendering sensibly while its prose is still being written. */
 function buildImplementationNotes(rule: Rule, deepDive: CategoryDeepDive): string[] {
   const primaryInstruction =
     rule.id === "typo-1"

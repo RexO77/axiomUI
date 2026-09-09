@@ -107,7 +107,7 @@ function SidebarContent({
                             Axiom
                         </p>
                         <span className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
-                            UI Logic
+                            UI logic
                         </span>
                     </div>
                 </div>
@@ -125,7 +125,7 @@ function SidebarContent({
                 <p className="px-1 text-sm font-medium text-neutral-400 dark:text-neutral-500">
                     Index
                 </p>
-                <nav className="sidebar-scroll mt-4 flex-1 space-y-2 overflow-y-auto pr-1">
+                <nav aria-label="Index" className="sidebar-scroll mt-4 flex-1 space-y-2 overflow-y-auto pr-1">
                     {categories.map((cat) => {
                         const isActive = cat.id === activeCategoryId;
 
@@ -162,7 +162,7 @@ function SidebarContent({
                     href="/llms-full.txt"
                     className="mt-3 inline-flex items-center text-xs text-neutral-400 transition-colors hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300"
                 >
-                    For AI tools: llms.txt
+                    llms-full.txt for AI tools
                 </a>
             </div>
         </div>
@@ -239,7 +239,7 @@ export function Sidebar() {
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-900 text-white dark:bg-white dark:text-neutral-900">
                         <AxiomLogo className="h-4 w-4" />
                     </div>
-                    <span className="text-sm font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+                    <span className="text-sm font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
                         Axiom
                     </span>
                 </div>
@@ -250,7 +250,7 @@ export function Sidebar() {
                         className="pressable flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
                         aria-label="Open menu"
                     >
-                        <Menu className="h-5 w-5" />
+                        <Menu aria-hidden="true" className="h-5 w-5" />
                     </button>
                 </div>
             </div>
@@ -289,7 +289,7 @@ export function Sidebar() {
                                 className="pressable flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
                                 aria-label="Close menu"
                             >
-                                <X className="h-5 w-5" />
+                                <X aria-hidden="true" className="h-5 w-5" />
                             </button>
                         }
                     />
