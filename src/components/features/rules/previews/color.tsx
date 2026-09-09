@@ -133,7 +133,8 @@ function SixtyThirtyTen({ variant }: { variant: Variant }) {
 }
 
 // ── color-2 · Never pure black ─────────────────────────────────────
-// The same white reading card in both panes; only the ink changes. The ratio is
+// The same white reading card in both panes; only the ink changes. Type is set
+// at 13/11px so the ink has enough area to show its hue, and the ratio is
 // quoted against the white card, so the card stays white in dark mode too.
 function NeverPureBlack({ variant }: { variant: Variant }) {
     const pureBlack = variant === "dont";
@@ -141,13 +142,13 @@ function NeverPureBlack({ variant }: { variant: Variant }) {
     return (
         <div className="flex h-[118px] flex-col justify-center">
             <div className="rounded-md border border-neutral-200 bg-white p-3 dark:border-neutral-700">
-                <p className={cn("text-[11px] font-semibold", ink)}>Release notes</p>
-                <p className={cn("mt-1 text-[10px] leading-4", ink)}>
-                    Sync now runs offline, and search indexes twice as fast across large workspaces
+                <p className={cn("text-[13px] font-semibold leading-4", ink)}>Release notes</p>
+                <p className={cn("mt-1 text-[11px] leading-4", ink)}>
+                    Sync now runs offline, and search indexes twice as fast
                 </p>
                 <div className="mt-2 flex items-center justify-between border-t border-neutral-100 pt-1.5">
                     <CardNote>{pureBlack ? "#000000 on #ffffff" : "#0f172a on #ffffff"}</CardNote>
-                    <CardNote>{pureBlack ? "21:1 — max luminance jump" : "17.7:1 — still AAA, no glare"}</CardNote>
+                    <CardNote>{pureBlack ? "21:1 — max luminance jump" : "17.9:1 — still AAA, no glare"}</CardNote>
                 </div>
             </div>
         </div>
@@ -155,26 +156,33 @@ function NeverPureBlack({ variant }: { variant: Variant }) {
 }
 
 // ── color-3 · Colored shadows ──────────────────────────────────────
-// One indigo promo card, one variable: the hue mixed into its shadow.
+// One indigo promo card, one variable: the hue mixed into its shadow. The card
+// sits on its own surface panel — neutral-50 light, neutral-800 dark — because
+// a near-black page swallows both shadows and the pair would show nothing.
 function ColoredShadows({ variant }: { variant: Variant }) {
     const grey = variant === "dont";
     return (
-        <div className="flex h-[118px] flex-col items-center justify-center gap-4">
-            <div
-                className="w-40 rounded-md bg-indigo-500 px-3 py-2.5 text-white"
-                style={{
-                    boxShadow: grey
-                        ? "0 8px 20px -4px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.25)"
-                        : "0 8px 20px -4px rgba(99, 102, 241, 0.5), 0 2px 6px rgba(99, 102, 241, 0.3)",
-                }}
-            >
-                <div className="flex items-center gap-1.5">
-                    <Zap aria-hidden className="size-3.5 stroke-[1.5]" />
-                    <span className="text-[11px] font-semibold">Upgrade to Pro</span>
+        <div className="flex h-[118px] flex-col rounded-md bg-neutral-50 p-3 dark:bg-neutral-800">
+            <div className="flex flex-1 items-center justify-center">
+                <div
+                    className="w-40 rounded-md bg-indigo-500 px-3 py-2.5 text-white"
+                    style={{
+                        boxShadow: grey
+                            ? "0 6px 16px -4px rgba(0, 0, 0, 0.45), 0 2px 5px rgba(0, 0, 0, 0.3)"
+                            : "0 6px 16px -4px rgba(99, 102, 241, 0.6), 0 2px 5px rgba(99, 102, 241, 0.4)",
+                    }}
+                >
+                    <div className="flex items-center gap-1.5">
+                        <Zap aria-hidden className="size-3.5 stroke-[1.5]" />
+                        <span className="text-[11px] font-semibold">Upgrade to Pro</span>
+                    </div>
+                    <p className="mt-0.5 text-[10px] tabular-nums text-indigo-100">$12/mo · billed yearly</p>
                 </div>
-                <p className="mt-0.5 text-[10px] tabular-nums text-indigo-100">$12/mo · billed yearly</p>
             </div>
-            <Note>{grey ? "shadow: black/40 — pasted on" : "shadow: indigo-500/50 — lit by itself"}</Note>
+            <div className="flex items-center justify-between gap-2">
+                <Note className="whitespace-nowrap">{grey ? "shadow hue: black" : "shadow hue: indigo-500"}</Note>
+                <Note className="whitespace-nowrap">{grey ? "pasted on" : "lit by itself"}</Note>
+            </div>
         </div>
     );
 }
@@ -255,9 +263,9 @@ function BorderColors({ variant }: { variant: Variant }) {
                     </div>
                 ))}
             </div>
-            <div className="flex items-center justify-between">
-                <Note>{heavy ? "border: neutral-400" : "border: neutral-200"}</Note>
-                <Note>{heavy ? "lines louder than labels" : "content leads, lines recede"}</Note>
+            <div className="flex items-center justify-between gap-2">
+                <Note className="whitespace-nowrap">{heavy ? "border: neutral-400" : "border: neutral-200"}</Note>
+                <Note className="whitespace-nowrap">{heavy ? "lines shout" : "lines recede"}</Note>
             </div>
         </div>
     );
@@ -265,46 +273,57 @@ function BorderColors({ variant }: { variant: Variant }) {
 
 // ── color-6 · Double contrast for borders ──────────────────────────
 // A dialog slice: input + outline button, with a passive divider held at
-// neutral-200 in BOTH panes as the baseline the interactive border must beat.
+// neutral-200 (dark: neutral-800) in BOTH panes as the baseline the interactive
+// border must beat. Each value is labelled beside the line it describes, so the
+// two borders can be compared without leaving the scene. Dark mode drops the
+// faint value a step further (neutral-900) so it stays *below* the divider
+// there too — at neutral-800 it would merely tie and the lesson would vanish.
 function DoubleContrastBorders({ variant }: { variant: Variant }) {
     const faint = variant === "dont";
     const interactive = faint
-        ? "border-neutral-100 dark:border-neutral-800"
+        ? "border-neutral-100 dark:border-neutral-900"
         : "border-neutral-300 dark:border-neutral-600";
     return (
-        <div className="flex h-[118px] flex-col justify-center gap-2">
-            <div>
+        <div className="flex h-[118px] flex-col justify-center gap-1.5">
+            <div className="flex items-baseline justify-between gap-2">
                 <span className="text-[10px] font-semibold text-neutral-600 dark:text-neutral-300">
                     Invite teammates
                 </span>
-                <div
-                    className={cn(
-                        "mt-1 flex h-7 items-center rounded-md border bg-white px-2 dark:bg-neutral-900",
-                        interactive
-                    )}
-                >
-                    <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
-                        teammate@company.com
+                <Note className="whitespace-nowrap">
+                    {faint ? "input: neutral-100" : "input: neutral-300"}
+                </Note>
+            </div>
+            <div
+                className={cn(
+                    "flex h-7 items-center rounded-md border bg-white px-2 dark:bg-neutral-900",
+                    interactive
+                )}
+            >
+                <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
+                    teammate@company.com
+                </span>
+            </div>
+            <div className="flex items-center gap-2">
+                <div className="h-px flex-1 bg-neutral-200 dark:bg-neutral-800" />
+                <Note className="whitespace-nowrap">divider: neutral-200</Note>
+            </div>
+            <div className="flex items-center justify-between gap-2">
+                <Note className="whitespace-nowrap">
+                    {faint ? "fainter than the divider" : "darker than the divider"}
+                </Note>
+                <div className="flex shrink-0 items-center gap-2">
+                    <span
+                        className={cn(
+                            "rounded-md border px-2.5 py-1 text-[10px] font-semibold text-neutral-700 dark:text-neutral-200",
+                            interactive
+                        )}
+                    >
+                        Cancel
+                    </span>
+                    <span className="rounded-md bg-neutral-900 px-2.5 py-1 text-[10px] font-semibold text-white dark:bg-neutral-100 dark:text-neutral-900">
+                        Send invite
                     </span>
                 </div>
-            </div>
-            <div className="border-t border-neutral-200 dark:border-neutral-800" />
-            <div className="flex items-center justify-end gap-2">
-                <span
-                    className={cn(
-                        "rounded-md border px-2.5 py-1 text-[10px] font-semibold text-neutral-700 dark:text-neutral-200",
-                        interactive
-                    )}
-                >
-                    Cancel
-                </span>
-                <span className="rounded-md bg-neutral-900 px-2.5 py-1 text-[10px] font-semibold text-white dark:bg-neutral-100 dark:text-neutral-900">
-                    Send invite
-                </span>
-            </div>
-            <div className="flex items-center justify-between">
-                <Note>{faint ? "interactive: neutral-100" : "interactive: neutral-300"}</Note>
-                <Note>{faint ? "fainter than the divider" : "divider stays neutral-200"}</Note>
             </div>
         </div>
     );
@@ -312,9 +331,10 @@ function DoubleContrastBorders({ variant }: { variant: Variant }) {
 
 // ── color-8 · Dark mode isn't inverted ─────────────────────────────
 // Renders its own dark canvas via an inset layer, regardless of site theme.
-// Do: gray-900 page, gray-800 card sitting lighter, desaturated brand, photo
-// untouched. Don't: filter-invert world — white card, brand flipped to muddy
-// orange (#3b82f6 inverts to #c47d09), photo turned into a negative.
+// Do: gray-900 page, gray-800 card sitting lighter, brand genuinely desaturated
+// (#3b82f6 at 91% saturation → #799dd8 at 55%), photo untouched. Don't:
+// filter-invert world — white card, brand flipped to muddy orange (#3b82f6
+// inverts to #c47d09), photo turned into a negative.
 function DarkModeNotInverted({ variant }: { variant: Variant }) {
     const inverted = variant === "dont";
     return (
@@ -343,7 +363,7 @@ function DarkModeNotInverted({ variant }: { variant: Variant }) {
                         <div
                             className={cn(
                                 "h-full w-4/5 rounded-full",
-                                inverted ? "bg-[#c47d09]" : "bg-blue-400"
+                                inverted ? "bg-[#c47d09]" : "bg-[#799dd8]"
                             )}
                         />
                     </div>
@@ -373,8 +393,8 @@ function DarkModeNotInverted({ variant }: { variant: Variant }) {
                 </div>
                 <span className={cn(NOTE, "text-neutral-400")}>
                     {inverted
-                        ? "filter: invert(1) — brand flips to orange"
-                        : "bg 900 · card 800 (lighter = higher) · brand desaturated"}
+                        ? "filter: invert(1) — card #ffffff, brand #3b82f6 → #c47d09"
+                        : "bg 900 · card 800 (lighter = higher) · brand sat 91% → 55%"}
                 </span>
             </div>
         </div>
@@ -449,7 +469,7 @@ function OpacityOverNewColors({ variant }: { variant: Variant }) {
                     "flex h-6 items-center gap-1.5 rounded-md px-2 font-semibold",
                     handPicked
                         ? "bg-[#dcebf5] text-[#1967d2]"
-                        : "bg-blue-500/15 text-blue-600 dark:bg-blue-400/20 dark:text-blue-400"
+                        : "bg-blue-500/15 text-blue-600 dark:bg-blue-400/15 dark:text-blue-400"
                 )}
             >
                 <Send aria-hidden className="size-3 stroke-[1.5]" />
@@ -468,37 +488,47 @@ function OpacityOverNewColors({ variant }: { variant: Variant }) {
 }
 
 // ── color-11 · Neutral image outlines ──────────────────────────────
-// Two upload thumbnails, one light-edged, one dark-edged. Do outlines with pure
-// black/10 that flips to white/10 in dark mode; Don't uses a tinted slate that
-// reads as dirt in light mode and never flips for dark.
+// The variable is whether the outline value flips with the theme. Both panes
+// judge one upload on two pinned surfaces — a white page and a #0a0a0a page —
+// so the same value is seen in both worlds whatever theme the site is in. Each
+// thumbnail is a near-surface tone, so the 1px outline is the ONLY thing
+// drawing its edge: Do flips black/10 → white/10 and the edge holds on both;
+// Don't pins a tinted slate that survives on white and dissolves on black.
 function NeutralImageOutlines({ variant }: { variant: Variant }) {
     const tinted = variant === "dont";
-    const edge = tinted
-        ? "outline outline-1 -outline-offset-1 outline-slate-900/20"
-        : "outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10";
+    const edgeBase = "outline outline-1 -outline-offset-1";
+    const onLight = tinted ? "outline-slate-900/10" : "outline-black/10";
+    const onDark = tinted ? "outline-slate-900/10" : "outline-white/10";
     return (
-        <div className="flex h-[118px] flex-col justify-center gap-2">
+        <div className="flex h-[118px] flex-col justify-center gap-1">
             <span className="text-[10px] font-semibold text-neutral-600 dark:text-neutral-300">
                 Recent uploads
             </span>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2 rounded-md bg-white p-1">
                 <div
                     className={cn(
-                        "h-14 flex-1 rounded-md bg-gradient-to-br from-white via-sky-100 to-sky-300",
-                        edge
+                        "h-6 flex-1 rounded-sm bg-gradient-to-br from-[#fdfdfe] to-[#f3f5f8]",
+                        edgeBase,
+                        onLight
                     )}
                 />
+                <span className={cn(NOTE, "shrink-0 text-neutral-400")}>on #ffffff</span>
+            </div>
+            <div className="flex items-center gap-2 rounded-md bg-[#0a0a0a] p-1">
                 <div
                     className={cn(
-                        "h-14 flex-1 rounded-md bg-gradient-to-br from-amber-200 via-rose-300 to-indigo-400",
-                        edge
+                        "h-6 flex-1 rounded-sm bg-gradient-to-br from-[#0d0d10] to-[#111114]",
+                        edgeBase,
+                        onDark
                     )}
                 />
+                <span className={cn(NOTE, "shrink-0 text-neutral-500")}>on #0a0a0a</span>
             </div>
-            <div className="flex items-center justify-between">
-                <Note>{tinted ? "outline: slate-900/20" : "outline: black/10 · white/10 dark"}</Note>
-                <Note>{tinted ? "tinted, never flips for dark" : "pure neutral, flips per theme"}</Note>
-            </div>
+            <Note>
+                {tinted
+                    ? "slate-900/10 pinned — dark edge dissolves"
+                    : "black/10 → white/10 — edge holds on both"}
+            </Note>
         </div>
     );
 }

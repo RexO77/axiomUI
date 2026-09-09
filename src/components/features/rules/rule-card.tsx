@@ -7,6 +7,7 @@ import { RulePreview } from "@/components/features/rules/rule-preview";
 import { hasShowcase } from "@/components/features/rules/demos/registry";
 import { CopyRuleButton } from "@/components/features/rules/copy-rule-button";
 import { useHaptics } from "@/hooks/use-haptics";
+import { VERDICT_LABEL } from "@/lib/verdict";
 
 interface RuleCardProps {
   rule: Rule;
@@ -66,7 +67,8 @@ function ComparisonPanel({ rule, variant }: { rule: Rule; variant: "do" | "dont"
   return (
     <section className="rule-card-panel flex min-w-0 flex-col rounded-[20px] bg-neutral-50/80 p-3 dark:bg-neutral-950/45">
       {/* Same chrome voice as the motion panes (PaneChrome): 3.5 icon,
-          11px semibold label, 1.5 gap — the grid reads as one system. */}
+          11px semibold label, 1.5 gap. The words come from VERDICT_LABEL so
+          card, drawer, detail page, showcase, and social image cannot drift. */}
       <div className="flex items-center gap-1.5">
         <Icon
           aria-hidden="true"
@@ -78,7 +80,7 @@ function ComparisonPanel({ rule, variant }: { rule: Rule; variant: "do" | "dont"
           ? "text-[11px] font-semibold text-emerald-700 dark:text-emerald-300"
           : "text-[11px] font-semibold text-rose-700 dark:text-rose-200"}
         >
-          {isDo ? "Do this" : "Avoid this"}
+          {VERDICT_LABEL[variant]}
         </span>
       </div>
 

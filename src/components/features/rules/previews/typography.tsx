@@ -121,20 +121,22 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
         }
 
         // Letter spacing on caps — the same sidebar nav group; only the
-        // tracking on the uppercase section label changes.
+        // tracking on the uppercase section label changes. The label runs
+        // long on purpose: tracking accumulates per character, so a short
+        // sample hides the effect the rule is about.
         case "typo-2":
             return (
                 <PreviewFrame size={size} className="flex items-center justify-center">
-                    <div className="w-full max-w-[190px]">
+                    <div className="w-full max-w-[220px]">
                         <div className="flex items-baseline justify-between gap-2">
                             <span
                                 className={cn(
-                                    "text-[10px] font-semibold uppercase",
+                                    "text-[11px] font-semibold uppercase",
                                     ACCENT_TEXT,
                                     isDo ? "tracking-[0.05em]" : "tracking-normal"
                                 )}
                             >
-                                Account settings
+                                Account preferences
                             </span>
                             <Spec>{isDo ? "+0.05em" : "0em"}</Spec>
                         </div>
@@ -218,30 +220,38 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
 
         // The 2-font limit — the same landing card. The recommended pane uses
         // one family throughout; the avoid pane mixes two competing sans faces.
-        case "typo-5":
+        // The annotation names the families so the reader can check the claim
+        // instead of trusting the word "competing"; both fallback stacks list
+        // a Linux face so the avoid pane still renders two distinct sans.
+        case "typo-5": {
+            const headingFamily = isDo
+                ? "var(--font-manrope), sans-serif"
+                : "Arial, Helvetica, 'Liberation Sans', sans-serif";
+            const bodyFamily = isDo
+                ? "var(--font-manrope), sans-serif"
+                : "Verdana, 'DejaVu Sans', Geneva, sans-serif";
             return (
                 <PreviewFrame size={size} className="flex items-center justify-center">
                     <div className="w-full max-w-[230px]">
-                        <Spec className="block">{isDo ? "1 family" : "2 competing sans"}</Spec>
+                        <Spec className="block">
+                            {isDo ? "1 family · Manrope" : "2 sans · Arial + Verdana"}
+                        </Spec>
                         <p
                             className="mt-2 text-[17px] font-semibold leading-snug text-neutral-900 dark:text-neutral-50"
-                            style={{
-                                fontFamily: isDo
-                                    ? "var(--font-manrope)"
-                                    : "Arial, sans-serif",
-                            }}
+                            style={{ fontFamily: headingFamily }}
                         >
                             Meet your calmer inbox
                         </p>
                         <p
                             className="mt-1.5 text-[12px] leading-[1.5] text-neutral-500 dark:text-neutral-400"
-                            style={{ fontFamily: isDo ? "var(--font-manrope)" : "Verdana, sans-serif" }}
+                            style={{ fontFamily: bodyFamily }}
                         >
                             Focused messages first, everything else on your schedule
                         </p>
                     </div>
                 </PreviewFrame>
             );
+        }
 
         // De-emphasize with color, not size — the same member row; only the
         // email's treatment changes: lighter at full size vs tiny at full ink.
@@ -290,12 +300,12 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
             );
             return (
                 <PreviewFrame size={size} className="flex items-center justify-center">
-                    <div className="w-full max-w-[210px]">
+                    <div className="w-full max-w-[230px]">
                         <div className="flex items-baseline justify-between gap-2">
                             <span className="text-[11px] font-semibold text-neutral-900 dark:text-neutral-50">
                                 Order summary
                             </span>
-                            <Spec>{isDo ? "tabular-nums" : "proportional"}</Spec>
+                            <Spec>{isDo ? "right · tabular-nums" : "left · proportional"}</Spec>
                         </div>
                         <div className="mt-2 space-y-1">
                             {lines.map(([label, amount]) => (
@@ -318,26 +328,25 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
             );
         }
 
-        // Left align body copy — the same changelog blurb under a centered
-        // headline; only the paragraph alignment changes. The accent guide
-        // marks the consistent left anchor the eye returns to.
+        // Left align body copy — the same changelog blurb under the same
+        // centered headline, with the same accent rail drawn in both panes.
+        // Only the paragraph's text-align changes: left starts every line on
+        // the rail, center starts none of them there.
         case "typo-8":
             return (
                 <PreviewFrame size={size} className="flex items-center justify-center">
-                    <div className="w-full max-w-[210px]">
+                    <div className="w-full max-w-[220px]">
                         <p className="text-center text-[12px] font-semibold text-neutral-900 dark:text-neutral-50">
                             Changelog
                         </p>
-                        <div className="relative mt-1.5">
-                            {isDo ? (
-                                <span
-                                    aria-hidden
-                                    className={cn(
-                                        "absolute -left-2 top-0.5 bottom-0.5 w-px",
-                                        ACCENT_BG
-                                    )}
-                                />
-                            ) : null}
+                        <div className="relative mt-1.5 pl-2.5">
+                            <span
+                                aria-hidden
+                                className={cn(
+                                    "absolute left-0 top-0.5 bottom-0.5 w-px",
+                                    ACCENT_BG
+                                )}
+                            />
                             <p
                                 className={cn(
                                     "text-[12px] leading-[1.5] text-neutral-600 dark:text-neutral-300",
@@ -348,19 +357,24 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
                                 leaving your dashboard.
                             </p>
                         </div>
+                        <Spec className="mt-1.5 block pl-2.5">
+                            text-align: {isDo ? "left" : "center"}
+                        </Spec>
                     </div>
                 </PreviewFrame>
             );
 
         // Limit font weights — the same digest settings card; only the weight
         // assignments change, and each line carries its weight as evidence.
+        // app/layout.tsx loads Manrope at 400/500/600/700 only, so every tag
+        // below is a weight the page actually renders — no phantom 300.
         case "typo-9": {
             const rows: Array<{ text: string; base: string; doW: string; dontW: string }> = [
                 {
                     text: "Email notifications",
                     base: "text-[10px] uppercase tracking-[0.05em] text-neutral-400 dark:text-neutral-500",
                     doW: "font-semibold",
-                    dontW: "font-light",
+                    dontW: "font-medium",
                 },
                 {
                     text: "Weekly digest",
@@ -388,30 +402,35 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
                 },
             ];
             const tagFor = (weightClass: string) =>
-                weightClass === "font-light"
-                    ? "300"
-                    : weightClass === "font-normal"
-                      ? "400"
-                      : weightClass === "font-medium"
-                        ? "500"
-                        : weightClass === "font-semibold"
-                          ? "600"
-                          : "700";
+                weightClass === "font-normal"
+                    ? "400"
+                    : weightClass === "font-medium"
+                      ? "500"
+                      : weightClass === "font-semibold"
+                        ? "600"
+                        : "700";
+            const used = [...new Set(rows.map((row) => tagFor(isDo ? row.doW : row.dontW)))].sort();
             return (
                 <PreviewFrame size={size} className="flex items-center justify-center">
-                    <div className="w-full max-w-[230px] space-y-1.5">
-                        {rows.map((row) => {
-                            const weightClass = isDo ? row.doW : row.dontW;
-                            return (
-                                <WeightRow
-                                    key={row.text}
-                                    text={row.text}
-                                    base={row.base}
-                                    weightClass={weightClass}
-                                    tag={tagFor(weightClass)}
-                                />
-                            );
-                        })}
+                    <div className="w-full max-w-[240px]">
+                        <Spec className="block">
+                            <span className={ACCENT_TEXT}>{used.length}</span> weights ·{" "}
+                            {used.join(", ")}
+                        </Spec>
+                        <div className="mt-1.5 space-y-1">
+                            {rows.map((row) => {
+                                const weightClass = isDo ? row.doW : row.dontW;
+                                return (
+                                    <WeightRow
+                                        key={row.text}
+                                        text={row.text}
+                                        base={row.base}
+                                        weightClass={weightClass}
+                                        tag={tagFor(weightClass)}
+                                    />
+                                );
+                            })}
+                        </div>
                     </div>
                 </PreviewFrame>
             );
@@ -419,12 +438,21 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
 
         // Truncation strategy — the same two-row file list; only the long
         // filename's overflow plan changes: ellipsis vs breaking the row.
+        // The filename has to be long enough to actually break the row at the
+        // narrowest surface it renders on. The previous 44-character name
+        // measured 256px against 246px of column, so the avoid pane simply
+        // fit and the pair taught nothing. At 58 characters it measures 341px,
+        // overruns the 298px frame by 43px, and shoves the size column off
+        // the edge — which is the damage the rule is actually about.
         case "typo-10":
             return (
                 <PreviewFrame size={size} className="flex flex-col justify-center gap-1.5">
+                    <Spec className="block">
+                        {isDo ? "truncate — row keeps its columns" : "nowrap — row overruns"}
+                    </Spec>
                     <FileRow name="Team-photo.jpg" meta="1.8 MB" />
                     <FileRow
-                        name="2025-annual-report-board-review-final-v3.pdf"
+                        name="2025-annual-report-board-review-final-v3-with-appendix.pdf"
                         meta="4.2 MB"
                         overflow={!isDo}
                     />
@@ -471,22 +499,38 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
                 </PreviewFrame>
             );
 
-        // Balance short headings — the same page header in a narrow column;
-        // only the wrapping strategy changes, orphan vs even lines.
+        // Balance short headings — the same page header in the same 19ch
+        // column; only the wrapping strategy changes, orphan vs even lines.
+        //
+        // The heading is chosen because it actually breaks differently. The
+        // previous copy wrapped identically under `balance` and `auto`, so
+        // the pair claimed a difference the pixels did not have. Measured at
+        // 19ch: auto gives 194px / 58px — one word stranded — and balance
+        // gives 122px / 130px. Because the column is sized in `ch`, that
+        // wrap is the same on the card and on the detail page.
+        //
+        // The sample is a div, not a p or a heading, on purpose. globals.css
+        // gives p/li/figcaption/blockquote `text-wrap: pretty` and h1-h6 both
+        // `text-wrap: balance` and the serif face. Those defaults are now
+        // correctly inside @layer base, so a utility does beat them — but on a
+        // real element the pane would start from `pretty`/`balance` and would
+        // also switch typeface, which is a second variable and would change the
+        // measured wrap below. A div starts from the initial `auto`, so the
+        // utility under test is the only thing that differs between panes.
         case "typo-12":
             return (
                 <PreviewFrame size={size} className="flex flex-col justify-center">
                     <Spec className="block">
-                        text-wrap: {isDo ? "balance" : "auto"}
+                        {isDo ? "balance — even lines" : "auto — one word alone"}
                     </Spec>
-                    <p
+                    <div
                         className={cn(
                             "mt-2 max-w-[19ch] text-[17px] font-semibold leading-snug tracking-[-0.01em] text-neutral-900 dark:text-neutral-50",
                             isDo && "text-balance"
                         )}
                     >
-                        Everything your team ships in one place
-                    </p>
+                        One workspace for every project
+                    </div>
                     <p className="mt-1.5 text-[11px] text-neutral-500 dark:text-neutral-400">
                         Releases, docs, and decisions together
                     </p>
@@ -495,6 +539,17 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
 
         // Pretty wrap UI copy — the same feature card; only the description's
         // wrapping changes, dangling last word vs a settled final line.
+        //
+        // Chrome only rebalances when the greedy last line really is one
+        // short word, so the copy and the measure are picked to produce that.
+        // Measured at 23ch: auto ends on "work." alone at 29px, pretty pulls
+        // "your" down to end on "your work." at 56px. The earlier copy left
+        // a two-word last line, which pretty leaves untouched — the pane
+        // looked authored but taught nothing.
+        //
+        // A div for the same reason as typo-12: on a real p both panes would
+        // start from the base layer's `text-wrap: pretty`, so the avoid pane
+        // would already be pretty and the pair would isolate nothing.
         case "typo-13":
             return (
                 <PreviewFrame size={size} className="flex items-center justify-center">
@@ -511,14 +566,14 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
                             </span>
                             <Spec className="shrink-0">{isDo ? "pretty" : "auto"}</Spec>
                         </div>
-                        <p
+                        <div
                             className={cn(
-                                "mt-1.5 max-w-[24ch] text-[12px] leading-[1.5] text-neutral-500 dark:text-neutral-400",
+                                "mt-1.5 max-w-[23ch] text-[12px] leading-[1.5] text-neutral-500 dark:text-neutral-400",
                                 isDo && "text-pretty"
                             )}
                         >
-                            Backups run hourly and restore with a single click.
-                        </p>
+                            Backups run hourly and keep the last thirty days of your work.
+                        </div>
                     </div>
                 </PreviewFrame>
             );

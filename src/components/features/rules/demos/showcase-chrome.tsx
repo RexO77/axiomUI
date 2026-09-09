@@ -5,6 +5,7 @@ import { CheckCircle2, XCircle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import type { Variant } from "@/components/features/rules/preview-primitives";
+import { VERDICT_LABEL } from "@/lib/verdict";
 
 /**
  * Shared chrome for showcase panes: Do/Don't header, framed stage, optional
@@ -39,7 +40,7 @@ export function PaneChrome({
                         isDo ? "text-emerald-700 dark:text-emerald-300" : "text-rose-700 dark:text-rose-200"
                     )}
                 >
-                    {isDo ? "Do" : "Don't"}
+                    {VERDICT_LABEL[variant]}
                 </span>
             </div>
             {/* No stage border — lg scenes carry their own frame; wrapping

@@ -334,6 +334,7 @@ export function SkillBonus({ compact = false }: { compact?: boolean }) {
                   <button
                     type="button"
                     aria-label="Close preview"
+                    title="Close preview"
                     onClick={closeModal}
                     className={cn(CLOSE_BUTTON, "size-11")}
                   >
@@ -383,6 +384,7 @@ export function SkillBonus({ compact = false }: { compact?: boolean }) {
                     <button
                       type="button"
                       aria-label="Close preview"
+                      title="Close preview"
                       onClick={closeModal}
                       className={cn(CLOSE_BUTTON, "size-10")}
                     >
@@ -431,7 +433,7 @@ export function SkillBonus({ compact = false }: { compact?: boolean }) {
                         Bonus skill
                       </p>
                       <h3 className="mt-2 text-2xl font-semibold tracking-tight text-neutral-950 sm:text-3xl md:text-4xl dark:text-white">
-                        Website upgrade playbook
+                        Website playbook
                       </h3>
                       <p className="mt-3 max-w-2xl text-pretty text-sm leading-7 text-neutral-600 sm:mt-4 sm:text-base sm:leading-8 dark:text-white/70">
                         A decision framework for auditing, implementing, and verifying sharper interfaces.

@@ -70,7 +70,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     reviewPrompts: [
       "Does line-height tighten as heading size increases?",
       "Do multi-line headings read as one grouped statement, not separate floating lines?",
-      "Is a 32px heading close to 38px line-height rather than 48px?",
+      "Is the heading's line-height nearer 1.1x its size than the 1.5x used for body copy?",
     ],
   },
   "typo-5": {
@@ -89,18 +89,18 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "typo-6": {
-    whyItMatters: "Legibility depends on contrast ratio against the background, not on letter size; a 14px neutral-500 string can still clear WCAG's minimum comfortably while a 10px black string strains acuity regardless of contrast. De-emphasizing through color lowers visual weight while keeping the text readable at normal viewing distance.",
-    riskWhenIgnored: "Shrinking secondary text below 12px to signal less important pushes it below comfortable reading size, so users lean toward the screen or zoom in, especially on mobile viewports.",
+    whyItMatters: "Perceived importance and legibility travel on two different channels. Lowering contrast drops an element's visual weight without touching how resolvable its letterforms are: 14px neutral-500 on white measures about 4.7:1 and still clears the 4.5:1 AA floor, while the same line at 10px in neutral-900 keeps all 17.9:1 of its contrast and strains acuity anyway. Shrink the type instead and you spend legibility on hierarchy you could have had for free.",
+    riskWhenIgnored: "A caption dropped to 10px to read as less important lands under the legible floor, so the timestamp or helper line beneath a field gets pinch-zoomed instead of read, and on a phone it is usually skipped entirely.",
     implementationNotes: [
-      "Use text-neutral-500 at 14px to de-emphasize, not a smaller black size.",
-      "Never drop text size below 12px to indicate hierarchy.",
-      "Keep contrast ratio checked even after lightening color, not just below 10px black.",
-      "Reserve size reduction for genuine label/caption roles, not emphasis level.",
+      "De-emphasize with text-neutral-500 at 14px rather than shrinking neutral-900 to 10px.",
+      "Never drop a size below 12px to signal hierarchy.",
+      "Re-measure contrast after lightening: neutral-500 on white sits near 4.7:1, while neutral-400 falls to roughly 2.5:1 and fails AA.",
+      "Reserve size reduction for genuine label and caption roles, not for emphasis level.",
     ],
     reviewPrompts: [
       "Is secondary text de-emphasized with a lighter color rather than a smaller size?",
       "Does any text on the page fall below 12px?",
-      "Does lightened secondary text still meet a comfortable contrast ratio?",
+      "Does the lightened secondary text still measure 4.5:1 or better against its background?",
     ],
   },
   "typo-7": {
@@ -164,12 +164,12 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "typo-11": {
-    whyItMatters: "Below roughly 12px, character strokes approach the resolution limit of typical viewing distance and screen density, so letterforms blur together rather than staying distinct. The 14px mobile / 12px desktop floors exist because mobile is held closer but viewed in more variable light, while desktop sits farther but under steadier conditions.",
+    whyItMatters: "What fails below 12px is stroke weight, not overall size. A typical UI sans draws its stems at roughly 8-9% of the em, so a 10px regular stem falls under one CSS pixel and antialiases to grey instead of rendering as a solid stroke, while the x-height drops to about five pixels, too few rows to keep a, e, and s distinct from each other. Mobile keeps the higher floor of the two, 14px against 12px, because phones get read while moving and in unpredictable light, where that thinned rendering has no margin left.",
     riskWhenIgnored: "Body text set at 11px on mobile forces users to zoom in or hold the phone closer to read comfortably, and subtext dropping to 9px becomes illegible for anyone with even mild vision strain.",
     implementationNotes: [
-      "Set body text to at least 16px, subtext no smaller than 12px, per the do example.",
-      "Never drop body below 14px on mobile or 12px on desktop.",
-      "Never let subtext fall below 12px under any circumstance.",
+      "Set body text to 16px by default and treat 14px mobile / 12px desktop as floors, not targets.",
+      "Never let subtext fall below 12px, on any breakpoint or in any density mode.",
+      "Give text inputs at least 16px on mobile: iOS Safari zooms the viewport for anything smaller.",
       "Check dense data screens first, where shrinking type is the easiest shortcut.",
     ],
     reviewPrompts: [
@@ -211,11 +211,11 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
 
   // ── Layout & Spacing ─────────────────────────────────────────────
   "layout-1": {
-    whyItMatters: "The 4pt grid turns spacing into a shared vocabulary: every value is a multiple of the base unit, so any two components snap into alignment without negotiation. It also plays nicer with device pixel ratios — 4, 8, 16 scale cleanly at 1x, 2x, and 3x, while odd numbers like 13 round unpredictably. This is systemic scale design, not personal taste.",
+    whyItMatters: "The 4pt grid turns spacing into a shared vocabulary: every value is a whole multiple of one base unit, so any two components snap into alignment without negotiation. It also survives fractional device pixel ratios — 4, 8, 16, and 24 stay whole numbers at 1.5x and 2x, while 13px lands on 19.5 device pixels at 1.5x and gets rounded one way here and the other way there. This is systemic scale design, not personal taste.",
     riskWhenIgnored: "Once one component uses 13px padding, every neighboring component built to the 4pt scale misaligns by a few pixels, and the drift compounds across nested containers until edges visibly stair-step down the page.",
     implementationNotes: [
-      "Restrict every spacing value to the do list: 4, 8, 16, 24, 32, 48px.",
-      "Reject 13px, 21px, 5px on sight — round to the nearest multiple of 4.",
+      "Restrict every spacing value to one published scale: 4, 8, 16, 24, 32, 48px.",
+      "Reject values like 13px or 5px on sight — round to the nearest multiple of 4.",
       "Encode the scale in Tailwind config or CSS variables so arbitrary values need an explicit escape hatch.",
       "Audit existing components for legacy odd-numbered padding or margin and normalize them.",
     ],
@@ -229,7 +229,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     whyItMatters: "Line length governs how far the eye travels before jumping back to find the next line's start. At 45-75 characters, roughly 65ch, that return sweep stays short enough that readers rarely lose their place; past that range, saccade length and re-fixation errors climb.",
     riskWhenIgnored: "Setting width: 100% on a 27-inch monitor stretches a paragraph past 120 characters per line, so readers skip lines or reread the same one twice, and time-on-page for long-form content quietly drops.",
     implementationNotes: [
-      "Cap body copy with max-w-prose, which targets roughly 65 characters per line.",
+      "Cap body copy by character count, not by container width: anywhere in the 45-75ch band reads comfortably, and max-w-prose lands near its top.",
       "Never let paragraph containers inherit width: 100% on wide viewports.",
       "Test copy blocks at 1440px-plus widths, not just mobile breakpoints.",
       "Apply the cap to text content specifically, not to images, tables, or full-bleed sections.",
@@ -237,14 +237,14 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     reviewPrompts: [
       "Can you count roughly 45-75 characters per line of body text at the widest breakpoint?",
       "Does any paragraph stretch edge-to-edge on a large monitor?",
-      "Is max-w-prose, or an equivalent character-based cap, applied to text containers?",
+      "Is a character-based cap applied to every text container, rather than letting it fill the viewport?",
     ],
   },
   "layout-3": {
     whyItMatters: "This is Gestalt's law of proximity: the eye reads spatial closeness as relatedness before it reads borders or lines. A tight gap-2 between a label and its input signals these belong together; a wider gap-6 before the next label signals a new group starts here.",
     riskWhenIgnored: "Set every gap to gap-4 uniformly and a label ends up equidistant from its own input and the next label, so users can't tell which label belongs to which field and start mis-tabbing between them.",
     implementationNotes: [
-      "Use gap-2 between a label and its input, and gap-6 before the next label, per the do example.",
+      "Use gap-2 (8px) between a label and its input, and gap-6 (24px) before the next label.",
       "Never apply one flat gap value, like gap-4 everywhere, across both relationships.",
       "Make the gap between groups clearly larger than the gap inside a group.",
       "Rely on space, not divider lines, as the primary grouping signal.",
@@ -256,17 +256,17 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "layout-4": {
-    whyItMatters: "A play triangle's mass sits toward its point, so centering its bounding box mathematically leaves the visual weight skewed left; nudging it 1-2px right realigns perceived center with true center. This is the same optical-weight correction typefaces apply to round letterforms that overshoot the baseline.",
+    whyItMatters: "A right-pointing play triangle carries most of its area against the flat left edge and tapers to a point on the right, so its centroid sits about a third of the way in from that edge, left of the bounding box's center. Center the box and the shape reads as sitting left; nudging it 1-2px right puts perceived center back on true center. Typefaces make the same correction when they overshoot round letterforms past the baseline.",
     riskWhenIgnored: "Center a play icon by its bounding box alone and it reads as off-center inside its button, a defect reviewers will flag even when the CSS math is technically correct.",
     implementationNotes: [
-      "Nudge asymmetric icons, like the Play triangle, 1-2px toward their visual weight, per the do example.",
+      "Nudge asymmetric icons 1-2px away from their heavy side: a right-pointing play triangle moves right.",
       "Don't trust absolute centering, such as margin: auto, as the final check for asymmetric shapes.",
       "Verify alignment by eye, not by inspecting computed box dimensions.",
       "Apply the same correction to any icon with uneven mass: arrows, chevrons, triangles.",
     ],
     reviewPrompts: [
       "Does the icon look centered when you squint at it, not just measure it?",
-      "Has an asymmetric icon like Play been nudged off mathematical center?",
+      "Has an asymmetric icon like a play triangle been nudged off mathematical center?",
       "Would swapping in a symmetric icon reveal a now mis-centered container?",
     ],
   },
@@ -274,7 +274,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     whyItMatters: "Text is wider than it is tall, so equal padding on both axes, like py-2 px-2, leaves a button that reads as visually square and cramped around its label. Keeping horizontal padding at 1.5x to 2x vertical, such as py-2 px-4 (8px / 16px), restores a proportion that matches the text's own shape.",
     riskWhenIgnored: "Apply py-2 px-2 to a text button and the label crowds both edges evenly while vertical space looks generous by comparison, giving the button a squat, tile-like shape instead of one that reads as clickable.",
     implementationNotes: [
-      "Default to py-2 px-4, 8px vertical and 16px horizontal, matching the do example.",
+      "Default to py-2 px-4, 8px vertical and 16px horizontal.",
       "Keep horizontal padding between 1.5x and 2x the vertical value for any text button.",
       "Never apply equal padding, like py-2 px-2, to a button containing a text label.",
       "Reserve equal padding for icon-only buttons, where the content is symmetric.",
@@ -289,7 +289,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     whyItMatters: "Line height includes leading above and below the letterforms, but an icon carries no leading of its own, so centering it against full line height sits it a few pixels lower than the text's cap height. Aligning to cap height instead matches where the letters' visual mass actually starts.",
     riskWhenIgnored: "Flex-center an icon against a label with generous line-height and the icon appears to float slightly below the text, a mismatch obvious in any icon-plus-label button or nav item once you look for it.",
     implementationNotes: [
-      "Align icons to the text's cap height, not the full line-height box, per the rule.",
+      "Align icons to the text's cap height, not the full line-height box.",
       "Don't assume flex-center, align-items: center, is correct by default — it fails when line-height runs large relative to font size.",
       "Check alignment visually against the top of capital letters, not against computed heights.",
       "Adjust with a small negative margin or transform when auto-centering falls short.",
@@ -304,7 +304,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     whyItMatters: "Separation between sections needs one contrast channel, not two stacked together. A white card on a light-grey background already reads as a distinct region through figure-ground contrast; adding a border on top is redundant and starts competing with the content it's meant to frame.",
     riskWhenIgnored: "Wrap a white card in a grey border on an already-white page and the border becomes the loudest element on screen, drawing more attention than the content it boxes in, while the page reads as a grid of boxes rather than a layout.",
     implementationNotes: [
-      "Separate sections with a background-color shift, like a white card on a light-grey page, per the do example.",
+      "Separate sections with a background-color shift, like a white card on a light-grey page.",
       "Drop the border when a background-color difference already exists.",
       "Reserve borders for cases with no background contrast available.",
       "Test by removing borders temporarily — if sections still read as separate, the border wasn't needed.",
@@ -319,7 +319,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     whyItMatters: "A layout region reads as one system when a single gap value repeats in every direction; the eye calibrates to that rhythm and treats any deviation as a mistake, not a variation. Mixing gap-6 rows with gap-3 columns breaks that calibration because the grid no longer has one unit to measure by.",
     riskWhenIgnored: "Set rows to gap-6 and columns to gap-3 in the same card grid and the layout reads as accidentally uneven, with cards sitting closer together side-to-side than top-to-bottom for no visible reason.",
     implementationNotes: [
-      "Pick one gutter size per layout region and apply it in every direction, like gap-6 throughout in the do example.",
+      "Pick one gutter size per layout region and apply it in both directions: gap-6 for rows and columns alike.",
       "Don't mix values, such as gap-6 rows with gap-3 columns, within the same grid.",
       "Extend the same gutter value to nested grids in that region unless there's a clear hierarchy reason not to.",
       "Audit grid and flex gap properties for row-gap versus column-gap mismatches.",
@@ -331,10 +331,10 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "layout-9": {
-    whyItMatters: "Padding that stays fixed while the viewport shrinks eats a growing share of available width, so p-6 on a 1440px screen and the same p-6 on a 375px phone aren't equivalent — one is a rounding error, the other is a fifth of the screen. Scaling padding down per breakpoint, p-6 lg down to p-4 md down to p-3 sm, keeps the proportion constant, not just the pixel value.",
+    whyItMatters: "Padding that stays fixed while the viewport shrinks eats a growing share of available width, so p-6 on a 1440px screen and the same p-6 on a 375px phone aren't equivalent — 24px each side is 48px of gutter, a thirtieth of the desktop width and an eighth of the phone's. Scaling padding down per breakpoint, p-6 at lg down to p-4 at md down to p-3 at sm, holds the proportion roughly constant instead of the pixel value.",
     riskWhenIgnored: "Ship p-6 at every breakpoint and on a small phone the content area shrinks to a narrow column squeezed between two thick padding bands, forcing text to wrap awkwardly or truncate.",
     implementationNotes: [
-      "Scale padding down per breakpoint: p-6 at lg, p-4 at md, p-3 at sm, matching the do example.",
+      "Scale padding down per breakpoint: p-6 at lg, p-4 at md, p-3 at sm.",
       "Never hardcode one padding value, like p-6, across every breakpoint.",
       "Reduce margins alongside padding, not just container padding, for full proportional scaling.",
       "Check the smallest supported viewport first — that's where fixed spacing does the most damage.",
@@ -346,25 +346,25 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "layout-10": {
-    whyItMatters: "Section gaps that follow a defined scale, like 24 to 48 to 72, double at each step, so the jump between any two gaps stays proportional and predictable. A sequence like gap-6 to gap-10 to gap-14 increases by uneven absolute amounts, leaving no consistent ratio for the eye to lock onto.",
-    riskWhenIgnored: "Space sections at gap-6, then gap-10, then gap-14 and the page's rhythm feels arbitrary — sections seem randomly spaced apart, and users can't sense which gaps mark a major break versus a minor one.",
+    whyItMatters: "Section gaps read as a system when every step is a whole multiple of the base: 24, 48, and 72 are 1x, 2x, and 3x of a 24px base, so the smallest gap on the page is a unit the eye can measure every other gap against. A sequence like 24, 40, 56 climbs by a flat 16px instead, which the 24px base does not divide, so the ratio between one step and the next drops from 1.7x to 1.4x — the steps are irregular even though the increment is constant, and by the third one the gap is no longer distinguishable as a bigger break than the second.",
+    riskWhenIgnored: "Space sections at 24, then 40, then 56px and no gap marks a rank any more: the 16px difference between one step and the next is smaller than the 24px gap already separating closely related content inside a section.",
     implementationNotes: [
-      "Use a multiplicative scale for section gaps, like gap-6 to gap-12 to gap-18, per the do example.",
-      "Avoid arbitrary increments, such as gap-6, gap-10, gap-14, that share no consistent ratio.",
-      "Reserve the largest gap in the scale for major section breaks, and the smallest for closely related content.",
-      "Document the scale once, in spacing tokens, so every page reuses the same three or four-step system.",
+      "Build the section scale from whole multiples of one base unit: 24, 48, 72px against a 24px base.",
+      "Avoid a flat increment like 24, 40, 56px: 16px steps against a 24px base leave every step after the first off the scale.",
+      "Reserve the largest step for major section breaks and the smallest for closely related content.",
+      "Document the scale once in spacing tokens so every page reuses the same three or four steps.",
     ],
     reviewPrompts: [
-      "Do the gaps between sections follow a consistent, multiplying scale?",
-      "Can you tell which section breaks are major versus minor just from the gap size?",
-      "Are any two adjacent section gaps an arbitrary, non-scaled amount apart?",
+      "Is every section gap a whole multiple of the smallest gap on the page?",
+      "Can you tell which section breaks are major versus minor from the gap size alone?",
+      "Do any two adjacent section gaps differ by an amount that is not a step in the scale?",
     ],
   },
   "layout-11": {
     whyItMatters: "Z-index only resolves relative to other values within the same stacking context, so arbitrary numbers like 9999 guarantee nothing — a new stacking context can bury it under a lower value elsewhere. A defined scale, base 0, dropdown 100, sticky 200, modal 300, toast 400, keeps stacking order legible and stops ad hoc escalation.",
     riskWhenIgnored: "Once one component ships with z-index: 9999 to win, the next fix ships 99999 to beat it, and eventually a toast renders behind a modal because nobody knows which arbitrary number currently wins.",
     implementationNotes: [
-      "Assign layers from the fixed scale only, z-dropdown 100, z-modal 300, and so on, per the do example.",
+      "Assign layers from the fixed scale only, z-dropdown 100, z-modal 300, and so on.",
       "Ban arbitrary values like z-index: 9999 anywhere in the codebase.",
       "Centralize the scale as CSS variables or design tokens so every component references the same source.",
       "Add new layers between existing steps, like 150, rather than inventing values above the top of the scale.",
@@ -381,34 +381,34 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     whyItMatters: "The 60-30-10 split works because it establishes a clear visual hierarchy before anyone reads a word: the eye scans large neutral fields first, then the 30% secondary layer, then lands on the 10% primary accent last. That ordering mirrors how attention naturally moves from ground to figure. Break the ratio and every element competes for the same weight.",
     riskWhenIgnored: "When primary color creeps past 10% into headers and sidebars, users can no longer tell which blue element is the actual call to action versus decoration, so click-through drops on the real button.",
     implementationNotes: [
-      "Audit every screen for blue usage - it should read as rare, not ambient.",
+      "Audit every screen for blue usage — it should read as rare, not ambient.",
       "Keep backgrounds and body text in the 60% neutral layer.",
       "Move borders and subtitles into the 30% secondary layer.",
       "Reserve primary color for one action per view, not headers or nav.",
     ],
     reviewPrompts: [
       "Does the primary color appear in only one or two places on screen?",
-      "Is the background/text neutral rather than tinted?",
-      "Can you identify the single most important action in under 2 seconds?",
+      "Are backgrounds and body text neutral rather than tinted with the brand hue?",
+      "Do borders and subtitles form a distinct secondary layer instead of another step of the accent?",
     ],
   },
   "color-2": {
-    whyItMatters: "Pure #000000 against a white background creates the maximum possible luminance jump the eye can register, which is why text set in true black vibrates and causes eye strain during long reads. Swapping in neutral-900 (#0f172a) lowers the luminance delta while keeping contrast well above WCAG minimums, trading harshness for legibility.",
-    riskWhenIgnored: "Long-form text set in #000000 on white produces visible halation around letterforms, and users report the page feels harsh or fatiguing after a few paragraphs.",
+    whyItMatters: "#000000 on #ffffff is the largest luminance step a screen can produce, about 21:1, and at that extreme the white ground appears to encroach on the thin parts of every stroke, so edges look over-sharp and long reads get tiring. A near-black blue-grey such as #0f172a still measures 17.9:1, far above the 4.5:1 AA floor, while pulling the step back from the maximum. The slight blue cast also matches the cool white most displays emit, so the text reads as ink instead of a hole punched through the screen.",
+    riskWhenIgnored: "A long article set in #000000 on #ffffff has stroke edges that appear to shimmer as the eye moves, and readers describe the page as harsh or fatiguing after a few paragraphs without being able to point at what is wrong.",
     implementationNotes: [
-      "Replace any #000000 text or background with neutral-900 (#0f172a).",
-      "Check every dark-mode surface and body-copy color token for stray #000.",
-      "Pair the dark neutral with off-white backgrounds, not pure #ffffff, for less strain.",
-      "Grep the codebase for #000000 and #000 literals before shipping.",
+      "Replace every #000000 text and background value with the palette near-black, #0f172a.",
+      "Pair it with an off-white ground rather than pure #ffffff, so neither end of the range sits at the extreme.",
+      "Grep for #000, #000000, and rgb(0 0 0) literals before shipping, dark-mode surfaces included.",
+      "Treat dark mode separately: a pure-black surface makes white text bloom the same way, so raise it off zero too.",
     ],
     reviewPrompts: [
       "Is any text or background using literal #000000?",
-      "Does dark text look soft rather than vibrating against its background?",
-      "Are dark tokens using a blue-grey like neutral-900 instead of true black?",
+      "Do stroke edges look settled rather than shimmering against the background?",
+      "Are the darkest tokens a near-black with a slight hue rather than true black?",
     ],
   },
   "color-3": {
-    whyItMatters: "In physical environments, shadows are tinted by ambient bounce light and the color of nearby surfaces, never neutral grey - that's why shadow-indigo-500/20 under an indigo element reads as believable while shadow-black/20 reads as a flat drop-shadow filter. Mixing brand hue into the shadow simulates that light-source physics instead of faking depth with pure darkness.",
+    whyItMatters: "In physical environments, shadows are tinted by ambient bounce light and the color of nearby surfaces, never neutral grey — that's why shadow-indigo-500/20 under an indigo element reads as believable while shadow-black/20 reads as a flat drop-shadow filter. Mixing brand hue into the shadow simulates that light-source physics instead of faking depth with pure darkness.",
     riskWhenIgnored: "A grey shadow under a saturated colored card looks pasted on rather than lifted off the page, making elevated elements feel like flat cutouts instead of physical objects.",
     implementationNotes: [
       "Swap shadow-black/20 for a hue-matched shadow like shadow-indigo-500/20.",
@@ -423,7 +423,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "color-4": {
-    whyItMatters: "Red, green, and yellow carry pre-attentive semantic association - users decode them as error, success, and warning before reading any label, a learned pattern from traffic lights and status systems everywhere. Using red decoratively on a Like button hijacks that association and forces the brain to momentarily interpret the icon as an alert.",
+    whyItMatters: "Red, green, and yellow carry pre-attentive semantic association — users decode them as error, success, and warning before reading any label, a learned pattern from traffic lights and status systems everywhere. Using red decoratively on a Like button hijacks that association and forces the brain to momentarily interpret the icon as an alert.",
     riskWhenIgnored: "A red heart icon on a Like button makes new users hesitate or read it as a delete/error affordance, measurably increasing misclicks and support questions about broken states.",
     implementationNotes: [
       "Recolor decorative icons like Like buttons in blue, purple, or brand color.",
@@ -438,11 +438,11 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "color-5": {
-    whyItMatters: "Border weight should track the same contrast step-down as your text hierarchy: if body text sits at neutral-900, a border at neutral-200 stays clearly subordinate, while neutral-400 jumps too many steps and starts competing with content for attention. This is simultaneous contrast at work - a border reads heavier next to light fills than the same value would in isolation.",
+    whyItMatters: "Border weight should track the same contrast step-down as your text hierarchy: if body text sits at neutral-900, a border at neutral-200 stays clearly subordinate, while neutral-400 jumps too many steps and starts competing with content for attention. This is simultaneous contrast at work — a border reads heavier next to light fills than the same value would in isolation.",
     riskWhenIgnored: "Neutral-400 borders around every card and input create a grid of heavy lines that visually outweighs the text inside, so the layout reads as a spreadsheet of boxes rather than content.",
     implementationNotes: [
       "Set default dividers and card borders to neutral-200.",
-      "Never jump to neutral-400 for standard borders - reserve heavier steps for emphasis.",
+      "Never jump to neutral-400 for standard borders — reserve heavier steps for emphasis.",
       "Check border weight relative to your body text color, not in isolation.",
       "Scan the page for any border that draws the eye before the content does.",
     ],
@@ -453,7 +453,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "color-6": {
-    whyItMatters: "An outline button has no fill to separate it from the page, so its border is the only edge cue - neutral-100 sits too close in luminance to a white surface to register, while neutral-300 clears the perceptual threshold needed for double contrast against both the background and the label text. Interactive borders need a stronger step than passive dividers doing decorative separation.",
+    whyItMatters: "An outline button has no fill to separate it from the page, so its border is the only edge cue — neutral-100 sits too close in luminance to a white surface to register, while neutral-300 clears the perceptual threshold needed for double contrast against both the background and the label text. Interactive borders need a stronger step than passive dividers doing decorative separation.",
     riskWhenIgnored: "An outline button styled with border-neutral-100 nearly disappears on a white card, so users hover past it without realizing it is clickable and abandon the flow looking for the real action.",
     implementationNotes: [
       "Set outline buttons and input fields to border-neutral-300.",
@@ -469,7 +469,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
   },
   "color-7": {
     whyItMatters: "Shifting hue on hover, like blue to green, forces the brain to re-identify the color category entirely, while stepping blue-600 to blue-700 only changes lightness within a category already recognized. Staying within one hue keeps the interaction legible as the same element deepening, not a different colored object appearing.",
-    riskWhenIgnored: "A button that shifts from blue to green on hover reads as a state change - like a status flipping to success - rather than a hover effect, confusing users about whether an action already completed.",
+    riskWhenIgnored: "A button that shifts from blue to green on hover reads as a state change — like a status flipping to success — rather than a hover effect, confusing users about whether an action already completed.",
     implementationNotes: [
       "Step hover states within the same hue, e.g. blue-600 to blue-700.",
       "Never cross into a different color family like blue to green on interaction.",
@@ -483,7 +483,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "color-8": {
-    whyItMatters: "Dark mode is not photographic negative - it requires flipping the elevation model so lighter surfaces read as closer (gray-900 base, gray-800 card, lighter still for modals), while brand colors need desaturating because fully saturated hues vibrate painfully against dark backgrounds due to simultaneous contrast. Literally inverting filters ignores both of these perceptual shifts.",
+    whyItMatters: "Dark mode is not photographic negative — it requires flipping the elevation model so lighter surfaces read as closer (gray-900 base, gray-800 card, lighter still for modals), while brand colors need desaturating because fully saturated hues vibrate painfully against dark backgrounds due to simultaneous contrast. Literally inverting filters ignores both of these perceptual shifts.",
     riskWhenIgnored: "Running filter: invert(1) on a page turns photos into film negatives and makes saturated brand blue glow like a highlighter, making the whole UI look broken rather than themed.",
     implementationNotes: [
       "Build a real dark palette: gray-900 background, gray-800 card surfaces.",
@@ -498,18 +498,18 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "color-9": {
-    whyItMatters: "WCAG AA sets a measurable floor - 4.5:1 luminance contrast for body text and 3:1 for large text - because below those ratios a meaningful percentage of users with low vision physically cannot resolve the letterforms. Light grey like #aaa on #fff sits around 2.3:1, which is a guess that fails the math, not a subjective style choice.",
-    riskWhenIgnored: "Body copy set in #aaa on white measures under 2.5:1 contrast, so users with even mild vision impairment squint or give up reading it, and automated accessibility audits flag the page as non-compliant.",
+    whyItMatters: "WCAG AA sets a measurable floor — 4.5:1 for body text, 3:1 for large text — because below those ratios a meaningful share of users with low vision cannot resolve the letterforms at all. AAA raises the same two numbers to 7:1 and 4.5:1, so an AA pass is the floor and not the ceiling. #aaa on #fff measures about 2.3:1, barely over half the AA minimum: that is a failed measurement, not a debatable style choice.",
+    riskWhenIgnored: "Body copy set in #aaa on #fff measures about 2.3:1, so readers with even mild vision impairment squint at it or skip it, and any automated audit flags the page against 1.4.3 Contrast (Minimum).",
     implementationNotes: [
-      "Run every text/background pairing through a contrast checker, target 4.5:1 for body.",
-      "Allow 3:1 only for large text (18px+ bold or 24px+ regular).",
-      "Replace guessed greys like #aaa on #fff with a checked, darker value.",
-      "Re-check contrast whenever a background or text color token changes.",
+      "Measure every text and background pairing with a contrast checker; target 4.5:1 or better for body copy.",
+      "Use the 3:1 allowance only for genuinely large text: 24px/18pt regular, or 18.66px/14pt bold.",
+      "Replace guessed greys with checked ones: on white you need roughly #767676 or darker to clear 4.5:1.",
+      "Re-measure whenever a text or background token changes, in both themes.",
     ],
     reviewPrompts: [
-      "Has every text color been checked against a contrast ratio tool?",
-      "Does body text measure at least 4.5:1 against its background?",
-      "Is any light grey text on white used without a verified ratio?",
+      "Has every text color on this screen been measured rather than eyeballed?",
+      "Does body text measure at least 4.5:1 against the background it actually sits on?",
+      "Is any text leaning on the 3:1 allowance while sitting below 24px regular or 18.66px bold?",
     ],
   },
   "color-10": {
@@ -528,22 +528,22 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "color-11": {
-    whyItMatters: "Photographic content often has soft or light-colored edges that blend into a light UI background, so a subtle inset outline is needed purely for edge definition, not decoration. Pure black at low opacity (outline-black/10) works in light mode because it darkens any edge color uniformly, while pure white/10 does the same job in dark mode - a mid-tone like slate-900/10 fails to invert correctly and looks muddy on dark surfaces.",
-    riskWhenIgnored: "A light product photo dropped on a white card with no outline, or the wrong slate-900/10 outline in dark mode, has invisible edges that bleed into the surrounding page, making the image look uncropped or accidentally transparent.",
+    whyItMatters: "Photographs often end in soft or near-white edges that dissolve into a light UI surface, so the outline exists for edge definition, not decoration. Pure black at 10% works in light mode because it darkens whatever edge color sits under it by a uniform amount; pure white at 10% does the same job in reverse on a dark surface. A tinted near-black like slate-900/10 carries a visible blue cast over a warm photo and, on a dark surface, is already so close to the background value that it stops defining anything.",
+    riskWhenIgnored: "A pale product shot on a white card with no outline has no visible edge at all, so it reads as uncropped or accidentally transparent, and the slate-900/10 version of the same outline vanishes outright the moment the page switches to dark mode.",
     implementationNotes: [
-      "Apply outline-black/10 to images in light mode for edge definition.",
-      "Switch to outline-white/10 for the same images in dark mode.",
-      "Never substitute a mid-tone like slate-900/10, which does not adapt across themes.",
-      "Check images with light and dark edges against both theme backgrounds.",
+      "Apply outline-black/10 in light mode and dark:outline-white/10 to the same image.",
+      "Pair the outline with -outline-offset-1 so it sits inside the image edge rather than ringing it.",
+      "Never substitute a tinted near-black like slate-900/10; it does not invert across themes.",
+      "Test with a near-white photo and a near-black one, in both themes.",
     ],
     reviewPrompts: [
       "Does every image have a subtle outline separating it from the background?",
       "Does the outline switch from black-based to white-based in dark mode?",
-      "Are any images using a slate or grey outline instead of pure black/white?",
+      "Is any image using a tinted grey outline instead of pure black or pure white?",
     ],
   },
   "color-12": {
-    whyItMatters: "A layered shadow stack like 0 0 0 1px rgb(0 0 0 / 6%), 0 2px 4px rgb(0 0 0 / 4%) supplies both edge definition and perceived elevation in one property, mimicking how ambient occlusion softens real-world edges - a hard border can only ever supply the edge, not the lift. This lets a card look raised without the visual weight of a stroke competing with its content.",
+    whyItMatters: "A layered shadow stack like 0 0 0 1px rgb(0 0 0 / 6%), 0 2px 4px rgb(0 0 0 / 4%) supplies both edge definition and perceived elevation in one property, mimicking how ambient occlusion softens real-world edges — a hard border can only ever supply the edge, not the lift. This lets a card look raised without the visual weight of a stroke competing with its content.",
     riskWhenIgnored: "Stacking a heavy 1px border on every card in a dense list, like a table of nested panels, makes the layout look like a spreadsheet of boxes with no sense of which surface actually sits above another.",
     implementationNotes: [
       "Replace heavy card borders with a layered shadow like 0 0 0 1px rgb(0 0 0 / 6%), 0 2px 4px rgb(0 0 0 / 4%).",
@@ -560,40 +560,41 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
 
   // ── Components & Actions ─────────────────────────────────────────
   "comp-1": {
-    whyItMatters: "One Primary Action per screen prevents decision paralysis: users scan for the single filled button as the obvious next step. When multiple filled buttons compete, the eye has no anchor and hesitates. The 1 Filled + 2 Ghost pattern encodes a visual hierarchy that maps directly to decision importance.",
-    riskWhenIgnored: "Three filled buttons side-by-side force users to read every label before acting, slowing task completion and increasing wrong-button clicks in high-stakes flows like checkout.",
+    whyItMatters: "A filled button is usually the only solid color field on the screen, so the eye finds it pre-attentively, before a single label is read. That makes it a pointer to the next step rather than one more thing to evaluate. Put three filled buttons side by side and the pointer disappears: every candidate now carries the same visual weight, so the user has to read and rank all three before acting.",
+    riskWhenIgnored: "A checkout footer with three filled buttons — save, continue, place order — forces users to read every label before acting, and the wrong one gets hit often enough that teams start bolting on confirmation dialogs to patch it.",
     implementationNotes: [
-      "Set exactly one button to Filled per screen and demote the rest to Outline or Text Link.",
-      "Reserve the Filled slot for the action you want most users to take.",
-      "Audit forms and dialogs for accidental duplicate Filled buttons before shipping.",
-      "If two actions feel equally important, that signals a flow problem, not a styling one.",
+      "Keep exactly one filled button per view and step the rest down: an outline for the next-likeliest action, a ghost for everything after it.",
+      "Give the filled slot to the action most users should take next, not the one that matters most to the business.",
+      "Audit dialogs and form footers for a second filled button arriving from a shared component.",
+      "If two actions genuinely feel equal, treat that as a flow problem, not a styling one.",
     ],
     reviewPrompts: [
-      "Is there exactly one Filled Button visible on this screen?",
-      "Are secondary actions styled as Ghost or Text Link, not Filled?",
-      "Does the Filled button match the action most users should take next?",
+      "Is there exactly one filled button visible on this screen?",
+      "Are the remaining actions stepped down to outline and ghost rather than left filled?",
+      "Does the filled button match the action most users should take next?",
     ],
   },
   "comp-2": {
     whyItMatters: "A giant red button sitting in the main UI primes users for loss aversion anxiety on every glance, yet its constant visibility also breeds habituation, so the warning eventually stops registering. Splitting the action into a neutral grey trigger and a red confirm step puts the alarm exactly once, at the moment it can prevent a mistake.",
     riskWhenIgnored: "A prominent red Delete button next to routine controls gets hit by muscle memory or a stray tap, and without a confirm step the destructive action fires immediately, destroying data with no recovery path.",
     implementationNotes: [
-      "Style the initial trigger as a Grey Delete button, matching surrounding secondary actions.",
-      "Move the red styling exclusively to the Confirm button inside the modal.",
+      "Style the initial trigger as a secondary Delete… button, matching the surrounding secondary actions.",
+      "Move the red styling exclusively to the confirming Delete button inside the modal.",
       "Never let the red state appear anywhere outside the confirmation step.",
-      "Add a short description of what will be lost inside the confirmation modal.",
+      "Name what will be lost in the modal — this can't be undone is the line that earns the extra click.",
+      "Scope the confirm to permanent deletions. Where the delete can be reversed, keep the secondary trigger and swap the modal for an undo window, which protects the same mistake without asking a question first.",
     ],
     reviewPrompts: [
-      "Is the initial Delete trigger grey rather than red?",
-      "Does clicking Delete open a confirmation step before anything is removed?",
-      "Is red reserved only for the final Confirm button?",
+      "Is the initial Delete… trigger styled as a secondary action rather than red?",
+      "Does clicking it open a confirmation step before anything is removed?",
+      "Is red reserved for the confirming button inside the modal?",
     ],
   },
   "comp-3": {
-    whyItMatters: "Concentric corners only read as parallel when Outer Radius equals Inner Radius plus Padding, a geometric nesting rule borrowed from how circles offset from a shared center. Break the formula and the eye detects the mismatch as visual noise even if it cannot name the problem.",
+    whyItMatters: "Concentric corners only read as parallel when the outer radius equals the inner radius plus the padding between them, a geometric nesting rule borrowed from how circles offset from a shared center. Break the formula and the eye detects the mismatch as visual noise even if it cannot name the problem.",
     riskWhenIgnored: "An outer radius of 4px wrapped around an inner radius of 4px with padding between them creates a pinched, uneven gap that looks like a spacing bug rather than an intentional design choice.",
     implementationNotes: [
-      "Calculate Outer Radius as Inner Radius plus Padding, e.g. Outer 12px = Inner 4px + Padding 8px.",
+      "Calculate the outer radius as inner radius plus padding: 12 = 4 + 8.",
       "Never set outer and inner radius to the same value when padding sits between them.",
       "Recalculate the outer radius any time padding changes on a nested component.",
       "Check card-in-card, tab-in-container, and badge-in-button patterns specifically.",
@@ -623,14 +624,14 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     whyItMatters: "Modals interrupt and hide the background, which fits a short focused decision like a delete confirmation but actively works against tasks that need context, like editing a profile. Drawers keep the underlying screen visible so users retain their mental model of where they are while working through longer content.",
     riskWhenIgnored: "Cramming complex settings into a small modal forces users to scroll a cramped box while losing sight of the page they came from, leading to abandoned edits and repeated re-opening of the dialog.",
     implementationNotes: [
-      "Use a Modal only for short, focused decisions like Delete Confirm.",
-      "Use a Drawer for context-heavy tasks like Edit Profile where background visibility matters.",
-      "Treat rising form field count as a signal to move from Modal to Drawer.",
+      "Use a modal only for a single short decision — one question and one pair of buttons.",
+      "Use a drawer for a context-heavy task like editing a profile: six labelled fields fit its height, and the page behind stays readable.",
+      "Treat a rising field count as the signal to move from modal to drawer.",
       "Never shrink a multi-section settings form into a small modal to save engineering time.",
     ],
     reviewPrompts: [
-      "Is this Modal reserved for a short, single decision rather than a complex task?",
-      "Does the Drawer keep the background page visible while editing?",
+      "Is this modal reserved for a short, single decision rather than a complex task?",
+      "Does the drawer keep the background page visible while editing?",
       "Would this task feel cramped if forced into a small modal?",
     ],
   },
@@ -638,8 +639,8 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     whyItMatters: "Toasts float above the whole screen and fit system-level updates like a save confirmation, but that same detachment from any specific element makes them useless for pointing at one wrong field. Inline errors sit right where the mistake lives, so the fix location and the error message are never more than a glance apart.",
     riskWhenIgnored: "Showing an invalid email error as a toast leaves users staring at a form with no visible red flag, so they resubmit blind and the same toast reappears without ever revealing which field is wrong.",
     implementationNotes: [
-      "Use a Toast for system-level updates like a network error or Saved confirmation.",
-      "Use an Inline error directly beneath the field for issues like an invalid email.",
+      "Use a toast for system-level updates like a network error or a Saved confirmation.",
+      "Use an inline error directly beneath the field for issues like an invalid email.",
       "Never route field-specific validation errors through the toast system.",
       "Keep inline errors visible until the specific field is corrected.",
     ],
@@ -665,33 +666,33 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "comp-8": {
-    whyItMatters: "A disabled control with no explanation breaks the user's mental model of cause and effect, since nothing on screen explains why the button will not respond. Adding a tooltip or helper text restores that missing link, turning a dead end into a clear next step toward enabling the action.",
-    riskWhenIgnored: "A greyed-out submit button with no accompanying text leaves users clicking it repeatedly or assuming the page is broken, generating support tickets that could have been avoided with one line of helper text.",
+    whyItMatters: "A disabled control answers no question: it does not say what is missing, and the native disabled attribute also drops the element out of the tab order, so a keyboard or screen-reader user cannot even reach a tooltip hung on it. Visible helper text, or aria-disabled in place of disabled so the control stays focusable, restores the link between the blocked state and the thing the user has to do to clear it.",
+    riskWhenIgnored: "A greyed-out Save with nothing beside it gets clicked three or four times, because the user reads the page as broken rather than guessing that a required field two sections up is still empty, and the ticket that follows reports the save button as dead.",
     implementationNotes: [
-      "Pair every disabled button with helper text or a tooltip explaining why.",
-      "State what the user needs to do to enable the control, not just that it is disabled.",
-      "Never ship a greyed-out button with zero surrounding context.",
-      "Place the helper text close enough to the button that the connection is obvious.",
+      "Pair every disabled control with visible text naming the unmet condition.",
+      "Prefer aria-disabled=true over the disabled attribute when the reason lives in a tooltip, so Tab still reaches it, and guard the handler yourself since aria-disabled does not block activation.",
+      "Name the fix, not the state: two fields left to fill, rather than this action is unavailable.",
+      "Keep the explanation within a line or two of the control so the connection is unambiguous.",
     ],
     reviewPrompts: [
-      "Does this disabled button have visible helper text or a tooltip?",
-      "Does that text explain what would enable the button?",
-      "Is any greyed-out control missing an explanation nearby?",
+      "Does this disabled control have a visible reason sitting next to it?",
+      "Does that text name what the user must do to enable it?",
+      "Can a keyboard user reach the control and find out why it is unavailable?",
     ],
   },
   "comp-9": {
     whyItMatters: "A static button during an async submit gives no feedback that the click registered, so users interpret silence as failure and click again, firing duplicate requests. A spinner plus disabled state closes that feedback loop immediately, showing the system received the action and is working on it.",
     riskWhenIgnored: "A save button that stays static and clickable during submission invites a second click before the first request resolves, creating duplicate records or double-charged actions on the backend.",
     implementationNotes: [
-      "Swap the button label for a spinner the instant submission starts.",
-      "Disable the button during submit so re-clicks are impossible.",
-      "Restore the normal state only after the async action resolves or fails.",
-      "Never leave a submit button static and clickable while a request is in flight.",
+      "Spin on any submit that changes server state — an order, a payment, a save — where a second click would fire a second request. A cheap reversible toggle has nothing to double, so it needs no spinner.",
+      "Put the spinner beside the label rather than replacing it, or reserve the resting width, so the button does not collapse mid-submit.",
+      "Disable the button for the life of the request and set aria-busy, so the state is announced and not only drawn.",
+      "Restore the resting state on failure as well as success, and surface the error next to the button.",
     ],
     reviewPrompts: [
-      "Does the button show a spinner while the async action is in progress?",
-      "Is the button disabled during submission, blocking a second click?",
-      "Does the button return to normal only after the request completes?",
+      "Does the button show a spinner while the request is in flight?",
+      "Is the button disabled during submission, so a second click cannot fire?",
+      "Does the button return to its resting state on failure as well as on success?",
     ],
   },
   "comp-10": {
@@ -705,7 +706,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
     reviewPrompts: [
       "Are all icons in this toolbar rendered at the same size?",
-      "Is there any 16px, 20px, or 24px icon mixed in with a different size nearby?",
+      "Is any icon in this toolbar a different size from the ones beside it?",
       "Does icon size stay consistent across this entire navigation context?",
     ],
   },
@@ -747,7 +748,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     implementationNotes: [
       "Place every label directly above its input, never to the left, even on desktop.",
       "Let labels wrap to a second line instead of truncating with an ellipsis.",
-      "Keep label-to-input gap consistent across all fields (e.g. 4-8px).",
+      "Keep the label-to-input gap at 8px on every field, matching the 4pt scale.",
       "Test the layout with a long locale string like Rechnungsadresse.",
     ],
     reviewPrompts: [
@@ -772,11 +773,11 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "form-3": {
-    whyItMatters: "Marking every field with a red asterisk adds a decoding step to each row: the eye has to check the symbol, recall what it means, then read the label. When 90% of fields share that state, the asterisk stops carrying information and just becomes visual noise the user has to filter out. Flagging only the exceptions, like Phone Number (Optional), cuts the number of symbols to parse to almost zero.",
+    whyItMatters: "Marking every field with a red asterisk adds a decoding step to each row: the eye has to check the symbol, recall what it means, then read the label. When 90% of fields share that state, the asterisk stops carrying information and just becomes visual noise the user has to filter out. Flagging only the exceptions, like Phone (Optional), cuts the number of symbols to parse to almost zero.",
     riskWhenIgnored: "A ten-field form shows nine asterisks and users start ignoring them entirely, so the one truly optional field gets filled in anyway, adding friction the form was trying to avoid.",
     implementationNotes: [
-      "Label optional fields directly, e.g. Phone Number (Optional), and leave required fields unmarked.",
-      "Remove asterisks from Name, Email, Address, City, and any other required field.",
+      "Label optional fields directly, e.g. Phone (Optional), and leave required fields unmarked.",
+      "Remove asterisks from Full name, Email, and any other required field.",
       "Only introduce a required marker if optional fields outnumber required ones.",
       "Scan the form for asterisk density before shipping; more than one or two is a signal to invert the pattern.",
     ],
@@ -802,16 +803,16 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "form-5": {
-    whyItMatters: "Radio buttons and checkboxes carry different built-in signifiers: a circle means one exclusive choice, a square means any number of independent choices. Pick Plan is a mutually exclusive decision, so it needs the circle. Swapping in checkboxes contradicts decades of learned convention and forces users to re-derive the selection rule from scratch instead of recognizing it instantly.",
-    riskWhenIgnored: "A checkbox list for Pick Plan lets a user tap two plan options at once, so the form either silently keeps only the last selection or submits an invalid multi-plan state.",
+    whyItMatters: "Radio buttons and checkboxes carry different built-in signifiers: a circle means one exclusive choice, a square means any number of independent choices. Pick a plan is a mutually exclusive decision, so it needs the circle. Swapping in checkboxes contradicts decades of learned convention and forces users to re-derive the selection rule from scratch instead of recognizing it instantly.",
+    riskWhenIgnored: "Checkboxes under Pick a plan let a user leave both Pro and Business ticked, so the form either silently keeps whichever it read last or posts a two-plan state the billing code has no price for.",
     implementationNotes: [
-      "Use radio buttons for Pick Plan since only one plan can be active at a time.",
+      "Use radio buttons for Pick a plan, since only one plan can be active at a time.",
       "Reserve checkboxes for choices where multiple selections are valid simultaneously.",
       "Never let two checkbox options in the same group behave as mutually exclusive.",
       "Audit any checkbox group that only ever allows one item checked; convert it to radios.",
     ],
     reviewPrompts: [
-      "Are mutually exclusive choices like Pick Plan shown as radio buttons, not checkboxes?",
+      "Are mutually exclusive choices like Pick a plan shown as radio buttons, not checkboxes?",
       "Can more than one option be selected where only one choice makes sense?",
       "Does the control's shape (circle vs square) match how many can be selected?",
     ],
@@ -832,17 +833,17 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "form-7": {
-    whyItMatters: "A switch's visual language comes from a physical light switch: flipping it fires an immediate, standalone effect, which is why Dark Mode as a switch feels correct. A checkbox instead signals select now, submit later, matching a form's pending Subscribe to newsletter choice that only takes effect on submit. Putting a switch on the newsletter option creates a signifier mismatch, implying an action that has not actually happened yet.",
-    riskWhenIgnored: "A newsletter switch looks flipped on but the change has not been saved until the whole form submits, so a user assumes they are already subscribed and never notices if the submit fails.",
+    whyItMatters: "A switch's visual language comes from a physical light switch: flipping it fires an immediate, standalone effect, which is why Dark mode as a switch feels correct. A checkbox instead signals select now, submit later, matching a pending choice like Email me product updates that only lands when the form is saved. Putting a switch on that row creates a signifier mismatch, promising an action that has not happened yet — and the Save changes button sitting below it is the tell.",
+    riskWhenIgnored: "A switch on Email me product updates reads as already applied, so a user flips it, sees it settle in the on position, and closes the page without pressing Save changes — the setting never reaches the server and nothing on screen said it wouldn't.",
     implementationNotes: [
-      "Use a switch for Dark Mode since it applies the moment it is toggled.",
-      "Use a checkbox for Subscribe to newsletter since it only takes effect at submission.",
+      "Use a switch for Dark mode, since it applies the moment it is flipped.",
+      "Use a checkbox for Email me product updates, since it only takes effect when the form is saved.",
       "Never use a switch for any setting that waits on a separate submit action.",
       "Confirm each switch produces an immediate, visible effect the instant it is toggled.",
     ],
     reviewPrompts: [
       "Does every switch on the screen take effect immediately when toggled?",
-      "Is Subscribe to newsletter presented as a checkbox rather than a switch?",
+      "Is a submit-dependent row like Email me product updates presented as a checkbox rather than a switch?",
       "Are there any switches whose effect only applies after a later submit?",
     ],
   },
@@ -877,7 +878,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "form-10": {
-    whyItMatters: "A single column keeps every field on one vertical scanning path, so the eye moves straight down without jumping across columns to figure out what comes next. Three columns of unrelated fields break that path and force the user to decide, at each row, whether to read left-to-right or top-to-bottom. Logically paired fields, like First and Last name, are the one exception because they read as a single unit rather than separate decisions.",
+    whyItMatters: "A single column keeps every field on one vertical scanning path, so the eye moves straight down without jumping across columns to figure out what comes next. Even two columns of unrelated fields break that path and force the user to decide, at each row, whether to read left-to-right or top-to-bottom. Logically paired fields, like First and Last name, are the one exception because they read as a single unit rather than separate decisions.",
     riskWhenIgnored: "A three-column form places City next to Password next to Phone, so users lose their place mid-form and skip fields because the reading order is ambiguous.",
     implementationNotes: [
       "Stack unrelated fields in a single column rather than spreading them across three.",
@@ -892,12 +893,12 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "form-11": {
-    whyItMatters: "Every keystroke a user does not have to make is friction removed, and a smart default like country auto-detected from locale replaces a 200-option scroll with a single confirmable guess. This works because most users match the common case, so pre-filling the likely answer turns a search task into a verification task. An empty dropdown with 200+ options forces every user to scroll and search even when the answer is predictable.",
-    riskWhenIgnored: "A signup form shows an empty country dropdown with 200+ entries, so users scroll or type to search for their own country every single time, even though locale data already knows the answer.",
+    whyItMatters: "Every keystroke a user does not have to make is friction removed, and a smart default like country auto-detected from locale replaces a 195-option scroll with a single confirmable guess. This works because most users match the common case, so pre-filling the likely answer turns a search task into a verification task. An empty dropdown with 195 options forces every user to scroll and search even when the answer is predictable.",
+    riskWhenIgnored: "A signup form shows an empty country dropdown with 195 entries, so users scroll or type to search for their own country every single time, even though locale data already knows the answer.",
     implementationNotes: [
       "Auto-detect and pre-select country from the user's locale instead of leaving it empty.",
       "Default date pickers to today's date rather than a blank calendar.",
-      "Never leave a long list (200+ options) unselected when a reasonable default is inferable.",
+      "Never leave a long list (195 options here) unselected when a reasonable default is inferable.",
       "Always let the user override the default; never lock the pre-filled value.",
     ],
     reviewPrompts: [
@@ -925,7 +926,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
   // ── System & Logic ───────────────────────────────────────────────
   "sys-1": {
     whyItMatters: "Perceived-performance research shows a grey layout pulse mimicking the final content structure reads as progress in motion, while a spinning wheel is an abstract token unrelated to what is loading. Skeletons prime the eye for where text and images will land, cutting perceived wait time even when actual load time is identical.",
-    riskWhenIgnored: "A giant spinner gives no sense of layout or progress, so waits over a couple seconds feel longer and users bounce, visible as repeated reload clicks during load.",
+    riskWhenIgnored: "A full-screen spinner spends the whole wait saying only that something is happening, so the content lands in one jump at the end and the reader starts over locating what they came for. A 900ms wait spent that way reads as a stall, and some of them reload before it resolves.",
     implementationNotes: [
       "Replace spinners with grey bars matching the shape of each content block, image, title, body.",
       "Pulse the bars at a slow, consistent rate (1.5-2s cycle) so it reads as alive, not stuck.",
@@ -939,10 +940,10 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "sys-2": {
-    whyItMatters: "Every empty state is a moment of doubt: did something break, or is there genuinely nothing here yet. The three-part structure, what is missing, why, and how to fix it, turns a dead end into a next action, shown by No Projects paired with a Create Project button rather than a bare white box.",
+    whyItMatters: "Every empty state is a moment of doubt: did something break, or is there genuinely nothing here yet. The three-part structure — what is missing, why, and how to fix it — turns a dead end into a next action: No projects yet names the state, a line underneath says why, and a New project button hands the reader the fix, where a bare white panel hands them a question.",
     riskWhenIgnored: "A blank white box leaves users unsure if the page is broken or still loading, so they abandon the screen or file a support ticket instead of taking the obvious next action.",
     implementationNotes: [
-      "Pair every empty state with an explicit message like No Projects plus a Create Project button.",
+      "Pair every empty state with an explicit message like No projects yet plus a New project button.",
       "State what is missing in the heading, not just a vague icon.",
       "Add a one-line reason when relevant, such as no results match your filters.",
       "Always include a primary action button, never leave the fix implicit.",
@@ -954,23 +955,23 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "sys-3": {
-    whyItMatters: "Fitts's law states that time to hit a target is a function of its size and distance, so a 44x44px minimum keeps taps fast and error-free on coarse pointers like fingertips. A 40px button plus margin clears this bar; a bare text link with no padding forces precise aiming, especially on mobile.",
-    riskWhenIgnored: "Small unpadded tap targets cause mis-taps on adjacent elements, visible as users repeatedly tapping the wrong row or link on touch devices.",
+    whyItMatters: "Fitts's law makes time-to-target a function of size and distance, and a fingertip contacts roughly 8-10mm of glass, far more than most visual hit areas cover. The familiar numbers come from different places: Apple's HIG asks for 44x44pt, Material for 48x48dp, and WCAG 2.5.5 sets 44x44 CSS px as an AAA target, while WCAG 2.2's AA floor, 2.5.8, is only 24x24 px and can be satisfied by spacing instead of size. A 16x16 glyph gives you a 16x16 target unless something grows it, and only padding does: padding joins the hit area, margin merely holds the neighbours off.",
+    riskWhenIgnored: "A 16x16 delete button at the end of a file row is smaller than the contact patch of the thumb reaching for it, so the tap lands on the row instead and opens the file — and the user only learns which control they hit after the wrong screen arrives.",
     implementationNotes: [
-      "Size every tappable control to at least 44x44px, using the 40px button plus margin pattern as baseline.",
-      "Add invisible padding around small icons or links rather than shrinking the visual size.",
-      "Increase spacing between adjacent targets so accidental taps hit only one element.",
-      "Test specifically on pointer-coarse touch breakpoints, not just mouse.",
+      "Grow small controls to 44x44 with padding, not margin: only padding belongs to the hit area.",
+      "Keep the visual size as designed and extend the target underneath it, so a 16px icon still looks like a 16px icon.",
+      "Add spacing between adjacent targets too, so a near-miss lands on nothing rather than on the neighbour.",
+      "Test at pointer-coarse breakpoints on a real device, not in a resized desktop window.",
     ],
     reviewPrompts: [
-      "Is every tappable element at least 44x44px including padding?",
-      "Are text links given padding rather than left as bare underlined text?",
-      "On a touch screen, can adjacent targets be tapped without hitting the wrong one?",
+      "Does every tappable control measure at least 44x44 including its padding?",
+      "Are the extra pixels padding rather than margin, so they are actually clickable?",
+      "On a touch screen, can you hit each control in a row without brushing its neighbour?",
     ],
   },
   "sys-4": {
     whyItMatters: "Temporal distance changes how people process time: recent events are judged relative to now, 2 hours ago, while distant ones need an anchor in absolute time, 12 Jan 2024, to stay meaningful. Activity feeds benefit from relative recency cues; historical records need the fixed date so context survives after the moment passes.",
-    riskWhenIgnored: "Showing 12/01/2024 14:02 on a live comment thread forces users to do mental math to judge recency, visible as users misreading stale content as fresh.",
+    riskWhenIgnored: "An activity row stamped 2026-08-10T14:02:11Z cannot answer whether that was a minute ago or last month without the reader subtracting two timestamps in their head, and in the fixed-width slot the row gives it, the string truncates before the clock time even arrives.",
     implementationNotes: [
       "Use relative timestamps like 2m ago for comments and activity feeds under a day or two old.",
       "Switch to absolute dates such as 12 Jan 2024 once an item ages past that window.",
@@ -984,10 +985,10 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "sys-5": {
-    whyItMatters: "Naming tokens by what they are, Blue-500, keeps the base palette stable while semantic aliases like Primary-Color map meaning on top, so a rebrand only touches the alias layer. Naming directly by function, such as button-blue, hardcodes intent into the value and breaks the moment that color is reused elsewhere.",
-    riskWhenIgnored: "When button-blue gets reused for a warning banner, changing the brand blue silently recolors unrelated warning states, visible as wrong colors appearing after a rebrand.",
+    whyItMatters: "Naming a token for what it is, blue-500, keeps the base palette stable while an alias layer such as accent maps meaning on top, so a rebrand edits the aliases and the palette underneath survives. Naming directly by function, as $button-blue does, welds one component's intent into the value, and the weld holds the moment anything else borrows that color.",
+    riskWhenIgnored: "A token named $button-blue ends up on the Payment overdue banner because that blue happened to look right, so the next rebrand moves the button and repaints the warning with it, and nobody connects the two until a customer asks why an overdue notice is the same color as Save.",
     implementationNotes: [
-      "Structure tokens in three layers: Color Palette, Blue-500, to Semantic Alias, to Component usage.",
+      "Structure tokens in three layers: blue-500 in the palette, accent as the alias, then the component that consumes the alias.",
       "Name base tokens by hue and value, never by the component that consumes them.",
       "Keep function-specific names like button-blue out of the base palette entirely.",
       "Point component styles at the semantic alias layer, not the raw palette value.",
@@ -1000,7 +1001,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
   },
   "sys-6": {
     whyItMatters: "Loss aversion means users fear irreversible actions more than they warrant, so a five-second Undo window after Deleted converts a scary permanent action into a safely reversible one. Instant permanent deletion offers no recovery path and leans entirely on a confirmation dialog to prevent mistakes.",
-    riskWhenIgnored: "Deleting instantly with no undo means one accidental click destroys data permanently, visible as support requests asking to recover something removed seconds earlier.",
+    riskWhenIgnored: "One stray click on the delete beside Q3-report.pdf takes the file with it, and the toast that follows reads permanently deleted, so the recovery path is a support ticket and whatever the last backup happens to hold.",
     implementationNotes: [
       "Show a Deleted, Undo (5s) toast immediately instead of a confirm-then-delete dialog.",
       "Delay the actual destructive server call until the undo window closes.",
@@ -1014,13 +1015,13 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "sys-7": {
-    whyItMatters: "Anxiety in multi-step flows comes from not knowing how much is left, so a Step 2 of 4 indicator gives users a mental model of remaining effort and reduces abandonment. Flows with no progress indicator feel open-ended, and task-completion research shows drop-off rises the longer a flow feels unbounded.",
-    riskWhenIgnored: "A checkout or onboarding flow with no progress indicator feels like it could go on forever, visible as users abandoning midway through longer forms.",
+    whyItMatters: "Without a denominator a flow has no visible end, so every screen could be the second of five or the second of twenty. Step 2 of 4 supplies that denominator, and the goal-gradient effect takes it from there: effort rises as the remaining distance shrinks, which is why abandonment concentrates in the early steps of flows that feel unbounded.",
+    riskWhenIgnored: "A five-screen onboarding with no counter loses people at screen two, because from inside screen two there is no way to tell whether three more are coming or thirteen.",
     implementationNotes: [
-      "Show a Step 2 of 4 style indicator on any flow with three or more steps.",
-      "Keep the total step count visible and fixed, do not let it change mid-flow.",
-      "Allow users to see or jump back to completed steps when possible.",
-      "Skip progress indicators only for flows under three steps.",
+      "Show a Step 2 of 4 counter on any flow of three or more steps.",
+      "Fix the total up front and never let it grow mid-flow; a moving denominator is worse than none.",
+      "Let users step back into completed steps, and keep their entries when they do.",
+      "Skip the counter below three steps, where it costs more attention than it returns.",
     ],
     reviewPrompts: [
       "Does a flow with three or more steps show a current step and total count?",
@@ -1030,7 +1031,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
   },
   "sys-8": {
     whyItMatters: "Keyboard accessibility is a parallel input model, not an extra layer on mouse interaction: Tab moves focus, Enter or Space activates, Escape dismisses, mirroring how screen reader and switch-device users navigate exclusively. Click-only interactions with no keyboard path lock these users out of core functionality entirely.",
-    riskWhenIgnored: "A modal built with click-only handlers traps keyboard users who can never close it, visible as focus getting stuck with no way to Tab out or press Escape to dismiss.",
+    riskWhenIgnored: "An Archive project? dialog whose buttons sit at tabindex -1 with no Escape handler cannot be reached or dismissed from the keyboard at all: Tab walks straight past both buttons into the page behind, Escape does nothing, and the only exit left is a page reload that discards whatever the user was doing.",
     implementationNotes: [
       "Verify every interactive element completes the Tab, Enter, Esc flow, not just click handlers.",
       "Add visible focus rings so keyboard position is never invisible.",
@@ -1045,7 +1046,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
   },
   "sys-9": {
     whyItMatters: "For low-risk, high-frequency actions like favoriting, updating the UI immediately and reconciling with the server afterward removes the perceived latency of a round trip, since the heart fills instantly rather than waiting on a spinner. This trades a rare silent rollback for a consistently snappy feel on actions users repeat often.",
-    riskWhenIgnored: "Showing a spinner on every like button click makes a trivial action feel heavy, visible as users hesitating or double-tapping while waiting for it to resolve.",
+    riskWhenIgnored: "A heart that waits 560ms on the server before it fills leaves half a second of nothing after the tap, so the user taps again to check it registered — and the second tap unlikes the post they meant to like.",
     implementationNotes: [
       "Update the heart or toggle state instantly on click, syncing to the server asynchronously.",
       "Reserve optimistic updates for low-risk, reversible actions like likes or favorites.",
@@ -1059,40 +1060,40 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "sys-10": {
-    whyItMatters: "Graceful degradation treats network and asset failures as expected events rather than exceptions, so a broken image gets a placeholder plus retry option instead of the browser's default broken-icon glyph. This keeps the interface looking intentional even when a CDN, image, or API call fails.",
-    riskWhenIgnored: "An unhandled failed image request shows the browser's broken-icon glyph or a blank gap, visible as broken image icons scattered across a page after a CDN hiccup.",
+    whyItMatters: "A failed request is a normal event, not an exception, and the browser's default handling of one is hostile: an img that 404s collapses to its alt box, so everything below it jumps up the page. Rendering a placeholder at the same dimensions, with a retry, holds the layout still and keeps the failure legible as a failure rather than as a page that looks half-built.",
+    riskWhenIgnored: "One CDN hiccup and a grid of product cards shows broken-image glyphs at assorted sizes while the rows reflow around each failure, so the page reads as broken rather than as temporarily missing a few pictures.",
     implementationNotes: [
-      "Render a placeholder image with a retry option whenever an image or API call fails.",
-      "Catch failed fetches and show a fallback state, never let a request fail silently to blank.",
-      "Give the retry action a clear label and keep the surrounding layout stable.",
-      "Test degraded states deliberately by blocking network requests in dev tools.",
+      "Reserve the space before the request resolves, with aspect-ratio or a fixed box, so a failure cannot shift the layout.",
+      "Handle the image onError by swapping in a placeholder; never let it fall through to the browser glyph.",
+      "Give failed fetches a fallback state with a labelled retry that re-requests only the resource that failed.",
+      "Test degraded states deliberately: block the image host and the API in devtools and walk the page.",
     ],
     reviewPrompts: [
-      "Does a failed image load show a placeholder with a retry option?",
-      "Is there no raw broken-image icon or blank gap anywhere on the page?",
-      "Can the user manually retry a failed load without reloading the whole page?",
+      "Does a failed image show a placeholder at the same size, with nothing below it moving?",
+      "Is there any raw broken-image glyph or blank gap left on the page?",
+      "Can the user retry the failed request without reloading the whole page?",
     ],
   },
   "sys-11": {
-    whyItMatters: "Capping breakpoints at mobile, tablet, and desktop, sub-640px, 640-1024px, above 1024px, matches how layouts actually need to reflow, column count and density, rather than chasing every physical device size. Designing for eight-plus breakpoints multiplies maintenance cost for visual differences most users never notice.",
-    riskWhenIgnored: "Chasing device-specific breakpoints instead of the three-tier system produces inconsistent spacing across similar widths, visible as a layout fine on one phone but cramped on another of similar size.",
+    whyItMatters: "A breakpoint should mark a width where the layout genuinely has to reflow, where a column count or a density changes, not a width where some particular phone happens to exist. Three tiers cover that, and three tiers need only two queries: the base state carries mobile up to 640px, one query opens the tablet tier from there, a second opens desktop at 1024px, and the layout stops widening around 1280px. Every extra breakpoint past those two multiplies the states you have to design, review, and regression-test, for differences nobody outside the team will ever see.",
+    riskWhenIgnored: "Chasing device widths instead of reflow points leaves eight near-identical rules — 320, 375, 414, 480 and up — and the phone that ships at 393px falls into the 375px rule and renders cramped, with no single place to fix it because the width it needed sits between two rules that already exist.",
     implementationNotes: [
-      "Define exactly three breakpoints, sm 640px, md 1024px, lg 1280px, and design layouts around those.",
-      "Reflow column count and density at each of the three tiers, not at every device width.",
-      "Avoid adding breakpoints for specific devices or aspect ratios.",
-      "Test layouts at the boundary widths, 640px and 1024px, rather than exact device dimensions.",
+      "Declare two steps, 640px and 1024px, so the base state plus those two give you three tiers, and stop the widest one widening near 1280px.",
+      "Change column count and density at those steps only; leave the widths between them fluid.",
+      "Never add a breakpoint for a specific device, aspect ratio, or screen model.",
+      "Test by dragging the window through each step and watching for one clean reflow, not several.",
     ],
     reviewPrompts: [
-      "Does the layout use only mobile, tablet, and desktop breakpoints?",
-      "Does resizing near 640px or 1024px show a clean, intentional reflow?",
-      "Is there no layout logic targeting a specific device or screen model?",
+      "Does this layout reflow only at the declared steps, plus the base state below the first one?",
+      "Does dragging the window through a step produce one clean change rather than a sequence of small shifts?",
+      "Is there any media query targeting a specific device or screen model?",
     ],
   },
   "sys-12": {
-    whyItMatters: "Every animation should map to one job: orientation, where am I, feedback, did it work, or continuity, what changed, like a page slide signaling spatial movement between views. A bouncing logo on load serves none of these and just adds motion without communicating anything to the user.",
-    riskWhenIgnored: "Decorative motion with no functional purpose, like a bouncing logo on every load, trains users to ignore animation entirely, visible as users missing real feedback cues like error shakes.",
+    whyItMatters: "Motion is a channel with a fixed budget of attention. Users learn very quickly which movements carry information and which do not, and once they have written the channel off they stop reading the movements that matter. At system level, an animation earns its place by answering one of three questions: where am I (orientation), did it work (feedback), what changed (continuity). The motion rules split those further, adding explanation and softening an abrupt change, but the test is the same: name the question, or cut the animation.",
+    riskWhenIgnored: "A logo that bounces on every load answers none of the three questions, and after a week of it the reader has written the whole channel off. The cost lands somewhere else: the shake on a rejected card number is the same channel, and now it goes unread.",
     implementationNotes: [
-      "Before adding any animation, name which job it does, orientation, feedback, or continuity.",
+      "Before adding any animation, name the question it answers: where am I, did it work, or what changed.",
       "Use directional slides for navigation to convey spatial orientation between views.",
       "Cut any animation that exists purely for flair, like a bouncing logo on load.",
       "Reserve punchier motion for feedback moments so it stands out from routine transitions.",
@@ -1105,7 +1106,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
   },
   "sys-13": {
     whyItMatters: "Specifying transition-property explicitly, scale and background-color, ensures only intended properties animate, while transition: all animates every property that changes, including ones altered by unrelated state updates like a font load. This causes unexpected elements to visibly glide when they should snap instantly.",
-    riskWhenIgnored: "Using transition: all means an unrelated style change, like a width recalculation from a font swap, animates unexpectedly, visible as elements sliding on their own when nothing about them was meant to change.",
+    riskWhenIgnored: "transition: all 150ms puts the late webfont on the same timeline as your hover state, so the Save changes button grows through two intermediate widths after the page has already settled. Nobody reads that as a font arriving; they read it as the layout coming apart.",
     implementationNotes: [
       "Replace transition: all with an explicit list such as transition-property: scale, background-color.",
       "Audit each transitioning component for the exact properties that should animate.",
@@ -1120,7 +1121,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
   },
   "sys-14": {
     whyItMatters: "will-change: transform, opacity is a hint that promotes an element to its own GPU compositor layer ahead of an expected animation, but will-change: all or broad use forces the browser to allocate compositor memory for elements that never need it. It should appear only right before a real, observed first-frame stutter, then get removed.",
-    riskWhenIgnored: "Applying will-change broadly or with all creates excess compositor layers that consume GPU memory, visible as sluggish scrolling on pages with many elements.",
+    riskWhenIgnored: "will-change: all on the card component means every card in the list gets its own compositor layer, so a few hundred rows spend GPU memory on elements that never animate. The ten-card test page scrolls perfectly; the real list drops frames.",
     implementationNotes: [
       "Apply will-change: transform, opacity only to elements about to animate, never will-change: all.",
       "Add it just before the animation starts and remove it once the animation finishes.",
@@ -1137,16 +1138,16 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
   // ── Motion & Interaction ────────────────────────────────────────
   "motion-1": {
     whyItMatters: "Frequency sets the motion budget: a command palette fires dozens of times an hour, so any delay compounds through habituation, while a modal seen once a session can afford standard motion. Map interaction frequency to duration before choosing an easing curve.",
-    riskWhenIgnored: "A command palette animated like a rare modal turns a routine keystroke into a 300ms wait on every invocation, and power users start perceiving the whole app as sluggish.",
+    riskWhenIgnored: "A command palette animated like a rare modal charges 220ms on every invocation, so twenty opens across a working hour is four and a half seconds spent watching a panel whose shape the user already knew, and the app they reach for most reads as the slowest thing they use.",
     implementationNotes: [
-      "Apply full standard motion only to rare surfaces like a first-run modal, matching the do example.",
+      "Reserve full standard motion for rare surfaces like a first-run modal, and keep even that under 300ms.",
       "Audit every animated surface for weekly-or-more usage and shorten or strip motion above that threshold.",
       "Time the command palette open path separately from onboarding modals in your motion tokens.",
       "Recheck a surface's motion once it moves from rare to daily use, like a settings panel becoming a habit.",
     ],
     reviewPrompts: [
       "Does the command palette open without any perceptible delay?",
-      "Does a rarely-seen modal still use full, unhurried motion instead of feeling clipped?",
+      "Does a rarely-seen modal still get its full standard motion rather than feeling clipped?",
       "Do frequently repeated actions feel faster than one-off actions?",
     ],
   },
@@ -1154,7 +1155,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     whyItMatters: "Keyboard input assumes near-zero perceived latency, since repetition amplifies any added delay into visible lag. Shortcuts, palette toggles, and focus moves must resolve without waiting on a transition to finish.",
     riskWhenIgnored: "A shortcut that waits for a slide-in transition before revealing its result trains users to distrust the keyboard path, and they fall back to slower mouse navigation.",
     implementationNotes: [
-      "Make shortcut response immediate, per the do example, by updating state before or independent of any animation.",
+      "Land the shortcut result on the same frame as the keypress by updating state before, or independent of, any animation.",
       "Never gate command palette open or close on a transition-end event.",
       "Move focus synchronously and animate only the focus ring afterward, not the move itself.",
       "Test rapid repeated keypresses to confirm no animation backlog queues up.",
@@ -1169,7 +1170,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     whyItMatters: "Every animation should serve one of five jobs: orientation, feedback, explanation, continuity, or softening a jarring change. A drawer sliding from its trigger shows origin and continuity; a bounce with no such job is just noise competing for attention.",
     riskWhenIgnored: "Decorative motion added to every load screen without a job desensitizes users to real signals, so when an important state change happens, they no longer notice it.",
     implementationNotes: [
-      "Before animating, name which of the five purposes it serves; if none apply, cut it, per the do and dont contrast.",
+      "Before animating, name which of the five purposes it serves; if none apply, cut it.",
       "Keep drawer motion originating visually from the element that opened it.",
       "Remove bounce or flourish effects that run on every page load regardless of context.",
       "Note the one-line purpose for each animation in code comments or the design file.",
@@ -1181,28 +1182,28 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-4": {
-    whyItMatters: "Default browser easings are nearly linear and read as mechanical. cubic-bezier(0.23, 1, 0.32, 1) front-loads velocity so entrances feel intentional and alive rather than generic default-CSS motion.",
-    riskWhenIgnored: "Using ease-in on a dropdown makes it crawl into view at the exact moment users expect it to appear, reading as unresponsive despite an equal total duration.",
+    whyItMatters: "The browser default is a shallow curve, not a wrong one. ease — cubic-bezier(0.25, 0.1, 0.25, 1) — leaves the start at well under half the average rate, never exceeds about 2.3x it, and is 58% of the way there a third of the duration in. cubic-bezier(0.23, 1, 0.32, 1) leaves at more than four times the average rate and is 88% of the way there at that same point, then spends the rest of the time settling. Same 360ms, same direction, same distance: the strength of the curve is doing all the work.",
+    riskWhenIgnored: "On the browser default a panel is still travelling when the eye has already landed on its first line, so the reader spends the back half of the animation trying to read moving text. Nothing about it looks broken, which is exactly why it survives review — it just leaves every surface in the product feeling a beat behind the click.",
     implementationNotes: [
-      "Replace default eases with cubic-bezier(0.23, 1, 0.32, 1) for entrances, as in the do example.",
-      "Reserve ease-in-out only for elements moving between two on-screen positions.",
-      "Never apply ease-in to a dropdown or any first-appearance element.",
+      "Use cubic-bezier(0.23, 1, 0.32, 1) for entrances rather than ease, ease-out, or any other keyword default.",
+      "Reserve ease-in-out only for elements moving between two on-screen positions, where both ends are already visible.",
+      "Judge a curve by where the distance goes, not by the duration: most of the travel belongs in the first third.",
       "Store the custom curve as a shared token so every entrance reuses the same feel.",
     ],
     reviewPrompts: [
-      "Do entrances feel snappy rather than sluggish at the start?",
+      "Has most of the travel happened by the first third of the duration?",
       "Is the same custom easing curve reused consistently across similar components?",
-      "Does any dropdown or menu visibly crawl in with ease-in?",
+      "Is any entrance still running on a keyword default like ease?",
     ],
   },
   "motion-5": {
     whyItMatters: "Ease-in holds near-zero velocity at frame one, the exact instant a user expects visual confirmation their click landed. UI entrances and responses need ease-out so movement starts fast and settles, confirming the action registered immediately.",
     riskWhenIgnored: "A menu opened with ease-in appears to hang for its first frames before accelerating, so users click again assuming the first press missed, causing duplicate triggers.",
     implementationNotes: [
-      "Swap ease-in for ease-out on every UI entrance, matching the do example.",
+      "Swap ease-in for ease-out on every UI entrance.",
       "Audit existing dropdown, menu, and toast transitions for lingering ease-in curves.",
       "Treat any curve starting at zero velocity as a bug, not a style choice.",
-      "Reserve ease-in exclusively for exits, where a slow-then-fast departure is acceptable.",
+      "Ease-in is defensible only on an exit, where nothing has to be comprehended as it leaves; it is never right for anything appearing or responding.",
     ],
     reviewPrompts: [
       "Does the menu begin moving immediately when opened, with no slow start?",
@@ -1214,7 +1215,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     whyItMatters: "Everyday transitions like a 180ms dropdown stay under the threshold where motion reads as responsive rather than deliberate; a 500ms popover crosses into feeling like a loading state instead of an instant UI reaction.",
     riskWhenIgnored: "A 500ms popover triggered on every hover adds up across dozens of daily uses, making the whole product feel padded and slow even though nothing is actually loading.",
     implementationNotes: [
-      "Cap dropdown transitions at 180ms and popovers well under 300ms, per the do example.",
+      "Cap dropdown transitions at 180ms and popovers well under 300ms.",
       "Flag any transition duration above 300ms in code review as a motion violation.",
       "Reserve durations closer to 300ms for larger surfaces like page transitions, not small popovers.",
       "Measure the rendered duration, not just the declared value, since easing can extend perceived length.",
@@ -1226,10 +1227,10 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-7": {
-    whyItMatters: "Entrances can run slightly slower, 220ms, to give users time to register a new element, but exits should be faster, 160ms, since nothing new needs comprehension and a lingering exit blocks the next action.",
+    whyItMatters: "The two directions are paying for different things. An entrance buys the eye time to locate and read something that was not there a moment ago, so its 220ms is spent on comprehension. An exit has nothing left to comprehend — the user decided before the animation began — and every frame of it sits on the critical path of whatever they do next, because the leaving element still holds its space, and often the focus, until it finishes. Cutting the exit to 160ms is not stylistic asymmetry; run both at 360ms and dismissing costs 200ms more than it needs to, every single time.",
     riskWhenIgnored: "Using the same slow timing for both directions makes closing a panel feel as sluggish as opening it, so dismissing things quickly reads as an unresponsive interface.",
     implementationNotes: [
-      "Set enter to 220ms and exit to 160ms as separate tokens, matching the do example.",
+      "Set enter to 220ms and exit to 160ms as separate tokens.",
       "Never reuse a single duration variable for both enter and exit states.",
       "Bias any asymmetry toward faster exits, never slower ones.",
       "Test rapid open-close cycles to confirm exits never lag behind input.",
@@ -1244,7 +1245,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     whyItMatters: "A pressable control needs a visible response within the same frame as the tap. button:active scale(0.96) gives enough compression to register as touched without looking crushed; too aggressive a scale, or none at all, leaves users unsure the tap landed.",
     riskWhenIgnored: "A button with no active state or an overly aggressive scale(0.9) makes every tap feel uncertain, so users tap twice to confirm the interface responded, doubling accidental submissions.",
     implementationNotes: [
-      "Apply scale(0.96) on :active for all pressable controls, per the do example.",
+      "Apply scale(0.96) on :active for all pressable controls.",
       "Never scale below roughly 0.93 or omit an active state entirely.",
       "Trigger the press effect on pointerdown, not on click, so feedback is instant.",
       "Pair the scale with a subtle shadow or brightness shift for reinforcement on larger buttons.",
@@ -1256,25 +1257,25 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-9": {
-    whyItMatters: "Objects in the physical world do not grow from nothing. scale(0.95) with opacity 0 keeps an element feeling already present and just becoming visible, preserving a sense of physicality; scale(0) reads as conjuring something from a single point.",
+    whyItMatters: "Objects in the physical world do not grow from nothing. Starting a surface at scale(0.95) with opacity 0 keeps it feeling already present and merely becoming visible; scale(0) reads as conjuring it out of a single point, and on a panel-sized element that much travel pulls the eye away from the content the panel exists to show.",
     riskWhenIgnored: "An element animating in from scale(0) appears to burst into existence from a single pixel, drawing exaggerated attention instead of feeling like a natural appearance.",
     implementationNotes: [
-      "Start entrances at scale(0.95) combined with opacity 0, matching the do example.",
+      "Start surface entrances at scale(0.95) combined with opacity 0.",
       "Never set an initial or keyframe scale value of 0.",
-      "Keep the starting scale close to 1, roughly 0.9 to 0.97, so growth is barely perceptible.",
+      "Keep the starting scale between roughly 0.9 and 0.97 for panels, popovers, and modals; small icons can travel further, since their pixel change is tiny.",
       "Pair scale with opacity so the object fades in as it settles rather than popping.",
     ],
     reviewPrompts: [
-      "Does the element appear to already be nearly full-size as it fades in?",
+      "Does the panel appear at nearly full size as it fades in?",
       "Is there any element that visibly grows from a single point or zero size?",
       "Does the entrance feel like a subtle settle rather than a dramatic pop?",
     ],
   },
   "motion-10": {
-    whyItMatters: "A popover anchored to a button should scale from that trigger's transform-origin so the motion maps spatially to its source, reinforcing the link between click and result. Center-origin scaling suits modals, which have no single anchor, but applying it to anchored UI severs that spatial logic.",
+    whyItMatters: "A scale animation always has one fixed point, the single pixel that does not move, and the eye finds it for free: it is the only stable reference in a frame where everything else is expanding. Put that point on the trigger and the animation states its own cause — the menu grew out of the button you pressed — with no arrow or highlight needed. Put it at the panel's center and the fixed point lands in the middle of content still too small to read, so it names nothing, and the link between click and result has to be worked out afterwards from position alone. Modals are the exception only because nothing on screen launched them from a particular place.",
     riskWhenIgnored: "A popover that scales from center instead of its trigger appears to materialize disconnected from the button that opened it, forcing users to visually search for the connection.",
     implementationNotes: [
-      "Set transform-origin to the trigger element's position, per the do example.",
+      "Set transform-origin to the trigger element's position.",
       "Reserve center-origin scaling exclusively for modals with no single anchor point.",
       "Calculate origin dynamically if the trigger can appear in different screen positions.",
       "Recheck origin behavior when a popover is repositioned by collision detection near screen edges.",
@@ -1289,7 +1290,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     whyItMatters: "The first tooltip in a session can carry a short delay to avoid firing on accidental hover, but once a user is already exploring, skipping that delay for adjacent tooltips respects the established intent and keeps a toolbar feeling continuous rather than stuttering per item.",
     riskWhenIgnored: "Every toolbar icon re-imposing the same hover delay makes scanning a row of tools feel like restarting a wait each time, so users abandon hover exploration and hunt for labels another way.",
     implementationNotes: [
-      "Skip the delay for any tooltip triggered shortly after another, per the do example.",
+      "Skip the delay for any tooltip triggered shortly after another.",
       "Keep a short shared window, roughly 1 to 1.5 seconds, after the last tooltip closes before resetting to first-open behavior.",
       "Reserve the initial delay only for the very first tooltip in a session.",
       "Test moving quickly across a toolbar to confirm no per-item delay reappears.",
@@ -1301,10 +1302,10 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-12": {
-    whyItMatters: "CSS transitions retarget mid-flight, so a transform transition over 200ms can reverse direction smoothly if a toggle fires again before finishing. Keyframe animations restart from their defined 0% state on re-trigger, producing a visible snap backward under rapid interaction.",
-    riskWhenIgnored: "A keyframe-based toggle clicked rapidly resets to its start position every time, so the control visibly jumps backward instead of reversing smoothly, making the interaction feel broken.",
+    whyItMatters: "A transition negotiates with the element's current position. Interrupt a 420ms transform transition at 38% of its travel and the new target is computed from where the element actually is, so it eases home from there. A keyframe animation has no notion of a current position to negotiate with: re-triggering replays a declared timeline, so the same interruption teleports the element to the value the old run was aiming at and starts the trip over from the far end.",
+    riskWhenIgnored: "A keyframe-driven toggle interrupted halfway jumps to a declared keyframe value instead of easing from where it stands, so the control snaps to the far end of its travel before it starts back, and a user clicking quickly sees it move the wrong way first.",
     implementationNotes: [
-      "Use transition: transform 200ms for any toggle or state flip, per the do example.",
+      "Drive any interruptible toggle or state flip with a transition, as in transition: transform 420ms, never an @keyframes run.",
       "Replace keyframe animations on rapidly-triggerable controls with transition-based ones.",
       "Reserve @keyframes for animations that always run to completion uninterrupted, like a one-time success checkmark.",
       "Test by rapidly re-triggering the control to confirm it retargets instead of snapping.",
@@ -1319,7 +1320,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     whyItMatters: "@starting-style lets the browser animate from a defined starting visual state the moment an element mounts, instead of mounting at its final state and forcing a useEffect to flip a class on the next tick. That extra JS round-trip is fragile and can flash the unanimated final state first.",
     riskWhenIgnored: "Relying on useEffect to trigger entry means a slow re-render or effect timing hiccup makes the element flash into place fully formed before the animation class applies, producing an inconsistent, sometimes-broken entrance.",
     implementationNotes: [
-      "Define @starting-style with opacity and transform values, per the do example.",
+      "Define @starting-style with opacity and transform values.",
       "Remove any useEffect solely dedicated to toggling an entry-animation class.",
       "Check browser support and provide a JS fallback only where @starting-style is unavailable.",
       "Confirm the starting-style values match the same properties animated in the base transition.",
@@ -1334,7 +1335,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     whyItMatters: "Transform and opacity run on the compositor thread and skip layout and paint entirely, so translateY plus opacity stays smooth even under heavy main-thread load. Animating height or top forces layout recalculation on every frame, competing with whatever else the page is doing.",
     riskWhenIgnored: "Animating height and top on a growing panel causes visible jank and dropped frames whenever the main thread is busy with data fetching or rendering, making the motion look choppy under real-world load.",
     implementationNotes: [
-      "Animate translateY plus opacity for movement and appearance, per the do example.",
+      "Animate translateY plus opacity for movement and appearance.",
       "Replace any animated height, top, left, width, padding, or margin with a transform equivalent.",
       "Use a fixed or measured wrapper size if content height needs to appear to change.",
       "Profile with the browser's performance panel to confirm no layout thrashing during the animation.",
@@ -1346,10 +1347,10 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-15": {
-    whyItMatters: "translateY(100%) is relative to the element's own rendered size, so a toast or drawer slides fully offscreen regardless of its content length, while a hardcoded pixel offset assumes one fixed height and breaks the moment content changes.",
+    whyItMatters: "A percentage translate like translateY(150%) is relative to the element's own rendered size, so a toast or drawer slides fully offscreen regardless of its content length, while a hardcoded pixel offset assumes one fixed height and breaks the moment content changes.",
     riskWhenIgnored: "A drawer using a hardcoded pixel offset leaves a visible sliver on screen the moment its content grows taller than the value the offset assumed, exposing part of the panel that should be hidden.",
     implementationNotes: [
-      "Use translateY(100%) for offscreen positioning, per the do example.",
+      "Use a percentage offset such as translateY(150%) for offscreen positioning, never a pixel count.",
       "Replace any hardcoded pixel offset used for hide or show positioning.",
       "Re-verify percentage transforms after adding dynamic content that can change element height.",
       "Combine with a transform-origin check if the same element also scales.",
@@ -1380,7 +1381,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     riskWhenIgnored: "A user with the OS setting enabled toggles a control and sees nothing happen because the animation was stripped with no fallback, leaving them unsure if the action registered.",
     implementationNotes: [
       "Wrap movement-based transitions in a prefers-reduced-motion: reduce check and swap in opacity-only fades.",
-      "Never let @media (prefers-reduced-motion: reduce) simply delete all feedback.",
+      "Never let @media (prefers-reduced-motion: reduce) strip the feedback down to nothing.",
       "Replace slides and scales with instant or near-instant state changes plus a color or opacity cue.",
       "Test every animated component with the OS reduced-motion setting toggled on.",
     ],
@@ -1411,7 +1412,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     implementationNotes: [
       "Apply increasing friction past the edge instead of clamping position outright.",
       "Scale resistance with overdrag distance so it gets harder to pull the further past the boundary.",
-      "Never let the dragged element's position simply stop updating at the limit.",
+      "Never let the dragged element's position stop updating outright at the limit.",
       "Spring the element back to the boundary on release using the same damped curve.",
     ],
     reviewPrompts: [
@@ -1436,7 +1437,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-21": {
-    whyItMatters: "CSS transitions run on the compositor thread, independent of the JavaScript main thread, so a tab-switch animation defined with a CSS transition keeps its timing even while a script is busy parsing data or handling a heavy event. A setInterval-driven animation for the same predetermined motion competes for the same thread as everything else, so its frame timing degrades under load. Predetermined, fixed-endpoint motion belongs in CSS specifically because its timing has no dependency on runtime state.",
+    whyItMatters: "A CSS transition on transform or opacity is handed to the compositor, which ticks independently of the JavaScript main thread, so a tab-switch animation keeps its timing even while a script is busy parsing data or handling a heavy event. A setInterval-driven animation for the same predetermined motion competes for that same thread, so its frame timing degrades exactly when the app is under load. Predetermined, fixed-endpoint motion belongs in CSS specifically because its timing has no dependency on runtime state.",
     riskWhenIgnored: "A heavy JavaScript task runs while a JS-driven animation is playing, the interval callbacks get delayed or dropped, and the tab motion visibly stutters or jumps to its end state.",
     implementationNotes: [
       "Use a CSS transition for the tab motion instead of a setInterval-based JS animation.",
@@ -1451,7 +1452,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-22": {
-    whyItMatters: "Some motion needs runtime decisions, like animating to a value only known after a fetch resolves, and that is exactly what the Web Animations API is for. element.animate driving transform or opacity still runs on the compositor, preserving CSS-level performance, while giving JavaScript control to start, reverse, or chain animations based on live state. A setInterval-based layout animation gets neither the runtime flexibility done properly nor the compositor performance.",
+    whyItMatters: "The difference is who authors the frames. element.animate() hands the browser one declaration — keyframes, duration, easing — and the compositor interpolates every frame from it, at whatever rate the display actually refreshes, without JavaScript running again. setInterval asks the main thread to author each position by hand, on a period that has no relationship to the frame budget, so positions land twice or not at all and smooth travel collapses into a visible staircase. JavaScript still gets its runtime control either way: it decides when to play, reverse, or retarget, then hands the interpolation back.",
     riskWhenIgnored: "A programmatic animation is built with setInterval adjusting a layout property like top or width, causing forced synchronous layout recalculation every frame and visible jank under any load.",
     implementationNotes: [
       "Drive programmatic motion with element.animate() targeting transform and opacity.",
@@ -1526,7 +1527,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-27": {
-    whyItMatters: "An exit only needs to signal that something is leaving, not draw the eye the way an entrance does, so it should be quieter than the interruptible spring-in it likely mirrored. A short 150ms duration with a small fixed translateY(-12px) and fade to opacity 0 removes the element without disrupting the surrounding layout's context. A dramatic translateY(-100%) with scale(0.5) instead behaves like a second entrance in reverse, competing for attention it doesn't need.",
+    whyItMatters: "An exit only has to signal that something is leaving. Nothing new needs comprehending, so it should be quieter and shorter than the entrance it mirrors: 150ms with a small fixed translateY(-12px) and a fade to opacity 0 removes the element without disturbing the context around it. A dramatic translateY(-100%) with scale(0.5) behaves like a second entrance played backwards, claiming attention the departure does not need.",
     riskWhenIgnored: "A toast exits by scaling down to zero and flying off the full width of the screen, drawing the eye away from the next thing the user should focus on, and the surrounding content feels like it jumped.",
     implementationNotes: [
       "Exit with opacity 0 and a small translateY(-12px) over about 150ms.",
@@ -1541,13 +1542,14 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-28": {
-    whyItMatters: "An icon appearing, disappearing, or swapping state is a small but meaningful signal, and toggling display: none to display: block skips straight to the end state with no transition to interpret. Animating scale from 0.25 to 1 alongside opacity 0 to 1 and blur from 4px to 0 gives the eye a brief, legible motion to track instead of a jump cut. This mirrors why enter and exit motion matters at panel scale, just applied to the smallest interactive units on screen.",
+    whyItMatters: "An icon appearing, disappearing, or swapping state is a small but real signal, and a display: none to display: block toggle gives the eye nothing to track: the change is over before it registers. Animating scale 0.25 to 1 with opacity 0 to 1 and blur 4px to 0 gives it something legible instead. A 0.25 start would be far too much travel on a panel, but on a 20px icon it starts at 5px across and covers 15 pixels of growth in total, so the same ratio reads as a crisp snap rather than a zoom.",
     riskWhenIgnored: "A status icon swaps instantly via display toggling when a task completes, and users scanning the screen miss the change entirely because there was no motion to catch their attention.",
     implementationNotes: [
       "Animate icon scale from 0.25 to 1 with opacity 0 to 1 and blur 4px to 0 on appear.",
       "Never swap icon visibility with a plain display: none to display: block toggle.",
-      "Reverse the same scale, opacity, and blur values for the disappear case.",
-      "Keep the animation quick enough that it reads as a state change, not a delay.",
+      "Reverse the same scale, opacity, and blur values on disappear so the pair reads as one gesture.",
+      "Keep the blur to small elements: filter costs more than transform and opacity, and on a large surface that cost shows.",
+      "Hold the whole swap to about 300ms so it reads as one object changing state, not a delay before the next one.",
     ],
     reviewPrompts: [
       "Does the icon scale and fade in rather than snapping into view?",
@@ -1573,48 +1575,48 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
 
   // ── Accessibility & Inclusivity ──────────────────────────────────
   "a11y-1": {
-    whyItMatters: "The default focus ring is browser chrome, and outline: none strips it with nothing standing in for it. focus-visible:ring-2 ring-blue-500 restores a visible marker only during keyboard navigation, satisfying WCAG 2.4.7 Focus Visible without adding a ring on every mouse click.",
-    riskWhenIgnored: "A keyboard user tabs through the page with no way to see which element holds focus, so they lose their place and can't tell what Enter or Space will activate next.",
+    whyItMatters: "The default focus ring is browser chrome, and outline: none removes it with nothing standing in its place; for a keyboard user that is the equivalent of hiding the cursor. focus-visible is the browser's own heuristic for when a ring is wanted: it fires for Tab and keyboard activation and stays quiet for a mouse press, so focus-visible:ring-2 ring-blue-500 puts the marker exactly where WCAG 2.4.7 needs it without ringing every click.",
+    riskWhenIgnored: "A keyboard user tabs into a delete dialog and nothing on screen moves, so they cannot tell whether focus is sitting on Cancel or on Delete, and pressing Enter becomes a coin flip.",
     implementationNotes: [
-      "Replace outline: none with focus-visible:ring-2 ring-blue-500 on every interactive element.",
-      "Never ship outline: none without a replacement ring, border, or glow in the same rule.",
-      "Confirm the ring only appears on focus-visible, not on every mouse click.",
-      "Check ring-blue-500 has enough contrast against the element's background.",
+      "Replace outline: none with focus-visible:ring-2 ring-blue-500 in the same rule, never on its own.",
+      "Keep the ring at 2px or thicker and give it an offset, so it stays readable over a filled background.",
+      "Measure the ring against both the control and the surface behind it: WCAG 1.4.11 asks for 3:1.",
+      "Tab through every flow to confirm the ring never disappears behind an overflow: hidden container.",
     ],
     reviewPrompts: [
-      "Does tabbing through the page show a visible ring on the focused element?",
-      "Is outline: none ever applied without ring-2 or an equivalent replacement?",
-      "Does clicking with a mouse stay ring-free while tabbing shows the ring?",
+      "Does tabbing show a visible ring on every element that takes focus?",
+      "Is outline: none ever applied without a replacement in the same rule?",
+      "Does a mouse click stay ring-free while Tab shows the ring?",
     ],
   },
   "a11y-2": {
-    whyItMatters: "About 1 in 12 men have some form of color vision deficiency, so a red border alone reads as just a slightly different gray to them. Pairing red text with an error icon and an explicit message gives a second and third channel, meeting WCAG 1.4.1 use-of-color.",
-    riskWhenIgnored: "A colorblind user submits a form, sees only a red-tinted input with no icon or text, and has no idea which field failed or why.",
+    whyItMatters: "Roughly 1 in 12 men and 1 in 200 women have a color vision deficiency, most often red-green, which means a red border and a neutral one can land on the same perceived value: the signal is not weakened for them, it is absent. Color is also the first channel to fail for everyone else, since a red ring at 3:1 against white disappears on a dim laptop screen in sunlight. WCAG 1.4.1 therefore asks for a second channel, and an icon plus a written message gives you two.",
+    riskWhenIgnored: "A colorblind user submits the form, sees one input with a border a shade different from its neighbours, and has no way to tell which field failed or why, so they resubmit it unchanged and get the same silent rejection.",
     implementationNotes: [
-      "Pair red text with an error icon and a written message, not just a red border on the input.",
-      "Never let a red border on the input be the only indicator of an error state.",
-      "Add a distinct icon shape (not just a red-tinted version of the same icon) for errors.",
-      "Write out the error message in text, don't rely on the reader inferring meaning from color alone.",
+      "Carry the error on three channels: the color, a shaped icon, and a written message under the field.",
+      "Never let a red border be the only indicator of an error state.",
+      "Give errors a distinct icon shape, not a red-tinted copy of the neutral one.",
+      "View the screen in greyscale: if you cannot find the failed field, neither can a colorblind user.",
     ],
     reviewPrompts: [
-      "Does every red-flagged input show an icon and message, not just a colored border?",
-      "In grayscale, can you still tell which field has an error?",
-      "Is the error text specific, not just a color change with no words?",
+      "Does every flagged input carry an icon and a message, not only a color change?",
+      "In greyscale, can you still tell which field has the error?",
+      "Does the message name the actual problem rather than only marking the field?",
     ],
   },
   "a11y-3": {
-    whyItMatters: "An adult fingertip covers roughly 8-10mm of screen, far more than the visible tap area, so buttons touching edge-to-edge sit closer together than a finger can reliably discriminate. An 8px+ gap between adjacent touch targets gives the pad enough margin to land on one control without straddling its neighbor.",
-    riskWhenIgnored: "A user taps a button but their fingertip overlaps the edge of the adjacent one, triggering the wrong action, so they end up correcting a mis-tap on every attempt.",
+    whyItMatters: "An adult fingertip contacts roughly 8-10mm of glass, and the point the OS reports is the centroid of that whole patch, not the pixel the user aimed at. Controls sharing an edge therefore sit closer together than the input device can resolve, and the tap goes to whichever target the centroid happened to fall in. Material asks for at least 8dp between adjacent targets for exactly this reason, and WCAG 2.2's 2.5.8 lets spacing stand in for size on the same logic.",
+    riskWhenIgnored: "A pair of edge-to-edge icon buttons, archive next to delete, means a thumb aimed at the seam fires whichever one caught the centroid, so the user destroys a message they meant to file.",
     implementationNotes: [
-      "Add at least 8px of gap between adjacent touch targets, never let them sit edge-to-edge.",
-      "Audit button groups and toolbars specifically, they're where edge-to-edge spacing creeps in first.",
-      "Use gap-2 (8px) or greater in flex/grid layouts holding multiple tappable controls.",
-      "Test on an actual phone screen, not just a mouse cursor, to catch mis-tap risk.",
+      "Leave at least 8px between adjacent touch targets; gap-2 in a flex or grid row does it.",
+      "Never let tappable controls share an edge, segmented controls and icon rows included.",
+      "Measure the gap between hit areas, not between the visible shapes, when the targets carry padding.",
+      "Test with a thumb on a real phone, not a mouse cursor in a resized window.",
     ],
     reviewPrompts: [
-      "Is there at least 8px of visible space between adjacent buttons?",
-      "Do any buttons in a row or toolbar touch edge-to-edge with no gap?",
-      "On a real touchscreen, can you tap one button without brushing its neighbor?",
+      "Is there at least 8px between the hit areas of adjacent buttons, not only between their visible edges?",
+      "Do any buttons in a row or toolbar touch edge-to-edge?",
+      "On a real touchscreen, can you tap one button without brushing its neighbour?",
     ],
   },
 };

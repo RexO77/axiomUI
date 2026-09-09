@@ -1,8 +1,8 @@
 import {
+  Accessibility,
   Activity,
   BoxSelect,
   Cpu,
-  Eye,
   Layers,
   LayoutGrid,
   Palette,
@@ -21,7 +21,7 @@ const categoryIcons: Record<string, LucideIcon> = {
   forms: TextCursorInput,
   system: Cpu,
   motion: Activity,
-  accessibility: Eye,
+  accessibility: Accessibility,
 };
 
 const categoryIconColors: Record<string, string> = {

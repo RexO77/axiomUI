@@ -17,14 +17,19 @@ export function SearchInput({ instance }: { instance: "desktop" | "mobile" }) {
                     aria-hidden="true"
                     className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400 dark:text-neutral-500"
                 />
+                {/* form-2 in this catalog: a placeholder is not a label. The
+                    field carries no visible label in either layout, so it gets
+                    an explicit accessible name — and it names what it searches
+                    the way the rest of the app does ("rules", not "decisions"). */}
                 <input
                     ref={isDesktop ? inputRef : undefined}
                     type="search"
                     id={`searchInput-${instance}`}
                     name="search"
+                    aria-label="Search rules"
                     aria-keyshortcuts="/"
                     autoComplete="off"
-                    placeholder="Search decisions…"
+                    placeholder="Search rules…"
                     value={query}
                     onFocus={() => tapLight()}
                     onChange={(event) => setQuery(event.target.value)}

@@ -82,11 +82,27 @@ function Caret() {
     return <span className="h-3.5 w-px shrink-0 bg-blue-500 dark:bg-blue-400" />;
 }
 
-function Label({ children, className }: { children: ReactNode; className?: string }) {
+// `strong` is a prop rather than a className override because `cn` is plain
+// concatenation: CSS resolves conflicts by stylesheet order, not argument
+// order, so a caller passing `font-semibold text-neutral-700` lost to the
+// defaults below and rendered unchanged. A variant cannot lose that way.
+// Layout-only overrides (shrink-0, truncate) never conflict and still pass through.
+function Label({
+    children,
+    className,
+    strong = false,
+}: {
+    children: ReactNode;
+    className?: string;
+    strong?: boolean;
+}) {
     return (
         <div
             className={cn(
-                "text-[10px] font-medium text-neutral-600 dark:text-neutral-300",
+                "text-[10px]",
+                strong
+                    ? "font-semibold text-neutral-700 dark:text-neutral-200"
+                    : "font-medium text-neutral-600 dark:text-neutral-300",
                 className
             )}
         >
@@ -95,11 +111,25 @@ function Label({ children, className }: { children: ReactNode; className?: strin
     );
 }
 
-function Ann({ children, className }: { children: ReactNode; className?: string }) {
+// `tone` is a prop for the same reason as Label's `strong`: a caller's accent
+// colour lost to the muted default by stylesheet order, so three accent
+// annotations in this file rendered grey.
+function Ann({
+    children,
+    className,
+    tone = "muted",
+}: {
+    children: ReactNode;
+    className?: string;
+    tone?: "muted" | "accent";
+}) {
     return (
         <span
             className={cn(
-                "font-mono text-[9px] tabular-nums text-neutral-400 dark:text-neutral-500",
+                "font-mono text-[9px] tabular-nums",
+                tone === "accent"
+                    ? "text-blue-500 dark:text-blue-400"
+                    : "text-neutral-400 dark:text-neutral-500",
                 className
             )}
         >
@@ -210,7 +240,7 @@ function WidthBracket({ label, widthClass }: { label: string; widthClass: string
                     widthClass
                 )}
             />
-            <Ann className="text-blue-500 dark:text-blue-400">{label}</Ann>
+            <Ann tone="accent">{label}</Ann>
         </div>
     );
 }
@@ -234,6 +264,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
                                 <Value>2261 Market St</Value>
                             </Shell>
                         </div>
+                        <Ann>inputs share one left edge</Ann>
                     </PreviewFrame>
                 );
             }
@@ -252,6 +283,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
                             <Value>2261 Market St</Value>
                         </Shell>
                     </div>
+                    <Ann>inputs start at 2 different edges</Ann>
                 </PreviewFrame>
             );
         }
@@ -262,7 +294,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
                 return (
                     <PreviewFrame size={size} className="flex flex-col justify-center gap-3">
                         <div className="space-y-1">
-                            <div className="flex items-baseline justify-between">
+                            <div className="flex h-3.5 items-baseline justify-between">
                                 <Label>Work email</Label>
                                 <Ann>0 chars</Ann>
                             </div>
@@ -271,7 +303,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
                             </Shell>
                         </div>
                         <div className="space-y-1">
-                            <div className="flex items-baseline justify-between">
+                            <div className="flex h-3.5 items-baseline justify-between">
                                 <Label>Work email</Label>
                                 <Ann>5 chars</Ann>
                             </div>
@@ -287,7 +319,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
             return (
                 <PreviewFrame size={size} className="flex flex-col justify-center gap-3">
                     <div className="space-y-1">
-                        <div className="flex justify-end">
+                        <div className="flex h-3.5 items-baseline justify-end">
                             <Ann>0 chars</Ann>
                         </div>
                         <Shell>
@@ -295,7 +327,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
                         </Shell>
                     </div>
                     <div className="space-y-1">
-                        <div className="flex justify-end">
+                        <div className="flex h-3.5 items-baseline justify-end">
                             <Ann>5 chars</Ann>
                         </div>
                         <Shell tone="focus">
@@ -328,6 +360,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
                         {field("Full name", "Maya Chen")}
                         {field("Email", "maya@company.com")}
                         {field(<>Phone{optional}</>)}
+                        <Ann>1 marker on 3 fields</Ann>
                     </PreviewFrame>
                 );
             }
@@ -336,6 +369,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
                     {field(<>Full name{asterisk}</>, "Maya Chen")}
                     {field(<>Email{asterisk}</>, "maya@company.com")}
                     {field(<>Phone{asterisk}</>)}
+                    <Ann>3 markers on 3 fields — none informs</Ann>
                 </PreviewFrame>
             );
         }
@@ -369,7 +403,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
             return (
                 <PreviewFrame size={size} className="flex flex-col justify-center gap-2">
                     <div className="flex items-baseline justify-between">
-                        <Label className="font-semibold text-neutral-700 dark:text-neutral-200">
+                        <Label strong>
                             Pick a plan
                         </Label>
                         <Ann>{isDo ? "1 selected" : "2 selected"}</Ann>
@@ -391,7 +425,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
                 return (
                     <PreviewFrame size={size} className="flex flex-col justify-center gap-2">
                         <div className="flex items-baseline justify-between">
-                            <Label className="font-semibold text-neutral-700 dark:text-neutral-200">
+                            <Label strong>
                                 Billing cycle
                             </Label>
                             <Ann>3 of 3 visible</Ann>
@@ -405,7 +439,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
             return (
                 <PreviewFrame size={size} className="flex flex-col justify-center gap-2">
                     <div className="flex items-baseline justify-between">
-                        <Label className="font-semibold text-neutral-700 dark:text-neutral-200">
+                        <Label strong>
                             Billing cycle
                         </Label>
                         <Ann>0 of 3 visible</Ann>
@@ -421,10 +455,13 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
             );
         }
 
-        // Same settings card; only the deferred option's control changes.
+        // Same settings card, same Save button below it; only the second
+        // row's control changes. Dark mode stays a switch in both panes
+        // because it really does apply the instant you flip it.
         case "form-7": {
+            const isDo = variant === "do";
             return (
-                <PreviewFrame size={size} className="flex flex-col justify-center gap-2.5">
+                <PreviewFrame size={size} className="flex flex-col justify-center gap-2">
                     <div className="divide-y divide-neutral-200 rounded-md border border-neutral-200 dark:divide-neutral-800 dark:border-neutral-800">
                         <div className="flex items-center justify-between gap-2 px-2.5 py-1.5">
                             <span className="truncate text-[11px] text-neutral-700 dark:text-neutral-200">
@@ -436,65 +473,59 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
                             <span className="truncate text-[11px] text-neutral-700 dark:text-neutral-200">
                                 Email me product updates
                             </span>
-                            {variant === "do" ? <Checkbox on /> : <Switch on />}
+                            {/* Dashed accent marks the one control under test,
+                                so the eye is not left comparing two switches. */}
+                            <span className="flex shrink-0 items-center justify-center rounded-[6px] border border-dashed border-blue-500/60 p-1 dark:border-blue-400/60">
+                                {isDo ? <Checkbox on /> : <Switch on />}
+                            </span>
                         </div>
                     </div>
                     <MiniButton label="Save changes" variant="primary" size={size} className="w-full" />
+                    <Ann>
+                        {isDo
+                            ? "checkbox waits for Save — applies on submit"
+                            : "switch reads as applied — but Save is still there"}
+                    </Ann>
                 </PreviewFrame>
             );
         }
 
-        // Two moments of the same email entry; only when the error fires changes.
+        // The same half-typed value at the same two moments — mid-entry and
+        // after blur. Only the moment the error fires changes: the do pane
+        // holds it until the user has finished, the don't pane fires while
+        // the caret is still in the field.
         case "form-8": {
-            if (variant === "do") {
-                return (
-                    <PreviewFrame size={size} className="flex flex-col justify-center gap-1">
-                        <Label>Email</Label>
-                        <Shell tone="focus">
-                            <Value>maya@ac</Value>
-                            <Caret />
-                        </Shell>
-                        <div className="flex h-3.5 items-center justify-end">
-                            <Ann>typing</Ann>
-                        </div>
-                        <Shell>
-                            <Value>maya@acme</Value>
-                        </Shell>
-                        <div className="flex h-3.5 items-center justify-between">
-                            <ErrorNote>Enter a valid email</ErrorNote>
-                            <Ann>after blur</Ann>
-                        </div>
-                    </PreviewFrame>
-                );
-            }
+            const isDo = variant === "do";
+            const error = <ErrorNote>Email is missing a domain</ErrorNote>;
             return (
                 <PreviewFrame size={size} className="flex flex-col justify-center gap-1">
                     <Label>Email</Label>
-                    <Shell tone="error">
-                        <Value>m</Value>
+                    <Shell tone={isDo ? "focus" : "error"}>
+                        <Value>maya@</Value>
                         <Caret />
                     </Shell>
-                    <div className="flex h-3.5 items-center justify-between">
-                        <ErrorNote>Enter a valid email</ErrorNote>
-                        <Ann>keystroke 1</Ann>
+                    <div className="flex h-3.5 items-center gap-2">
+                        <span className="min-w-0 flex-1">{isDo ? null : error}</span>
+                        <Ann>while typing · 5 chars</Ann>
                     </div>
                     <Shell tone="error">
-                        <Value>ma</Value>
-                        <Caret />
+                        <Value>maya@</Value>
                     </Shell>
-                    <div className="flex h-3.5 items-center justify-between">
-                        <ErrorNote>Enter a valid email</ErrorNote>
-                        <Ann>keystroke 2</Ann>
+                    <div className="flex h-3.5 items-center gap-2">
+                        <span className="min-w-0 flex-1">{error}</span>
+                        <Ann>after blur</Ann>
                     </div>
                 </PreviewFrame>
             );
         }
 
-        // Same card row; the expiry field either states its pattern or rejects a guess.
+        // Same card, same expiry field, same 96px width. The one variable is
+        // whether the pattern is stated before the user types or discovered
+        // only by failing — so the do pane's value is what the hint bought.
         case "form-9": {
             const isDo = variant === "do";
             return (
-                <PreviewFrame size={size} className="flex flex-col justify-center gap-2.5">
+                <PreviewFrame size={size} className="flex flex-col justify-center gap-2">
                     <div className="space-y-1">
                         <Label>Card number</Label>
                         <Shell>
@@ -507,132 +538,135 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
                             <Value mono>4242 4242 4242 4242</Value>
                         </Shell>
                     </div>
-                    <div className="flex gap-2.5">
-                        <div className="min-w-0 flex-1 space-y-1">
+                    <div className="space-y-1">
+                        <div className="flex h-3.5 items-baseline justify-between gap-2">
                             <Label>Expiry</Label>
                             {isDo ? (
-                                <Shell>
-                                    <Value muted mono>
-                                        MM / YY
-                                    </Value>
-                                </Shell>
-                            ) : (
-                                <Shell tone="error">
-                                    <Value>March 2027</Value>
-                                </Shell>
-                            )}
+                                <Ann tone="accent">MM / YY</Ann>
+                            ) : null}
                         </div>
-                        <div className="min-w-0 flex-1 space-y-1">
-                            <Label>CVC</Label>
-                            <Shell>{isDo ? <Value muted mono>123</Value> : null}</Shell>
-                        </div>
+                        <Shell tone={isDo ? "default" : "error"} className="w-24">
+                            <Value mono>{isDo ? "03 / 27" : "March 2027"}</Value>
+                        </Shell>
                     </div>
-                    {isDo ? null : <ErrorNote>Invalid expiry</ErrorNote>}
+                    {/* Reserved so both panes keep the same geometry. */}
+                    <div className="flex h-3.5 items-center">
+                        {isDo ? null : <ErrorNote>Enter the expiry as MM / YY</ErrorNote>}
+                    </div>
+                    <Ann>
+                        {isDo
+                            ? "hint before entry — accepted first try"
+                            : "no hint — the format arrives with the error"}
+                    </Ann>
                 </PreviewFrame>
             );
         }
 
-        // Same fields, numbered in tab order: one straight path vs a zigzag grid.
+        // The same four filled fields in the same order in both panes; only
+        // the column count changes. The blue ordinals are the tab path, so
+        // the don't pane shows the eye reading 1 → 3 while Tab goes 1 → 2.
         case "form-10": {
-            const cell = (order: number, label: string) => (
-                <div className="min-w-0 space-y-0.5">
+            const cell = (order: number, label: string, value: string) => (
+                <div key={label} className="min-w-0 space-y-0.5">
                     <div className="flex items-baseline gap-1">
-                        <Ann className="text-blue-500 dark:text-blue-400">{order}</Ann>
+                        <Ann tone="accent">{order}</Ann>
                         <Label className="truncate">{label}</Label>
                     </div>
-                    <Shell compact />
+                    <Shell compact>
+                        <Value className="text-[10px]">{value}</Value>
+                    </Shell>
                 </div>
             );
+            const fields: [number, string, string][] = [
+                [1, "Full name", "Maya Chen"],
+                [2, "Work email", "maya@acme.com"],
+                [3, "Company", "Acme Design"],
+                [4, "Phone", "+1 415 555 0182"],
+            ];
             if (variant === "do") {
                 return (
                     <PreviewFrame size={size} className="flex flex-col justify-center gap-1.5">
-                        {cell(1, "City")}
-                        {cell(2, "Password")}
-                        {cell(3, "Phone")}
+                        {fields.map(([order, label, value]) => cell(order, label, value))}
+                        <Ann>1 column · eye and Tab agree</Ann>
                     </PreviewFrame>
                 );
             }
-            // Column-major tab order: the visual rows read 1 · 3 · 5 and 2 · 4 · 6.
+            // Two stacked columns: Tab walks down column 1 before column 2,
+            // so the top visual row is stops 1 and 3.
             return (
-                <PreviewFrame size={size} className="flex flex-col justify-center">
-                    <div className="grid grid-cols-3 gap-x-2 gap-y-1.5">
-                        {cell(1, "City")}
-                        {cell(3, "Password")}
-                        {cell(5, "Phone")}
-                        {cell(2, "Full name")}
-                        {cell(4, "Email")}
-                        {cell(6, "ZIP")}
+                <PreviewFrame size={size} className="flex flex-col justify-center gap-1.5">
+                    <div className="grid grid-cols-2 gap-x-2.5">
+                        <div className="min-w-0 space-y-1.5">
+                            {fields.slice(0, 2).map(([order, label, value]) => cell(order, label, value))}
+                        </div>
+                        <div className="min-w-0 space-y-1.5">
+                            {fields.slice(2).map(([order, label, value]) => cell(order, label, value))}
+                        </div>
                     </div>
+                    <Ann>2 columns · eye reads 1 → 3, Tab goes 1 → 2</Ann>
                 </PreviewFrame>
             );
         }
 
-        // Same signup step: locale has already answered vs a 195-entry scroll.
+        // The same two signup fields in both panes. The one variable is
+        // whether the answer the app already holds — the request locale, the
+        // system clock — arrives in the field or is left for the user to hunt.
         case "form-11": {
-            if (variant === "do") {
-                return (
-                    <PreviewFrame size={size} className="flex flex-col justify-center gap-2.5">
-                        <div className="space-y-1">
-                            <div className="flex items-baseline justify-between">
-                                <Label>Country</Label>
-                                <Ann className="text-blue-500 dark:text-blue-400">en-IN locale</Ann>
-                            </div>
-                            <Shell>
-                                <Value>India</Value>
-                                <Chevron />
-                            </Shell>
-                        </div>
-                        <div className="space-y-1">
-                            <div className="flex items-baseline justify-between">
-                                <Label>Start date</Label>
-                                <Ann className="text-blue-500 dark:text-blue-400">today</Ann>
-                            </div>
-                            <Shell>
-                                <Value mono>10/08/2026</Value>
-                                <CalendarDays
-                                    size={12}
-                                    strokeWidth={1.5}
-                                    aria-hidden
-                                    className="ml-auto shrink-0 text-neutral-400 dark:text-neutral-500"
-                                />
-                            </Shell>
-                        </div>
-                    </PreviewFrame>
-                );
-            }
+            const isDo = variant === "do";
+            const note = (filled: string, empty: string) => (
+                <Ann tone={isDo ? "accent" : "muted"}>
+                    {isDo ? filled : empty}
+                </Ann>
+            );
             return (
-                <PreviewFrame size={size} className="flex flex-col justify-center gap-1">
-                    <Label>Country</Label>
-                    <Shell tone="focus">
-                        <Value muted>Select country…</Value>
-                        <Chevron open />
-                    </Shell>
-                    <div className="relative rounded-md border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-                        <span className="absolute right-1 top-1 h-4 w-1 rounded-full bg-neutral-300 dark:bg-neutral-700" />
-                        {["Afghanistan", "Albania", "Algeria"].map((country) => (
-                            <div
-                                key={country}
-                                className="px-2 py-1 text-[10px] text-neutral-700 dark:text-neutral-200"
-                            >
-                                {country}
-                            </div>
-                        ))}
+                <PreviewFrame size={size} className="flex flex-col justify-center gap-2.5">
+                    <div className="space-y-1">
+                        <div className="flex h-3.5 items-baseline justify-between gap-2">
+                            <Label>Country</Label>
+                            {note("from en-IN locale", "195 options · A–Z")}
+                        </div>
+                        <Shell>
+                            <Value muted={!isDo}>{isDo ? "India" : "Select country…"}</Value>
+                            <Chevron />
+                        </Shell>
                     </div>
-                    <div className="flex justify-end">
-                        <Ann>195 options · A–Z</Ann>
+                    <div className="space-y-1">
+                        <div className="flex h-3.5 items-baseline justify-between gap-2">
+                            <Label>Start date</Label>
+                            {note("today", "no default")}
+                        </div>
+                        <Shell>
+                            <Value muted={!isDo} mono>
+                                {isDo ? "07 Sep 2026" : "dd/mm/yyyy"}
+                            </Value>
+                            <CalendarDays
+                                size={12}
+                                strokeWidth={1.5}
+                                aria-hidden
+                                className="ml-auto shrink-0 text-neutral-400 dark:text-neutral-500"
+                            />
+                        </Shell>
                     </div>
+                    <Ann>{isDo ? "0 taps to accept both" : "2 lookups before you start"}</Ann>
                 </PreviewFrame>
             );
         }
 
-        // Same settings save: explicit confirmation vs a silently reset field.
+        // The same field holding the same saved value at the same moment —
+        // one beat after Save. Only the confirmation changes, so the don't
+        // pane is a screen that cannot tell you whether anything happened.
         case "form-12": {
             const isDo = variant === "do";
             return (
                 <PreviewFrame size={size} className="flex flex-col justify-center gap-2.5">
                     <div className="space-y-1">
-                        <Label>Display name</Label>
-                        <Shell>{isDo ? <Value>Maya Chen</Value> : null}</Shell>
+                        <div className="flex h-3.5 items-baseline justify-between gap-2">
+                            <Label>Display name</Label>
+                            <Ann>after Save</Ann>
+                        </div>
+                        <Shell>
+                            <Value>Maya Chen</Value>
+                        </Shell>
                     </div>
                     <div className="flex items-center justify-between gap-2">
                         <MiniButton label="Save changes" variant="primary" size={size} />
@@ -643,6 +677,9 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
                             </span>
                         ) : null}
                     </div>
+                    <Ann>
+                        {isDo ? "1 signal — the save is confirmed" : "0 signals — no way to tell"}
+                    </Ann>
                 </PreviewFrame>
             );
         }

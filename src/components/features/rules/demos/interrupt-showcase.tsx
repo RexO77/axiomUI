@@ -82,7 +82,10 @@ export function InterruptShowcase() {
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-2">
                 <ControlButton onClick={toggle}>Toggle</ControlButton>
-                <Hint>Spam Toggle mid-flight — left keeps momentum, right restarts</Hint>
+                <Hint>
+                    Hit Toggle again mid-flight — the left card turns from where it is,
+                    the right snaps to the far end first
+                </Hint>
             </div>
         </div>
     );

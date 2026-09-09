@@ -30,6 +30,8 @@ export const EASE = {
     in: "cubic-bezier(0.55, 0, 1, 0.45)",
     inOut: "cubic-bezier(0.65, 0, 0.35, 1)",
     linear: "linear",
+    /** CSS's own `ease`. Only for motion-4, which teaches that it is too weak. */
+    browserDefault: "cubic-bezier(0.25, 0.1, 0.25, 1)",
 } as const;
 
 export const DUR = {

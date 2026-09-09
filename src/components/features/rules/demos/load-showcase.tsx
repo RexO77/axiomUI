@@ -205,7 +205,10 @@ function BlockedThreadRace() {
                 <ControlButton onClick={race} disabled={running}>
                     Race + block main thread
                 </ControlButton>
-                <Hint>Right freezes three times — left never hitches</Hint>
+                <Hint>
+                    Watch the right card — it freezes three times; the strip below is
+                    the receipt
+                </Hint>
             </div>
             <ThreadMeter samples={samples} durationMs={2600} mode="stalls" />
         </div>
@@ -323,7 +326,9 @@ function IntervalRace() {
                 <ControlButton onClick={play} disabled={running}>
                     Play both
                 </ControlButton>
-                <Hint>Left glides; right jumps ~17 times</Hint>
+                <Hint>
+                    Same 1400ms, same distance — count the jumps on the right
+                </Hint>
             </div>
             <ThreadMeter samples={samples} durationMs={1400} mode="healthy" />
         </div>

@@ -11,6 +11,7 @@ import { buildDeepDive } from "@/data/deep-dive-builder";
 import { rules, categories, getAdjacentRules, getRelatedRules } from "@/data/ui-logic";
 import { findListSection, findTextSection } from "@/lib/deep-dive-sections";
 import { absoluteUrl } from "@/lib/site";
+import { VERDICT_LABEL } from "@/lib/verdict";
 
 export const dynamicParams = false;
 
@@ -83,12 +84,12 @@ export default async function RulePage({ params }: Props) {
         step: [
             {
                 "@type": "HowToStep",
-                name: "Do",
+                name: VERDICT_LABEL.do,
                 text: rule.do,
             },
             {
                 "@type": "HowToStep",
-                name: "Don't",
+                name: VERDICT_LABEL.dont,
                 text: rule.dont,
             },
         ],
@@ -123,7 +124,7 @@ export default async function RulePage({ params }: Props) {
                         className="flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:border-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
                         aria-label="Back to all rules"
                     >
-                        <ArrowLeft className="h-4 w-4" />
+                        <ArrowLeft aria-hidden="true" className="h-4 w-4" />
                     </Link>
                     <div className="flex items-center gap-2">
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-900 text-white dark:bg-white dark:text-neutral-900">
@@ -139,7 +140,7 @@ export default async function RulePage({ params }: Props) {
             {/* Main Content */}
             <main className="mx-auto max-w-3xl px-4 py-12">
                 {/* Breadcrumb */}
-                <nav className="mb-8 text-sm text-neutral-500 dark:text-neutral-400">
+                <nav aria-label="Breadcrumb" className="mb-8 text-sm text-neutral-500 dark:text-neutral-400">
                     <Link href="/" className="hover:text-neutral-900 dark:hover:text-neutral-100">
                         All rules
                     </Link>
@@ -191,15 +192,15 @@ export default async function RulePage({ params }: Props) {
                         </div>
                     ) : null}
 
-                    {/* Recommended / Avoid cards: same voice as the drawer's
-                        comparison articles — 4px circle icons, xs semibold
-                        emerald/rose labels, muted mono shorthand. */}
+                    {/* Do / Don't cards: same voice and same two words as the
+                        drawer's comparison articles — 4px circle icons, xs
+                        semibold emerald/rose labels, muted mono shorthand. */}
                     <div className="mb-12 grid gap-4 md:grid-cols-2">
                         <div className="rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
                             <div className="flex items-center gap-2">
                                 <CheckCircle2 aria-hidden="true" className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
                                 <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-200">
-                                    Recommended
+                                    {VERDICT_LABEL.do}
                                 </span>
                             </div>
                             {!hasShowcase(rule.id) && (
@@ -216,7 +217,7 @@ export default async function RulePage({ params }: Props) {
                             <div className="flex items-center gap-2">
                                 <XCircle aria-hidden="true" className="h-4 w-4 text-rose-600 dark:text-rose-300" />
                                 <span className="text-xs font-semibold text-rose-800 dark:text-rose-200">
-                                    Avoid
+                                    {VERDICT_LABEL.dont}
                                 </span>
                             </div>
                             {!hasShowcase(rule.id) && (
@@ -230,8 +231,8 @@ export default async function RulePage({ params }: Props) {
                         </div>
                     </div>
 
-                    {/* Summary and Recommended/Avoid are omitted here because
-                        the page header and comparison cards already show them. */}
+                    {/* Summary and the Do/Don't shorthand are omitted here
+                        because the page header and comparison cards show them. */}
                     <div className="space-y-10">
                         {implementationNotes.length > 0 && (
                             <section>
@@ -311,15 +312,16 @@ export default async function RulePage({ params }: Props) {
                 )}
 
                 {/* Navigation */}
-                <nav className="mt-16 border-t border-neutral-200 pt-8 dark:border-neutral-800">
+                <nav aria-label="Rule navigation" className="mt-16 border-t border-neutral-200 pt-8 dark:border-neutral-800">
                     <div className="flex items-center justify-between gap-4">
                         {prev ? (
                             <Link
                                 href={`/rules/${prev.id}`}
                                 rel="prev"
+                                aria-label={`Previous rule: ${prev.title}`}
                                 className="group inline-flex min-h-11 max-w-[45%] items-center gap-2 text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
                             >
-                                <ArrowLeft className="h-4 w-4 shrink-0" />
+                                <ArrowLeft aria-hidden="true" className="h-4 w-4 shrink-0" />
                                 <span className="truncate">{prev.title}</span>
                             </Link>
                         ) : <span />}
@@ -327,10 +329,11 @@ export default async function RulePage({ params }: Props) {
                             <Link
                                 href={`/rules/${next.id}`}
                                 rel="next"
+                                aria-label={`Next rule: ${next.title}`}
                                 className="group inline-flex min-h-11 max-w-[45%] items-center gap-2 text-right text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
                             >
                                 <span className="truncate">{next.title}</span>
-                                <ArrowRight className="h-4 w-4 shrink-0" />
+                                <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0" />
                             </Link>
                         ) : <span />}
                     </div>
@@ -339,7 +342,7 @@ export default async function RulePage({ params }: Props) {
                             href="/"
                             className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
                         >
-                            <ArrowLeft className="h-4 w-4" />
+                            <ArrowLeft aria-hidden="true" className="h-4 w-4" />
                             Back to all rules
                         </Link>
                     </div>

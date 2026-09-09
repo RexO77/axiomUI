@@ -13,7 +13,7 @@ export async function GET() {
         ``,
         `## Docs`,
         ``,
-        `- [Full ruleset](${origin}/llms-full.txt): every rule as markdown`,
+        `- [Full ruleset](${origin}/llms-full.txt): every rule as markdown, with its full reasoning — why it works, what breaks, how to apply it, and review questions`,
         `- [Structured data](${origin}/rules.json): every rule as JSON`,
         ``,
         `## Categories`,

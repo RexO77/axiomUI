@@ -1,4 +1,3 @@
-import { cn } from "@/lib/utils";
 import { Hint } from "@/components/features/rules/demos/showcase-chrome";
 
 export type ThreadSample = { atMs: number; gapMs: number };
@@ -45,9 +44,13 @@ export function ThreadMeter({
                 })}
             </div>
             <Hint>
-                {healthy || mode === "healthy" ? (
-                    <span className={cn("tabular-nums")}>
+                {mode === "healthy" ? (
+                    <span className="tabular-nums">
                         main thread — healthy · the steps come from setInterval, not load
+                    </span>
+                ) : healthy ? (
+                    <span className="tabular-nums">
+                        main thread — no stall over {STALL_THRESHOLD_MS}ms on this run
                     </span>
                 ) : (
                     <span className="tabular-nums">

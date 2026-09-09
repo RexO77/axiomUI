@@ -156,7 +156,7 @@ function HomeBody({
 
           <section
             ref={rulesContainerRef}
-            aria-label="Rule results"
+            aria-label="Rule catalog"
             className="space-y-8 outline-none md:space-y-10"
             id="rulesContainer"
             tabIndex={-1}
@@ -166,11 +166,12 @@ function HomeBody({
                 <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
                   <SearchX aria-hidden="true" className="h-6 w-6 text-neutral-400 dark:text-neutral-500" />
                 </div>
-                <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
-                  No rules match your search
+                <h2 className="break-words text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+                  No rules match “{query.trim()}”
                 </h2>
                 <p className="mx-auto mt-2 max-w-sm text-pretty text-sm leading-6 text-neutral-600 dark:text-neutral-400">
-                  Try searching for “button”, “font”, or “color”.
+                  Try a broader term — “button”, “font”, or “color” — or clear the
+                  search to see all {rules.length} rules.
                 </p>
                 <button
                   type="button"

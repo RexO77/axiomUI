@@ -18,6 +18,7 @@ import { hasShowcase, MotionShowcase } from "@/components/features/rules/demos/r
 import type { DeepDiveSection, Rule } from "@/data/ui-logic";
 import { getAdjacentRules } from "@/data/ui-logic";
 import { useHaptics } from "@/hooks/use-haptics";
+import { VERDICT_LABEL } from "@/lib/verdict";
 import {
   findCodeSection,
   findListSection,
@@ -42,14 +43,17 @@ function setHeaderBlur(header: HTMLElement, radius: string) {
 }
 
 // Single source of truth for the icon-only close control so focus, size, and
-// label stay in sync across the loaded and empty states.
+// label stay in sync across the loaded and empty states. The accessible name
+// matches the visible "Close panel" button in the empty state — one control,
+// one name.
 function DrawerCloseButton({ className = "" }: { className?: string }) {
   return (
     <Drawer.Close
+      title="Close panel"
       className={`inline-flex size-11 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100 dark:focus-visible:ring-neutral-500 ${className}`}
     >
       <X aria-hidden="true" className="h-5 w-5" />
-      <span className="sr-only">Close</span>
+      <span className="sr-only">Close panel</span>
     </Drawer.Close>
   );
 }
@@ -238,7 +242,7 @@ export function RuleDrawer({
                     </div>
                   </div>
 
-                  <div className="rule-drawer-content space-y-10 pt-4 pb-12 sm:space-y-12 sm:pt-5 lg:pb-14">
+                  <div className="rule-drawer-content space-y-10 pt-4 sm:space-y-12 sm:pt-5">
                     {/* Keyed by category so the header only re-animates when the
                         category changes; switching rules within a category leaves it put. */}
                     <header key={activeRule.category} className="rule-drawer-stagger">
@@ -263,7 +267,7 @@ export function RuleDrawer({
                           <div className="flex items-center gap-2">
                             <CheckCircle2 aria-hidden="true" className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
                             <h4 className="drawer-label text-xs font-semibold text-emerald-800 dark:text-emerald-200">
-                              Recommended
+                              {VERDICT_LABEL.do}
                             </h4>
                           </div>
                           {!hasShowcase(activeRule.id) && (
@@ -280,7 +284,7 @@ export function RuleDrawer({
                           <div className="flex items-center gap-2">
                             <XCircle aria-hidden="true" className="h-4 w-4 text-rose-600 dark:text-rose-300" />
                             <h4 className="drawer-label text-xs font-semibold text-rose-800 dark:text-rose-200">
-                              Avoid
+                              {VERDICT_LABEL.dont}
                             </h4>
                           </div>
                           {!hasShowcase(activeRule.id) && (
@@ -353,7 +357,7 @@ export function RuleDrawer({
 
                   {(prev || next) && (
                     <nav
-                      aria-label="Adjacent rules"
+                      aria-label="Rule navigation"
                       className="flex items-center justify-between gap-4 border-t border-neutral-200 pt-6 dark:border-neutral-800"
                     >
                       {prev ? (
@@ -392,9 +396,12 @@ export function RuleDrawer({
                 <div className="relative pt-6">
                   <DrawerCloseButton className="absolute right-0 top-0" />
                   <div className="mx-auto mt-16 max-w-xl rounded-2xl border border-neutral-200 bg-white p-10 text-center dark:border-neutral-800 dark:bg-neutral-900">
-                    <h2 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-50">Select a rule</h2>
+                    <h2 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-50">
+                      Nothing to show here
+                    </h2>
                     <p className="mt-3 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">
-                      Open a rule card to view implementation guidance and visual comparisons.
+                      No rule is selected, or the link points at one that no longer
+                      exists. Close the panel to browse every rule, or search by keyword.
                     </p>
                     <Drawer.Close className="mt-6 inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-neutral-100 px-5 py-3 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 dark:focus-visible:ring-neutral-500">
                       <X aria-hidden="true" className="h-3.5 w-3.5" />

@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { categories, rules } from "@/data/ui-logic";
+import { VERDICT_LABEL } from "@/lib/verdict";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -157,7 +158,7 @@ function VerdictPanel({ kind, text }: { kind: "do" | "dont"; text: string }) {
             color: kind === "do" ? EMERALD_LABEL : ROSE_LABEL,
           }}
         >
-          {kind === "do" ? "Do this" : "Avoid this"}
+          {VERDICT_LABEL[kind]}
         </div>
       </div>
       <div

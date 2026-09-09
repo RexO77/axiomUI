@@ -1,4 +1,10 @@
-@import "tailwindcss";
+/* Scope class detection to the app source. Tailwind v4's automatic detection
+   scans the whole repo, which meant class names quoted in `plans/*.md` prose
+   were compiled into real CSS — ~24 dead rules, and a landmine for plan 010,
+   whose deliverable is a tripwire that fails when a raw utility survives
+   migration: the plan document itself was generating those utilities. */
+@import "tailwindcss" source(none);
+@source "../../src/**/*.{ts,tsx}";
 
 /* Enable class-based dark mode toggling (Tailwind v4) */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -148,25 +154,31 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-p,
-li,
-figcaption,
-blockquote {
-  text-wrap: pretty;
-}
+/* These element defaults MUST stay inside `@layer base`. Unlayered rules beat
+   every layered Tailwind utility, so at the top level `p { text-wrap: pretty }`
+   silently wins over `text-balance`/`text-pretty` and the heading font-family
+   wins over `font-mono` — the utility is emitted but has no effect. */
+@layer base {
+  p,
+  li,
+  figcaption,
+  blockquote {
+    text-wrap: pretty;
+  }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: var(--font-source-serif), serif;
-  text-wrap: balance;
-}
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-source-serif), serif;
+    text-wrap: balance;
+  }
 
-code {
-  font-family: var(--font-plex-mono), monospace;
+  code {
+    font-family: var(--font-plex-mono), monospace;
+  }
 }
 
 /* ==========================================================================
@@ -202,7 +214,6 @@ code {
 }
 
 .rule-card-panel,
-.rule-card-code,
 .preview-frame {
   box-shadow: var(--shadow-inset-surface);
 }
@@ -274,22 +285,6 @@ code {
     transform: translateY(-2px);
     box-shadow: var(--shadow-rule-card-hover);
   }
-}
-
-.chip {
-  border: 1px solid var(--color-stroke);
-  background: var(--color-bg-muted);
-}
-
-.soft-divider {
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--color-stroke) 10%,
-    var(--color-stroke) 90%,
-    transparent
-  );
 }
 
 .pressable {
