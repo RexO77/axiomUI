@@ -49,6 +49,9 @@ export const metadata: Metadata = {
   authors: [{ name: "Nischal Skanda" }],
   creator: "Nischal Skanda",
   metadataBase: new URL(siteConfig.origin),
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -126,6 +129,9 @@ export default function RootLayout({
         publisher: {
           "@id": `${siteConfig.origin}/#organization`,
         },
+        creator: {
+          "@id": "https://www.nischal.fyi/#person",
+        },
       },
       {
         "@type": "Organization",
@@ -136,6 +142,17 @@ export default function RootLayout({
           "@type": "ImageObject",
           url: absoluteUrl("/og-image.png"),
         },
+      },
+      {
+        "@type": "Person",
+        "@id": "https://www.nischal.fyi/#person",
+        name: "Nischal Skanda",
+        url: "https://www.nischal.fyi/",
+        jobTitle: "Product Designer and Design Engineer",
+        sameAs: [
+          "https://github.com/RexO77",
+          "https://www.linkedin.com/in/nischalskanda",
+        ],
       },
       {
         "@type": "CollectionPage",
