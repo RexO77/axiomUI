@@ -49,3 +49,10 @@ next-env.d.ts
 
 # Local render-parity baseline (machine-specific build output)
 scripts/.render-parity.json
+
+# Personal agent skills: kept on disk, never published.
+/.agents/
+/.agent/
+/.codex/
+/.opencode/
+/skills-lock.json
