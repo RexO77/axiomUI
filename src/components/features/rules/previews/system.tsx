@@ -14,7 +14,6 @@ import {
     RotateCw,
     Search,
     Smartphone,
-    Sparkles,
     Tablet,
     Trash2,
     X,
@@ -444,57 +443,6 @@ function breakpoints(variant: Variant, size: PreviewSize) {
     );
 }
 
-// ── sys-12 · Animation purpose ──────────────────────────────────────
-// Same app window. Do: a page slide, frozen mid-transition — motion
-// with a job (orientation). Don't: a logo bouncing in place — motion
-// with none.
-function WindowChrome({ children }: { children: ReactNode }) {
-    return (
-        <div className="flex h-[92px] w-full flex-col overflow-hidden rounded-md border border-neutral-200 dark:border-neutral-800">
-            <div className="flex items-center gap-1 border-b border-neutral-200 px-2 py-1.5 dark:border-neutral-800">
-                <span aria-hidden className="size-1.5 rounded-full bg-neutral-200 dark:bg-neutral-700" />
-                <span aria-hidden className="size-1.5 rounded-full bg-neutral-200 dark:bg-neutral-700" />
-                <span aria-hidden className="size-1.5 rounded-full bg-neutral-200 dark:bg-neutral-700" />
-            </div>
-            <div className="relative flex-1">{children}</div>
-        </div>
-    );
-}
-
-function animationPurpose(variant: Variant, size: PreviewSize) {
-    if (variant === "do") {
-        return (
-            <PreviewFrame size={size} className="flex flex-col justify-center gap-2">
-                <WindowChrome>
-                    <div className="absolute inset-y-2 left-2 w-[45%] -translate-x-3 space-y-1.5 rounded-sm border border-neutral-200 p-1.5 opacity-40 dark:border-neutral-800">
-                        <div className="h-1.5 w-3/4 rounded-full bg-neutral-200 dark:bg-neutral-700" />
-                        <div className="h-1.5 w-full rounded-full bg-neutral-200 dark:bg-neutral-800" />
-                        <div className="h-1.5 w-5/6 rounded-full bg-neutral-200 dark:bg-neutral-800" />
-                    </div>
-                    <div className="absolute inset-y-2 right-2 w-[55%] space-y-1.5 rounded-sm border border-blue-500/60 bg-white p-1.5 dark:border-blue-400/60 dark:bg-neutral-950">
-                        <div className="h-1.5 w-2/3 rounded-full bg-blue-500/40 dark:bg-blue-400/40" />
-                        <div className="h-1.5 w-full rounded-full bg-neutral-200 dark:bg-neutral-800" />
-                        <div className="h-1.5 w-4/5 rounded-full bg-neutral-200 dark:bg-neutral-800" />
-                    </div>
-                </WindowChrome>
-                <span className={cn(ANNOT, "self-center")}>slide answers &ldquo;where am I?&rdquo;</span>
-            </PreviewFrame>
-        );
-    }
-    return (
-        <PreviewFrame size={size} className="flex flex-col justify-center gap-2">
-            <WindowChrome>
-                <div className="absolute inset-0 flex flex-col items-center justify-end pb-2">
-                    <Sparkles aria-hidden className="size-4 -translate-y-7 stroke-[1.5] text-neutral-300 opacity-30 dark:text-neutral-600" />
-                    <Sparkles aria-hidden className="-mt-4 size-4 -translate-y-3.5 stroke-[1.5] text-neutral-400 opacity-60 dark:text-neutral-500" />
-                    <Sparkles aria-hidden className="-mt-4 size-4 stroke-[1.5] text-neutral-500 dark:text-neutral-400" />
-                </div>
-            </WindowChrome>
-            <span className={cn(ANNOT, "self-center")}>bounce answers nothing</span>
-        </PreviewFrame>
-    );
-}
-
 // ── sys-13 · Transition only what changes ───────────────────────────
 // Same Save button under a font-swap width change. Scoped transitions
 // let it snap; `all` makes it drift through ghost widths.
@@ -598,7 +546,6 @@ const scenes: Record<string, (variant: Variant, size: PreviewSize) => ReactNode>
     "sys-8": keyboardNav,
     "sys-10": gracefulDegradation,
     "sys-11": breakpoints,
-    "sys-12": animationPurpose,
     "sys-13": transitionScope,
     "sys-14": willChange,
 };

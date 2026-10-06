@@ -84,7 +84,7 @@ export function CopyRuleButton({ rule, variant = "pill", className }: CopyRuleBu
 
   const label = state === "copied" ? "Copied" : state === "error" ? "Retry" : "Copy";
   // The icon-only variant lives in the drawer header, already scoped to one
-  // rule; the pill repeats on every card in a 106-item grid, where only the
+  // rule; the pill repeats on every card in a 105-item grid, where only the
   // title tells a screen-reader user which rule they are about to copy.
   const target = variant === "icon" ? "rule" : rule.title;
   const ariaLabel =

@@ -13,7 +13,7 @@ import {
 import { usePathname, useSearchParams } from "next/navigation";
 import { SearchX } from "lucide-react";
 
-import { categories, rules } from "@/data/ui-logic";
+import { categories, resolveRuleId, rules } from "@/data/ui-logic";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { RuleCard } from "@/components/features/rules/rule-card";
@@ -24,7 +24,7 @@ import { SearchProvider, useSearch } from "@/components/providers/search-provide
 function HomeContent() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const routeRuleId = searchParams.get("rule");
+  const routeRuleId = resolveRuleId(searchParams.get("rule"));
   const [activeRuleId, setActiveRuleId] = useState(routeRuleId);
   const deferredRuleId = useDeferredValue(activeRuleId);
 

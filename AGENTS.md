@@ -28,8 +28,8 @@
 - The full gate, and exactly what CI runs, is: `npm run lint`, `npm run typecheck`,
   `npm run check`, `npm test`, `npm run build`. `.husky/pre-commit` runs the first four so a
   red CI is caught before the push.
-- `npm run check` (`scripts/check-deep-dives.mjs`) asserts all 106 rules have authored
-  deep-dive prose. It must print `106/106`.
+- `npm run check` (`scripts/check-deep-dives.mjs`) asserts all 105 rules have authored
+  deep-dive prose. It must print `105/105`.
 - `src/data/__tests__/consistency.test.ts` checks *claims*, not syntax: stated contrast ratios
   are recomputed, Tailwind classes are validated against the real scale, and showcase captions
   are checked against the durations and scale values their panes actually run. A rule's

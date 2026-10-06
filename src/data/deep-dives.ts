@@ -12,7 +12,7 @@ export type RuleDeepDive = {
 };
 
 export const ruleDeepDives: Record<string, RuleDeepDive> = {
-  // ── Typography & Text ─────────────────────────────────────────────
+  // ── Typography & text ─────────────────────────────────────────────
   "typo-1": {
     whyItMatters: "Readers recognize whole words by their shape, the ascender and descender pattern, not letter by letter. Title Case flattens that shape by capitalizing every word, forcing the eye back into slower letter-by-letter decoding. Sentence case keeps only one capital, preserving the silhouette a fluent reader scans.",
     riskWhenIgnored: "Buttons and headers read slower and feel more formal than intended. Long labels like Create New Account From Existing Template become a wall of jarring capitals that stalls scanning at every capitalized word.",
@@ -209,7 +209,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
 
-  // ── Layout & Spacing ─────────────────────────────────────────────
+  // ── Layout & spacing ─────────────────────────────────────────────
   "layout-1": {
     whyItMatters: "The 4pt grid turns spacing into a shared vocabulary: every value is a whole multiple of one base unit, so any two components snap into alignment without negotiation. It also survives fractional device pixel ratios — 4, 8, 16, and 24 stay whole numbers at 1.5x and 2x, while 13px lands on 19.5 device pixels at 1.5x and gets rounded one way here and the other way there. This is systemic scale design, not personal taste.",
     riskWhenIgnored: "Once one component uses 13px padding, every neighboring component built to the 4pt scale misaligns by a few pixels, and the drift compounds across nested containers until edges visibly stair-step down the page.",
@@ -376,7 +376,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
 
-  // ── Color & Depth ────────────────────────────────────────────────
+  // ── Color & depth ────────────────────────────────────────────────
   "color-1": {
     whyItMatters: "The 60-30-10 split works because it establishes a clear visual hierarchy before anyone reads a word: the eye scans large neutral fields first, then the 30% secondary layer, then lands on the 10% primary accent last. That ordering mirrors how attention naturally moves from ground to figure. Break the ratio and every element competes for the same weight.",
     riskWhenIgnored: "When primary color creeps past 10% into headers and sidebars, users can no longer tell which blue element is the actual call to action versus decoration, so click-through drops on the real button.",
@@ -558,7 +558,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
 
-  // ── Components & Actions ─────────────────────────────────────────
+  // ── Components & actions ─────────────────────────────────────────
   "comp-1": {
     whyItMatters: "A filled button is usually the only solid color field on the screen, so the eye finds it pre-attentively, before a single label is read. That makes it a pointer to the next step rather than one more thing to evaluate. Put three filled buttons side by side and the pointer disappears: every candidate now carries the same visual weight, so the user has to read and rank all three before acting.",
     riskWhenIgnored: "A checkout footer with three filled buttons — save, continue, place order — forces users to read every label before acting, and the wrong one gets hit often enough that teams start bolting on confirmation dialogs to patch it.",
@@ -741,7 +741,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
 
-  // ── Forms & Inputs ───────────────────────────────────────────────
+  // ── Forms & inputs ───────────────────────────────────────────────
   "form-1": {
     whyItMatters: "Reading a top-aligned label takes one downward eye movement instead of the left-to-right jump a side label forces, so scanning stays on a single vertical axis. It also survives translation, since a German or Finnish label can wrap to two lines without colliding with the input box. On narrow viewports it is the only layout that does not force label truncation.",
     riskWhenIgnored: "A left-aligned label meets a long translated string and either truncates or wraps under the input, misaligning every field below it, so a German build shows staggered, unreadable rows.",
@@ -923,7 +923,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
 
-  // ── System & Logic ───────────────────────────────────────────────
+  // ── System & logic ───────────────────────────────────────────────
   "sys-1": {
     whyItMatters: "Perceived-performance research shows a grey layout pulse mimicking the final content structure reads as progress in motion, while a spinning wheel is an abstract token unrelated to what is loading. Skeletons prime the eye for where text and images will land, cutting perceived wait time even when actual load time is identical.",
     riskWhenIgnored: "A full-screen spinner spends the whole wait saying only that something is happening, so the content lands in one jump at the end and the reader starts over locating what they came for. A 900ms wait spent that way reads as a stall, and some of them reload before it resolves.",
@@ -1089,21 +1089,6 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
       "Is there any media query targeting a specific device or screen model?",
     ],
   },
-  "sys-12": {
-    whyItMatters: "Motion is a channel with a fixed budget of attention. Users learn very quickly which movements carry information and which do not, and once they have written the channel off they stop reading the movements that matter. At system level, an animation earns its place by answering one of three questions: where am I (orientation), did it work (feedback), what changed (continuity). The motion rules split those further, adding explanation and softening an abrupt change, but the test is the same: name the question, or cut the animation.",
-    riskWhenIgnored: "A logo that bounces on every load answers none of the three questions, and after a week of it the reader has written the whole channel off. The cost lands somewhere else: the shake on a rejected card number is the same channel, and now it goes unread.",
-    implementationNotes: [
-      "Before adding any animation, name the question it answers: where am I, did it work, or what changed.",
-      "Use directional slides for navigation to convey spatial orientation between views.",
-      "Cut any animation that exists purely for flair, like a bouncing logo on load.",
-      "Reserve punchier motion for feedback moments so it stands out from routine transitions.",
-    ],
-    reviewPrompts: [
-      "Can every animation on screen be tied to orientation, feedback, or continuity?",
-      "Does navigating between views use motion that shows spatial direction?",
-      "Is there no animation that plays purely for decoration on every load?",
-    ],
-  },
   "sys-13": {
     whyItMatters: "Specifying transition-property explicitly, scale and background-color, ensures only intended properties animate, while transition: all animates every property that changes, including ones altered by unrelated state updates like a font load. This causes unexpected elements to visibly glide when they should snap instantly.",
     riskWhenIgnored: "transition: all 150ms puts the late webfont on the same timeline as your hover state, so the Save changes button grows through two intermediate widths after the page has already settled. Nobody reads that as a font arriving; they read it as the layout coming apart.",
@@ -1135,7 +1120,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
 
-  // ── Motion & Interaction ────────────────────────────────────────
+  // ── Motion & interaction ────────────────────────────────────────
   "motion-1": {
     whyItMatters: "Frequency sets the motion budget: a command palette fires dozens of times an hour, so any delay compounds through habituation, while a modal seen once a session can afford standard motion. Map interaction frequency to duration before choosing an easing curve.",
     riskWhenIgnored: "A command palette animated like a rare modal charges 220ms on every invocation, so twenty opens across a working hour is four and a half seconds spent watching a panel whose shape the user already knew, and the app they reach for most reads as the slowest thing they use.",
@@ -1167,18 +1152,18 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-3": {
-    whyItMatters: "Every animation should serve one of five jobs: orientation, feedback, explanation, continuity, or softening a jarring change. A drawer sliding from its trigger shows origin and continuity; a bounce with no such job is just noise competing for attention.",
-    riskWhenIgnored: "Decorative motion added to every load screen without a job desensitizes users to real signals, so when an important state change happens, they no longer notice it.",
+    whyItMatters: "Motion is a channel with a fixed budget of attention. Users learn quickly which movements carry information and which do not, and once they have written the channel off they stop reading the movements that matter. An animation earns its place by doing one of five jobs: orientation (where am I?), feedback (did it work?), explanation, continuity (what changed?), or softening a change that would otherwise be jarring. A drawer sliding from its edge does two of them at once — it says where the panel came from and keeps the page continuous behind it. A bounce does none.",
+    riskWhenIgnored: "A logo that bounces on every load answers none of those questions, and after a week of it the reader has written the whole channel off. The cost lands somewhere else: the shake on a rejected card number is the same channel, and now it goes unread.",
     implementationNotes: [
-      "Before animating, name which of the five purposes it serves; if none apply, cut it.",
-      "Keep drawer motion originating visually from the element that opened it.",
-      "Remove bounce or flourish effects that run on every page load regardless of context.",
-      "Note the one-line purpose for each animation in code comments or the design file.",
+      "Before animating anything, name the job it does; if none of the five applies, cut it.",
+      "Use directional motion for navigation and panels so the movement shows where things came from — a drawer slides from the edge it lives on.",
+      "Remove bounce and flourish effects that run on every load regardless of context.",
+      "Reserve punchier motion for feedback moments so it stands out from routine transitions.",
     ],
     reviewPrompts: [
-      "Can you name the specific purpose of each animation on this screen?",
-      "Does the drawer visually originate from the element that triggered it?",
-      "Is any motion present purely for decoration with no functional role?",
+      "Can you name the job of every animation on this screen?",
+      "Does each panel or view move from the direction it belongs to?",
+      "Is any motion present purely for decoration, playing on every load?",
     ],
   },
   "motion-4": {
@@ -1573,7 +1558,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
 
-  // ── Accessibility & Inclusivity ──────────────────────────────────
+  // ── Accessibility & inclusivity ──────────────────────────────────
   "a11y-1": {
     whyItMatters: "The default focus ring is browser chrome, and outline: none removes it with nothing standing in its place; for a keyboard user that is the equivalent of hiding the cursor. focus-visible is the browser's own heuristic for when a ring is wanted: it fires for Tab and keyboard activation and stays quiet for a mouse press, so focus-visible:ring-2 ring-blue-500 puts the marker exactly where WCAG 2.4.7 needs it without ringing every click.",
     riskWhenIgnored: "A keyboard user tabs into a delete dialog and nothing on screen moves, so they cannot tell whether focus is sitting on Cancel or on Delete, and pressing Enter becomes a coin flip.",

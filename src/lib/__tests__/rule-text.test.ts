@@ -9,7 +9,7 @@ describe("rule-text serializers", () => {
     expect(rule).toBeDefined();
     expect(ruleToText(rule!, "https://example.com")).toBe(
       [
-        "Sentence case is king (Typography & Text)",
+        "Sentence case is king (Typography & text)",
         "Never use Title Case for buttons, labels, or headers. It slows down reading speed by disrupting word shapes.",
         "",
         "Do: Create new account",
