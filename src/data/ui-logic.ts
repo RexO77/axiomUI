@@ -1009,7 +1009,10 @@ export const ruleAliases: Record<string, string> = {
 };
 
 export function resolveRuleId(id: string | null): string | null {
-  return id === null ? null : (ruleAliases[id] ?? id);
+  // Own keys only. `?rule=valueOf` would otherwise read Object.prototype and
+  // hand useState a function, which it calls and crashes on.
+  if (id === null || !Object.hasOwn(ruleAliases, id)) return id;
+  return ruleAliases[id];
 }
 
 /** Previous/next rule within the same category, in data order. Null at the ends. */
