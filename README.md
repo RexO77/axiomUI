@@ -1,4 +1,4 @@
-# Axiom — UI Logic Repository
+# Axiom — UI logic repository
 
 > Treat every decision as a repeatable system. Break the rule only after you understand it.
 
@@ -15,7 +15,7 @@ Axiom is a reference-ready collection of product UI best practices structured as
 
 ## Coverage
 
-- **106 curated decisions** grounded in product UI best practices
+- **105 curated decisions** grounded in product UI best practices
 - **8 system categories**: Typography, Layout, Color, Components, Forms, System Logic, Motion, Accessibility
 - **Fast scanning** with tag filters and encoded patterns
 

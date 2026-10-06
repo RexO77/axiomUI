@@ -19,18 +19,18 @@ export type DeepDiveSection =
   | { type: "code"; title?: string; code: string; language?: string };
 
 export const categories: Category[] = [
-  { id: "typography", name: "Typography & Text" },
-  { id: "layout", name: "Layout & Spacing" },
-  { id: "color", name: "Color & Depth" },
-  { id: "components", name: "Components & Actions" },
-  { id: "forms", name: "Forms & Inputs" },
-  { id: "system", name: "System & Logic" },
-  { id: "motion", name: "Motion & Interaction" },
-  { id: "accessibility", name: "Accessibility & Inclusivity" },
+  { id: "typography", name: "Typography & text" },
+  { id: "layout", name: "Layout & spacing" },
+  { id: "color", name: "Color & depth" },
+  { id: "components", name: "Components & actions" },
+  { id: "forms", name: "Forms & inputs" },
+  { id: "system", name: "System & logic" },
+  { id: "motion", name: "Motion & interaction" },
+  { id: "accessibility", name: "Accessibility & inclusivity" },
 ];
 
 export const rules: Rule[] = [
-  // ── Typography & Text ─────────────────────────────────────────────
+  // ── Typography & text ─────────────────────────────────────────────
   {
     category: "typography",
     title: "Sentence case is king",
@@ -149,7 +149,7 @@ export const rules: Rule[] = [
     tags: ["Wrapping", "Readability"],
   },
 
-  // ── Layout & Spacing ─────────────────────────────────────────────
+  // ── Layout & spacing ─────────────────────────────────────────────
   {
     category: "layout",
     title: "The 4pt grid system",
@@ -250,7 +250,7 @@ export const rules: Rule[] = [
     tags: ["System", "Overlays"],
   },
 
-  // ── Color & Depth ────────────────────────────────────────────────
+  // ── Color & depth ────────────────────────────────────────────────
   {
     category: "color",
     title: "60-30-10 rule",
@@ -360,7 +360,7 @@ export const rules: Rule[] = [
     tags: ["Depth", "Surfaces"],
   },
 
-  // ── Components & Actions ─────────────────────────────────────────
+  // ── Components & actions ─────────────────────────────────────────
   {
     category: "components",
     title: "Action hierarchy",
@@ -470,7 +470,7 @@ export const rules: Rule[] = [
     tags: ["Overlays", "Keyboard", "Accessibility"],
   },
 
-  // ── Forms & Inputs ───────────────────────────────────────────────
+  // ── Forms & inputs ───────────────────────────────────────────────
   {
     category: "forms",
     title: "Labels top aligned",
@@ -580,7 +580,7 @@ export const rules: Rule[] = [
     tags: ["Feedback", "States"],
   },
 
-  // ── System & Logic ───────────────────────────────────────────────
+  // ── System & logic ───────────────────────────────────────────────
   {
     category: "system",
     title: "Skeleton loading",
@@ -682,15 +682,6 @@ export const rules: Rule[] = [
   },
   {
     category: "system",
-    title: "Animation purpose",
-    id: "sys-12",
-    desc: "Every animation should serve a purpose: orientation (where am I?), feedback (did it work?), or continuity (what changed?). Never animate just for flair.",
-    do: "Page slide = spatial orientation",
-    dont: "Bouncing logo on every page load",
-    tags: ["Motion", "Intent"],
-  },
-  {
-    category: "system",
     title: "Transition only what changes",
     id: "sys-13",
     desc: "Never use transition: all. Specify the exact properties that should animate so unrelated style changes do not move unexpectedly.",
@@ -708,7 +699,7 @@ export const rules: Rule[] = [
     tags: ["Motion", "Performance", "CSS"],
   },
 
-  // ── Motion & Interaction ────────────────────────────────────────
+  // ── Motion & interaction ────────────────────────────────────────
   // Start with frequency because repeated motion becomes latency.
   {
     category: "motion",
@@ -734,7 +725,7 @@ export const rules: Rule[] = [
     category: "motion",
     title: "Purpose before motion",
     id: "motion-3",
-    desc: "Every animation needs a reason: orientation, feedback, explanation, continuity, or avoiding a jarring state change.",
+    desc: "Every animation needs a job: orientation (where am I?), feedback (did it work?), explanation, continuity (what changed?), or softening a jarring state change. If you can't name the job, cut the animation.",
     do: "Drawer slides from its edge",
     dont: "Drawer bounces in",
     tags: ["Intent", "Feedback"],
@@ -981,7 +972,7 @@ export const rules: Rule[] = [
     tags: ["Entry", "Perceived performance"],
   },
 
-  // ── Accessibility & Inclusivity ──────────────────────────────────
+  // ── Accessibility & inclusivity ──────────────────────────────────
   {
     category: "accessibility",
     title: "Focus visible indicators",
@@ -1010,6 +1001,16 @@ export const rules: Rule[] = [
     tags: ["Touch", "Click targets", "Spacing"],
   },
 ];
+
+/** Retired rule ids and the rule that absorbed each. Static pages redirect in
+ *  next.config.ts; this covers the homepage's `?rule=` deep links. */
+export const ruleAliases: Record<string, string> = {
+  "sys-12": "motion-3",
+};
+
+export function resolveRuleId(id: string | null): string | null {
+  return id === null ? null : (ruleAliases[id] ?? id);
+}
 
 /** Previous/next rule within the same category, in data order. Null at the ends. */
 export function getAdjacentRules(rule: Rule): { prev: Rule | null; next: Rule | null } {

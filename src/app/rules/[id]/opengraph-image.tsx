@@ -267,7 +267,7 @@ export default async function Image({ params }: Props) {
                 color: INK_MUTED,
               }}
             >
-              UI Logic Repository
+              UI logic repository
             </div>
           </div>
         </Stage>

@@ -29,7 +29,7 @@ const plexMono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Axiom — UI Logic Repository",
+    default: "Axiom — UI logic repository",
     template: "%s | Axiom",
   },
   description:
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: siteConfig.origin,
-    title: "Axiom — UI Logic Repository",
+    title: "Axiom — UI logic repository",
     description:
       `${ruleCount} actionable UI design rules for consistent, sharp interfaces. Master typography, layout, color, component patterns, forms, and accessibility.`,
     siteName: "Axiom",
@@ -65,13 +65,13 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Axiom UI Logic Repository — Design System Rules",
+        alt: "Axiom UI logic repository — design system rules",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Axiom — UI Logic Repository",
+    title: "Axiom — UI logic repository",
     description:
       `${ruleCount} actionable UI design rules for consistent, sharp interfaces.`,
     images: ["/og-image.png"],
@@ -125,7 +125,7 @@ export default function RootLayout({
         url: siteConfig.origin,
         name: "Axiom",
         description:
-          "UI Logic Repository of repeatable design decisions for consistent, sharp interfaces",
+          "UI logic repository of repeatable design decisions for consistent, sharp interfaces",
         publisher: {
           "@id": `${siteConfig.origin}/#organization`,
         },
@@ -158,7 +158,7 @@ export default function RootLayout({
         "@type": "CollectionPage",
         "@id": `${siteConfig.origin}/#collection`,
         url: siteConfig.origin,
-        name: "UI Logic Rules",
+        name: "UI logic rules",
         description:
           `${ruleCount} actionable UI design rules covering typography, layout, color, components, forms, system behavior, and accessibility`,
         isPartOf: {
@@ -166,7 +166,7 @@ export default function RootLayout({
         },
         about: {
           "@type": "Thing",
-          name: "User Interface Design",
+          name: "User interface design",
         },
         numberOfItems: ruleCount,
       },

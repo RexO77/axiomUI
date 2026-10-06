@@ -17,7 +17,7 @@
  * tree in the browser. The homepage's markup therefore appears in NO build
  * output — not the HTML, not the RSC payload — and a change to the header, the
  * rule cards, or any preview they render will pass this check untouched.
- * This tool covers the 106 rule pages, not-found, global-error, and the CSS.
+ * This tool covers the 105 rule pages, not-found, global-error, and the CSS.
  * Homepage changes still need eyes on a browser.
  */
 import { createHash } from "node:crypto";
