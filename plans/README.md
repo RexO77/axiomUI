@@ -17,13 +17,14 @@ Each plan is self-contained: an executor needs no other context. If code has dri
 | 005 | [Easing curve visualization for motion-4/5 + easing-aware bars](005-easing-curve-visualization.md) | MEDIUM | DONE |
 | 006 | [Scene differentiation: motion-6 dropdown, motion-25 spot-the-flaw, motion-11 toolbar](006-scene-differentiation.md) | MEDIUM | DONE |
 | 007 | [Settle-back to rest, drag affordances, haptics](007-settle-back-affordances-haptics.md) | MEDIUM/LOW | DONE |
-| 008 | [Wire design tokens into Tailwind semantic utilities](008-design-tokens-into-tailwind.md) | HIGH | TODO — do NOT bulk-migrate; foundation only |
-| 009 | [Extract Button/Chip primitives into src/components/ui](009-ui-primitives.md) | MEDIUM | TODO |
-| 010 | [Migrate to semantic tokens + CI guardrails](010-token-migration-and-guardrails.md) | MEDIUM | BLOCKED — prior bulk migration corrupted class strings; needs hand migration file-by-file |
+| 008 | [Wire design tokens into Tailwind semantic utilities](008-design-tokens-into-tailwind.md) | HIGH | SUPERSEDED by 015 (W1-A) |
+| 009 | [Extract Button/Chip primitives into src/components/ui](009-ui-primitives.md) | MEDIUM | SUPERSEDED by 015 (W1-A) |
+| 010 | [Migrate to semantic tokens + CI guardrails](010-token-migration-and-guardrails.md) | MEDIUM | SUPERSEDED by 015 for guardrails; remaining migration is per touched line under 015's strict-marker ratchet, never bulk |
 | 011 | [Demo pacing: segmented speed control + retimed load demos](011-demo-pacing.md) | HIGH | DONE |
 | 012 | [Evidence: thread seismograph, live ms readouts, motion-1 tally](012-evidence-instrumentation.md) | HIGH | DONE |
 | 013 | [Scene craft: real mini-UI, accent protagonist, legible graphs](013-scene-craft.md) | HIGH | DONE |
 | 014 | [**Showcase craft spec — every motion rule, fully detailed**](014-showcase-craft-spec.md) | HIGH | DONE |
+| 015 | [**Craft round 5 — make the site obey its own catalog**](015-craft-round-5.md) | HIGH | TODO |
 
 ## Recommended execution order
 
@@ -100,3 +101,22 @@ tailwind-merge (so a `className` passed to a shared primitive silently loses to 
 - **motion-8 press feedback uses one-shot WAAPI tracks** rather than a retargeting transition — at 140ms the restart is imperceptible; not worth churn. Revisit only if press demos gain longer durations.
 - **motion-28's 300ms icon crossfade** — at the top of the UI budget but defensible for an explanatory toggle demo.
 - **Grid `PanePreview` autoplay** — acceptable as a preview affordance (respects reduced motion and the motion-16 self-exemption); deep dives remain gesture-driven, which is the standing product decision.
+
+## Round 5 — six-lens audit, one execution plan (2026-10-02)
+
+See **[015-craft-round-5.md](015-craft-round-5.md)**. Six lenses (chrome, reading surfaces, static
+previews, motion, design system, content/a11y/SEO) were merged, and every P0/P1 was re-checked on
+screen at commit `2089439`. Several round-4 open items are now closed: sys-12 is merged into motion-3
+(105 rules), and category names and site metadata are sentence case.
+
+The diagnosis in one line: the shell breaks the rules the catalog teaches. Unlayered radius
+tokens rewrite Tailwind's scale (comp-4's square avatar renders round), `font-mono` was never
+registered (Plex is loaded but never shown), the entrance stagger blanks deep links for ~4.5s, and the mobile
+sheet and sub-xl drawer aren't accessible overlays. The homepage prerenders only a skeleton.
+`/rules/typo-10` scrolls sideways on phones.
+
+Execution: wave 1 is the foundation (`--ax-*` tokens registered in `@theme`, fonts, `@layer
+components`, IconButton/Button/VerdictLabel, `design-system.test.ts`) plus prerendering the
+catalog. Wave 2 is eleven disjoint surface batches. Wave 3 takes back Tailwind's radius scale and deletes
+the dead `size="sm"` branch. 015 supersedes 008, 009 and the guardrail half of 010. Skill-modal
+and llms.txt findings are handed to 016, which owns those files.
