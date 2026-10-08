@@ -3,9 +3,10 @@
 - **Status**: TODO (planned 2026-10-02 from six lens audits, every P0/P1 re-checked on screen or in code)
 - **Branch**: `feat/craft-round-5` · base commit `2089439` (catalog is **105** rules; sys-12 is merged into motion-3)
 - **Supersedes**: 008 (token foundation), 009 (primitives), and the guardrail half of 010. See "Relation to older plans".
-- **Coordination**: `plans/016-skill-distribution.md` is in flight on the same branch and rewrites
-  `skill-bonus.tsx`, moves the `SKILL.md` body, and edits `llms.txt/route.ts` and `rule-corpus.ts`.
-  **No batch here touches those four files.** Findings against them are handed to 016 (see the end).
+- **Coordination**: skill distribution is a separate delivery that rewrites `skill-bonus.tsx`,
+  moves the `SKILL.md` body, and edits `llms.txt/route.ts` and `rule-corpus.ts`.
+  Its required UI and indexing tasks are retained in W2-L below; no unpublished plan is required
+  to find or execute them. Keep their file ownership separate from W2-A through W2-K.
 - **Evidence**: local screenshots were used for the audit and re-checks.
   Screenshot references below use `<lens>/…` for lens audits and `lead/…` for
   the plan's re-checks. These local artifacts are not included in this document.
@@ -112,7 +113,7 @@ Lens findings that were checked and kept. "New" means this plan found it. Duplic
 | F55 | P2 | Static do/don't cards nest three frames at equal radius | /rules/[id] | rules/[id]/page.tsx | W2-E |
 | F56 | P2 | Grid does not mark the open rule; deep link doesn't scroll to it | Home + drawer at xl | rule-card.tsx, page.tsx | W2-C |
 | F57 | P2 | Index active vs hover nearly identical (`/80` vs `/70`); ragged left edges 45/49/53/57px; llms link 16px tall | Sidebar | sidebar.tsx | W2-A |
-| F58 | P2 | Unstyled WebKit blue cancel × in the neutral search field; no announced result count | Search | search-input.tsx, globals.css, page.tsx | W2-B, W1-A, W2-C |
+| F58 | P2 | Unstyled WebKit blue cancel × in the neutral search field; no announced result count | Search | search-input.tsx, globals.css, page.tsx | W2-B, W2-C |
 | F59 | P2 | Category count pill styled like the action pills below it | Category headers | page.tsx | W2-C |
 | F60 | P2 | Heading→cards gap equals card→card gap; categories don't read as chapters | Home rhythm | page.tsx | W2-C |
 | F61 | P2 | Footer is a full bordered card for one tertiary line | Home footer | page.tsx | W2-C |
@@ -225,7 +226,7 @@ product, and their captions quote literal palette steps.
 9. Focus: `@layer base { :where(a[href],button,[role=button],input,select,textarea,summary,
    [tabindex]:not([tabindex="-1"])):focus-visible { outline: 2px solid var(--ax-ring);
    outline-offset: 2px } }`.
-10. `input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none }` (W2-B draws its own).
+10. Leave the native search cancel button alone. W2-B hides it in the same change that draws the custom clear control.
 11. `showcase-engine.ts`: keep `EASE.inOut = cubic-bezier(0.65, 0, 0.35, 1)` (what users see). It now
     equals `--ease-in-out-strong` per task 2.
 12. `verdict.ts`: `dont: "Don’t"` (U+2019). Grep tests for the old literal and update them.
@@ -294,7 +295,7 @@ confirming Next 16 isolates dev output in `.next/dev`), `npm run build && grep -
 on caps" .next/server/app/index.html` must be ≥1. `?rule=motion-12` and `?q=focus` deep links
 must still open the drawer and filter after hydration.
 
-### Wave 2 — surfaces (eleven disjoint batches, run in parallel)
+### Wave 2 — surfaces (eleven disjoint batches, plus the distribution handoff)
 
 **W2-A · Sidebar and mobile sheet.** Owns `src/components/layout/sidebar.tsx`.
 
@@ -303,7 +304,7 @@ must still open the drawer and filter after hydration.
    Open menu set `aria-expanded={isOpen} aria-controls="mobile-menu"`. While open, close on Escape
    (keydown effect), focus `#searchInput-mobile` on open, and return focus to Open menu on close.
    Copy the focus-trap pattern from skill-bonus.tsx:140-184 into this file (don't import it, since
-   016 rewrites that file).
+   the separate distribution work rewrites that file).
 2. Shadow bleed (F22): `isOpen ? "translate-x-0 shadow-panel" : "translate-x-full shadow-none"`
    (:278-279). Also add `invisible` when closed with `transition-[transform,visibility]`.
 3. Index during search (F23): `countByCategory(query)` from `@/lib/rule-search`. Each link gets
@@ -350,7 +351,9 @@ align at one x.
    The kbd (:54) becomes `text-ink-muted font-sans`. Add `enterKeyHint="search"`. When `query` is
    non-empty, render a clear button in the kbd slot: lucide `X` `size-3.5`, `size-7 rounded-md
    text-ink-muted hover:bg-fill`, with `relative after:absolute after:-inset-2` (44px). It clears the
-   query and refocuses the input. Field radius `rounded-lg` → `rounded-field`.
+   query and refocuses the input. In that same change, hide the native control with
+   `input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none }`.
+   Field radius `rounded-lg` → `rounded-field`.
 2. theme-toggle: render through `IconButton` (sm, ghost). Sun/Moon at 18px, stroke 1.8.
 3. not-found: add `whitespace-nowrap` to both links, `sm:flex-row` → `md:flex-row`, and `max-w-md` → `max-w-lg`.
    Use `Button` (primary/secondary, md). Eyebrow and footnote (:20, :46) become `text-ink-muted`. Remove
@@ -405,6 +408,10 @@ the grid to motion-12 and outlines it. Category gaps are visibly wider than card
    xl:inset-y-6 xl:right-6 xl:w-[min(40vw,480px)]`. The panel is `sm:rounded-card`. Add
    `<Drawer.Overlay className="fixed inset-0 z-[89] bg-neutral-950/20 dark:bg-black/50 xl:hidden"/>`.
 2. Modality and focus (F11): `modal={!isXl}` via a `useMediaQuery("(min-width: 1280px)")` hook in this file.
+   Gate `noBodyStyles` and `disablePreventScroll` with `isXl`, and run the MutationObserver
+   that clears `body.style.pointerEvents` only at xl. Below xl, allow Radix body pointer blocking
+   and scroll locking to remain active. Verify backdrop clicks, background pointer/scroll blocking,
+   focus trapping and Escape dismissal, not just dialog semantics.
    When `activeRuleId` goes null→id, focus the visible title (`tabIndex={-1}`, `outline-none`,
    `focus({ preventScroll: true })`). On close, restore focus to the element that was active before opening
    (capture it in an effect when the drawer opens).
@@ -432,7 +439,7 @@ motion-12 shows Do/Don't once. `/?rule=typo-10` at 390 has no horizontal scroll.
 
 **W2-E · Static rule page.** Owns `src/app/rules/[id]/page.tsx`.
 
-1. F05: add `min-w-0` to both verdict `<article>`s and to the grid. Confirm `scrollWidth === 390` on
+1. F05: add `min-w-0` to both verdict `<article>`s and to the grid. Confirm `scrollWidth === clientWidth` on
    `/rules/typo-10` at 390 and at 320.
 2. F26: `<main id="main-content" tabIndex={-1} className="… outline-none">`.
 3. F24: wrap the `space-y-10` prose block (:236) and the lead `<p>` (:167) in `max-w-[65ch]`. The lead
@@ -471,10 +478,12 @@ link, then Tab lands on the first link inside main. `/rules/typo-10` has no hori
    (`text-[9px] font-medium text-neutral-500`), so "Locale" doesn't truncate (F80).
 4. comp-3 (F40): replace the blue dot (:168) with a labelled corner callout (1px blue arc on the outer
    corner plus `r·12` / `r·4` FINE labels).
-5. layout-2 (F06): draw a scaled page. Scene `w-[556px] origin-top-left scale-50` inside an
-   `overflow-hidden` parent of fixed height, copy at `text-[13px] leading-[20px]`, Do `max-w-[45ch]`,
-   Don't full width (≈95ch). Annotations "45ch" vs "≈95ch". Drop the shared "45–75ch reads easily" line,
-   or keep it only on Do.
+5. layout-2 (F06): draw a readable page comparison. Use unscaled `text-[13px] leading-[20px]`
+   copy, or compensate both font size and line height if the scene is scaled (for example, 26px/40px
+   before `scale-50` renders at 13px/20px). Set widths in `ch` after choosing the font: Do 45ch,
+   Don't approximately 95ch. Contain any horizontal overflow inside the preview on narrow screens.
+   Re-measure rendered font size and DOM width / `0` width; annotations must match those results.
+   Drop the shared "45–75ch reads easily" line, or keep it only on Do.
 6. layout-11 (F34): layer labels `items-start pt-1.5 leading-none`.
 7. layout-7 (F65): the surface layer `absolute inset-px rounded-[9px]`, and Do in dark is `dark:bg-neutral-800/70`
    with stats `dark:bg-neutral-700/70`.
@@ -596,10 +605,27 @@ Verify: `npm test && npm run check` (105/105). Spot-read typo-1, comp-2 and sys-
    Remove the `openGraph.images`/`twitter.images` entries from layout.tsx and delete `public/og-image.png`.
    The JSON-LD Organization logo becomes `/icon.png` (or the existing icon route).
 2. F73: description "`${ruleCount}` UI design rules with live do/don’t previews: typography, layout,
-   color, components, forms, system states, motion, and accessibility." Use it for og:description and JSON-LD.
+   color, components, forms, system states, motion, and accessibility." Define this description once
+   and use it for `metadata.description`, `openGraph.description`, `twitter.description` and JSON-LD.
 3. F81: `lastModified` → `new Date("2026-10-02")`.
 
 Verify: `/opengraph-image` renders 1200×630. View-source on `/` shows the new og:image URL and description.
+
+**W2-L · Distribution UI and rule indexing handoff.** Owns `src/components/features/skills/skill-bonus.tsx`,
+`public/SKILL.md` (or its replacement), `src/app/llms.txt/route.ts` and `src/lib/rule-corpus.ts`.
+These requirements stay in this published plan even if distribution ships separately.
+
+1. Apply the skill-modal findings recorded below: sentence-case headings; body `text-sm leading-6
+   sm:text-base sm:leading-[26px]`; one "SKILL.md" header; `bg-surface`; no ring-offset halo;
+   readable `text-xs text-ink-muted` labels. Sidebar skill-row text aligns with Index at `px-2`.
+2. Pin remaining modal `rounded-lg/xl` uses to explicit or semantic radii before W3-A removes
+   the old radius overrides. Preserve dialog focus, close behavior, view transitions and reduced motion.
+3. List all 105 canonical rule URLs in `llms.txt`, grouped by category, with title and description;
+   share the rule corpus so the published counts and links agree.
+
+Verify: the modal in both themes at 390 and 1440, keyboard focus and restoration, reduced motion,
+readable typography, and 105 canonical rule links. Run the distribution-specific generator and CLI
+checks when that delivery introduces them. No separate planning document is a prerequisite.
 
 ### Wave 3 — take back the radius scale, delete dead code
 
@@ -616,17 +642,22 @@ zero outside previews/demos scenes).
 3. preview-primitives.tsx: delete the 10 never-imported primitives (textClass, MiniInput, MiniLabel,
    MiniBlock, MiniAvatar, MiniSwitch, MiniCheckbox, MiniRadio, MiniDot, MiniPlayCircle).
 4. design-system.test.ts: assert globals.css declares no `--radius-(xs|sm|md|lg|xl|\dxl)` outside `@theme`.
-5. `skill-bonus.tsx` belongs to 016. Before deleting the radius lines, ask 016's owner to pin any
-   `rounded-lg/xl` left in it to explicit values. Don't edit that file from this batch.
+5. Before deleting the radius lines, verify W2-L has pinned any `rounded-lg/xl` left in
+   `skill-bonus.tsx` to explicit values. Keep the radius reset blocked until that prerequisite
+   is verified; W2-L owns the file, so the reset does not edit it.
 
 Verify: the combo sheets before and after, side by side. comp-3's own Do still reads concentric. No chrome
 element changes pixels (compare the sidebar, cards and drawer at 1440).
 
 **W3-B · Remove the dead `size="sm"` preview branch.** Owns `src/components/features/rules/rule-preview.tsx`,
-`demos/scenes.tsx`, `demos/showcase-specs.tsx`, `demos/easing-graph.tsx`, `src/data/__tests__/rule-previews.test.ts`.
+`src/components/features/rules/preview-primitives.tsx`, all seven `previews/*.tsx` modules,
+`demos/scenes.tsx`, `demos/showcase-specs.tsx`, `demos/easing-graph.tsx`, and `src/data/__tests__/rule-previews.test.ts`.
+It runs after W3-A and owns the atomic size-type and caller cleanup across this entire set.
 
 1. Remove `PreviewSize` from `PreviewRenderer`/`DemoProps`, and collapse every `size === "lg" ? A : B` / `isLg`
-   to A (scenes.tsx has 56 sites, plus showcase-specs.tsx:122-131 and easing-graph).
+   to A across shared primitives, static previews and demos. Remove the redundant size argument
+   from every renderer call in the same batch; `PreviewSize` must have no remaining imports.
+   Check scenes.tsx's 56 sites, showcase-specs.tsx:122-131 and easing-graph too.
 2. rule-previews.test.ts: assert every non-showcase id has a static preview (no GenericPreview fallback).
 
 Verify: `npm run typecheck && npm test`. Pixel spot-check five showcases and five cards. Nothing changes.
@@ -641,15 +672,15 @@ Verify: `npm run typecheck && npm test`. Pixel spot-check five showcases and fiv
 | Change motion-12 to 240ms to satisfy motion-6 | The interruption lesson needs a window long enough to hit mid-flight, and consistency tests pin the showcase duration. Keep it. |
 | Bar shows eased progress next to a linear ms counter → make it linear and proportional | Plan 005 made bars easing-aware on purpose. This is a semantics decision, so it's in open questions. Only the bar tone ships now (W2-H task 6). |
 | Wire `rate` into motion-12 and the load races | Plan 011 owns those durations, and scaling them reopens 011/012's tuning. Not worth it this round. |
-| tailwind-merge in `cn()` | 016 forbids new site dependencies. The three dead overrides are fixed at source (W2-C, W2-F) and recipes are rule-bound (W1-A task 14). |
+| tailwind-merge in `cn()` | The distribution work adds no new site dependencies. The three dead overrides are fixed at source (W2-C, W2-F) and recipes are rule-bound (W1-A task 14). |
 | Inline-code backtick convention across all deep-dive prose | A new rendering feature, not a defect. The one literal backtick is fixed (W2-H task 10). Revisit with the ~35 terse descs. |
 | Rewrite ~35 terse rule descs into "claim + why" | Editorial voice is the owner's call (open questions). |
 | color-11 thumbnails read as inputs | Taste. The pane still demonstrates the outline. |
 | Bulk-migrate ~485 raw neutral utilities in chrome (plan 010) | Bulk replacement corrupted class strings last time. Migration is per touched line with the strict-marker ratchet. |
 | Separate `Chip` primitive | Two uses after W2-C/W2-E remove the count pill border and re-size tags. Not enough to justify it. |
 | Sitemap-date git test | `git log` in vitest breaks on shallow CI clones. Bump the date by hand. |
-| Skill modal: SKILL.md headings in Title Case, 2.0 line-height, title stated twice, `#111216` surface, white ring-offset halo, `text-[11px]` "Bonus skill", sidebar skill-row inset | **Handed to 016**, which rewrites `skill-bonus.tsx` and moves the SKILL.md body. 016 should apply: sentence-case headings; body `text-sm leading-6 sm:text-base sm:leading-[26px]`; header shows only "SKILL.md"; `bg-surface` instead of `#111216`; no `ring-offset`; `text-xs text-ink-muted` labels; row text inset `px-2` to align with the Index. |
-| llms.txt lists category hashes, not the 105 rule URLs | **Handed to 016** (it edits `llms.txt/route.ts`). Change it to one `### <category>` per category with `- [title](origin/rules/id): desc`. |
+| Skill modal: SKILL.md headings in Title Case, 2.0 line-height, title stated twice, `#111216` surface, white ring-offset halo, `text-[11px]` "Bonus skill", sidebar skill-row inset | **Retained in W2-L**, which owns `skill-bonus.tsx` and moves the SKILL.md body. Apply: sentence-case headings; body `text-sm leading-6 sm:text-base sm:leading-[26px]`; header shows only "SKILL.md"; `bg-surface` instead of `#111216`; no `ring-offset`; `text-xs text-ink-muted` labels; row text inset `px-2` to align with the Index. |
+| llms.txt lists category hashes, not the 105 rule URLs | **Retained in W2-L** (`llms.txt/route.ts`). Change it to one `### <category>` per category with `- [title](origin/rules/id): desc`. |
 
 ## Open questions (owner decisions)
 
