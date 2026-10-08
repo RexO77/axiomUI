@@ -24,11 +24,12 @@ export type Track = {
 };
 
 /** Mirror of the CSS tokens in globals.css — WAAPI cannot read CSS variables
- *  in `easing`, so these literals must be kept in sync with :root. */
+ *  in `easing`, so these are literals. design-system.test.ts parses globals.css
+ *  and fails if `out`, `inOut` or DUR drift from the tokens they name. */
 export const EASE = {
     out: "cubic-bezier(0.23, 1, 0.32, 1)", // --ease-out-strong
     in: "cubic-bezier(0.55, 0, 1, 0.45)",
-    inOut: "cubic-bezier(0.65, 0, 0.35, 1)",
+    inOut: "cubic-bezier(0.65, 0, 0.35, 1)", // --ease-in-out-strong
     linear: "linear",
     /** CSS's own `ease`. Only for motion-4, which teaches that it is too weak. */
     browserDefault: "cubic-bezier(0.25, 0.1, 0.25, 1)",

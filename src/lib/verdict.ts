@@ -4,7 +4,7 @@
  * These two words appear on the rule card, in the drawer, on the detail page,
  * in the showcase pane chrome, in the page's JSON-LD `HowToStep` names, and on
  * the social image. They were previously hand-typed at six sites, which is how
- * three different vocabularies ("Do this"/"Avoid this", "Do"/"Don't",
+ * three different vocabularies ("Do this"/"Avoid this", "Do"/"Don’t",
  * "Recommended"/"Avoid") ended up visible within one scroll.
  *
  * They also match the data's own field names (`rule.do` / `rule.dont`) and the
@@ -15,7 +15,8 @@
  */
 export const VERDICT_LABEL = {
   do: "Do",
-  dont: "Don't",
+  // A typographic apostrophe (U+2019), not the straight ASCII one.
+  dont: "Don’t",
 } as const;
 
 export type Verdict = keyof typeof VERDICT_LABEL;
