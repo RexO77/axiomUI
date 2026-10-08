@@ -187,6 +187,37 @@ const FORBIDDEN: [string, RegExp][] = [
   ["hex background", /bg-\[#/],
 ];
 
+/** Class strings in this codebase are double-quoted or template literals. */
+function classLiterals(source: string): string[] {
+  return source.match(/"[^"\n]*"|`[^`]*`/g) ?? [];
+}
+
+/**
+ * `pressable` owns the transition. A `transition-*` or `duration-*` utility in
+ * any string of the same recipe replaces that list, including when the two
+ * classes are written in separate constants and joined at render.
+ */
+function conflictingPressTransition(literals: string[]): string | undefined {
+  if (!literals.some((literal) => /\bpressable\b/.test(literal))) return undefined;
+  for (const literal of literals) {
+    const hit = literal.match(/\b(?:transition|duration)-[\w-]+/);
+    if (hit) return hit[0];
+  }
+  return undefined;
+}
+
+describe("pressable transition guard", () => {
+  it("catches a transition utility composed from a separate string", () => {
+    expect(conflictingPressTransition(['"pressable inline-flex"', '"hover:bg-fill transition-colors"'])).toBe(
+      "transition-colors",
+    );
+  });
+
+  it("allows a recipe whose other strings carry no transition", () => {
+    expect(conflictingPressTransition(['"pressable inline-flex"', '"hover:bg-fill"'])).toBeUndefined();
+  });
+});
+
 describe("files marked `design-system: strict`", () => {
   it("include the shared primitives", () => {
     const relative = strictFiles.map((file) => path.relative(SRC, file));
@@ -206,11 +237,7 @@ describe("files marked `design-system: strict`", () => {
     });
 
     it(`${name} lets pressable own its transitions`, () => {
-      // Class strings are double-quoted or template literals in this codebase.
-      for (const literal of source.match(/"[^"\n]*"|`[^`]*`/g) ?? []) {
-        if (!/\bpressable\b/.test(literal)) continue;
-        expect(literal, `pressable with its own transition in ${name}`).not.toMatch(/\b(?:transition|duration)-/);
-      }
+      expect(conflictingPressTransition(classLiterals(source)), name).toBeUndefined();
     });
   }
 });

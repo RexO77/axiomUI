@@ -233,7 +233,7 @@ export function RuleDrawer({
                         href={`/rules/${activeRule.id}`}
                         aria-label={`Open full page for ${activeRule.title}`}
                         title="Open full page"
-                        className="pressable inline-flex size-11 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100"
+                        className="pressable inline-flex size-11 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100"
                       >
                         <ArrowUpRight aria-hidden="true" className="size-4" />
                       </a>
@@ -364,7 +364,7 @@ export function RuleDrawer({
                         <button
                           type="button"
                           onClick={() => onNavigate(prev.id)}
-                          className="pressable group inline-flex min-h-11 max-w-[45%] items-center gap-2 rounded-full text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+                          className="pressable group inline-flex min-h-11 max-w-[45%] items-center gap-2 rounded-full text-sm font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
                           aria-label={`Previous rule: ${prev.title}`}
                         >
                           <ArrowLeft aria-hidden="true" className="h-4 w-4 shrink-0" />
@@ -377,7 +377,7 @@ export function RuleDrawer({
                         <button
                           type="button"
                           onClick={() => onNavigate(next.id)}
-                          className="pressable group inline-flex min-h-11 max-w-[45%] items-center gap-2 rounded-full text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+                          className="pressable group inline-flex min-h-11 max-w-[45%] items-center gap-2 rounded-full text-sm font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
                           aria-label={`Next rule: ${next.title}`}
                         >
                           <span className="truncate">{next.title}</span>
