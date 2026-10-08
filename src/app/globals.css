@@ -10,155 +10,226 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ==========================================================================
-   DESIGN TOKENS - Unified Theme System
+   DESIGN TOKENS
+
+   Raw values live under `--ax-*` and are the only thing `.dark` redefines.
+   Tailwind sees them through `@theme inline` below, which turns each one into
+   a utility (`bg-surface`, `text-ink-muted`, `shadow-panel`, …) that reads the
+   raw variable at the element, so the dark values apply under `.dark`.
+
+   The raw names must stay outside Tailwind's namespaces (`--color-*`,
+   `--shadow-*`, `--radius-*`, `--font-*`). A plain `:root { --radius-md: 12px }`
+   does not add a token: it silently rewrites Tailwind's own `rounded-md`.
    ========================================================================== */
 
 :root {
-  /* Background tokens */
-  --color-bg: #ffffff;
-  --color-bg-elevated: #ffffff;
-  --color-bg-muted: #f5f5f5;
-  --color-bg-inverse: #171717;
+  /* Surfaces, back to front */
+  --ax-canvas: #fafafa;
+  --ax-surface: #ffffff;
+  --ax-sunken: #fafafa;
+  --ax-fill: #f5f5f5;
+  --ax-fill-strong: #e5e5e5;
+  --ax-inverse: #171717;
+  --ax-on-inverse: #ffffff;
 
-  /* Text tokens */
-  --color-text-primary: #171717;
-  --color-text-secondary: #525252;
-  --color-text-muted: #737373;
-  --color-text-inverse: #f5f5f5;
+  /* Text. ink-muted is the floor for any text a reader is meant to read
+     (≥4.5:1 on canvas and surface); ink-faint is for glyphs and placeholders. */
+  --ax-ink: #171717;
+  --ax-ink-secondary: #525252;
+  --ax-ink-muted: #737373;
+  --ax-ink-faint: #a3a3a3;
 
-  /* Stroke/border tokens */
-  --color-stroke: #e5e5e5;
-  --color-stroke-muted: #f5f5f5;
-  --color-stroke-strong: #d4d4d4;
+  /* Hairlines */
+  --ax-line: rgb(0 0 0 / 0.1);
+  --ax-line-strong: rgb(0 0 0 / 0.16);
 
-  /* Accent tokens */
-  --color-accent: #2563eb;
-  --color-accent-hover: #1d4ed8;
-  --color-accent-2: #0ea5a4;
+  /* The one focus ring */
+  --ax-ring: #2563eb;
 
-  /* Semantic tokens */
-  --color-success: #10b981;
-  --color-success-muted: rgba(16, 185, 129, 0.12);
-  --color-error: #ef4444;
-  --color-error-muted: rgba(239, 68, 68, 0.12);
+  /* Verdicts: icon tone, then the darker label tone */
+  --ax-do: #059669;
+  --ax-do-ink: #047857;
+  --ax-dont: #e11d48;
+  --ax-dont-ink: #be123c;
 
-  /* Shadow tokens - removed for flat design */
-  --shadow-sm: none;
-  --shadow-md: none;
-  --shadow-lg: none;
-
-  /* Elevation for floating panels (sidebar, rule drawer) - the one place the
-     flat design intentionally lifts off the page. */
-  --shadow-panel:
+  /* Elevation. The site is flat except for these. */
+  --ax-shadow-panel:
     0 1px 2px rgba(15, 23, 42, 0.04),
     0 10px 30px rgba(15, 23, 42, 0.07);
-  --shadow-rule-card:
+  --ax-shadow-card:
     0 0 0 1px rgba(0, 0, 0, 0.06),
     0 1px 2px -1px rgba(0, 0, 0, 0.06),
     0 12px 32px -24px rgba(15, 23, 42, 0.2);
-  --shadow-rule-card-hover:
+  --ax-shadow-card-hover:
     0 0 0 1px rgba(0, 0, 0, 0.08),
     0 2px 4px -2px rgba(0, 0, 0, 0.08),
     0 18px 40px -26px rgba(15, 23, 42, 0.24);
-  --shadow-inset-surface: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+  /* A control floating free over content, like the sidebar's expand button. */
+  --ax-shadow-overlay: 0 12px 34px rgba(0, 0, 0, 0.1);
+  --ax-shadow-inset: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
 
-  /* Radius tokens */
+  /* Still rewrites Tailwind's rounded-sm/md/lg/xl (8/12/16/24 instead of
+     4/6/8/12). Chrome is moving to rounded-frame/field/well/card; once nothing
+     depends on these, plan 015 W3-A deletes the four lines. */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 24px;
-  --radius-full: 9999px;
 
-  /* Motion tokens */
-  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);
-  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  /* Motion durations. showcase-engine.ts mirrors these as DUR, and
+     design-system.test.ts holds the two in step. */
   --motion-fast: 140ms;
   --motion-medium: 220ms;
   --motion-slow: 360ms;
 }
 
 .dark {
-  /* Background tokens - dark mode (pure neutral grays) */
-  --color-bg: #111111;
-  --color-bg-elevated: #1a1a1a;
-  --color-bg-muted: #161616;
-  --color-bg-inverse: #fafafa;
+  --ax-canvas: #0a0a0a;
+  --ax-surface: #171717;
+  --ax-sunken: #111111;
+  --ax-fill: #262626;
+  --ax-fill-strong: #404040;
+  --ax-inverse: #fafafa;
+  --ax-on-inverse: #0a0a0a;
 
-  /* Text tokens - dark mode */
-  --color-text-primary: #fafafa;
-  --color-text-secondary: #d4d4d4;
-  --color-text-muted: #a3a3a3;
-  --color-text-inverse: #111111;
+  --ax-ink: #f5f5f5;
+  --ax-ink-secondary: #d4d4d4;
+  --ax-ink-muted: #a3a3a3;
+  --ax-ink-faint: #737373;
 
-  /* Stroke/border tokens - dark mode */
-  --color-stroke: #333333;
-  --color-stroke-muted: #222222;
-  --color-stroke-strong: #525252;
+  --ax-line: rgb(255 255 255 / 0.1);
+  --ax-line-strong: rgb(255 255 255 / 0.16);
 
-  /* Semantic tokens - dark mode */
-  --color-success-muted: rgba(45, 212, 191, 0.18);
-  --color-error-muted: rgba(248, 113, 113, 0.18);
+  --ax-ring: #60a5fa;
 
-  /* Shadow tokens - dark mode */
-  --shadow-sm: none;
-  --shadow-md: none;
-  --shadow-lg: none;
-  --shadow-panel:
+  --ax-do: #34d399;
+  --ax-do-ink: #6ee7b7;
+  --ax-dont: #fda4af;
+  --ax-dont-ink: #fecdd3;
+
+  --ax-shadow-panel:
     0 1px 2px rgba(0, 0, 0, 0.3),
     0 14px 40px rgba(0, 0, 0, 0.32);
-  --shadow-rule-card:
+  --ax-shadow-card:
     0 0 0 1px rgba(255, 255, 255, 0.1),
     0 16px 40px -28px rgba(0, 0, 0, 0.9);
-  --shadow-rule-card-hover:
+  --ax-shadow-card-hover:
     0 0 0 1px rgba(255, 255, 255, 0.14),
     0 20px 44px -28px rgba(0, 0, 0, 0.95);
-  --shadow-inset-surface: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  --ax-shadow-overlay: 0 14px 42px rgba(0, 0, 0, 0.35);
+  --ax-shadow-inset: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+/* `inline` makes each utility emit the raw `var(--ax-*)` (and the font
+   stacks' `var(--font-*)` from next/font, which is set on <body>), so the value
+   resolves on the element itself rather than once at :root. */
+@theme inline {
+  --color-canvas: var(--ax-canvas);
+  --color-surface: var(--ax-surface);
+  --color-sunken: var(--ax-sunken);
+  --color-fill: var(--ax-fill);
+  --color-fill-strong: var(--ax-fill-strong);
+  --color-inverse: var(--ax-inverse);
+  --color-on-inverse: var(--ax-on-inverse);
+  --color-ink: var(--ax-ink);
+  --color-ink-secondary: var(--ax-ink-secondary);
+  --color-ink-muted: var(--ax-ink-muted);
+  --color-ink-faint: var(--ax-ink-faint);
+  --color-line: var(--ax-line);
+  --color-line-strong: var(--ax-line-strong);
+  --color-ring: var(--ax-ring);
+  --color-do: var(--ax-do);
+  --color-do-ink: var(--ax-do-ink);
+  --color-dont: var(--ax-dont);
+  --color-dont-ink: var(--ax-dont-ink);
+
+  --shadow-panel: var(--ax-shadow-panel);
+  --shadow-card: var(--ax-shadow-card);
+  --shadow-card-hover: var(--ax-shadow-card-hover);
+  --shadow-overlay: var(--ax-shadow-overlay);
+
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-source-serif), ui-serif, Georgia, serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Theme-independent scales. `static` emits every variable even when no
+   utility uses it, because inline styles (sidebar.tsx, the drag showcases)
+   read `var(--ease-*)` directly and Tailwind cannot see those uses. */
+@theme static {
+  /* Concentric radii: card 28 = well 20 + 8 padding; well 20 = frame 10 + 10. */
+  --radius-frame: 10px;
+  --radius-field: 16px;
+  --radius-well: 20px;
+  --radius-card: 28px;
+
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out-strong: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+
+  /* What a bare `transition-colors` (no duration-*, no ease-*) runs at. */
+  --default-transition-duration: 140ms;
+  --default-transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Tailwind has no duration namespace, so the motion tokens become utilities
+   here. Setting --tw-duration too keeps `transition-colors duration-fast`
+   correct whichever of the two Tailwind happens to emit last. */
+@utility duration-fast {
+  --tw-duration: var(--motion-fast);
+  transition-duration: var(--motion-fast);
+}
+
+@utility duration-medium {
+  --tw-duration: var(--motion-medium);
+  transition-duration: var(--motion-medium);
+}
+
+@utility duration-slow {
+  --tw-duration: var(--motion-slow);
+  transition-duration: var(--motion-slow);
 }
 
 /* ==========================================================================
    BASE STYLES
+
+   Element defaults MUST stay inside `@layer base`. Unlayered rules beat every
+   layered Tailwind utility, so at the top level `p { text-wrap: pretty }`
+   silently wins over `text-balance`, the heading face wins over `font-mono`,
+   and `input { background }` wins over the field's own `bg-*` — the utility
+   is emitted but has no effect.
    ========================================================================== */
 
-html {
-  background-color: var(--color-bg);
-  color-scheme: light;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-.dark {
-  color-scheme: dark;
-}
-
-.theme-change-lock,
-.theme-change-lock *,
-.theme-change-lock *::before,
-.theme-change-lock *::after {
-  transition: none !important;
-  animation-duration: 0.01ms !important;
-  animation-delay: 0ms !important;
-}
-
-:where(input, textarea, select) {
-  background-color: var(--color-bg-elevated);
-  color: var(--color-text-primary);
-}
-
-body {
-  font-family: var(--font-manrope), sans-serif;
-  color: var(--color-text-primary);
-  background: var(--color-bg);
-  min-height: 100vh;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* These element defaults MUST stay inside `@layer base`. Unlayered rules beat
-   every layered Tailwind utility, so at the top level `p { text-wrap: pretty }`
-   silently wins over `text-balance`/`text-pretty` and the heading font-family
-   wins over `font-mono` — the utility is emitted but has no effect. */
 @layer base {
+  html {
+    background-color: var(--ax-canvas);
+    color-scheme: light;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .dark {
+    color-scheme: dark;
+  }
+
+  /* --theme() inlines each stack instead of reading var(--font-sans): next/font
+     sets --font-manrope on <body>, so a --font-sans resolved at :root would hold
+     an undefined reference and the face would be lost. */
+  body {
+    font-family: --theme(--font-sans);
+    color: var(--ax-ink);
+    background: var(--ax-canvas);
+    min-height: 100vh;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :where(input, textarea, select) {
+    background-color: var(--ax-surface);
+    color: var(--ax-ink);
+  }
+
   p,
   li,
   figcaption,
@@ -172,51 +243,326 @@ body {
   h4,
   h5,
   h6 {
-    font-family: var(--font-source-serif), serif;
+    font-family: --theme(--font-serif);
     text-wrap: balance;
   }
 
-  code {
-    font-family: var(--font-plex-mono), monospace;
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: --theme(--font-mono);
   }
+
+  /* One focus treatment for every control: a11y-1's own Do. Zero specificity,
+     so a component can still adjust the offset with a utility. */
+  :where(
+      a[href],
+      button,
+      [role="button"],
+      input,
+      select,
+      textarea,
+      summary,
+      [tabindex]:not([tabindex="-1"])
+    ):focus-visible {
+    outline: 2px solid var(--ax-ring);
+    outline-offset: 2px;
+  }
+}
+
+/* Swapping themes must not tween every colour on the page. Unlayered and
+   !important on purpose: it has to beat everything for one frame. */
+.theme-change-lock,
+.theme-change-lock *,
+.theme-change-lock *::before,
+.theme-change-lock *::after {
+  transition: none !important;
+  animation-duration: 0.01ms !important;
+  animation-delay: 0ms !important;
 }
 
 /* ==========================================================================
    COMPONENT STYLES
+
+   Layered so the utilities written next to these classes win, the same way
+   they would for any other Tailwind class.
    ========================================================================== */
 
-.glass {
-  background: var(--color-bg-elevated);
-  border: 1px solid var(--color-stroke);
+@layer components {
+  .glass {
+    background: var(--ax-surface);
+    border: 1px solid var(--ax-line);
+  }
+
+  /*
+   * Shared elevation for the floating sidebar and the right-side rule drawer.
+   * A soft two-layer ambient + key shadow rather than one heavy drop, so the
+   * panels read as gently lifted instead of casting a hard cloud.
+   */
+  .panel-shadow {
+    box-shadow: var(--ax-shadow-panel);
+  }
+
+  .rule-card {
+    background: var(--ax-surface);
+    box-shadow: var(--ax-shadow-card);
+    transition:
+      transform var(--motion-medium) var(--ease-out-strong),
+      box-shadow var(--motion-fast) var(--ease-out-strong);
+    content-visibility: auto;
+    contain-intrinsic-size: 0 560px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .rule-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--ax-shadow-card-hover);
+    }
+  }
+
+  .rule-card-panel,
+  .preview-frame {
+    box-shadow: var(--ax-shadow-inset);
+  }
+
+  /* Press feedback. Owns the element's transitions, so a pressable element
+     should not also carry transition-* or duration-* utilities: those replace
+     this list and the press scale snaps. */
+  .pressable {
+    transition-property: transform, background-color, border-color, color, opacity;
+    transition-duration: var(--motion-fast);
+    transition-timing-function: var(--ease-out-strong);
+  }
+
+  .pressable:active {
+    transform: scale(0.96);
+  }
+
+  /* Enter once, then let go. `backwards` holds the from-frame only during the
+     delay, and `translate` composes with any transform the element carries
+     (the card hover lift), so nothing is left pinned at opacity 0 or at a
+     stale transform after the entrance ends. */
+  .reveal {
+    animation: fadeUp 240ms var(--ease-out-strong) var(--delay, 0ms) backwards;
+  }
+
+  .sidebar-scroll::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .sidebar-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .sidebar-scroll::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 999px;
+  }
+
+  .sidebar-scroll:hover::-webkit-scrollbar-thumb {
+    background: rgba(23, 23, 23, 0.18);
+  }
+
+  .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(23, 23, 23, 0.3);
+  }
+
+  .dark .sidebar-scroll:hover::-webkit-scrollbar-thumb {
+    background: rgba(163, 163, 163, 0.28);
+  }
+
+  .dark .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(163, 163, 163, 0.42);
+  }
+
+  .drawer-scroll {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .drawer-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  /*
+   * Sticky header for the right-side rule drawer. The backdrop blur eases between
+   * a resting strength and a lighter one while the pane is actively scrolling —
+   * heavy blur during motion smears the moving content underneath and taxes the
+   * GPU, so we drop it mid-scroll and fade it back once the scroll settles. The
+   * backdrop-filter is set imperatively from the scroll handler; this transition
+   * is what turns those discrete changes into a fade.
+   */
+  .drawer-sticky-header {
+    /* 20px is the safe ceiling — above it Safari can fall back to CPU
+       compositing and jank the scroll. The handler drops this to 6px while
+       scrolling, so the heavier resting blur never paints mid-scroll. */
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    transition:
+      -webkit-backdrop-filter var(--motion-medium) var(--ease-out-strong),
+      backdrop-filter var(--motion-medium) var(--ease-out-strong),
+      border-color var(--motion-medium) var(--ease-out-strong);
+  }
+
+  /* Same rule as .reveal: the from-frame is held only through each element's
+     delay, and no will-change outlives the entrance. */
+  .rule-drawer-stagger {
+    animation: rule-drawer-rise 420ms var(--ease-emphasized) backwards;
+  }
+
+  /*
+   * Stagger by element type rather than :nth-child — the first child of
+   * .rule-drawer-content is an sr-only <Drawer.Description>, which would throw
+   * off positional indexing. header → section → aside is the visual order.
+   */
+  .rule-drawer-content header.rule-drawer-stagger { animation-delay: 0ms; }
+  .rule-drawer-content section.rule-drawer-stagger { animation-delay: 80ms; }
+  .rule-drawer-content aside.rule-drawer-stagger { animation-delay: 160ms; }
+
+  /*
+   * The drawer's section labels are real <h4> headings (for screen-reader
+   * outline), but globals forces all headings to the serif display face. These
+   * are small sans metadata labels, so restore the body sans face for them.
+   */
+  .drawer-label {
+    font-family: --theme(--font-sans);
+  }
+
+  .skill-modal-root {
+    /* Defaults match the component's inline values (skill-bonus.tsx) — the
+       inline style is the source of truth; keep these in sync. */
+    --skill-modal-open-duration: 280ms;
+    --skill-modal-close-duration: 180ms;
+  }
+
+  .skill-modal-scrim {
+    opacity: 0;
+    will-change: opacity;
+    transition:
+      opacity var(--skill-modal-close-duration) var(--ease-out-strong);
+  }
+
+  .skill-modal-panel {
+    opacity: 0;
+    transform: translate3d(0, 28px, 0) scale(0.985);
+    transform-origin: center top;
+    will-change: transform, opacity;
+    transition:
+      opacity var(--skill-modal-close-duration) var(--ease-out-strong),
+      transform var(--skill-modal-close-duration) var(--ease-out-strong);
+  }
+
+  .skill-modal-content {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+    will-change: transform, opacity;
+    transition:
+      opacity var(--skill-modal-close-duration) var(--ease-out-strong),
+      transform var(--skill-modal-close-duration) var(--ease-out-strong);
+  }
+
+  .skill-modal-root[data-state="open"] .skill-modal-scrim {
+    opacity: 1;
+    transition-duration: var(--skill-modal-open-duration);
+    transition-timing-function: var(--ease-out-strong);
+  }
+
+  .skill-modal-root[data-state="open"] .skill-modal-panel {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    transition-duration: var(--skill-modal-open-duration);
+    transition-timing-function: var(--ease-out-strong);
+  }
+
+  .skill-modal-root[data-state="open"] .skill-modal-content {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition-delay: 36ms;
+    transition-duration: var(--skill-modal-open-duration);
+    transition-timing-function: var(--ease-out-strong);
+  }
+
+  .skip-link {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    transform: translateY(-200%);
+    padding: 8px 14px;
+    border-radius: 9999px;
+    background: var(--ax-surface);
+    color: var(--ax-ink);
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid var(--ax-line);
+    transition: transform var(--motion-fast) var(--ease-out-strong);
+    z-index: 50;
+  }
+
+  .skip-link:focus {
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal,
+    .rule-drawer-stagger {
+      animation: none;
+    }
+
+    .rule-card {
+      transition: none;
+    }
+
+    .rule-card:hover {
+      transform: none;
+    }
+
+    .pressable {
+      transition: none;
+    }
+
+    .pressable:active {
+      transform: none;
+    }
+
+    .drawer-sticky-header {
+      transition: border-color var(--motion-medium) var(--ease-out-strong);
+    }
+
+    .skill-modal-scrim,
+    .skill-modal-panel,
+    .skill-modal-content {
+      transition: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
 }
 
-.dark .glass {
-  background: var(--color-bg-elevated);
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
 }
 
-/*
- * Shared elevation for the floating sidebar and the right-side rule drawer.
- * A soft two-layer ambient + key shadow rather than one heavy drop, so the
- * panels read as gently lifted instead of casting a hard cloud.
- */
-.panel-shadow {
-  box-shadow: var(--shadow-panel);
+@keyframes rule-drawer-rise {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+    filter: blur(6px);
+  }
 }
 
-.rule-card {
-  background: var(--color-bg-elevated);
-  box-shadow: var(--shadow-rule-card);
-  transition:
-    transform var(--motion-medium) var(--ease-out-strong),
-    box-shadow var(--motion-fast) var(--ease-out-strong);
-  content-visibility: auto;
-  contain-intrinsic-size: 0 560px;
-}
+/* ==========================================================================
+   LAYOUT LANE
 
-.rule-card-panel,
-.preview-frame {
-  box-shadow: var(--shadow-inset-surface);
-}
+   Deliberately unlayered. The lane's padding is geometry derived from the
+   sidebar and drawer footprints, and it has to beat the `px-*` utilities the
+   page puts on the same element for phones. The padding snaps when a panel
+   opens or closes; only the panels themselves move. Animating padding would
+   reflow every card on every frame (motion-14).
+   ========================================================================== */
 
 @media (min-width: 768px) {
   :root {
@@ -239,9 +585,6 @@ body {
     --lane-pad-right: 1rem;
     padding-left: var(--lane-pad-left);
     padding-right: var(--lane-pad-right);
-    transition: padding-left 360ms var(--ease-drawer),
-      padding-right 360ms var(--ease-drawer);
-    will-change: padding-left, padding-right;
   }
 }
 
@@ -280,227 +623,52 @@ body {
   }
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .rule-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-rule-card-hover);
-  }
+/* ==========================================================================
+   VAUL DRAWER TIMING
+
+   vaul ships 500ms both ways. Enter on the slow token, exit on the medium one
+   (motion-6/7), on the same curve the sidebar uses. vaul injects its own
+   stylesheet at runtime and writes inline transitions while dragging, hence
+   !important. It animates open/close with keyframes and drags with a
+   transition, so both durations are set.
+   ========================================================================== */
+
+[data-vaul-drawer],
+[data-vaul-overlay] {
+  transition-duration: var(--motion-slow) !important;
+  transition-timing-function: var(--ease-drawer) !important;
+  animation-duration: var(--motion-slow) !important;
+  animation-timing-function: var(--ease-drawer) !important;
 }
 
-.pressable {
-  transition-property: transform, background-color, border-color, color;
-  transition-duration: var(--motion-fast);
-  transition-timing-function: var(--ease-out-strong);
-}
-
-.pressable:active {
-  transform: scale(0.96);
-}
-
-.reveal {
-  opacity: 0;
-  transform: translateY(8px);
-  animation: fadeUp 420ms var(--ease-out-strong) forwards;
-  animation-delay: var(--delay, 0ms);
-}
-
-.sidebar-scroll::-webkit-scrollbar {
-  width: 4px;
-}
-
-.sidebar-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.sidebar-scroll::-webkit-scrollbar-thumb {
-  background: transparent;
-  border-radius: 999px;
-}
-
-.sidebar-scroll:hover::-webkit-scrollbar-thumb {
-  background: rgba(23, 23, 23, 0.18);
-}
-
-.sidebar-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(23, 23, 23, 0.3);
-}
-
-.dark .sidebar-scroll:hover::-webkit-scrollbar-thumb {
-  background: rgba(163, 163, 163, 0.28);
-}
-
-.dark .sidebar-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(163, 163, 163, 0.42);
-}
-
-.drawer-scroll {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.drawer-scroll::-webkit-scrollbar {
-  display: none;
-}
-
-/*
- * Sticky header for the right-side rule drawer. The backdrop blur eases between
- * a resting strength and a lighter one while the pane is actively scrolling —
- * heavy blur during motion smears the moving content underneath and taxes the
- * GPU, so we drop it mid-scroll and fade it back once the scroll settles. The
- * backdrop-filter is set imperatively from the scroll handler; this transition
- * is what turns those discrete changes into a fade.
- */
-.drawer-sticky-header {
-  /* 20px is the safe ceiling — above it Safari can fall back to CPU
-     compositing and jank the scroll. The handler drops this to 6px while
-     scrolling, so the heavier resting blur never paints mid-scroll. */
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-  transition:
-    -webkit-backdrop-filter var(--motion-medium) var(--ease-out-strong),
-    backdrop-filter var(--motion-medium) var(--ease-out-strong),
-    border-color var(--motion-medium) var(--ease-out-strong);
+[data-vaul-drawer][data-state="closed"],
+[data-vaul-overlay][data-state="closed"] {
+  transition-duration: var(--motion-medium) !important;
+  animation-duration: var(--motion-medium) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .drawer-sticky-header {
-    transition: border-color var(--motion-medium) var(--ease-out-strong);
-  }
-}
-
-.rule-drawer-stagger {
-  opacity: 0;
-  transform: translateY(8px);
-  filter: blur(6px);
-  animation: rule-drawer-rise 420ms cubic-bezier(0.2, 0, 0, 1) forwards;
-  will-change: opacity, transform, filter;
-}
-
-/*
- * Stagger by element type rather than :nth-child — the first child of
- * .rule-drawer-content is an sr-only <Drawer.Description>, which would throw
- * off positional indexing. header → section → aside is the visual order.
- */
-.rule-drawer-content header.rule-drawer-stagger { animation-delay: 0ms; }
-.rule-drawer-content section.rule-drawer-stagger { animation-delay: 80ms; }
-.rule-drawer-content aside.rule-drawer-stagger { animation-delay: 160ms; }
-
-@keyframes rule-drawer-rise {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .rule-drawer-stagger {
-    animation: none;
-    opacity: 1;
-    transform: none;
-    filter: none;
-  }
-}
-
-/*
- * The drawer's section labels are real <h4> headings (for screen-reader
- * outline), but globals forces all headings to the serif display face. These
- * are small sans metadata labels, so restore the body sans face for them.
- */
-.drawer-label {
-  font-family: var(--font-manrope), sans-serif;
-}
-
-.skill-modal-root {
-  /* Defaults match the component's inline values (skill-bonus.tsx) — the
-     inline style is the source of truth; keep these in sync. */
-  --skill-modal-open-duration: 280ms;
-  --skill-modal-close-duration: 180ms;
-}
-
-.skill-modal-scrim {
-  opacity: 0;
-  will-change: opacity;
-  transition:
-    opacity var(--skill-modal-close-duration) var(--ease-out-strong);
-}
-
-.skill-modal-panel {
-  opacity: 0;
-  transform: translate3d(0, 28px, 0) scale(0.985);
-  transform-origin: center top;
-  will-change: transform, opacity;
-  transition:
-    opacity var(--skill-modal-close-duration) var(--ease-out-strong),
-    transform var(--skill-modal-close-duration) var(--ease-out-strong);
-}
-
-.skill-modal-content {
-  opacity: 0;
-  transform: translate3d(0, 10px, 0);
-  will-change: transform, opacity;
-  transition:
-    opacity var(--skill-modal-close-duration) var(--ease-out-strong),
-    transform var(--skill-modal-close-duration) var(--ease-out-strong);
-}
-
-.skill-modal-root[data-state="open"] .skill-modal-scrim {
-  opacity: 1;
-  transition-duration: var(--skill-modal-open-duration);
-  transition-timing-function: var(--ease-out-strong);
-}
-
-.skill-modal-root[data-state="open"] .skill-modal-panel {
-  opacity: 1;
-  transform: translate3d(0, 0, 0) scale(1);
-  transition-duration: var(--skill-modal-open-duration);
-  transition-timing-function: var(--ease-out-strong);
-}
-
-.skill-modal-root[data-state="open"] .skill-modal-content {
-  opacity: 1;
-  transform: translate3d(0, 0, 0);
-  transition-delay: 36ms;
-  transition-duration: var(--skill-modal-open-duration);
-  transition-timing-function: var(--ease-out-strong);
-}
-
-@keyframes fadeUp {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .reveal {
-    animation: none;
-    opacity: 1;
-    transform: none;
+  /* Panels jump instead of travelling. A 0.01ms animation (not `none`) still
+     fires animationend, which the drawer waits for before it unmounts. */
+  .main-lane-shell,
+  .sidebar-motion,
+  [data-vaul-overlay] {
+    transition: none !important;
   }
 
-  .rule-card {
-    transition: none;
+  /* [data-state] matches the specificity of the exit rule above, which
+     would otherwise keep its 220ms under reduced motion. */
+  [data-vaul-drawer][data-state],
+  [data-vaul-overlay][data-state] {
+    transition-duration: 0s !important;
+    animation-duration: 0.01ms !important;
   }
 
-  .rule-card:hover {
-    transform: none;
-  }
-
-  .pressable {
-    transition: none;
-  }
-
-  .pressable:active {
-    transform: none;
-  }
-
-  .skill-modal-scrim,
-  .skill-modal-panel,
-  .skill-modal-content {
-    transition: none;
-    opacity: 1;
-    transform: none;
+  /* Hold the exit frame. Without it the panel paints back at its open
+     position for one frame between the near-instant exit and unmount. */
+  [data-vaul-drawer][data-state="closed"],
+  [data-vaul-overlay][data-state="closed"] {
+    animation-fill-mode: forwards !important;
   }
 
   /*
@@ -514,24 +682,4 @@ body {
     animation-duration: 0s !important;
     transition: none !important;
   }
-}
-
-.skip-link {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  transform: translateY(-200%);
-  padding: 8px 14px;
-  border-radius: var(--radius-full);
-  background: var(--color-bg-elevated);
-  color: var(--color-text-primary);
-  font-size: 12px;
-  font-weight: 600;
-  border: 1px solid var(--color-stroke);
-  transition: transform 160ms ease;
-  z-index: 50;
-}
-
-.skip-link:focus {
-  transform: translateY(0);
 }
