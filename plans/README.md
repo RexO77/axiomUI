@@ -17,38 +17,35 @@ Each plan is self-contained: an executor needs no other context. If code has dri
 | 005 | [Easing curve visualization for motion-4/5 + easing-aware bars](005-easing-curve-visualization.md) | MEDIUM | DONE |
 | 006 | [Scene differentiation: motion-6 dropdown, motion-25 spot-the-flaw, motion-11 toolbar](006-scene-differentiation.md) | MEDIUM | DONE |
 | 007 | [Settle-back to rest, drag affordances, haptics](007-settle-back-affordances-haptics.md) | MEDIUM/LOW | DONE |
-| 008 | [Wire design tokens into Tailwind semantic utilities](008-design-tokens-into-tailwind.md) | HIGH | TODO — do NOT bulk-migrate; foundation only |
-| 009 | [Extract Button/Chip primitives into src/components/ui](009-ui-primitives.md) | MEDIUM | TODO |
-| 010 | [Migrate to semantic tokens + CI guardrails](010-token-migration-and-guardrails.md) | MEDIUM | BLOCKED — prior bulk migration corrupted class strings; needs hand migration file-by-file |
+| 008 | [Wire design tokens into Tailwind semantic utilities](008-design-tokens-into-tailwind.md) | HIGH | SUPERSEDED by 015 (W1-A) |
+| 009 | [Extract Button/Chip primitives into src/components/ui](009-ui-primitives.md) | MEDIUM | SUPERSEDED by 015 (W1-A) |
+| 010 | [Migrate to semantic tokens + CI guardrails](010-token-migration-and-guardrails.md) | MEDIUM | SUPERSEDED by 015 for guardrails; remaining migration is per touched line under 015's strict-marker ratchet, never bulk |
 | 011 | [Demo pacing: segmented speed control + retimed load demos](011-demo-pacing.md) | HIGH | DONE |
 | 012 | [Evidence: thread seismograph, live ms readouts, motion-1 tally](012-evidence-instrumentation.md) | HIGH | DONE |
 | 013 | [Scene craft: real mini-UI, accent protagonist, legible graphs](013-scene-craft.md) | HIGH | DONE |
 | 014 | [**Showcase craft spec — every motion rule, fully detailed**](014-showcase-craft-spec.md) | HIGH | DONE |
+| 015 | [**Craft round 5 — make the site obey its own catalog**](015-craft-round-5.md) | HIGH | TODO |
 
 ## Recommended execution order
 
-1. **001** — smallest, highest headline value, zero risk to others.
-2. **002**, then **003** — both add a `TriggerKind` member and a `MotionShowcase` dispatch branch; landing them in sequence avoids merge friction (each merges the other's trigger kinds if present).
-3. **004** — independent of 001–003 (touches only `drag-showcases.tsx` + `showcase-engine.ts`).
-4. **005** — independent; touches motion-4/5 specs and `runBar`.
-5. **006** — depends on knowing 002/003 landed (shared `TriggerKind` edits; also assumes motion-12/21/22 no longer need scene differentiation).
-6. **007** — last of the motion track: its settle-back interacts with every replay/action spec, so verify after the spec churn above has settled.
-7. **008** — design-system foundation; independent of the motion track, can start any time (001-007 are DONE, so no coordination needed).
-8. **009** — after 008 (needs the semantic utilities).
-9. **011 → 012 → 013** — round 2 (post-review of the executed motion track): pacing first (011 sets the durations), then instrumentation (012 builds on 011's numbers; both edit `load-showcase.tsx`), then the visual craft pass (013 rewrites scenes/graph/chrome and needs 008's utilities).
-10. **014** — the per-rule craft spec (round 3). Canonical: where it conflicts with 011-013, **014 wins**. Execute in its four batches (A copy → B scenes → C instruments → D sweep). Note for executors: the working tree may contain corrupted class strings from the aborted bulk migration (see 010's status) — if a file you touch has malformed classes, fix only the lines you edit and report the rest.
-11. **010** — strictly last overall, now BLOCKED pending hand migration: file-by-file only, no bulk find-and-replace; the guardrail test is written first so each hand-migrated file locks in.
+Plans 001–007 and 011–014 are complete; their documents remain historical context.
+Plans 008, 009 and 010 are superseded by [015](015-craft-round-5.md), including its
+incremental migration and strict-marker guardrails.
+
+1. **015 wave 1** — register tokens, shared primitives and guardrails, then prerender the catalog.
+2. **015 wave 2** — migrate the disjoint chrome and preview surfaces onto that foundation.
+   W2-L retains distribution UI and indexing requirements and owns its separate file set.
+3. **015 wave 3** — reset the radius scale only after every surface, including W2-L,
+   pins its dependent radii. Remove preview sizing across the types and all callers atomically.
 
 ## Dependencies
 
-- 002, 003, 006 all extend `TriggerKind` in `showcase-specs.tsx` and the `TRIGGERS` set in `src/data/__tests__/showcase-specs.test.ts` — executors must merge, not replace.
-- 006 must not delete `RaceScene` (005 still uses it for motion-4/5).
-- 007's settle-back should land after 002/003/006 change several specs' triggers away from `replay`.
-- 009 needs 008's utilities; its `ControlButton` wrapper must preserve the export name (demo files from 001-007 import it).
-- 010 needs 008 + 009, and must run after the motion track is merged — its batch 4 migrates the files plans 001-007 touched (`interrupt-showcase.tsx`, `load-showcase.tsx`, `tooltip-showcase.tsx`, `easing-graph.tsx`, plus the reworked chrome/specs).
-- 008/010 sanctioned visual shifts: token values win over the old hand-picked neutrals (e.g. dark borders `neutral-700 → --color-stroke-strong #525252`); anything that reads wrong gets fixed at the token, never with a `dark:` twin.
-- 011 owns every duration/stall/tick number in the load demos; 012 must not change them. 012 owns the instrumentation; 011 must not remove sampling code if it lands second (it won't if the order holds).
-- 013 must keep every `data-anim` target name intact (the engine + specs select on them) — its step 1 grep check is mandatory, and it changes pixels only, never behavior.
+- Wave 2 requires wave 1's semantic utilities and primitives. Do not execute superseded 008/009 separately.
+- W3-A waits for the wave-2 radius pins; W3-B owns the shared preview types and every size consumer.
+- Token values are authoritative for migrated chrome. Fix a token when a shared color is wrong,
+  rather than adding an independent dark utility.
+- Motion demo durations and instrumentation are retained from 011–014 unless a finding explicitly changes them.
+- Migration stays incremental; never replay 010's abandoned bulk replacement.
 
 ## Round 2 — review verdict on the executed motion track (2026-08-05)
 
@@ -100,3 +97,22 @@ tailwind-merge (so a `className` passed to a shared primitive silently loses to 
 - **motion-8 press feedback uses one-shot WAAPI tracks** rather than a retargeting transition — at 140ms the restart is imperceptible; not worth churn. Revisit only if press demos gain longer durations.
 - **motion-28's 300ms icon crossfade** — at the top of the UI budget but defensible for an explanatory toggle demo.
 - **Grid `PanePreview` autoplay** — acceptable as a preview affordance (respects reduced motion and the motion-16 self-exemption); deep dives remain gesture-driven, which is the standing product decision.
+
+## Round 5 — six-lens audit, one execution plan (2026-10-02)
+
+See **[015-craft-round-5.md](015-craft-round-5.md)**. Six lenses (chrome, reading surfaces, static
+previews, motion, design system, content/a11y/SEO) were merged, and every P0/P1 was re-checked on
+screen at commit `2089439`. Several round-4 open items are now closed: sys-12 is merged into motion-3
+(105 rules), and category names and site metadata are sentence case.
+
+The diagnosis in one line: the shell breaks the rules the catalog teaches. Unlayered radius
+tokens rewrite Tailwind's scale (comp-4's square avatar renders round), `font-mono` was never
+registered (Plex is loaded but never shown), the entrance stagger blanks deep links for ~4.5s, and the mobile
+sheet and sub-xl drawer aren't accessible overlays. The homepage prerenders only a skeleton.
+`/rules/typo-10` scrolls sideways on phones.
+
+Execution: wave 1 is the foundation (`--ax-*` tokens registered in `@theme`, fonts, `@layer
+components`, IconButton/Button/VerdictLabel, `design-system.test.ts`) plus prerendering the
+catalog. Wave 2 is eleven disjoint surface batches, plus the distribution handoff in W2-L. Wave 3 takes back Tailwind's radius scale and deletes
+the dead `size="sm"` branch. 015 supersedes 008, 009 and the guardrail half of 010. Skill-modal
+and llms.txt requirements remain in 015's W2-L distribution handoff, which owns those files.
