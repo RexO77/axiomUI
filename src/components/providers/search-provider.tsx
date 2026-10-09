@@ -2,6 +2,7 @@
 
 import {
     createContext,
+    Suspense,
     useCallback,
     useContext,
     useEffect,
@@ -39,9 +40,26 @@ function buildUrl(pathname: string, query: string): string {
     return `${pathname}${next ? `?${next}` : ""}${window.location.hash}`;
 }
 
+/**
+ * Seeds the query from `?q=` once, after hydration. `useSearchParams` makes the
+ * static prerender bail out to the nearest Suspense boundary, so it is kept in
+ * this empty leaf: the provider's children still prerender in full.
+ */
+function QueryParamSync({ onSeed }: { onSeed: (query: string) => void }) {
+    const initialQuery = useSearchParams().get("q");
+    const seeded = useRef(false);
+
+    useEffect(() => {
+        if (seeded.current) return;
+        seeded.current = true;
+        if (initialQuery) onSeed(initialQuery);
+    }, [initialQuery, onSeed]);
+
+    return null;
+}
+
 export function SearchProvider({ children }: { children: ReactNode }) {
-    const searchParams = useSearchParams();
-    const [query, setQueryState] = useState(() => searchParams.get("q") ?? "");
+    const [query, setQueryState] = useState("");
     const inputRef = useRef<HTMLInputElement | null>(null);
     const syncTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
     const pathnameRef = useRef(typeof window !== "undefined" ? window.location.pathname : "/");
@@ -115,7 +133,14 @@ export function SearchProvider({ children }: { children: ReactNode }) {
         [query, setQuery, focusSearch]
     );
 
-    return <SearchContext.Provider value={value}>{children}</SearchContext.Provider>;
+    return (
+        <SearchContext.Provider value={value}>
+            <Suspense fallback={null}>
+                <QueryParamSync onSeed={setQueryState} />
+            </Suspense>
+            {children}
+        </SearchContext.Provider>
+    );
 }
 
 export function useSearch(): SearchContextValue {
