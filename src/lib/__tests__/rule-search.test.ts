@@ -12,19 +12,46 @@ describe("filterRules", () => {
     expect(filterRules("   ")).toEqual(rules);
   });
 
-  it("matches title, desc, do, dont and tags case-insensitively", () => {
-    const results = filterRules("  BUTTON ");
+  it("returns every matching rule in catalog order", () => {
+    const expected = rules.filter((rule) =>
+      [rule.title, rule.desc, rule.do, rule.dont, ...rule.tags]
+        .join("\n")
+        .toLowerCase()
+        .includes("button"),
+    );
 
-    expect(results.length).toBeGreaterThan(0);
-    expect(results.length).toBeLessThan(rules.length);
-    for (const rule of results) {
-      const haystack = [rule.title, rule.desc, rule.do, rule.dont, ...rule.tags]
-        .join(" ")
-        .toLowerCase();
-      expect(haystack).toContain("button");
-    }
-    expect(results).toEqual(rules.filter((rule) => results.includes(rule)));
+    expect(expected.length).toBeGreaterThan(0);
+    expect(expected.length).toBeLessThan(rules.length);
+    expect(filterRules("  BUTTON ")).toEqual(expected);
   });
+
+  for (const [field, needle, id] of [
+    ["title", "sentence case is king", "typo-1"],
+    ["desc", "no natural rhythm", "typo-2"],
+    ["do", "tracking-wider", "typo-2"],
+    ["dont", "tracking-normal", "typo-2"],
+    ["tags", "responsive", "typo-10"],
+  ] as const) {
+    it(`finds matches carried only by ${field}, ignoring case and whitespace`, () => {
+      const target = rules.find((rule) => rule.id === id)!;
+      const matchedFields = [
+        ...(["title", "desc", "do", "dont"] as const).filter((key) =>
+          target[key].toLowerCase().includes(needle),
+        ),
+        ...(target.tags.some((tag) => tag.toLowerCase().includes(needle)) ? ["tags"] : []),
+      ];
+      expect(matchedFields).toEqual([field]);
+
+      const expected = rules.filter((rule) =>
+        [rule.title, rule.desc, rule.do, rule.dont, ...rule.tags]
+          .join("\n")
+          .toLowerCase()
+          .includes(needle),
+      );
+      expect(expected).toContain(target);
+      expect(filterRules(`  ${needle.toUpperCase()}  `)).toEqual(expected);
+    });
+  }
 
   it("returns nothing for a query no rule contains", () => {
     expect(filterRules("zzqx")).toEqual([]);
