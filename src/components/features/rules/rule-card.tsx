@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowUpRight, CheckCircle2, XCircle } from "lucide-react";
-import { memo, type CSSProperties } from "react";
+import { memo } from "react";
 import type { Rule } from "@/data/ui-logic";
 import { RulePreview } from "@/components/features/rules/rule-preview";
 import { hasShowcase } from "@/components/features/rules/demos/registry";
@@ -13,16 +13,12 @@ interface RuleCardProps {
   rule: Rule;
   isActive: boolean;
   onDeepDive: (ruleId: string) => void;
-  delay: string;
 }
 
-function RuleCardComponent({ rule, isActive, onDeepDive, delay }: RuleCardProps) {
+function RuleCardComponent({ rule, isActive, onDeepDive }: RuleCardProps) {
   const { tapSuccess } = useHaptics();
   return (
-    <article
-      className="rule-card reveal w-full max-w-[920px] rounded-[28px] p-4 sm:p-5"
-      style={{ "--delay": delay } as CSSProperties}
-    >
+    <article className="rule-card w-full max-w-[920px] rounded-[28px] p-4 sm:p-5">
       <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-start md:gap-4">
         <div className="min-w-0">
           <h4 className="text-lg font-semibold leading-snug text-neutral-900 sm:text-xl dark:text-neutral-100">{rule.title}</h4>
