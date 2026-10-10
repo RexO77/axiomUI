@@ -1,34 +1,59 @@
+// design-system: strict
 "use client";
 
-import { Search } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { Search, X } from "lucide-react";
 import { useHaptics } from "@/hooks/use-haptics";
 import { useSearch } from "@/components/providers/search-provider";
+import { IconButton } from "@/components/ui/icon-button";
 import { cn } from "@/lib/utils";
 
 export function SearchInput({ instance }: { instance: "desktop" | "mobile" }) {
     const { query, setQuery, inputRef } = useSearch();
     const { tapLight } = useHaptics();
+    const fieldRef = useRef<HTMLInputElement | null>(null);
     const isDesktop = instance === "desktop";
+
+    useEffect(() => {
+        if (!isDesktop) return;
+        const media = window.matchMedia("(min-width: 768px)");
+        const syncShortcutTarget = () => {
+            inputRef.current = media.matches ? fieldRef.current : null;
+        };
+        syncShortcutTarget();
+        media.addEventListener("change", syncShortcutTarget);
+        return () => {
+            media.removeEventListener("change", syncShortcutTarget);
+            inputRef.current = null;
+        };
+    }, [inputRef, isDesktop]);
+
+    const clear = () => {
+        tapLight();
+        setQuery("");
+        fieldRef.current?.focus();
+    };
 
     return (
         <div className="mt-6">
             <div className="relative">
                 <Search
                     aria-hidden="true"
-                    className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400 dark:text-neutral-500"
+                    className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-faint"
                 />
                 {/* form-2 in this catalog: a placeholder is not a label. The
                     field carries no visible label in either layout, so it gets
                     an explicit accessible name — and it names what it searches
                     the way the rest of the app does ("rules", not "decisions"). */}
                 <input
-                    ref={isDesktop ? inputRef : undefined}
+                    ref={fieldRef}
                     type="search"
                     id={`searchInput-${instance}`}
                     name="search"
                     aria-label="Search rules"
                     aria-keyshortcuts="/"
                     autoComplete="off"
+                    enterKeyHint="search"
                     placeholder="Search rules…"
                     value={query}
                     onFocus={() => tapLight()}
@@ -42,16 +67,32 @@ export function SearchInput({ instance }: { instance: "desktop" | "mobile" }) {
                         }
                     }}
                     className={cn(
-                        "peer w-full rounded-lg border border-neutral-200 bg-neutral-50 py-2 pl-9 text-neutral-900 placeholder:text-neutral-400 outline-none transition-colors duration-200 focus:border-neutral-300 focus:bg-white focus-visible:ring-2 focus-visible:ring-neutral-400 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:focus:border-neutral-600 dark:focus:bg-neutral-800 dark:focus-visible:ring-neutral-500",
+                        "peer [&::-webkit-search-cancel-button]:appearance-none w-full rounded-field border border-line bg-sunken py-2 pl-9 text-ink placeholder:text-ink-faint transition-colors duration-medium focus:border-line-strong focus:bg-surface focus-visible:-outline-offset-1",
                         isDesktop
-                            ? "min-h-10 pr-10 text-sm"
-                            : "min-h-11 pr-3 text-base"
+                            ? "min-h-10 pr-12 text-sm"
+                            : "min-h-11 pr-12 text-base"
                     )}
                 />
-                {isDesktop && !query ? (
+                {query ? (
+                    // Hide the native cancel glyph only alongside this replacement.
+                    // Keep pointer focus in the field and return keyboard focus
+                    // after clearing; the shared control provides a 44px hit area.
+                    <span className={cn(
+                        "absolute top-1/2 -translate-y-1/2",
+                        isDesktop ? "right-1" : "right-1.5"
+                    )}>
+                        <IconButton
+                            label="Clear search"
+                            onMouseDown={(event) => event.preventDefault()}
+                            onClick={clear}
+                        >
+                            <X aria-hidden="true" />
+                        </IconButton>
+                    </span>
+                ) : isDesktop ? (
                     <kbd
                         aria-hidden="true"
-                        className="pointer-events-none absolute right-2.5 top-1/2 flex h-5 min-w-5 -translate-y-1/2 items-center justify-center rounded-[4px] border border-neutral-200 bg-white px-1 font-sans text-[11px] font-medium text-neutral-400 transition-opacity duration-150 peer-focus:opacity-0 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-500"
+                        className="pointer-events-none absolute right-2.5 top-1/2 flex h-5 min-w-5 -translate-y-1/2 items-center justify-center rounded-[6px] border border-line bg-surface px-1 font-sans text-xs font-medium text-ink-muted transition-opacity duration-fast peer-focus:opacity-0"
                     >
                         /
                     </kbd>
