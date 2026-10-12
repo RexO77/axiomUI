@@ -1,13 +1,15 @@
+// design-system: strict
 "use client";
 
-import { ArrowUpRight, CheckCircle2, XCircle } from "lucide-react";
+import { PanelRightOpen } from "lucide-react";
 import { memo } from "react";
 import type { Rule } from "@/data/ui-logic";
 import { RulePreview } from "@/components/features/rules/rule-preview";
 import { hasShowcase } from "@/components/features/rules/demos/registry";
 import { CopyRuleButton } from "@/components/features/rules/copy-rule-button";
+import { Button } from "@/components/ui/button";
+import { VerdictLabel } from "@/components/ui/verdict-label";
 import { useHaptics } from "@/hooks/use-haptics";
-import { VERDICT_LABEL } from "@/lib/verdict";
 
 interface RuleCardProps {
   rule: Rule;
@@ -15,19 +17,34 @@ interface RuleCardProps {
   onDeepDive: (ruleId: string) => void;
 }
 
+/**
+ * Concentric by construction (comp-3): card 28 = 8 padding + well 20, and
+ * well 20 = 10 padding + preview frame 10.
+ * The title, the verdict labels and the captions share one left edge, 20px
+ * in from the card (8 + 12 for the title, 8 + 10 + 2 inside the panels).
+ *
+ * Layout follows the card's own width, not the viewport's (@container): the
+ * same 768px screen can hold a 424px card beside the sidebar or a 720px one
+ * without it, and the previews need ~300px each to read.
+ */
 function RuleCardComponent({ rule, isActive, onDeepDive }: RuleCardProps) {
   const { tapSuccess } = useHaptics();
   return (
-    <article className="rule-card w-full max-w-[920px] rounded-[28px] p-4 sm:p-5">
-      <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-start md:gap-4">
+    <article
+      id={`rule-${rule.id}`}
+      data-active={isActive}
+      className="rule-card @container w-full max-w-[920px] scroll-my-6 rounded-card p-2 data-[active=true]:outline-1 data-[active=true]:-outline-offset-1 data-[active=true]:outline-ink/25"
+    >
+      <div className="grid gap-3 px-3 pt-3 pb-1 @[600px]:grid-cols-[minmax(0,1fr)_auto] @[600px]:items-start @[600px]:gap-4">
         <div className="min-w-0">
-          <h4 className="text-lg font-semibold leading-snug text-neutral-900 sm:text-xl dark:text-neutral-100">{rule.title}</h4>
-          <p className="mt-2 text-sm leading-6 text-neutral-600 dark:text-neutral-300">{rule.desc}</p>
+          <h3 className="text-lg font-semibold leading-snug text-ink sm:text-xl">{rule.title}</h3>
+          <p className="mt-2 text-sm leading-6 text-ink-secondary">{rule.desc}</p>
         </div>
-        <div className="flex items-start gap-2 md:justify-end">
+        <div className="flex items-start gap-2 @[600px]:justify-end">
           <CopyRuleButton rule={rule} />
-          <button
-            type="button"
+          <Button
+            variant="secondary"
+            size="sm"
             aria-label={`Learn more about ${rule.title}`}
             onClick={() => {
               if (!isActive) {
@@ -35,15 +52,14 @@ function RuleCardComponent({ rule, isActive, onDeepDive }: RuleCardProps) {
                 window.setTimeout(tapSuccess, 0);
               }
             }}
-            className="pressable relative inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 text-xs font-medium text-neutral-700 after:absolute after:inset-x-0 after:-inset-y-1.5 hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-950 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:border-neutral-500 dark:hover:bg-neutral-900 dark:hover:text-neutral-50"
           >
             Learn more
-            <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" />
-          </button>
+            <PanelRightOpen aria-hidden="true" className="size-3.5" />
+          </Button>
         </div>
       </div>
 
-      <div className="mt-5 grid gap-3 md:grid-cols-2">
+      <div className="mt-4 grid gap-2 @[600px]:grid-cols-2">
         <ComparisonPanel rule={rule} variant="do" />
         <ComparisonPanel rule={rule} variant="dont" />
       </div>
@@ -55,30 +71,15 @@ export const RuleCard = memo(RuleCardComponent);
 
 function ComparisonPanel({ rule, variant }: { rule: Rule; variant: "do" | "dont" }) {
   const isDo = variant === "do";
-  const Icon = isDo ? CheckCircle2 : XCircle;
   // Motion showcases carry their own caption (richer than rule.do/dont);
   // static previews get the rule's shorthand as a single flat footer line.
   const showFooter = !hasShowcase(rule.id);
 
   return (
-    <section className="rule-card-panel flex min-w-0 flex-col rounded-[20px] bg-neutral-50/80 p-3 dark:bg-neutral-950/45">
-      {/* Same chrome voice as the motion panes (PaneChrome): 3.5 icon,
-          11px semibold label, 1.5 gap. The words come from VERDICT_LABEL so
-          card, drawer, detail page, showcase, and social image cannot drift. */}
-      <div className="flex items-center gap-1.5">
-        <Icon
-          aria-hidden="true"
-          className={isDo
-            ? "size-3.5 text-emerald-600 dark:text-emerald-400"
-            : "size-3.5 text-rose-600 dark:text-rose-300"}
-        />
-        <span className={isDo
-          ? "text-[11px] font-semibold text-emerald-700 dark:text-emerald-300"
-          : "text-[11px] font-semibold text-rose-700 dark:text-rose-200"}
-        >
-          {VERDICT_LABEL[variant]}
-        </span>
-      </div>
+    <section className="rule-card-panel flex min-w-0 flex-col rounded-well bg-sunken p-2.5">
+      {/* The words and palette come from VerdictLabel, so card, drawer,
+          detail page and showcase cannot drift. */}
+      <VerdictLabel verdict={variant} size="sm" className="px-0.5" />
 
       {/* The preview IS the card — full deep-dive detail, first impression. */}
       <div className="mt-2 flex-1">
@@ -86,7 +87,7 @@ function ComparisonPanel({ rule, variant }: { rule: Rule; variant: "do" | "dont"
       </div>
 
       {showFooter ? (
-        <p className="mt-2.5 break-words px-0.5 font-mono text-xs leading-5 text-neutral-500 dark:text-neutral-400">
+        <p className="mt-2.5 break-words px-0.5 font-mono text-xs leading-5 text-ink-muted">
           {isDo ? rule.do : rule.dont}
         </p>
       ) : null}

@@ -1,3 +1,4 @@
+// design-system: strict
 "use client";
 
 import {
@@ -17,6 +18,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { RuleCard } from "@/components/features/rules/rule-card";
 import { RuleDrawer } from "@/components/features/rules/rule-drawer";
+import { Button } from "@/components/ui/button";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { SearchProvider, useSearch } from "@/components/providers/search-provider";
 import { filterRules } from "@/lib/rule-search";
@@ -48,16 +50,90 @@ function SidebarFrame() {
     <>
       <div
         aria-hidden="true"
-        className="sticky top-0 z-40 h-[61px] border-b border-neutral-200 bg-white/80 backdrop-blur-md md:hidden dark:border-neutral-800 dark:bg-neutral-900/80"
+        className="sticky top-0 z-40 h-[61px] bg-surface/80 backdrop-blur-md md:hidden"
       />
       <div
         aria-hidden="true"
         className="pointer-events-none fixed inset-y-0 left-0 z-[80] hidden w-[312px] md:block"
       >
-        <div className="panel-shadow absolute bottom-5 left-5 top-5 w-[280px] rounded-[28px] border border-neutral-200/80 bg-white/95 dark:border-neutral-800/80 dark:bg-neutral-900/95" />
+        <div className="absolute bottom-5 left-5 top-5 w-[280px] rounded-card border border-line bg-surface/95 shadow-panel" />
       </div>
     </>
   );
+}
+
+const FOOTER_LINKS = [
+  { label: "Nischal Skanda", href: "https://www.nischal.fyi/" },
+  { label: "GitHub", href: "https://github.com/RexO77/axiomUI" },
+  { label: "llms.txt", href: "/llms.txt" },
+];
+
+/** How long typing has to pause before the match count is announced. */
+const ANNOUNCE_DELAY_MS = 300;
+
+function matchMessage(count: number) {
+  if (count === 0) return "No rules match";
+  return count === 1 ? "1 rule matches" : `${count} rules match`;
+}
+
+/**
+ * Screen-reader echo of the search result. It waits for typing to settle so
+ * a reader hears one count per pause rather than one per keystroke, and goes
+ * quiet when the query clears.
+ */
+function MatchAnnouncer({ query, count }: { query: string; count: number }) {
+  const [message, setMessage] = useState("");
+  const active = query.trim() !== "";
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(
+      () => setMessage(active ? matchMessage(count) : ""),
+      ANNOUNCE_DELAY_MS
+    );
+    return () => window.clearTimeout(timeoutId);
+  }, [active, count, query]);
+
+  return (
+    <p role="status" className="sr-only">
+      {message}
+    </p>
+  );
+}
+
+/**
+ * At xl the drawer docks beside the grid, so the open rule's card stays in
+ * view: on a deep link, a click, or arrow-key paging inside the drawer. Below
+ * xl the drawer covers the grid and there is nothing to keep in view.
+ *
+ * A neighbour glides into view. A card more than two screens away (a deep
+ * link, mostly) is jumped to: travelling half the catalog is motion for its
+ * own sake, and cards skipped by content-visibility only have a placeholder
+ * height, so a long smooth scroll aims at a stale position. The jump is
+ * re-aimed one frame later, once the card has rendered at its real height.
+ */
+function useKeepActiveCardInView(activeRuleId: string | null) {
+  useEffect(() => {
+    if (!activeRuleId || !window.matchMedia("(min-width: 1280px)").matches) {
+      return;
+    }
+
+    const card = document.getElementById(`rule-${activeRuleId}`);
+    if (!card) {
+      return;
+    }
+
+    const far = Math.abs(card.getBoundingClientRect().top) > window.innerHeight * 2;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (!far && !reduced) {
+      card.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      return;
+    }
+
+    card.scrollIntoView({ block: "nearest" });
+    const frameId = requestAnimationFrame(() => card.scrollIntoView({ block: "nearest" }));
+    return () => cancelAnimationFrame(frameId);
+  }, [activeRuleId]);
 }
 
 export default function Home() {
@@ -130,6 +206,8 @@ function HomeBody({
 
   const filteredRules = useMemo(() => filterRules(query), [query]);
 
+  useKeepActiveCardInView(activeRuleId);
+
   const grouped = useMemo(
     () =>
       categories
@@ -154,7 +232,7 @@ function HomeBody({
     : "";
 
   return (
-    <div className="flex min-h-screen flex-col bg-neutral-50 md:flex-row dark:bg-neutral-950">
+    <div className="flex min-h-screen flex-col bg-canvas md:flex-row">
       {/* Temporary: SkillBonus inside the sidebar still calls useSearchParams,
           which would bail the whole page out of the prerender. Delete this
           boundary once it reads window.location.search instead. */}
@@ -175,32 +253,30 @@ function HomeBody({
             <Header />
           </div>
 
+          <MatchAnnouncer query={query} count={filteredRules.length} />
+
           <section
             ref={rulesContainerRef}
             aria-label="Rule catalog"
-            className="space-y-8 outline-none md:space-y-10"
+            className="space-y-14 outline-none md:space-y-20"
             id="rulesContainer"
             tabIndex={-1}
           >
             {grouped.length === 0 ? (
-              <div className="glass reveal mx-auto w-full max-w-[920px] rounded-2xl p-10 text-center">
-                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
-                  <SearchX aria-hidden="true" className="h-6 w-6 text-neutral-400 dark:text-neutral-500" />
+              <div className="glass reveal mx-auto w-full max-w-[920px] rounded-card p-10 text-center">
+                <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-fill">
+                  <SearchX aria-hidden="true" className="size-6 text-ink-faint" />
                 </div>
-                <h2 className="break-words text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+                <h2 className="break-words text-lg font-semibold text-ink">
                   No rules match “{query.trim()}”
                 </h2>
-                <p className="mx-auto mt-2 max-w-sm text-pretty text-sm leading-6 text-neutral-600 dark:text-neutral-400">
+                <p className="mx-auto mt-2 max-w-sm text-pretty text-sm leading-6 text-ink-secondary">
                   Try a broader term — “button”, “font”, or “color” — or clear the
                   search to see all {rules.length} rules.
                 </p>
-                <button
-                  type="button"
-                  onClick={clearSearch}
-                  className="pressable mt-6 inline-flex min-h-11 items-center justify-center rounded-full border border-neutral-200 bg-white px-4 text-xs font-medium text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-950 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:border-neutral-500 dark:hover:bg-neutral-900 dark:hover:text-neutral-50"
-                >
+                <Button variant="secondary" onClick={clearSearch} className="mt-6">
                   Clear search
-                </button>
+                </Button>
               </div>
             ) : (
               grouped.map((group) => (
@@ -209,7 +285,10 @@ function HomeBody({
                   id={group.id}
                   className="mx-auto w-full max-w-[920px] scroll-mt-20 md:scroll-mt-10"
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-3">
+                  {/* The count sits on the heading's baseline: the heading is the
+                      row's only baseline participant (self-baseline), so the
+                      icon can stay optically centred on the heading's line. */}
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                     <div className="flex items-center gap-3">
                       <span className="flex h-7 w-6 shrink-0 items-center justify-center sm:h-8">
                         <CategoryIcon
@@ -217,17 +296,17 @@ function HomeBody({
                           className="h-5 w-5 -translate-y-px"
                         />
                       </span>
-                      <h2 className="text-xl font-semibold leading-7 text-neutral-900 sm:text-2xl sm:leading-8 dark:text-neutral-100">
+                      <h2 className="self-baseline text-xl font-semibold leading-7 text-ink sm:text-2xl sm:leading-8">
                         {group.name}
                       </h2>
                     </div>
 
-                    <span className="whitespace-nowrap rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-medium tabular-nums text-neutral-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400">
+                    <span className="whitespace-nowrap text-sm tabular-nums text-ink-muted">
                       {group.rules.length} {group.rules.length === 1 ? "rule" : "rules"}
                     </span>
                   </div>
 
-                  <div className="mt-4 grid grid-cols-1 gap-4 md:mt-6 md:gap-6">
+                  <div className="mt-4 grid grid-cols-1 gap-4 md:gap-6">
                     {group.rules.map((rule) => (
                       <RuleCard
                         key={rule.id}
@@ -242,11 +321,22 @@ function HomeBody({
             )}
           </section>
 
-          <footer className="glass mx-auto w-full max-w-[920px] rounded-2xl px-8 py-7 text-center">
-            <div aria-hidden="true" className="mx-auto mb-4 h-px w-10 bg-neutral-200 dark:bg-neutral-800" />
-            <p className="text-pretty text-sm leading-6 text-neutral-500 dark:text-neutral-400">
+          <footer className="mx-auto flex w-full max-w-[920px] flex-col gap-2 pt-6 pb-10 text-sm text-ink-muted sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+            <p className="text-pretty leading-6">
               Built for consistency. Break rules only after mastering them.
             </p>
+            <ul className="-mx-2 flex flex-wrap items-center">
+              {FOOTER_LINKS.map((link) => (
+                <li key={link.href}>
+                  <a
+                    href={link.href}
+                    className="inline-flex min-h-11 items-center rounded-full px-2 hover:text-ink sm:min-h-8"
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </footer>
         </div>
       </main>

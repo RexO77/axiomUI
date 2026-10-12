@@ -1,8 +1,11 @@
+// design-system: strict
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { AlertCircle, Check, Copy } from "lucide-react";
 import type { Rule } from "@/data/ui-logic";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
 import { useHaptics } from "@/hooks/use-haptics";
 import { cn } from "@/lib/utils";
 import { absoluteUrl } from "@/lib/site";
@@ -23,9 +26,10 @@ async function copyText(text: string): Promise<boolean> {
     }
   }
 
-  // Fallback for non-secure origins (e.g. previewing over a LAN IP).
+  // Keep focus on the control when the legacy clipboard path borrows it.
+  const previousFocus = document.activeElement;
+  const textarea = document.createElement("textarea");
   try {
-    const textarea = document.createElement("textarea");
     textarea.value = text;
     textarea.setAttribute("readonly", "");
     textarea.style.position = "fixed";
@@ -36,10 +40,14 @@ async function copyText(text: string): Promise<boolean> {
     textarea.focus();
     textarea.select();
     const ok = document.execCommand("copy");
-    document.body.removeChild(textarea);
     return ok;
   } catch {
     return false;
+  } finally {
+    textarea.remove();
+    if (previousFocus instanceof HTMLElement) {
+      previousFocus.focus({ preventScroll: true });
+    }
   }
 }
 
@@ -108,18 +116,15 @@ export function CopyRuleButton({ rule, variant = "pill", className }: CopyRuleBu
   if (variant === "icon") {
     return (
       <>
-        <button
-          type="button"
-          onClick={() => void handleCopy()}
-          aria-label={ariaLabel}
+        <IconButton
+          size="md"
+          label={ariaLabel}
           title="Copy rule"
-          className={cn(
-            "pressable inline-flex size-11 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100",
-            className
-          )}
+          onClick={() => void handleCopy()}
+          className={className}
         >
-          <CopyGlyph isCopied={isCopied} isError={isError} className="size-4" />
-        </button>
+          <CopyGlyph isCopied={isCopied} isError={isError} className="size-[18px]" />
+        </IconButton>
         <CopyAnnouncer message={announcement} />
       </>
     );
@@ -127,20 +132,37 @@ export function CopyRuleButton({ rule, variant = "pill", className }: CopyRuleBu
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => void handleCopy()}
+      <Button
+        variant="secondary"
+        size="sm"
         aria-label={ariaLabel}
-        className={cn(
-          "pressable relative inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 text-xs font-medium text-neutral-700 after:absolute after:inset-x-0 after:-inset-y-1.5 hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-950 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:border-neutral-500 dark:hover:bg-neutral-900 dark:hover:text-neutral-50",
-          className
-        )}
+        onClick={() => void handleCopy()}
+        className={className}
       >
-        <CopyGlyph isCopied={isCopied} isError={isError} className="size-3.5" />
-        {label}
-      </button>
+        <FixedWidth widest="Copied">
+          <CopyGlyph isCopied={isCopied} isError={isError} className="size-3.5" />
+          {label}
+        </FixedWidth>
+      </Button>
       <CopyAnnouncer message={announcement} />
     </>
+  );
+}
+
+// Holds the pill at the width of its widest state, so the Learn more pill
+// beside it never shifts when "Copy" becomes "Copied". An invisible copy of
+// the widest word (a pseudo-element, so it stays out of the page text, with
+// room for the 14px glyph and 6px gap) shares one grid cell with the live
+// glyph and label, which are centred as a unit: the slack splits evenly
+// between the two ends and the glyph-to-word gap stays 6px.
+function FixedWidth({ widest, children }: { widest: string; children: ReactNode }) {
+  return (
+    <span
+      data-widest={widest}
+      className="grid justify-items-center before:invisible before:col-start-1 before:row-start-1 before:pl-5 before:content-[attr(data-widest)]"
+    >
+      <span className="col-start-1 row-start-1 inline-flex items-center gap-1.5">{children}</span>
+    </span>
   );
 }
 
@@ -154,6 +176,12 @@ function CopyAnnouncer({ message }: { message: string }) {
     </span>
   );
 }
+
+// The check grows in from a quarter-size blur while the copy glyph shrinks
+// into one. No will-change: it would hold two compositor layers per card for
+// a swap that happens once in a while.
+const GLYPH_MOTION =
+  "flex items-center justify-center transition-[opacity,filter,scale] duration-medium ease-out-strong motion-reduce:transition-none";
 
 function CopyGlyph({
   isCopied,
@@ -171,7 +199,8 @@ function CopyGlyph({
     <span className={cn("relative shrink-0", className)} aria-hidden="true">
       <span
         className={cn(
-          "absolute inset-0 flex items-center justify-center transition-[opacity,filter,scale] duration-300 ease-in-out will-change-[opacity,filter,scale]",
+          GLYPH_MOTION,
+          "absolute inset-0",
           isCopied ? "scale-100 opacity-100 blur-0" : "blur-xs scale-[0.25] opacity-0"
         )}
       >
@@ -179,9 +208,9 @@ function CopyGlyph({
       </span>
       <span
         className={cn(
-          "flex items-center justify-center transition-[opacity,filter,scale] duration-300 ease-in-out will-change-[opacity,filter,scale]",
+          GLYPH_MOTION,
           isCopied ? "blur-xs scale-[0.25] opacity-0" : "scale-100 opacity-100 blur-0",
-          isError && "text-rose-600 dark:text-rose-300"
+          isError && "text-dont"
         )}
       >
         <BaseIcon className={className} />

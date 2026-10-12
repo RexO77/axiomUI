@@ -1,3 +1,4 @@
+// design-system: strict
 import {
   Accessibility,
   Activity,
@@ -35,9 +36,14 @@ const categoryIconColors: Record<string, string> = {
   accessibility: "text-orange-600 dark:text-orange-400",
 };
 
+/**
+ * `className` replaces the default 18px size rather than adding to it: cn()
+ * only concatenates, so a size passed next to the default would lose or win
+ * by stylesheet order. A caller that passes a class sets the size itself.
+ */
 export function CategoryIcon({
   categoryId,
-  className,
+  className = "size-[18px]",
 }: {
   categoryId: string;
   className?: string;
@@ -48,8 +54,7 @@ export function CategoryIcon({
     <Icon
       aria-hidden="true"
       className={cn(
-        "h-[18px] w-[18px]",
-        categoryIconColors[categoryId] ?? "text-neutral-500",
+        categoryIconColors[categoryId] ?? "text-ink-muted",
         className
       )}
       strokeWidth={1.8}
