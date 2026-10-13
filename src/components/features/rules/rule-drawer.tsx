@@ -550,7 +550,7 @@ function PanelBody({
             ) : null}
           </section>
 
-          <aside className="rule-drawer-stagger space-y-10">
+          <div className="rule-drawer-stagger space-y-10">
             {whyItMatters ? (
               <article>
                 <SectionHeading>Why it works</SectionHeading>
@@ -574,7 +574,7 @@ function PanelBody({
                 <NumberedList items={reviewPrompts} />
               </article>
             ) : null}
-          </aside>
+          </div>
         </div>
 
         {prev || next ? (
