@@ -1,29 +1,27 @@
+// design-system: strict
 "use client";
 
+import { AlertTriangle, ArrowLeft, ArrowRight, ArrowUpRight, X } from "lucide-react";
+import type { CSSProperties, ReactElement, RefObject, UIEvent } from "react";
 import {
-  AlertTriangle,
-  ArrowLeft,
-  ArrowRight,
-  ArrowUpRight,
-  CheckCircle2,
-  X,
-  XCircle,
-} from "lucide-react";
-import type { CSSProperties, UIEvent } from "react";
-import { useEffect, useRef, useState } from "react";
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { Drawer } from "vaul";
 import { RulePreview } from "@/components/features/rules/rule-preview";
 import { CopyRuleButton } from "@/components/features/rules/copy-rule-button";
 import { hasShowcase, MotionShowcase } from "@/components/features/rules/demos/registry";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
+import { VerdictLabel } from "@/components/ui/verdict-label";
 import type { DeepDiveSection, Rule } from "@/data/ui-logic";
 import { getAdjacentRules } from "@/data/ui-logic";
 import { useHaptics } from "@/hooks/use-haptics";
-import { VERDICT_LABEL } from "@/lib/verdict";
-import {
-  findCodeSection,
-  findListSection,
-  findTextSection,
-} from "@/lib/deep-dive-sections";
+import { findListSection, findTextSection } from "@/lib/deep-dive-sections";
 
 interface RuleDrawerProps {
   activeRule: Rule | null;
@@ -34,28 +32,49 @@ interface RuleDrawerProps {
   onNavigate: (ruleId: string) => void;
 }
 
+/*
+ * Two shells, one panel.
+ *
+ * At xl the panel docks beside the grid. The grid stays live: you can click
+ * another card, tab back to it, and a screen reader can still read it. That is
+ * a plain <aside>, because vaul always mounts a modal Radix Dialog (it does not
+ * forward `modal={false}`), which hides the rest of the page from assistive
+ * tech and traps focus even while the drawer looks non-modal.
+ *
+ * Below xl the panel covers most of the screen, so it is a real modal sheet:
+ * vaul with a scrim, focus held inside, Esc and the scrim close it.
+ *
+ * Both shells move focus to the rule title on open and hand it back to the
+ * control that opened them on close.
+ */
+
+const XL_QUERY = "(min-width: 1280px)";
+
+function subscribeXl(onChange: () => void) {
+  const mql = window.matchMedia(XL_QUERY);
+  mql.addEventListener("change", onChange);
+  return () => mql.removeEventListener("change", onChange);
+}
+
+function useIsXl() {
+  return useSyncExternalStore(
+    subscribeXl,
+    () => window.matchMedia(XL_QUERY).matches,
+    () => false,
+  );
+}
+
+const inPanel = (element: Element) => element.closest("[data-rule-panel]") !== null;
+
+/** How long the last rule stays rendered after close: the exit (220ms) plus slack. */
+const EXIT_HOLD_MS = 400;
+
 // Set both the standard and -webkit-prefixed backdrop-filter (older Safari).
 // Uses setProperty since `webkitBackdropFilter` isn't in the typed CSSOM.
 function setHeaderBlur(header: HTMLElement, radius: string) {
   const value = `blur(${radius})`;
   header.style.setProperty("backdrop-filter", value);
   header.style.setProperty("-webkit-backdrop-filter", value);
-}
-
-// Single source of truth for the icon-only close control so focus, size, and
-// label stay in sync across the loaded and empty states. The accessible name
-// matches the visible "Close panel" button in the empty state — one control,
-// one name.
-function DrawerCloseButton({ className = "" }: { className?: string }) {
-  return (
-    <Drawer.Close
-      title="Close panel"
-      className={`inline-flex size-11 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100 dark:focus-visible:ring-neutral-500 ${className}`}
-    >
-      <X aria-hidden="true" className="h-5 w-5" />
-      <span className="sr-only">Close panel</span>
-    </Drawer.Close>
-  );
 }
 
 export function RuleDrawer({
@@ -67,33 +86,121 @@ export function RuleDrawer({
   onNavigate,
 }: RuleDrawerProps) {
   const { tapMedium } = useHaptics();
+  const isXl = useIsXl();
+  const isOpen = Boolean(activeRuleId);
+
+  // Keep the last rule on screen while the panel slides out, instead of
+  // swapping its content for the empty state mid-exit.
+  const [heldRule, setHeldRule] = useState<Rule | null>(activeRule);
+  const [heldCategory, setHeldCategory] = useState(activeCategoryName);
+  if (activeRule && activeRule !== heldRule) {
+    setHeldRule(activeRule);
+    setHeldCategory(activeCategoryName);
+  }
+  useEffect(() => {
+    if (isOpen || !heldRule) return;
+    const timeoutId = window.setTimeout(() => setHeldRule(null), EXIT_HOLD_MS);
+    return () => window.clearTimeout(timeoutId);
+  }, [isOpen, heldRule]);
+
+  const rule = activeRule ?? (isOpen ? null : heldRule);
+  const categoryName = activeRule ? activeCategoryName : heldCategory;
+
   const [loadedDeepDive, setLoadedDeepDive] = useState<{
     ruleId: string;
     sections: DeepDiveSection[];
   } | null>(null);
-  const activeDeepDive =
-    loadedDeepDive && loadedDeepDive.ruleId === activeRule?.id
-      ? loadedDeepDive.sections
-      : [];
-  const isOpen = Boolean(activeRuleId);
-  const { prev, next } = activeRule
-    ? getAdjacentRules(activeRule)
-    : { prev: null, next: null };
+  const deepDive =
+    loadedDeepDive && loadedDeepDive.ruleId === rule?.id ? loadedDeepDive.sections : [];
+  const { prev, next } = rule ? getAdjacentRules(rule) : { prev: null, next: null };
+
   const headerRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const restoreBlur = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const titleEl = useRef<HTMLHeadingElement | null>(null);
+  const titleFocusPending = useRef(false);
+  const opener = useRef<HTMLElement | null>(null);
+  const titleId = useId();
 
-  // Sticky-header behaviour for the right pane: surface a hairline once the
-  // content scrolls under the bar, and lighten its backdrop blur while the
-  // pane is in motion — heavy blur during scroll smears the moving content and
-  // taxes the GPU. Full blur fades back ~120ms after the scroll settles. Driven
-  // imperatively off the header node so per-frame scroll events never re-render.
-  const handleScroll = (event: UIEvent<HTMLDivElement>) => {
+  const requestClose = useCallback(() => {
+    tapMedium();
+    onClose();
+  }, [onClose, tapMedium]);
+
+  // The title can mount after the open effect has run (the prose arrives a
+  // render late, and vaul portals its content in a layout effect), so the
+  // focus hand-off is finished by whichever happens second.
+  const titleRef = useCallback((node: HTMLHeadingElement | null) => {
+    titleEl.current = node;
+    if (node && titleFocusPending.current) {
+      requestAnimationFrame(() => {
+        if (titleEl.current !== node || !titleFocusPending.current) return;
+        titleFocusPending.current = false;
+        node.focus({ preventScroll: true });
+      });
+    }
+  }, []);
+
+  // Focus in on open, back out on close. While open, remember the last thing
+  // focused outside the panel: at xl that is the card you clicked most
+  // recently, which is where Esc should take you back to.
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const active = document.activeElement;
+    opener.current = active instanceof HTMLElement && active !== document.body ? active : null;
+    if (titleEl.current) titleEl.current.focus({ preventScroll: true });
+    else titleFocusPending.current = true;
+
+    const track = (event: FocusEvent) => {
+      const target = event.target;
+      if (target instanceof HTMLElement && !inPanel(target)) {
+        opener.current = target;
+      }
+    };
+    document.addEventListener("focusin", track);
+
+    return () => {
+      document.removeEventListener("focusin", track);
+      titleFocusPending.current = false;
+      const target = opener.current;
+      opener.current = null;
+      const current = document.activeElement;
+      const focusIsOurs =
+        !current || current === document.body || inPanel(current);
+      if (!focusIsOurs) return;
+      // A deep link has no opener: land on the page's main region instead
+      // of letting focus fall to <body> when the panel goes away.
+      if (target?.isConnected) target.focus();
+      else document.getElementById("main-content")?.focus({ preventScroll: true });
+    };
+  }, [isOpen]);
+
+  // Changing shells while open must move focus into the newly mounted panel.
+  useEffect(() => {
+    if (!isOpen) return;
+    titleFocusPending.current = true;
+    const frame = requestAnimationFrame(() => {
+      if (!titleEl.current) return;
+      titleFocusPending.current = false;
+      titleEl.current.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [isOpen, isXl]);
+
+  // Paging can remove the button that was pressed (Previous on the first
+  // rule). Put focus on the new title rather than let it fall to <body>.
+  useEffect(() => {
+    if (!isOpen || !rule) return;
+    if (document.activeElement === document.body) titleEl.current?.focus({ preventScroll: true });
+  }, [isOpen, rule]);
+
+  // Lighten the sticky header blur during scroll, then restore it after
+  // settling. Keep per-frame updates off React's render path.
+  const handleScroll = () => {
     const header = headerRef.current;
     if (!header) return;
-    header.dataset.stuck = event.currentTarget.scrollTop > 4 ? "true" : "false";
-    // Skip the scroll-driven blur change entirely under reduced motion — keep
-    // the bar at its resting blur (the stuck hairline above is non-motion).
+    // Keep the bar at its resting blur under reduced motion.
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     // Set backdrop-filter directly (not via a CSS var) so the transition on
     // .drawer-sticky-header actually animates — changing an unregistered custom
@@ -108,43 +215,19 @@ export function RuleDrawer({
   // The authored prose lives in an async chunk. Key the loaded value to the
   // rule so a slow, stale import can never flash beneath a newer rule title.
   useEffect(() => {
-    if (!activeRule) return;
+    if (!rule) return;
 
     let cancelled = false;
     import("@/data/deep-dive-builder").then(({ buildDeepDive }) => {
       if (!cancelled) {
-        setLoadedDeepDive({
-          ruleId: activeRule.id,
-          sections: buildDeepDive(activeRule),
-        });
+        setLoadedDeepDive({ ruleId: rule.id, sections: buildDeepDive(rule) });
       }
     });
 
     return () => {
       cancelled = true;
     };
-  }, [activeRule]);
-
-  // Vaul doesn't forward modal={false} to its underlying Radix Dialog, so the
-  // dismissable layer locks the page with `body { pointer-events: none }` every
-  // time the drawer opens — which kills clicks on the rule cards, so you can't
-  // click another card to switch the panel. Vaul's own reset only runs once on
-  // mount, so it never fires on later opens. Keep the body interactive while the
-  // (non-modal) drawer is open, re-asserting if Radix re-applies the lock.
-  useEffect(() => {
-    if (!isOpen) return;
-    const body = document.body;
-    const unlock = () => {
-      if (body.style.pointerEvents === "none") body.style.pointerEvents = "";
-    };
-    unlock();
-    const observer = new MutationObserver(unlock);
-    observer.observe(body, { attributes: true, attributeFilter: ["style"] });
-    return () => {
-      observer.disconnect();
-      body.style.pointerEvents = "";
-    };
-  }, [isOpen]);
+  }, [rule]);
 
   // Arrow keys page through the current category while the drawer is open.
   useEffect(() => {
@@ -155,7 +238,9 @@ export function RuleDrawer({
       if (event.metaKey || event.ctrlKey || event.altKey) return;
 
       const target = event.target instanceof Element ? event.target : null;
-      if (target?.closest("input, textarea, [contenteditable]")) return;
+      if (event.defaultPrevented || target?.closest("input, textarea, select, [contenteditable]")) return;
+      const modal = target?.closest("[aria-modal='true']");
+      if (modal && !modal.querySelector("[data-rule-panel]")) return;
 
       const targetRule = event.key === "ArrowLeft" ? prev : next;
       if (!targetRule) return;
@@ -168,252 +253,391 @@ export function RuleDrawer({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, next, onNavigate, prev]);
 
-  // A content swap starts at the top immediately; it is not a scroll animation.
+  // The docked panel has no Radix layer to close it on Esc. A field keeps its
+  // own Esc (the search box clears itself), and so does any modal on top.
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: 0, behavior: "instant" });
+    if (!isOpen || !isXl) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" || event.defaultPrevented) return;
+      const target = event.target instanceof Element ? event.target : null;
+      if (target?.closest("input, textarea, select, [contenteditable], [aria-modal='true']")) return;
+      requestClose();
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, isXl, requestClose]);
+
+  // A content swap starts at the top immediately; it is not a scroll animation.
+  // Closing leaves the scroll alone so the exit shows what you were reading.
+  useEffect(() => {
+    if (activeRuleId) scrollRef.current?.scrollTo({ top: 0, behavior: "instant" });
   }, [activeRuleId]);
 
-  const summary = findTextSection(activeDeepDive, "Summary") ?? activeRule?.desc ?? "";
-  const whyItMatters = findTextSection(activeDeepDive, "Why it matters");
-  const riskWhenIgnored = findTextSection(activeDeepDive, "Risk when ignored");
-  const implementationNotes = findListSection(activeDeepDive, "Implementation notes");
-  const reviewPrompts = findListSection(activeDeepDive, "Design review prompts");
-  const recommended = findCodeSection(activeDeepDive, "Recommended") ?? activeRule?.do ?? "";
-  const avoid = findCodeSection(activeDeepDive, "Avoid") ?? activeRule?.dont ?? "";
+  const panel = (
+    <PanelBody
+      dialog={!isXl}
+      open={isOpen}
+      titleId={titleId}
+      rule={rule}
+      categoryName={categoryName}
+      pending={contentPending}
+      deepDive={deepDive}
+      prev={prev}
+      next={next}
+      titleRef={titleRef}
+      headerRef={headerRef}
+      scrollRef={scrollRef}
+      onScroll={handleScroll}
+      onClose={requestClose}
+      onNavigate={onNavigate}
+    />
+  );
+
+  if (isXl) {
+    return (
+      <aside
+        aria-labelledby={titleId}
+        inert={!isOpen}
+        className={`sidebar-motion fixed inset-y-6 right-6 z-[90] flex w-[min(40vw,480px)] ease-drawer ${
+          isOpen ? "visible translate-x-0" : "invisible translate-x-[calc(100%+3rem)]"
+        }`}
+        style={{
+          transitionProperty: "translate, visibility",
+          transitionDuration: isOpen ? "var(--motion-slow)" : "var(--motion-medium)",
+        }}
+      >
+        <div
+          data-rule-panel=""
+          className="flex h-full w-full flex-col overflow-hidden rounded-card border border-line bg-surface/95 shadow-panel"
+        >
+          {panel}
+        </div>
+      </aside>
+    );
+  }
 
   return (
     <Drawer.Root
       direction="right"
-      modal={false}
-      noBodyStyles
-      disablePreventScroll
       open={isOpen}
       onOpenChange={(open) => {
-        if (!open && activeRuleId) {
-          tapMedium();
-          onClose();
-        }
+        if (!open && activeRuleId) requestClose();
       }}
     >
       <Drawer.Portal>
+        <Drawer.Overlay
+          className="fixed inset-0 z-[89] bg-black/20 dark:bg-black/50"
+          // Radix dismisses on pointerdown, so focus is already back on the
+          // opener when the mousedown lands here. Keep it from blurring it.
+          onMouseDown={(event) => event.preventDefault()}
+        />
         <Drawer.Content
-          className="fixed inset-y-0 right-0 z-[90] flex w-full overscroll-contain p-0 outline-none xl:inset-y-6 xl:right-6 xl:w-[min(40vw,480px)]"
-          style={{ "--initial-transform": "100%" } as CSSProperties}
+          className="fixed inset-y-0 right-0 z-[90] flex w-full overscroll-contain outline-none sm:inset-y-3 sm:right-3 sm:w-[min(calc(100vw-24px),560px)]"
+          // Start past the 12px inset and the shadow, so frame one is empty.
+          style={{ "--initial-transform": "calc(100% + 2rem)" } as CSSProperties}
+          // Focus goes back to the opener from the effect above, not to
+          // whatever Radix remembers once the exit animation unmounts it.
+          onCloseAutoFocus={(event) => event.preventDefault()}
         >
-          <div className="panel-shadow ml-auto flex h-full w-full flex-col overflow-hidden rounded-none border border-neutral-200/80 bg-white xl:rounded-[28px] xl:bg-white/95 dark:border-neutral-800/80 dark:bg-neutral-900 xl:dark:bg-neutral-900/95">
-            <Drawer.Title className="sr-only">{activeRule?.title ?? "Rule details"}</Drawer.Title>
-            <Drawer.Description className="sr-only">
-              {activeRule?.desc ?? "Implementation guidance and visual comparisons for the selected rule."}
-            </Drawer.Description>
-
-            <div
-              ref={scrollRef}
-              onScroll={handleScroll}
-              className="drawer-scroll flex-1 overflow-y-auto px-5 pb-8 sm:px-7"
-            >
-              {activeRule ? (
-                <>
-                  {/* Sticky header: keeps the category + copy/close reachable
-                      while the body scrolls. Bleeds past the scroll padding so
-                      its backdrop spans the full pane width. */}
-                  <div
-                    ref={headerRef}
-                    data-stuck="false"
-                    className="drawer-sticky-header sticky top-0 z-20 -mx-5 flex items-center justify-between gap-3 border-b border-transparent bg-white/70 px-5 py-3.5 data-[stuck=true]:border-neutral-200/80 sm:-mx-7 sm:px-7 dark:bg-neutral-900/70 dark:data-[stuck=true]:border-neutral-800/80"
-                  >
-                    {activeCategoryName ? (
-                      <h2 className="min-w-0 truncate text-sm font-medium text-neutral-500 dark:text-neutral-400">
-                        {activeCategoryName}
-                      </h2>
-                    ) : (
-                      <span aria-hidden="true" />
-                    )}
-                    <div className="flex shrink-0 items-center gap-1">
-                      <a
-                        href={`/rules/${activeRule.id}`}
-                        aria-label={`Open full page for ${activeRule.title}`}
-                        title="Open full page"
-                        className="pressable inline-flex size-11 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100"
-                      >
-                        <ArrowUpRight aria-hidden="true" className="size-4" />
-                      </a>
-                      <CopyRuleButton key={activeRule.id} rule={activeRule} variant="icon" />
-                      <DrawerCloseButton />
-                    </div>
-                  </div>
-
-                  <div className="rule-drawer-content space-y-10 pt-4 sm:space-y-12 sm:pt-5">
-                    {/* Keyed by category so the header only re-animates when the
-                        category changes; switching rules within a category leaves it put. */}
-                    <header key={activeRule.category} className="rule-drawer-stagger">
-                      <h3 className="text-2xl font-semibold leading-tight text-neutral-900 sm:text-3xl dark:text-neutral-50">
-                        {activeRule.title}
-                      </h3>
-                      <p className="mt-4 text-base leading-7 text-neutral-600 sm:leading-8 dark:text-neutral-300">
-                        {summary}
-                      </p>
-                    </header>
-
-                  {/* Keyed by rule so the body re-animates on every rule change,
-                      even when the header stays put within a category. */}
-                  <div key={activeRule.id} className="grid gap-10">
-                    <section className="rule-drawer-stagger space-y-10">
-                      <div className="grid gap-x-8 gap-y-8">
-                        {hasShowcase(activeRule.id) ? (
-                          <MotionShowcase ruleId={activeRule.id} />
-                        ) : null}
-
-                        <article>
-                          <div className="flex items-center gap-2">
-                            <CheckCircle2 aria-hidden="true" className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
-                            <h4 className="drawer-label text-xs font-semibold text-emerald-800 dark:text-emerald-200">
-                              {VERDICT_LABEL.do}
-                            </h4>
-                          </div>
-                          {!hasShowcase(activeRule.id) && (
-                            <div className="mt-3">
-                              <RulePreview rule={activeRule} variant="do" size="lg" />
-                            </div>
-                          )}
-                          <p className="mt-3 font-mono text-sm leading-6 text-neutral-500 dark:text-neutral-400">
-                            {recommended}
-                          </p>
-                        </article>
-
-                        <article>
-                          <div className="flex items-center gap-2">
-                            <XCircle aria-hidden="true" className="h-4 w-4 text-rose-600 dark:text-rose-300" />
-                            <h4 className="drawer-label text-xs font-semibold text-rose-800 dark:text-rose-200">
-                              {VERDICT_LABEL.dont}
-                            </h4>
-                          </div>
-                          {!hasShowcase(activeRule.id) && (
-                            <div className="mt-3">
-                              <RulePreview rule={activeRule} variant="dont" size="lg" />
-                            </div>
-                          )}
-                          <p className="mt-3 font-mono text-sm leading-6 text-neutral-500 dark:text-neutral-400">
-                            {avoid}
-                          </p>
-                        </article>
-                      </div>
-
-                      {implementationNotes.length > 0 ? (
-                        <article>
-                          <h4 className="drawer-label text-xs font-semibold text-neutral-600 dark:text-neutral-300">
-                            How to apply it
-                          </h4>
-                          <ol className="mt-4 space-y-4">
-                            {implementationNotes.map((item, index) => (
-                              <li key={`${item}-${index}`} className="flex gap-3">
-                                <span className="mt-0.5 w-5 shrink-0 text-right text-sm tabular-nums text-neutral-400 dark:text-neutral-500">
-                                  {index + 1}
-                                </span>
-                                <p className="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">{item}</p>
-                              </li>
-                            ))}
-                          </ol>
-                        </article>
-                      ) : null}
-                    </section>
-
-                    <aside className="rule-drawer-stagger space-y-10">
-                      {whyItMatters ? (
-                        <article>
-                          <h4 className="drawer-label text-xs font-semibold text-neutral-600 dark:text-neutral-300">Why it works</h4>
-                          <p className="mt-4 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">{whyItMatters}</p>
-                        </article>
-                      ) : null}
-
-                      {riskWhenIgnored ? (
-                        <article>
-                          <div className="flex items-center gap-2">
-                            <AlertTriangle aria-hidden="true" className="h-4 w-4 text-amber-700 dark:text-amber-300" />
-                            <h4 className="drawer-label text-xs font-semibold text-amber-800 dark:text-amber-200">
-                              What breaks
-                            </h4>
-                          </div>
-                          <p className="mt-4 text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">{riskWhenIgnored}</p>
-                        </article>
-                      ) : null}
-
-                      {reviewPrompts.length > 0 ? (
-                        <article>
-                          <h4 className="drawer-label text-xs font-semibold text-neutral-600 dark:text-neutral-300">Review questions</h4>
-                          <ol className="mt-4 space-y-4">
-                            {reviewPrompts.map((item, index) => (
-                              <li key={`${item}-${index}`} className="flex gap-3">
-                                <span className="mt-0.5 w-5 shrink-0 text-right text-sm tabular-nums text-neutral-400 dark:text-neutral-500">
-                                  {index + 1}
-                                </span>
-                                <p className="text-sm leading-relaxed text-neutral-700 dark:text-neutral-300">{item}</p>
-                              </li>
-                            ))}
-                          </ol>
-                        </article>
-                      ) : null}
-                    </aside>
-                  </div>
-
-                  {(prev || next) && (
-                    <nav
-                      aria-label="Rule navigation"
-                      className="flex items-center justify-between gap-4 border-t border-neutral-200 pt-6 dark:border-neutral-800"
-                    >
-                      {prev ? (
-                        <button
-                          type="button"
-                          onClick={() => onNavigate(prev.id)}
-                          className="pressable group inline-flex min-h-11 max-w-[45%] items-center gap-2 rounded-full text-sm font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
-                          aria-label={`Previous rule: ${prev.title}`}
-                        >
-                          <ArrowLeft aria-hidden="true" className="h-4 w-4 shrink-0" />
-                          <span className="truncate">{prev.title}</span>
-                        </button>
-                      ) : (
-                        <span />
-                      )}
-                      {next ? (
-                        <button
-                          type="button"
-                          onClick={() => onNavigate(next.id)}
-                          className="pressable group inline-flex min-h-11 max-w-[45%] items-center gap-2 rounded-full text-sm font-medium text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
-                          aria-label={`Next rule: ${next.title}`}
-                        >
-                          <span className="truncate">{next.title}</span>
-                          <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0" />
-                        </button>
-                      ) : (
-                        <span />
-                      )}
-                    </nav>
-                  )}
-                  </div>
-                </>
-              ) : contentPending ? (
-                <div aria-hidden="true" className="min-h-full" />
-              ) : (
-                <div className="relative pt-6">
-                  <DrawerCloseButton className="absolute right-0 top-0" />
-                  <div className="mx-auto mt-16 max-w-xl rounded-2xl border border-neutral-200 bg-white p-10 text-center dark:border-neutral-800 dark:bg-neutral-900">
-                    <h2 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-50">
-                      Nothing to show here
-                    </h2>
-                    <p className="mt-3 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">
-                      No rule is selected, or the link points at one that no longer
-                      exists. Close the panel to browse every rule, or search by keyword.
-                    </p>
-                    <Drawer.Close className="mt-6 inline-flex min-h-[44px] items-center gap-1.5 rounded-full bg-neutral-100 px-5 py-3 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 dark:focus-visible:ring-neutral-500">
-                      <X aria-hidden="true" className="h-3.5 w-3.5" />
-                      Close panel
-                    </Drawer.Close>
-                  </div>
-                </div>
-              )}
-            </div>
+          <div
+            data-rule-panel=""
+            className="flex h-full w-full flex-col overflow-hidden bg-surface shadow-panel sm:rounded-card sm:border sm:border-line"
+          >
+            {panel}
           </div>
         </Drawer.Content>
       </Drawer.Portal>
     </Drawer.Root>
+  );
+}
+
+/* ------------------------------------------------------------------------ */
+
+interface PanelBodyProps {
+  /** Inside vaul's Radix Dialog: the title and lead become its label and description. */
+  dialog: boolean;
+  open: boolean;
+  /** Labels the docked <aside>. Inside the dialog, Radix wires its own ids. */
+  titleId: string;
+  rule: Rule | null;
+  categoryName: string;
+  pending: boolean;
+  deepDive: DeepDiveSection[];
+  prev: Rule | null;
+  next: Rule | null;
+  titleRef: (node: HTMLHeadingElement | null) => void;
+  headerRef: RefObject<HTMLDivElement | null>;
+  scrollRef: RefObject<HTMLDivElement | null>;
+  onScroll: (event: UIEvent<HTMLDivElement>) => void;
+  onClose: () => void;
+  onNavigate: (ruleId: string) => void;
+}
+
+function PanelBody({
+  dialog,
+  open,
+  titleId,
+  rule,
+  categoryName,
+  pending,
+  deepDive,
+  prev,
+  next,
+  titleRef,
+  headerRef,
+  scrollRef,
+  onScroll,
+  onClose,
+  onNavigate,
+}: PanelBodyProps) {
+  // Spread, not `id={undefined}`: an explicit undefined would overwrite the
+  // id Radix's Slot gives the dialog title.
+  const labelId = dialog ? {} : { id: titleId };
+  const asTitle = (heading: ReactElement) =>
+    dialog ? <Drawer.Title asChild>{heading}</Drawer.Title> : heading;
+  const asDescription = (paragraph: ReactElement) =>
+    dialog ? <Drawer.Description asChild>{paragraph}</Drawer.Description> : paragraph;
+
+  const closeButton = (
+    <IconButton size="md" label="Close panel" title="Close panel" onClick={onClose}>
+      <X aria-hidden="true" />
+    </IconButton>
+  );
+
+  if (!rule) {
+    if (pending || !open) {
+      // The prose is a render behind the click. Keep the panel blank rather
+      // than flash the empty state, but give the dialog its name meanwhile.
+      return dialog ? (
+        <>
+          <Drawer.Title className="sr-only">Rule details</Drawer.Title>
+          <Drawer.Description className="sr-only">
+            Implementation guidance and visual comparisons for the selected rule.
+          </Drawer.Description>
+        </>
+      ) : null;
+    }
+
+    return (
+      <div className="flex flex-1 flex-col px-5 pb-8 sm:px-7">
+        <div className="-mx-5 flex justify-end px-5 py-3.5 sm:-mx-7 sm:px-7">
+          <div className="-mr-3">{closeButton}</div>
+        </div>
+        <div className="mx-auto mt-16 max-w-sm text-center">
+          {asTitle(
+            <h2
+              ref={titleRef}
+              {...labelId}
+              tabIndex={-1}
+              className="text-2xl font-semibold text-ink outline-none"
+            >
+              Nothing to show here
+            </h2>,
+          )}
+          {asDescription(
+            <p className="mt-3 text-sm leading-6 text-ink-secondary">
+              No rule is selected, or the link points at one that no longer exists. Close the
+              panel to browse every rule, or search by keyword.
+            </p>,
+          )}
+          <Button variant="secondary" onClick={onClose} className="mt-6">
+            <X aria-hidden="true" className="size-3.5" />
+            Close panel
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const summary = findTextSection(deepDive, "Summary") ?? rule.desc;
+  const whyItMatters = findTextSection(deepDive, "Why it matters");
+  const riskWhenIgnored = findTextSection(deepDive, "Risk when ignored");
+  const implementationNotes = findListSection(deepDive, "Implementation notes");
+  const reviewPrompts = findListSection(deepDive, "Design review prompts");
+  const showcase = hasShowcase(rule.id);
+
+  return (
+    <div
+      ref={scrollRef}
+      onScroll={onScroll}
+      className="drawer-scroll flex-1 overflow-y-auto px-5 pb-8 sm:px-7"
+    >
+      {/* Sticky header: keeps the category + copy/close reachable while the
+          body scrolls. Bleeds past the scroll padding so its backdrop spans
+          the full pane width. */}
+      <div
+        ref={headerRef}
+        className="drawer-sticky-header sticky top-0 z-20 -mx-5 flex items-center justify-between gap-3 bg-surface/70 px-5 py-3.5 sm:-mx-7 sm:px-7"
+      >
+        <p className="min-w-0 truncate font-sans text-sm font-medium text-ink-muted">{categoryName}</p>
+        {/* -mr-3 pulls the last glyph onto the text column's right edge. */}
+        <div className="-mr-3 flex shrink-0 items-center gap-1">
+          <IconButton
+            size="md"
+            href={`/rules/${rule.id}`}
+            label={`Open full page for ${rule.title}`}
+            title="Open full page"
+          >
+            <ArrowUpRight aria-hidden="true" />
+          </IconButton>
+          <CopyRuleButton key={rule.id} rule={rule} variant="icon" />
+          {closeButton}
+        </div>
+      </div>
+
+      <div className="rule-drawer-content space-y-10 pt-4 sm:space-y-12 sm:pt-5">
+        {/* Keyed by category so the header only re-animates when the category
+            changes; switching rules within a category leaves it put. */}
+        <header key={rule.category} className="rule-drawer-stagger">
+          {asTitle(
+            <h2
+              ref={titleRef}
+              {...labelId}
+              tabIndex={-1}
+              className="text-2xl font-semibold leading-tight text-ink outline-none sm:text-3xl"
+            >
+              {rule.title}
+            </h2>,
+          )}
+          {asDescription(<p className="mt-4 text-base leading-7 text-ink-secondary">{summary}</p>)}
+        </header>
+
+        {/* Keyed by rule so the body re-animates on every rule change, even
+            when the header stays put within a category. */}
+        <div key={rule.id} className="grid gap-10">
+          <section className="rule-drawer-stagger space-y-10">
+            {showcase ? (
+              // The showcase already labels its two panes, so the shorthand
+              // follows once, as a key, instead of as two more cards.
+              <div>
+                <MotionShowcase ruleId={rule.id} />
+                <dl className="mt-4 grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-4 gap-y-2">
+                  <dt className="flex">
+                    <VerdictLabel verdict="do" size="sm" />
+                  </dt>
+                  <dd className="min-w-0 font-mono text-sm leading-6 text-ink-muted">{rule.do}</dd>
+                  <dt className="flex">
+                    <VerdictLabel verdict="dont" size="sm" />
+                  </dt>
+                  <dd className="min-w-0 font-mono text-sm leading-6 text-ink-muted">{rule.dont}</dd>
+                </dl>
+              </div>
+            ) : (
+              <div className="grid gap-8">
+                {(["do", "dont"] as const).map((verdict) => (
+                  <article key={verdict} className="min-w-0">
+                    <h3 className="flex font-sans">
+                      <VerdictLabel verdict={verdict} size="sm" />
+                    </h3>
+                    <div className="mt-3">
+                      <RulePreview rule={rule} variant={verdict} size="lg" />
+                    </div>
+                    <p className="mt-3 font-mono text-sm leading-6 text-ink-muted">
+                      {verdict === "do" ? rule.do : rule.dont}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            )}
+
+            {implementationNotes.length > 0 ? (
+              <article>
+                <SectionHeading>How to apply it</SectionHeading>
+                <NumberedList items={implementationNotes} />
+              </article>
+            ) : null}
+          </section>
+
+          <div className="rule-drawer-stagger space-y-10">
+            {whyItMatters ? (
+              <article>
+                <SectionHeading>Why it works</SectionHeading>
+                <p className="mt-4 text-sm leading-relaxed text-ink-secondary">{whyItMatters}</p>
+              </article>
+            ) : null}
+
+            {riskWhenIgnored ? (
+              <article>
+                <h3 className="flex items-center gap-2 font-sans text-xs font-semibold text-amber-800 dark:text-amber-200">
+                  <AlertTriangle aria-hidden="true" className="size-4 text-amber-700 dark:text-amber-300" />
+                  What breaks
+                </h3>
+                <p className="mt-4 text-sm leading-relaxed text-ink-secondary">{riskWhenIgnored}</p>
+              </article>
+            ) : null}
+
+            {reviewPrompts.length > 0 ? (
+              <article>
+                <SectionHeading>Review questions</SectionHeading>
+                <NumberedList items={reviewPrompts} />
+              </article>
+            ) : null}
+          </div>
+        </div>
+
+        {prev || next ? (
+          <nav aria-label="Rule navigation" className="grid grid-cols-2 gap-4 pt-6">
+            {prev ? (
+              <PagerLink direction="prev" rule={prev} onNavigate={onNavigate} />
+            ) : null}
+            {next ? (
+              <PagerLink direction="next" rule={next} onNavigate={onNavigate} />
+            ) : null}
+          </nav>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function SectionHeading({ children }: { children: string }) {
+  return <h3 className="font-sans text-xs font-semibold text-ink-secondary">{children}</h3>;
+}
+
+function NumberedList({ items }: { items: string[] }) {
+  return (
+    <ol className="mt-4 space-y-4">
+      {items.map((item, index) => (
+        <li key={`${item}-${index}`} className="flex items-baseline gap-3">
+          <span className="w-5 shrink-0 text-right text-sm tabular-nums text-ink-muted">{index + 1}</span>
+          <p className="text-sm leading-relaxed text-ink-secondary">{item}</p>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/** A two-line pager: the direction as a small label, the title beneath it. */
+function PagerLink({
+  direction,
+  rule,
+  onNavigate,
+}: {
+  direction: "prev" | "next";
+  rule: Rule;
+  onNavigate: (ruleId: string) => void;
+}) {
+  const isNext = direction === "next";
+  const Arrow = isNext ? ArrowRight : ArrowLeft;
+
+  return (
+    <button
+      type="button"
+      onClick={() => onNavigate(rule.id)}
+      className={`pressable -mx-2 flex min-h-11 min-w-0 flex-col gap-1 rounded-frame px-2 py-1.5 text-ink-secondary hover:text-ink ${
+        isNext ? "col-start-2 items-end justify-self-end text-right" : "items-start text-left"
+      }`}
+    >
+      <span className="inline-flex items-center gap-1 text-xs text-ink-muted">
+        {isNext ? null : <Arrow aria-hidden="true" className="size-3.5" />}
+        {isNext ? "Next" : "Previous"}
+        {isNext ? <Arrow aria-hidden="true" className="size-3.5" /> : null}
+      </span>
+      <span className="line-clamp-2 text-sm font-medium">
+        {rule.title}
+      </span>
+    </button>
   );
 }
