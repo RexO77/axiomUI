@@ -1,8 +1,11 @@
+// design-system: strict
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { AlertTriangle, ArrowLeft, ArrowRight, CheckCircle2, XCircle, Tag } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, Tag } from "lucide-react";
 import { AxiomLogo } from "@/components/ui/axiom-logo";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { VerdictLabel } from "@/components/ui/verdict-label";
 import { RulePreview } from "@/components/features/rules/rule-preview";
 import { CopyRuleButton } from "@/components/features/rules/copy-rule-button";
 import { hasShowcase, MotionShowcase } from "@/components/features/rules/demos/registry";
@@ -10,10 +13,13 @@ import { hasShowcase, MotionShowcase } from "@/components/features/rules/demos/r
 import { buildDeepDive } from "@/data/deep-dive-builder";
 import { rules, categories, getAdjacentRules, getRelatedRules } from "@/data/ui-logic";
 import { findListSection, findTextSection } from "@/lib/deep-dive-sections";
-import { absoluteUrl } from "@/lib/site";
-import { VERDICT_LABEL } from "@/lib/verdict";
+import { absoluteUrl, siteConfig } from "@/lib/site";
 
 export const dynamicParams = false;
+
+// Breadcrumb links keep their line box but take an at-least-44px hit area
+// (sys-3) from a pseudo-element, so the focus outline still hugs the text.
+const CRUMB = "relative -mx-1 rounded-full px-1 after:absolute after:inset-x-0 after:-inset-y-3.5";
 
 type Props = {
     params: Promise<{ id: string }>;
@@ -38,18 +44,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const category = categories.find((c) => c.id === rule.category);
 
     return {
-        title: rule.title,
+        title: { absolute: `${rule.title} | Axiom UI` },
         description: rule.desc,
         keywords: [...rule.tags, category?.name ?? "", "design system", "UI logic"],
         openGraph: {
-            title: `${rule.title} | Axiom`,
+            title: `${rule.title} | Axiom UI`,
             description: rule.desc,
             type: "article",
             url: absoluteUrl(`/rules/${rule.id}`),
+            siteName: "Axiom UI",
+            locale: "en_US",
         },
         twitter: {
             card: "summary_large_image",
-            title: `${rule.title} | Axiom`,
+            title: `${rule.title} | Axiom UI`,
             description: rule.desc,
         },
         alternates: {
@@ -73,26 +81,25 @@ export default async function RulePage({ params }: Props) {
     const implementationNotes = findListSection(deepDive, "Implementation notes");
     const reviewPrompts = findListSection(deepDive, "Design review prompts");
     const { prev, next } = getAdjacentRules(rule);
-    const related = getRelatedRules(rule);
+    // Prev/next already sit at the foot of the page, so Related spends its
+    // three slots on rules the reader can't reach one click away.
+    const related = getRelatedRules(rule, 6)
+        .filter((r) => r.id !== prev?.id && r.id !== next?.id)
+        .slice(0, 3);
+    const showcase = hasShowcase(rule.id);
 
-    // Generate JSON-LD for this specific rule
+    // A rule is an article about one decision, not a two-step recipe. The
+    // person and website @ids resolve against the graph in the root layout.
     const jsonLd = {
         "@context": "https://schema.org",
-        "@type": "HowTo",
-        name: rule.title,
+        "@type": "TechArticle",
+        headline: rule.title,
         description: rule.desc,
-        step: [
-            {
-                "@type": "HowToStep",
-                name: VERDICT_LABEL.do,
-                text: rule.do,
-            },
-            {
-                "@type": "HowToStep",
-                name: VERDICT_LABEL.dont,
-                text: rule.dont,
-            },
-        ],
+        about: { "@type": "Thing", name: category?.name ?? "User interface design" },
+        keywords: rule.tags.join(", "),
+        url: absoluteUrl(`/rules/${rule.id}`),
+        isPartOf: { "@id": `${siteConfig.origin}/#website` },
+        author: { "@id": "https://www.nischal.fyi/#person" },
     };
 
     const breadcrumbJsonLd = {
@@ -106,7 +113,7 @@ export default async function RulePage({ params }: Props) {
     };
 
     return (
-        <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+        <div className="min-h-screen bg-canvas">
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -116,67 +123,58 @@ export default async function RulePage({ params }: Props) {
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
             />
 
-            {/* Header */}
-            <header className="sticky top-0 z-40 border-b border-neutral-200 bg-white/80 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900/80">
-                <div className="mx-auto flex max-w-3xl items-center gap-4 px-4 py-4">
+            {/* One way home: the lockup. The breadcrumb below names the
+                category, so the page never prints it twice. */}
+            <header className="sticky top-0 z-40 bg-surface/80 backdrop-blur-md">
+                <div className="mx-auto flex max-w-3xl items-center gap-4 px-4 py-3">
                     <Link
                         href="/"
-                        className="flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-200 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:border-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
-                        aria-label="Back to all rules"
+                        aria-label="Axiom UI, all rules"
+                        className="-ml-1.5 flex min-h-11 items-center gap-2 rounded-full pr-2 pl-1.5"
                     >
-                        <ArrowLeft aria-hidden="true" className="h-4 w-4" />
-                    </Link>
-                    <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-900 text-white dark:bg-white dark:text-neutral-900">
-                            <AxiomLogo className="h-4 w-4" />
-                        </div>
-                        <span className="text-sm font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-                            Axiom
+                        <span className="flex size-8 items-center justify-center rounded-full bg-inverse text-on-inverse">
+                            <AxiomLogo className="size-4" />
                         </span>
-                    </div>
+                        <span className="text-sm font-semibold tracking-tight text-ink">Axiom UI</span>
+                    </Link>
+                    <ThemeToggle className="-mr-2 ml-auto" />
                 </div>
             </header>
 
-            {/* Main Content */}
-            <main className="mx-auto max-w-3xl px-4 py-12">
-                {/* Breadcrumb */}
-                <nav aria-label="Breadcrumb" className="mb-8 text-sm text-neutral-500 dark:text-neutral-400">
-                    <Link href="/" className="hover:text-neutral-900 dark:hover:text-neutral-100">
+            <main id="main-content" tabIndex={-1} className="mx-auto max-w-3xl scroll-mt-20 px-4 pt-8 pb-12 outline-none sm:pt-12">
+                {/* The breadcrumb doubles as the eyebrow. */}
+                <nav aria-label="Breadcrumb" className="text-sm text-ink-muted">
+                    <Link href="/" className={`${CRUMB} hover:text-ink`}>
                         All rules
                     </Link>
-                    <span className="mx-2">/</span>
+                    <span aria-hidden="true" className="mx-2 text-ink-faint">/</span>
                     <Link
                         href={`/#${rule.category}`}
-                        className="text-neutral-900 hover:text-neutral-600 dark:text-neutral-100 dark:hover:text-neutral-300"
+                        className={`${CRUMB} text-ink-secondary hover:text-ink`}
                     >
                         {category?.name}
                     </Link>
                 </nav>
 
-                {/* Title Section */}
                 <article>
                     <header className="mb-12">
-                        <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
-                            {category?.name}
-                        </p>
-                        {/* Eyebrow couples tightly to the title (mt-3); the
-                            description and tags step away in growing increments. */}
-                        <h1 className="mt-3 text-4xl font-semibold text-neutral-900 dark:text-neutral-100">
+                        <h1 className="mt-3 text-4xl font-semibold text-ink">
                             {rule.title}
                         </h1>
-                        <p className="mt-4 text-lg leading-8 text-pretty text-neutral-600 dark:text-neutral-300">
+                        <p className="mt-4 max-w-[32rem] text-lg leading-7 text-ink-secondary">
                             {rule.desc}
                         </p>
 
                         {/* Tags + Cite: one muted Tag glyph labels the whole
-                            group; repeating it per pill reads as noise. */}
+                            group; repeating it per pill reads as noise. Tags are
+                            32px, the height of the Copy pill beside them. */}
                         <div className="mt-6 flex flex-wrap items-center gap-2">
-                            <Tag aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-neutral-400 dark:text-neutral-500" />
+                            <Tag aria-hidden="true" className="size-3.5 shrink-0 text-ink-faint" />
                             <span className="sr-only">Tags</span>
                             {rule.tags.map((tag) => (
                                 <span
                                     key={tag}
-                                    className="inline-flex items-center rounded-full border border-neutral-200 bg-neutral-100 px-3 py-1 text-xs font-medium whitespace-nowrap text-neutral-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
+                                    className="inline-flex h-8 items-center rounded-full border border-line bg-fill px-3 text-xs font-medium whitespace-nowrap text-ink-secondary"
                                 >
                                     {tag}
                                 </span>
@@ -185,125 +183,102 @@ export default async function RulePage({ params }: Props) {
                         </div>
                     </header>
 
-                    {/* Motion showcase (interactive do/don't comparison) */}
-                    {hasShowcase(rule.id) ? (
-                        <div className="mb-6 rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
+                    {showcase ? (
+                        // The showcase panes already carry the Do/Don't labels and
+                        // the live demo, so the shorthand appears once beneath
+                        // them instead of as two more cards.
+                        <div className="mb-12 rounded-card border border-line bg-surface p-4 sm:p-6">
                             <MotionShowcase ruleId={rule.id} />
+                            <dl className="mt-6 grid gap-x-3 gap-y-4 pt-5 sm:grid-cols-2">
+                                <div className="min-w-0">
+                                    <dt><VerdictLabel verdict="do" /></dt>
+                                    <dd className="mt-1.5 font-mono text-sm leading-6 text-ink-muted">{rule.do}</dd>
+                                </div>
+                                <div className="min-w-0">
+                                    <dt><VerdictLabel verdict="dont" /></dt>
+                                    <dd className="mt-1.5 font-mono text-sm leading-6 text-ink-muted">{rule.dont}</dd>
+                                </div>
+                            </dl>
                         </div>
-                    ) : null}
-
-                    {/* Do / Don't cards: same voice and same two words as the
-                        drawer's comparison articles — 4px circle icons, xs
-                        semibold emerald/rose labels, muted mono shorthand. */}
-                    <div className="mb-12 grid gap-4 md:grid-cols-2">
-                        <div className="rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-                            <div className="flex items-center gap-2">
-                                <CheckCircle2 aria-hidden="true" className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
-                                <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-200">
-                                    {VERDICT_LABEL.do}
-                                </span>
-                            </div>
-                            {!hasShowcase(rule.id) && (
+                    ) : (
+                        // The preview frame is the only frame. min-w-0 lets a
+                        // preview that refuses to wrap (typo-10) clip inside its
+                        // own pane instead of widening the page.
+                        <div className="mb-12 grid min-w-0 gap-6 md:grid-cols-2">
+                            <section aria-labelledby="verdict-do" className="min-w-0">
+                                <h2 id="verdict-do"><VerdictLabel verdict="do" /></h2>
                                 <div className="mt-3">
                                     <RulePreview rule={rule} variant="do" size="lg" />
                                 </div>
-                            )}
-                            <p className="mt-3 font-mono text-sm leading-6 text-neutral-500 dark:text-neutral-400">
-                                {rule.do}
-                            </p>
-                        </div>
-
-                        <div className="rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900">
-                            <div className="flex items-center gap-2">
-                                <XCircle aria-hidden="true" className="h-4 w-4 text-rose-600 dark:text-rose-300" />
-                                <span className="text-xs font-semibold text-rose-800 dark:text-rose-200">
-                                    {VERDICT_LABEL.dont}
-                                </span>
-                            </div>
-                            {!hasShowcase(rule.id) && (
+                                <p className="mt-3 font-mono text-sm leading-6 text-ink-muted">{rule.do}</p>
+                            </section>
+                            <section aria-labelledby="verdict-dont" className="min-w-0">
+                                <h2 id="verdict-dont"><VerdictLabel verdict="dont" /></h2>
                                 <div className="mt-3">
                                     <RulePreview rule={rule} variant="dont" size="lg" />
                                 </div>
-                            )}
-                            <p className="mt-3 font-mono text-sm leading-6 text-neutral-500 dark:text-neutral-400">
-                                {rule.dont}
-                            </p>
+                                <p className="mt-3 font-mono text-sm leading-6 text-ink-muted">{rule.dont}</p>
+                            </section>
                         </div>
-                    </div>
+                    )}
 
                     {/* Summary and the Do/Don't shorthand are omitted here
-                        because the page header and comparison cards show them. */}
-                    <div className="space-y-10">
+                        because the page header and comparison show them. The
+                        measure is set in rem, not ch: Manrope's zero is wide,
+                        so 65ch ran ~90 characters a line. 32rem holds body
+                        prose at 75 or fewer, and the lead shares the edge. */}
+                    <div className="max-w-[32rem] space-y-10">
                         {implementationNotes.length > 0 && (
                             <section>
-                                <h2 className="mb-4 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+                                <h2 className="mb-4 text-xl font-semibold text-ink">
                                     How to apply it
                                 </h2>
-                                <ol className="space-y-4">
-                                    {implementationNotes.map((item, index) => (
-                                        <li key={`${item}-${index}`} className="flex gap-3">
-                                            <span className="mt-0.5 w-5 shrink-0 text-right text-sm tabular-nums text-neutral-400 dark:text-neutral-500">
-                                                {index + 1}
-                                            </span>
-                                            <p className="leading-relaxed text-neutral-600 dark:text-neutral-300">{item}</p>
-                                        </li>
-                                    ))}
-                                </ol>
+                                <NumberedList items={implementationNotes} />
                             </section>
                         )}
 
                         {whyItMatters && (
                             <section>
-                                <h2 className="mb-4 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+                                <h2 className="mb-4 text-xl font-semibold text-ink">
                                     Why it works
                                 </h2>
-                                <p className="leading-relaxed text-neutral-600 dark:text-neutral-300">{whyItMatters}</p>
+                                <p className="leading-relaxed text-ink-secondary">{whyItMatters}</p>
                             </section>
                         )}
 
                         {riskWhenIgnored && (
                             <section>
-                                <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
-                                    <AlertTriangle aria-hidden="true" className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                                <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-ink">
+                                    <AlertTriangle aria-hidden="true" className="size-5 text-amber-600 dark:text-amber-400" />
                                     What breaks
                                 </h2>
-                                <p className="leading-relaxed text-neutral-600 dark:text-neutral-300">{riskWhenIgnored}</p>
+                                <p className="leading-relaxed text-ink-secondary">{riskWhenIgnored}</p>
                             </section>
                         )}
 
                         {reviewPrompts.length > 0 && (
                             <section>
-                                <h2 className="mb-4 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+                                <h2 className="mb-4 text-xl font-semibold text-ink">
                                     Review questions
                                 </h2>
-                                <ol className="space-y-4">
-                                    {reviewPrompts.map((item, index) => (
-                                        <li key={`${item}-${index}`} className="flex gap-3">
-                                            <span className="mt-0.5 w-5 shrink-0 text-right text-sm tabular-nums text-neutral-400 dark:text-neutral-500">
-                                                {index + 1}
-                                            </span>
-                                            <p className="leading-relaxed text-neutral-600 dark:text-neutral-300">{item}</p>
-                                        </li>
-                                    ))}
-                                </ol>
+                                <NumberedList items={reviewPrompts} />
                             </section>
                         )}
                     </div>
                 </article>
 
-                {/* Related rules */}
                 {related.length > 0 && (
                     <section className="mt-16">
-                        <h2 className="mb-4 text-xl font-semibold text-neutral-900 dark:text-neutral-100">Related rules</h2>
+                        <h2 className="mb-4 text-xl font-semibold text-ink">Related rules</h2>
                         <ul className="grid gap-3 sm:grid-cols-3">
                             {related.map((r) => (
                                 <li key={r.id}>
                                     <Link
                                         href={`/rules/${r.id}`}
-                                        className="block h-full rounded-2xl border border-neutral-200 bg-white p-4 transition-colors hover:border-neutral-300 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:border-neutral-700"
+                                        className="block h-full rounded-field border border-line bg-surface p-4 transition-colors hover:border-line-strong hover:bg-fill/50"
                                     >
-                                        <p className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{r.title}</p>
-                                        <p className="mt-1 line-clamp-2 text-xs leading-5 text-neutral-500 dark:text-neutral-400">{r.desc}</p>
+                                        <p className="text-sm font-semibold text-ink">{r.title}</p>
+                                        <p className="mt-1 line-clamp-2 text-xs leading-5 text-ink-muted">{r.desc}</p>
                                     </Link>
                                 </li>
                             ))}
@@ -311,43 +286,58 @@ export default async function RulePage({ params }: Props) {
                     </section>
                 )}
 
-                {/* Navigation */}
-                <nav aria-label="Rule navigation" className="mt-16 border-t border-neutral-200 pt-8 dark:border-neutral-800">
-                    <div className="flex items-center justify-between gap-4">
+                {(prev || next) && (
+                    <nav aria-label="Rule navigation" className="mt-16 grid grid-cols-2 gap-4 pt-6">
                         {prev ? (
                             <Link
                                 href={`/rules/${prev.id}`}
                                 rel="prev"
-                                aria-label={`Previous rule: ${prev.title}`}
-                                className="group inline-flex min-h-11 max-w-[45%] items-center gap-2 text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+                                className="group -mx-2 flex min-h-11 min-w-0 flex-col justify-center gap-1 justify-self-start rounded-frame px-2 py-2"
                             >
-                                <ArrowLeft aria-hidden="true" className="h-4 w-4 shrink-0" />
-                                <span className="truncate">{prev.title}</span>
+                                <span className="inline-flex items-center gap-1 text-xs text-ink-muted">
+                                    <ArrowLeft aria-hidden="true" className="size-3.5 shrink-0" />
+                                    Previous
+                                </span>
+                                <span className="line-clamp-2 text-sm font-medium text-ink-secondary transition-colors group-hover:text-ink">
+                                    {prev.title}
+                                </span>
                             </Link>
-                        ) : <span />}
+                        ) : null}
                         {next ? (
                             <Link
                                 href={`/rules/${next.id}`}
                                 rel="next"
-                                aria-label={`Next rule: ${next.title}`}
-                                className="group inline-flex min-h-11 max-w-[45%] items-center gap-2 text-right text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+                                className="group col-start-2 -mx-2 flex min-h-11 min-w-0 flex-col items-end justify-center gap-1 justify-self-end rounded-frame px-2 py-2 text-right"
                             >
-                                <span className="truncate">{next.title}</span>
-                                <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0" />
+                                <span className="inline-flex items-center gap-1 text-xs text-ink-muted">
+                                    Next
+                                    <ArrowRight aria-hidden="true" className="size-3.5 shrink-0" />
+                                </span>
+                                <span className="line-clamp-2 text-sm font-medium text-ink-secondary transition-colors group-hover:text-ink">
+                                    {next.title}
+                                </span>
                             </Link>
-                        ) : <span />}
-                    </div>
-                    <div className="mt-6">
-                        <Link
-                            href="/"
-                            className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
-                        >
-                            <ArrowLeft aria-hidden="true" className="h-4 w-4" />
-                            Back to all rules
-                        </Link>
-                    </div>
-                </nav>
+                        ) : null}
+                    </nav>
+                )}
             </main>
         </div>
+    );
+}
+
+/* Numerals share the first line's baseline with their item, so a 14px
+   numeral beside 16px text sits on the line rather than floating above it. */
+function NumberedList({ items }: { items: string[] }) {
+    return (
+        <ol className="space-y-4">
+            {items.map((item, index) => (
+                <li key={`${item}-${index}`} className="flex items-baseline gap-3">
+                    <span className="w-5 shrink-0 text-right text-sm tabular-nums text-ink-muted">
+                        {index + 1}
+                    </span>
+                    <p className="leading-relaxed text-ink-secondary">{item}</p>
+                </li>
+            ))}
+        </ol>
     );
 }
