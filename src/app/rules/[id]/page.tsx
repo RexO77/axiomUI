@@ -141,7 +141,7 @@ export default async function RulePage({ params }: Props) {
                 </div>
             </header>
 
-            <main id="main-content" tabIndex={-1} className="mx-auto max-w-3xl px-4 pt-8 pb-12 outline-none sm:pt-12">
+            <main id="main-content" tabIndex={-1} className="mx-auto max-w-3xl scroll-mt-20 px-4 pt-8 pb-12 outline-none sm:pt-12">
                 {/* The breadcrumb doubles as the eyebrow. */}
                 <nav aria-label="Breadcrumb" className="text-sm text-ink-muted">
                     <Link href="/" className={`${CRUMB} hover:text-ink`}>
