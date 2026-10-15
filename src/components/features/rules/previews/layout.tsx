@@ -101,8 +101,8 @@ function fourPtGrid(variant: Variant, size: PreviewSize) {
 }
 
 // ── layout-2 · Text width limits ────────────────────────────────────
-// Keep the example at 13px/20px and measure its columns in the actual font.
-// Narrow panes scroll the example instead of shrinking it to fit.
+// Both examples model a 95ch page. Cap Do at 45ch; let Don't fill the page.
+// The viewport pans this page without shrinking its 13px/20px type.
 function textWidth(variant: Variant, size: PreviewSize) {
     const isDo = variant === "do";
     return (
@@ -117,28 +117,30 @@ function textWidth(variant: Variant, size: PreviewSize) {
             </div>
             {/* Keep the aria-hidden illustration out of the scroll-container tab order. */}
             <div tabIndex={-1} className="w-full min-w-0 overflow-x-auto overscroll-x-contain">
-                <div className="text-[13px] leading-[20px]" style={{ width: isDo ? "45ch" : "95ch" }}>
-                    <div aria-hidden="true" className="h-1 border-x border-t border-blue-500 dark:border-blue-400" />
-                    <div className="mt-1 min-h-[14.3em] text-neutral-600 dark:text-neutral-300">
-                        <p>
-                            Workspaces keep every project, doc, and thread in one shared place
-                            your team can search, so onboarding an engineer stops meaning a week
-                            of asking where things live.
-                        </p>
-                        <p className="mt-[0.75em]">
-                            Each workspace has its own members, permissions, and billing, and
-                            anything you move between them keeps its history, comments, and links
-                            intact.
-                        </p>
-                        <p className="mt-[0.75em]">
-                            Start with one for the whole company and split it later, when a team
-                            needs a room of its own.
-                        </p>
+                <div className="text-[13px] leading-[20px]" style={{ width: "95ch" }}>
+                    <div data-text-column="" className={cn("w-full", isDo && "max-w-[45ch]")}>
+                        <div aria-hidden="true" className="h-1 border-x border-t border-blue-500 dark:border-blue-400" />
+                        <div className="mt-1 min-h-[14.3em] text-neutral-600 dark:text-neutral-300">
+                            <p>
+                                Workspaces keep every project, doc, and thread in one shared place
+                                your team can search, so onboarding an engineer stops meaning a week
+                                of asking where things live.
+                            </p>
+                            <p className="mt-[0.75em]">
+                                Each workspace has its own members, permissions, and billing, and
+                                anything you move between them keeps its history, comments, and links
+                                intact.
+                            </p>
+                            <p className="mt-[0.75em]">
+                                Start with one for the whole company and split it later, when a team
+                                needs a room of its own.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
             <span className={ANNOT}>
-                {isDo ? "inside the 45–75ch band" : "past the 75ch ceiling"}
+                {isDo ? "45ch cap · 95ch page" : "100% width · 95ch page"}
             </span>
         </PreviewFrame>
     );
