@@ -101,37 +101,47 @@ function fourPtGrid(variant: Variant, size: PreviewSize) {
 }
 
 // ── layout-2 · Text width limits ────────────────────────────────────
-// The same article intro; one caps its measure, one drinks the whole
-// container. The column is a self-measuring unit: the accent rail under
-// the paragraph is exactly as wide as the text it measures, so the two
-// panes can be compared by rail length instead of by squinting at rag.
-//
-// The frame gives the copy 278px. Body copy is set at 8px so that 45ch
-// — the low end of the readable band, and the value the Do pane
-// annotates — computes to about 220px and therefore actually binds
-// inside the frame. At 10px, 45ch is 274px and the cap would do
-// nothing, leaving the two panes identical.
+// Both examples model a 95ch page. Cap Do at 45ch; let Don't fill the page.
+// The viewport pans this page without shrinking its 13px/20px type.
 function textWidth(variant: Variant, size: PreviewSize) {
     const isDo = variant === "do";
     return (
-        <PreviewFrame size={size} className="flex flex-col justify-center gap-2">
-            <span className="text-[11px] font-semibold text-neutral-800 dark:text-neutral-100">
-                Introducing workspaces
-            </span>
-            <div className={cn("text-[8px] leading-[13px]", isDo && "max-w-[45ch]")}>
-                <p className="text-neutral-500 dark:text-neutral-400">
-                    Workspaces keep every project, doc, and thread in one shared place your team
-                    can search, so onboarding an engineer stops meaning a week of asking where
-                    things live.
-                </p>
-                <div className="mt-1.5 flex items-center gap-1.5">
-                    <span className={cn("h-px flex-1", TICK)} />
-                    <span className={cn(FINE, TICK_TEXT)}>
-                        {isDo ? "max-w: 45ch" : "width: 100%"}
-                    </span>
+        <PreviewFrame size={size} className="flex flex-col justify-center gap-2.5">
+            <div className="flex items-baseline justify-between gap-3">
+                <span className="text-[11px] font-semibold text-neutral-800 dark:text-neutral-100">
+                    Introducing workspaces
+                </span>
+                <span className={cn("shrink-0", FINE, TICK_TEXT)}>
+                    {isDo ? "45ch" : "95ch"}
+                </span>
+            </div>
+            {/* Keep the aria-hidden illustration out of the scroll-container tab order. */}
+            <div tabIndex={-1} className="w-full min-w-0 overflow-x-auto overscroll-x-contain">
+                <div className="text-[13px] leading-[20px]" style={{ width: "95ch" }}>
+                    <div data-text-column="" className={cn("w-full", isDo && "max-w-[45ch]")}>
+                        <div aria-hidden="true" className="h-1 border-x border-t border-blue-500 dark:border-blue-400" />
+                        <div className="mt-1 min-h-[14.3em] text-neutral-600 dark:text-neutral-300">
+                            <p>
+                                Workspaces keep every project, doc, and thread in one shared place
+                                your team can search, so onboarding an engineer stops meaning a week
+                                of asking where things live.
+                            </p>
+                            <p className="mt-[0.75em]">
+                                Each workspace has its own members, permissions, and billing, and
+                                anything you move between them keeps its history, comments, and links
+                                intact.
+                            </p>
+                            <p className="mt-[0.75em]">
+                                Start with one for the whole company and split it later, when a team
+                                needs a room of its own.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <span className={ANNOT}>45–75ch reads easily</span>
+            <span className={ANNOT}>
+                {isDo ? "45ch cap · 95ch page" : "100% width · 95ch page"}
+            </span>
         </PreviewFrame>
     );
 }
@@ -275,8 +285,13 @@ function containerFallacy(variant: Variant, size: PreviewSize) {
     // source order decides. dark:bg-neutral-900/60 lost to the frame's
     // dark:bg-neutral-950, which silently deleted the surface contrast this
     // rule exists to demonstrate — both panes rendered the same background.
+    //
+    // The layer is inset 1px (radius 10 - 1 = 9) so it paints inside the
+    // frame's inset hairline instead of over it. In dark the Do page has to
+    // be lighter than the #171717 card around the frame, or the frame edge
+    // dissolves into the card and the pane reads as unframed.
     const pageSurface = isDo
-        ? "bg-neutral-100 dark:bg-neutral-900"
+        ? "bg-neutral-100 dark:bg-neutral-800/70"
         : "bg-white dark:bg-neutral-950";
     // Do: the card is a different surface from the page, so it needs no
     // outline. Don't: the card is the same surface as the page, so a border
@@ -284,12 +299,12 @@ function containerFallacy(variant: Variant, size: PreviewSize) {
     const statBox = cn(
         "flex-1 rounded-md p-2",
         isDo
-            ? "bg-white dark:bg-neutral-800"
+            ? "bg-white dark:bg-neutral-700/70"
             : "border border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-950"
     );
     return (
         <PreviewFrame size={size} className="flex flex-col justify-center">
-            <span aria-hidden="true" className={cn("absolute inset-0", pageSurface)} />
+            <span aria-hidden="true" className={cn("absolute inset-px rounded-[9px]", pageSurface)} />
             <div className="relative">
                 <div
                     className={cn(
@@ -433,7 +448,9 @@ function zIndexScale(variant: Variant, size: PreviewSize) {
                         <div
                             key={name}
                             className={cn(
-                                "absolute flex h-9 items-center justify-between rounded-md border bg-white px-2 dark:bg-neutral-900",
+                                // Labels ride the top edge: each layer shows only its top 20px
+                                // above the next, so a centred label was sliced in half.
+                                "absolute flex h-9 items-start justify-between rounded-md border bg-white px-2 pt-1.5 leading-none dark:bg-neutral-900",
                                 isTop
                                     ? "border-blue-500 dark:border-blue-400"
                                     : "border-neutral-200 dark:border-neutral-700"
