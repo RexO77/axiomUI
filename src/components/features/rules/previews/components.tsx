@@ -24,10 +24,19 @@ import { cn } from "@/lib/utils";
 const ANNOT_BASE = "font-mono text-[10px] tabular-nums";
 const ANNOT_MUTED = "text-neutral-400 dark:text-neutral-500";
 const ANNOT = `${ANNOT_BASE} ${ANNOT_MUTED}`;
-const FINE = "font-mono text-[9px] tabular-nums text-neutral-400 dark:text-neutral-500";
+const FINE_BASE = "font-mono text-[9px] tabular-nums";
+const FINE = `${FINE_BASE} ${ANNOT_MUTED}`;
 const ACCENT_TEXT = "text-blue-600 dark:text-blue-400";
 
-const BTN = "inline-flex items-center justify-center rounded-md px-2.5 py-1.5 text-[10px] font-semibold";
+// The button recipes carry shape and tone only. Size is passed per call site
+// (BTN_MD, BTN_SM, BTN_XS), because `cn` cannot override a padding or font size
+// baked into the recipe: comp-2's compact confirm buttons used to ship both
+// `px-2.5` and `px-1.5`, and stylesheet order quietly picked the larger one.
+// The 6px corner is pinned so the radius does not follow the global scale.
+const BTN = "inline-flex items-center justify-center rounded-[6px] font-semibold";
+const BTN_MD = "px-2.5 py-1.5 text-[10px]";
+const BTN_SM = "px-2 py-1 text-[9px]";
+const BTN_XS = "px-1.5 py-0.5 text-[9px]";
 const BTN_PRIMARY = cn(BTN, "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900");
 const BTN_SECONDARY = cn(
     BTN,
@@ -44,11 +53,24 @@ function Kbd({ label }: { label: string }) {
     );
 }
 
-function TextLine({ widthClass, className }: { widthClass: string; className?: string }) {
+// `raised` lifts the line to neutral-700 in dark mode, for overlay scenes: on
+// a neutral-800 dialog or drawer the base neutral-800 line vanishes outright,
+// and on the neutral-900 page beneath it the page stops reading as content.
+// It is a prop rather than a className override for the usual `cn` reason.
+function TextLine({
+    widthClass,
+    className,
+    raised = false,
+}: {
+    widthClass: string;
+    className?: string;
+    raised?: boolean;
+}) {
     return (
         <div
             className={cn(
-                "h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-800",
+                "h-1.5 rounded-full bg-neutral-200",
+                raised ? "dark:bg-neutral-700" : "dark:bg-neutral-800",
                 widthClass,
                 className
             )}
@@ -74,15 +96,15 @@ function actionHierarchy(variant: Variant, size: PreviewSize) {
             <div className="flex items-center gap-2">
                 {isDo ? (
                     <>
-                        <span className={BTN_PRIMARY}>Publish</span>
-                        <span className={BTN_SECONDARY}>Preview</span>
-                        <span className={BTN_GHOST}>Discard</span>
+                        <span className={cn(BTN_PRIMARY, BTN_MD)}>Publish</span>
+                        <span className={cn(BTN_SECONDARY, BTN_MD)}>Preview</span>
+                        <span className={cn(BTN_GHOST, BTN_MD)}>Discard</span>
                     </>
                 ) : (
                     <>
-                        <span className={BTN_PRIMARY}>Publish</span>
-                        <span className={BTN_PRIMARY}>Preview</span>
-                        <span className={BTN_PRIMARY}>Discard</span>
+                        <span className={cn(BTN_PRIMARY, BTN_MD)}>Publish</span>
+                        <span className={cn(BTN_PRIMARY, BTN_MD)}>Preview</span>
+                        <span className={cn(BTN_PRIMARY, BTN_MD)}>Discard</span>
                     </>
                 )}
             </div>
@@ -96,25 +118,23 @@ function actionHierarchy(variant: Variant, size: PreviewSize) {
 // The one variable is where the red lives: on the confirm you mean, or
 // on the trigger you brush past — in which case stage two is an empty
 // slot, because nothing stands between the click and the deletion.
+//
+// Corners are concentric by construction: 12px row and dialog around 6px
+// padding hold 6px buttons (12 = 6 + 6), so the pane obeys comp-3 too.
 function destructiveActions(variant: Variant, size: PreviewSize) {
     const isDo = variant === "do";
     return (
         <PreviewFrame size={size} className="flex items-center justify-center">
             <div className="flex w-full flex-col gap-1.5">
-                <div className="flex items-center justify-between gap-2 rounded-md border border-neutral-200 bg-white p-1.5 dark:border-neutral-800 dark:bg-neutral-900">
-                    <div className="min-w-0">
+                <div className="flex items-center justify-between gap-2 rounded-[12px] border border-neutral-200 bg-white p-1.5 dark:border-neutral-800 dark:bg-neutral-900">
+                    <div className="min-w-0 pl-1">
                         <span className="block truncate text-[10px] font-semibold text-neutral-800 dark:text-neutral-100">
                             atlas-api
                         </span>
                         <span className={FINE}>updated 2h ago</span>
                     </div>
-                    <span
-                        className={cn(
-                            isDo ? BTN_SECONDARY : BTN_DANGER,
-                            "shrink-0 px-2 py-1 text-[9px]"
-                        )}
-                    >
-                        {isDo ? "Delete…" : "Delete"}
+                    <span className={cn(isDo ? BTN_SECONDARY : BTN_DANGER, BTN_SM, "shrink-0")}>
+                        {isDo ? "Delete project…" : "Delete"}
                     </span>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -127,20 +147,20 @@ function destructiveActions(variant: Variant, size: PreviewSize) {
                     <span className={ANNOT}>{isDo ? "click → confirm" : "click → gone"}</span>
                 </div>
                 {isDo ? (
-                    <div className="min-h-[46px] rounded-md border border-neutral-200 bg-white p-1.5 dark:border-neutral-700 dark:bg-neutral-900">
+                    <div className="min-h-[46px] rounded-[12px] border border-neutral-200 bg-white p-1.5 dark:border-neutral-700 dark:bg-neutral-900">
                         <div className="flex items-center justify-between gap-2">
-                            <span className="text-[10px] font-semibold text-neutral-800 dark:text-neutral-100">
+                            <span className="pl-1 text-[10px] font-semibold text-neutral-800 dark:text-neutral-100">
                                 Delete “atlas-api”?
                             </span>
-                            <div className="flex shrink-0 items-center gap-1.5">
-                                <span className={cn(BTN_GHOST, "px-1.5 py-0.5 text-[9px]")}>Cancel</span>
-                                <span className={cn(BTN_DANGER, "px-1.5 py-0.5 text-[9px]")}>Delete</span>
+                            <div className="flex shrink-0 items-center gap-1">
+                                <span className={cn(BTN_GHOST, BTN_XS)}>Cancel</span>
+                                <span className={cn(BTN_DANGER, BTN_XS)}>Delete</span>
                             </div>
                         </div>
-                        <span className={cn("mt-0.5 block", FINE)}>this can’t be undone</span>
+                        <span className={cn("mt-0.5 block pl-1", FINE)}>this can’t be undone</span>
                     </div>
                 ) : (
-                    <div className="flex min-h-[46px] items-center justify-center rounded-md border border-dashed border-rose-400/70 dark:border-rose-500/50">
+                    <div className="flex min-h-[46px] items-center justify-center rounded-[12px] border border-dashed border-rose-400/70 dark:border-rose-500/50">
                         <span className={cn(ANNOT_BASE, "text-rose-600 dark:text-rose-400")}>
                             no confirm step
                         </span>
@@ -154,24 +174,49 @@ function destructiveActions(variant: Variant, size: PreviewSize) {
 // ── comp-3 · Nested radius formula ──────────────────────────────────
 // The same search card, radii printed at the corner. Concentric maths
 // keep the corners parallel; equal radii pinch.
+//
+// Both curves are traced at the same top-right corner with a 1px accent
+// arc — a box the size of the radius plus a short lead-in, bordered on two
+// sides and rounded on one — so the reader compares the two curves the
+// formula relates instead of hunting for them. Each arc carries its value.
+const ARC_LEAD = 6;
+
+function CornerArc({ radius, className }: { radius: number; className: string }) {
+    return (
+        <span
+            aria-hidden="true"
+            className={cn("absolute border-r border-t border-blue-500 dark:border-blue-400", className)}
+            style={{
+                width: radius + ARC_LEAD,
+                height: radius + ARC_LEAD,
+                borderTopRightRadius: radius,
+            }}
+        />
+    );
+}
+
 function nestedRadius(variant: Variant, size: PreviewSize) {
     const isDo = variant === "do";
     const outer = isDo ? 12 : 4;
+    const inner = 4;
     return (
         <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-2.5">
             <div
-                className="relative border border-neutral-200 bg-white p-2 dark:border-neutral-700 dark:bg-neutral-900"
+                className="relative mt-3 border border-neutral-200 bg-white p-2 dark:border-neutral-700 dark:bg-neutral-900"
                 style={{ borderRadius: outer }}
             >
-                <span
-                    aria-hidden="true"
-                    className={cn("absolute -left-1 -top-1 size-2 rounded-full", "bg-blue-500 dark:bg-blue-400")}
-                />
+                {/* Sits on the 1px border, so the arc replaces that stretch of it. */}
+                <CornerArc radius={outer} className="-right-px -top-px" />
+                <span className={cn("absolute -top-4 right-0 leading-none", FINE_BASE, ACCENT_TEXT)}>
+                    r·{outer}
+                </span>
                 <div
-                    className="flex h-7 w-44 items-center bg-neutral-100 px-2 text-[10px] text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500"
-                    style={{ borderRadius: 4 }}
+                    className="relative flex h-7 w-44 items-center bg-neutral-100 px-2 text-[10px] text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500"
+                    style={{ borderRadius: inner }}
                 >
                     Search projects…
+                    <CornerArc radius={inner} className="right-0 top-0" />
+                    <span className={cn("ml-auto pr-1.5", FINE_BASE, ACCENT_TEXT)}>r·{inner}</span>
                 </div>
             </div>
             <span className={ANNOT}>
@@ -201,7 +246,9 @@ function avatarShapes(variant: Variant, size: PreviewSize) {
                     <span
                         className={cn(
                             "flex size-6 shrink-0 items-center justify-center bg-blue-500 text-[9px] font-semibold text-white dark:bg-blue-400 dark:text-neutral-950",
-                            isDo ? "rounded-full" : "rounded-md"
+                            // Pinned, not rounded-md: that follows the global radius
+                            // scale, and at 12px on a 24px tile it drew a circle.
+                            isDo ? "rounded-full" : "rounded-[5px]"
                         )}
                     >
                         MC
@@ -214,7 +261,7 @@ function avatarShapes(variant: Variant, size: PreviewSize) {
                     </div>
                 </div>
                 <div className="flex items-center gap-2 rounded-md bg-neutral-50 p-2 dark:bg-neutral-900">
-                    <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-neutral-200 dark:bg-neutral-700">
+                    <span className="flex size-6 shrink-0 items-center justify-center rounded-[5px] bg-neutral-200 dark:bg-neutral-700">
                         <FileText
                             aria-hidden="true"
                             size={12}
@@ -247,41 +294,41 @@ function modalVsDrawer(variant: Variant, size: PreviewSize) {
     // Six fields, matching the rule's own shorthand. Rows are label-left so all
     // six fit the drawer's height — and so the modal visibly clips five of them.
     const fields = ["Name", "Role", "Email", "Phone", "City", "Locale"];
+    // Field labels are scene copy, so they stay in the UI face; w-9 holds
+    // "Locale" whole instead of truncating it to "Loca…".
+    const fieldRows = fields.map((field) => (
+        <div key={field} className="flex items-center gap-1.5">
+            <span className="w-9 shrink-0 text-[9px] font-medium leading-3 text-neutral-500 dark:text-neutral-400">
+                {field}
+            </span>
+            <div className="h-2.5 flex-1 rounded-[3px] border border-neutral-200 dark:border-neutral-600" />
+        </div>
+    ));
     return (
         <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-2">
             <div className="relative h-[104px] w-full overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900">
                 {/* The page underneath — identical in both panes. */}
                 <div className="space-y-1.5 p-2">
-                    <TextLine widthClass="w-1/3" />
-                    <TextLine widthClass="w-full" />
-                    <TextLine widthClass="w-5/6" />
-                    <TextLine widthClass="w-2/3" />
+                    <TextLine raised widthClass="w-1/3" />
+                    <TextLine raised widthClass="w-full" />
+                    <TextLine raised widthClass="w-5/6" />
+                    <TextLine raised widthClass="w-2/3" />
                 </div>
                 {isDo ? (
-                    <div className="absolute inset-y-0 right-0 w-[58%] space-y-0.5 border-l border-blue-500 bg-white p-1 dark:border-blue-400 dark:bg-neutral-800">
+                    <div className="absolute inset-y-0 right-0 w-[58%] space-y-0.5 border-l border-blue-500 bg-white p-1 pl-1.5 shadow-[-4px_0_12px_rgb(0_0_0/0.06)] dark:border-blue-400 dark:bg-neutral-800 dark:shadow-[-4px_0_12px_rgb(0_0_0/0.4)]">
                         <span className="block text-[10px] font-semibold leading-3 text-neutral-800 dark:text-neutral-100">
                             Edit profile
                         </span>
-                        {fields.map((field) => (
-                            <div key={field} className="flex items-center gap-1.5">
-                                <span className={cn(FINE, "w-8 shrink-0 truncate leading-3")}>{field}</span>
-                                <div className="h-2.5 flex-1 rounded-sm border border-neutral-200 dark:border-neutral-700" />
-                            </div>
-                        ))}
+                        {fieldRows}
                     </div>
                 ) : (
                     <>
-                        <div aria-hidden="true" className="absolute inset-0 bg-neutral-950/55" />
-                        <div className="absolute left-1/2 top-1/2 h-[38px] w-[58%] -translate-x-1/2 -translate-y-1/2 space-y-0.5 overflow-hidden rounded-md border border-blue-500 bg-white p-1 dark:border-blue-400 dark:bg-neutral-800">
+                        <div aria-hidden="true" className="absolute inset-0 bg-neutral-950/55 dark:bg-black/70" />
+                        <div className="absolute left-1/2 top-1/2 h-[38px] w-[58%] -translate-x-1/2 -translate-y-1/2 space-y-0.5 overflow-hidden rounded-[6px] border border-blue-500 bg-white p-1 pl-1.5 dark:border-blue-400 dark:bg-neutral-800">
                             <span className="block text-[10px] font-semibold leading-3 text-neutral-800 dark:text-neutral-100">
                                 Edit profile
                             </span>
-                            {fields.map((field) => (
-                                <div key={field} className="flex items-center gap-1.5">
-                                    <span className={cn(FINE, "w-8 shrink-0 truncate leading-3")}>{field}</span>
-                                    <div className="h-2.5 flex-1 rounded-sm border border-neutral-200 dark:border-neutral-700" />
-                                </div>
-                            ))}
+                            {fieldRows}
                         </div>
                     </>
                 )}
@@ -379,6 +426,7 @@ function disabledReason(variant: Variant, size: PreviewSize) {
                 <span
                     className={cn(
                         BTN,
+                        BTN_MD,
                         "mt-2 bg-neutral-200 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500"
                     )}
                 >
@@ -467,27 +515,28 @@ function closeAffordance(variant: Variant, size: PreviewSize) {
         <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-2">
             <div className="relative h-[88px] w-full overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900">
                 <div className="space-y-1.5 p-2">
-                    <TextLine widthClass="w-1/3" />
-                    <TextLine widthClass="w-full" />
-                    <TextLine widthClass="w-5/6" />
+                    <TextLine raised widthClass="w-1/3" />
+                    <TextLine raised widthClass="w-full" />
+                    <TextLine raised widthClass="w-5/6" />
                 </div>
-                <div aria-hidden="true" className="absolute inset-0 bg-neutral-950/55" />
-                <div className="absolute left-1/2 top-1/2 w-40 -translate-x-1/2 -translate-y-1/2 rounded-md border border-neutral-200 bg-white p-2 dark:border-neutral-700 dark:bg-neutral-800">
+                <div aria-hidden="true" className="absolute inset-0 bg-neutral-950/55 dark:bg-black/70" />
+                {/* 12px dialog around a 6px chip inset 6px: concentric, per comp-3. */}
+                <div className="absolute left-1/2 top-1/2 w-40 -translate-x-1/2 -translate-y-1/2 rounded-[12px] border border-neutral-200 bg-white p-2 dark:border-neutral-700 dark:bg-neutral-800">
                     {isDo ? (
-                        <span className="absolute right-1.5 top-1.5 flex size-4 items-center justify-center rounded-sm bg-neutral-100 dark:bg-neutral-800">
+                        <span className="absolute right-1.5 top-1.5 flex size-4 items-center justify-center rounded-[6px] bg-neutral-100 dark:bg-neutral-700">
                             <X
                                 aria-hidden="true"
                                 size={10}
                                 strokeWidth={2}
-                                className="text-neutral-500 dark:text-neutral-400"
+                                className="text-neutral-500 dark:text-neutral-300"
                             />
                         </span>
                     ) : null}
                     <span className="block text-[10px] font-semibold text-neutral-800 dark:text-neutral-100">
                         Keyboard shortcuts
                     </span>
-                    <TextLine widthClass="w-full" className="mt-1.5" />
-                    <TextLine widthClass="w-3/4" className="mt-1" />
+                    <TextLine raised widthClass="w-full" className="mt-1.5" />
+                    <TextLine raised widthClass="w-3/4" className="mt-1" />
                 </div>
             </div>
             {isDo ? (

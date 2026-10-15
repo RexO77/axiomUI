@@ -51,21 +51,27 @@ function Shell({
     );
 }
 
+// `size` is a prop for the same reason as Label's `strong` below: compact
+// fields used to pass `text-[10px]` as a className, and the base `text-[11px]`
+// won by stylesheet order, so the override never rendered.
 function Value({
     children,
     muted = false,
     mono = false,
+    size = "md",
     className,
 }: {
     children?: ReactNode;
     muted?: boolean;
     mono?: boolean;
+    size?: "sm" | "md";
     className?: string;
 }) {
     return (
         <span
             className={cn(
-                "truncate text-[11px]",
+                "truncate",
+                size === "sm" ? "text-[10px]" : "text-[11px]",
                 mono && "font-mono tabular-nums",
                 muted
                     ? "text-neutral-400 dark:text-neutral-500"
@@ -351,7 +357,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
             const field = (label: ReactNode, value?: string) => (
                 <div className="space-y-0.5">
                     <Label>{label}</Label>
-                    <Shell compact>{value ? <Value className="text-[10px]">{value}</Value> : null}</Shell>
+                    <Shell compact>{value ? <Value size="sm">{value}</Value> : null}</Shell>
                 </div>
             );
             if (variant === "do") {
@@ -539,11 +545,17 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
                         </Shell>
                     </div>
                     <div className="space-y-1">
-                        <div className="flex h-3.5 items-baseline justify-between gap-2">
-                            <Label>Expiry</Label>
-                            {isDo ? (
-                                <Ann tone="accent">MM / YY</Ann>
-                            ) : null}
+                        {/* The hint is part of the label, read in the same glance,
+                            rather than an annotation parked at the far edge. */}
+                        <div className="flex h-3.5 items-baseline">
+                            <Label>
+                                Expiry
+                                {isDo ? (
+                                    <span className="ml-1.5 font-normal text-neutral-500 dark:text-neutral-400">
+                                        MM / YY
+                                    </span>
+                                ) : null}
+                            </Label>
                         </div>
                         <Shell tone={isDo ? "default" : "error"} className="w-24">
                             <Value mono>{isDo ? "03 / 27" : "March 2027"}</Value>
@@ -573,7 +585,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
                         <Label className="truncate">{label}</Label>
                     </div>
                     <Shell compact>
-                        <Value className="text-[10px]">{value}</Value>
+                        <Value size="sm">{value}</Value>
                     </Shell>
                 </div>
             );

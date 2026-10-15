@@ -177,6 +177,12 @@ function ErrorSignalScene({ variant, size }: DemoProps) {
 // Geometry is pinned so the claim is checkable: buttons are 84px wide, so
 // Cancel's trailing edge sits at 84px and the centroid at 87px — inside
 // the 84–92px dead zone when the gutter is 8px, on Delete when it is 0px.
+//
+// The protagonist is the centroid, not the patch. A touch screen resolves
+// the whole 44px contact to one point, so the patch overlapping Delete in
+// the Do pane is harmless; drawing it as a filled disc made the pane look
+// like it contradicted its own note. The patch stays as a faint outline
+// for scale, and the crosshair and dot mark the point that decides.
 
 function TargetSpacingScene({ variant, size }: DemoProps) {
     const isDo = variant === "do";
@@ -193,9 +199,11 @@ function TargetSpacingScene({ variant, size }: DemoProps) {
                 </div>
                 <span
                     aria-hidden="true"
-                    className="absolute left-[87px] top-1/2 flex size-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-dashed border-blue-500 bg-blue-500/10 dark:border-blue-400 dark:bg-blue-400/15"
+                    className="absolute left-[87px] top-1/2 flex size-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-dashed border-blue-500/30 dark:border-blue-400/30"
                 >
-                    <span className="size-1 rounded-full bg-blue-500 dark:bg-blue-400" />
+                    <span className="absolute inset-y-2.5 left-1/2 w-px -translate-x-1/2 bg-blue-500 dark:bg-blue-400" />
+                    <span className="absolute inset-x-2.5 top-1/2 h-px -translate-y-1/2 bg-blue-500 dark:bg-blue-400" />
+                    <span className="relative size-1.5 rounded-full bg-blue-500 ring-2 ring-white dark:bg-blue-400 dark:ring-neutral-950" />
                 </span>
             </div>
             <div className="flex flex-col items-center gap-1">
@@ -210,7 +218,7 @@ function TargetSpacingScene({ variant, size }: DemoProps) {
                     <span className="h-px w-full bg-blue-500 dark:bg-blue-400" />
                 </span>
                 <Annotation>
-                    {isDo ? "8px gutter — the tap hits nothing" : "0px gutter — the tap hits Delete"}
+                    {isDo ? "8px gutter · centroid → gutter" : "0px gutter · centroid → Delete"}
                 </Annotation>
             </div>
         </PreviewFrame>
