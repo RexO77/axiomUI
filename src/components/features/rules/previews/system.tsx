@@ -162,65 +162,96 @@ function dateFormats(variant: Variant, size: PreviewSize) {
 }
 
 // ── sys-5 · Design tokens naming ────────────────────────────────────
-// Same pipeline from palette to component. Do routes through an alias
-// layer; Don't bakes the role into the name, so the warning banner
+// Same pipeline from palette to component. Do routes each role through its
+// own alias, so the warning gets amber from `warning` while Save gets blue
+// from `accent`; Don't bakes the role into the name, so the warning banner
 // inherits button blue.
-function TokenChip({ swatch, label, warning }: { swatch?: boolean; label: string; warning?: boolean }) {
+type Hue = "blue" | "amber";
+
+const SWATCH: Record<Hue, string> = {
+    blue: "bg-blue-500",
+    amber: "bg-amber-500",
+};
+
+// Opaque steps on purpose: a translucent border over a translucent fill on a
+// rounded chip rasterised with yellow corner pixels in headless Chromium.
+const WARNING_CHIP: Record<Hue, string> = {
+    blue: "border-blue-200 bg-blue-50 text-blue-600 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-400",
+    amber: "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300",
+};
+
+function TokenChip({ swatch, label }: { swatch?: Hue; label: string }) {
     return (
-        <span
-            className={cn(
-                "inline-flex items-center gap-1 rounded-sm border px-1.5 py-1 font-mono text-[9px] leading-none",
-                warning
-                    ? "border-blue-500/40 bg-blue-500/10 text-blue-600 dark:border-blue-400/40 dark:bg-blue-400/10 dark:text-blue-400"
-                    : "border-neutral-200 bg-neutral-50 text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
-            )}
-        >
-            {swatch ? <span aria-hidden className="size-2 rounded-[2px] bg-blue-500 dark:bg-blue-400" /> : null}
-            {warning ? <AlertTriangle aria-hidden className="size-2.5 stroke-[1.5]" /> : null}
+        <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-sm border border-neutral-200 bg-neutral-50 px-1 py-1 font-mono text-[9px] leading-none text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300">
+            {swatch ? <span aria-hidden className={cn("size-2 rounded-[2px]", SWATCH[swatch])} /> : null}
             {label}
         </span>
     );
 }
 
+function WarningChip({ tone }: { tone: Hue }) {
+    return (
+        <span
+            className={cn(
+                "inline-flex items-center gap-1 whitespace-nowrap rounded-sm border px-1 py-1 font-mono text-[9px] leading-none",
+                WARNING_CHIP[tone]
+            )}
+        >
+            <AlertTriangle aria-hidden className="size-2.5 stroke-[1.5]" />
+            Payment overdue
+        </span>
+    );
+}
+
+function SaveChip() {
+    return (
+        <span className="inline-flex items-center whitespace-nowrap rounded-sm border border-transparent bg-blue-500 px-2 py-1 text-[9px] font-semibold leading-none text-white dark:bg-blue-400 dark:text-neutral-950">
+            Save
+        </span>
+    );
+}
+
+function Arrow() {
+    return <MoveRight aria-hidden className="size-2.5 shrink-0 stroke-[1.5] text-neutral-300 dark:text-neutral-600" />;
+}
+
 function tokenNaming(variant: Variant, size: PreviewSize) {
     if (variant === "do") {
         return (
-            <PreviewFrame size={size} className="flex items-center justify-center">
-                <div className="flex items-center gap-1.5">
-                    <span className="flex flex-col items-center gap-1">
-                        <TokenChip swatch label="blue-500" />
-                        <span className={FINE}>palette</span>
-                    </span>
-                    <MoveRight aria-hidden className="mb-3 size-3 stroke-[1.5] text-neutral-300 dark:text-neutral-600" />
-                    <span className="flex flex-col items-center gap-1">
-                        <TokenChip label="accent" />
-                        <span className={FINE}>alias</span>
-                    </span>
-                    <MoveRight aria-hidden className="mb-3 size-3 stroke-[1.5] text-neutral-300 dark:text-neutral-600" />
-                    <span className="flex flex-col items-center gap-1">
-                        <span className="inline-flex items-center rounded-sm bg-blue-500 px-2 py-1 text-[9px] font-semibold leading-none text-white dark:bg-blue-400 dark:text-neutral-950">
-                            Save
-                        </span>
-                        <span className={FINE}>component</span>
-                    </span>
+            <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-2">
+                <div className="grid grid-cols-[auto_auto_auto_auto_auto] items-center justify-items-start gap-x-1 gap-y-1.5">
+                    <TokenChip swatch="blue" label="blue-500" />
+                    <Arrow />
+                    <TokenChip label="accent" />
+                    <Arrow />
+                    <SaveChip />
+                    <TokenChip swatch="amber" label="amber-500" />
+                    <Arrow />
+                    <TokenChip label="warning" />
+                    <Arrow />
+                    <WarningChip tone="amber" />
+                    <span className={FINE}>palette</span>
+                    <span />
+                    <span className={FINE}>alias</span>
+                    <span />
+                    <span className={FINE}>component</span>
                 </div>
+                <span className={ANNOT}>each role owns its alias</span>
             </PreviewFrame>
         );
     }
     return (
         <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-2">
             <div className="flex items-center gap-1.5">
-                <TokenChip swatch label="$button-blue" />
-                <div className="flex flex-col gap-1.5">
+                <TokenChip swatch="blue" label="$button-blue" />
+                <div className="flex flex-col items-start gap-1.5">
                     <span className="flex items-center gap-1.5">
-                        <MoveRight aria-hidden className="size-3 stroke-[1.5] text-neutral-300 dark:text-neutral-600" />
-                        <span className="inline-flex items-center rounded-sm bg-blue-500 px-2 py-1 text-[9px] font-semibold leading-none text-white dark:bg-blue-400 dark:text-neutral-950">
-                            Save
-                        </span>
+                        <Arrow />
+                        <SaveChip />
                     </span>
                     <span className="flex items-center gap-1.5">
-                        <MoveRight aria-hidden className="size-3 stroke-[1.5] text-neutral-300 dark:text-neutral-600" />
-                        <TokenChip warning label="Payment overdue" />
+                        <Arrow />
+                        <WarningChip tone="blue" />
                     </span>
                 </div>
             </div>
@@ -366,8 +397,10 @@ function keyboardNav(variant: Variant, size: PreviewSize) {
 
 // ── sys-10 · Graceful degradation ───────────────────────────────────
 // Same article card with a failed hero image. Do: designed fallback
-// with a retry, layout intact. Don't: raw broken-image glyph and a
-// collapsed slot that shifts the content up.
+// with a retry, layout intact. Don't: what the browser does on its own —
+// the slot collapses to the alt text's line box, a small glyph and the
+// file name in the inherited face, flush left, and the content shifts up.
+// No dashed box: an outline would read as a designed empty state.
 function gracefulDegradation(variant: Variant, size: PreviewSize) {
     return (
         <PreviewFrame size={size} className="flex">
@@ -381,9 +414,9 @@ function gracefulDegradation(variant: Variant, size: PreviewSize) {
                         </span>
                     </div>
                 ) : (
-                    <div className="flex h-6 items-center gap-1.5 rounded-sm border border-dashed border-neutral-300 px-1.5 dark:border-neutral-700">
-                        <ImageOff aria-hidden className="size-3 stroke-[1.5] text-neutral-300 dark:text-neutral-600" />
-                        <span className="font-mono text-[9px] text-neutral-300 dark:text-neutral-600">hero@2x.jpg</span>
+                    <div className="flex items-center gap-1 text-neutral-500 dark:text-neutral-400">
+                        <ImageOff aria-hidden className="size-3 shrink-0 stroke-[1.5]" />
+                        <span className="text-[10px] leading-3">hero@2x.jpg</span>
                     </div>
                 )}
                 <span className="block text-[10px] font-medium text-neutral-700 dark:text-neutral-200">
@@ -401,7 +434,10 @@ function gracefulDegradation(variant: Variant, size: PreviewSize) {
 
 // ── sys-11 · Responsive breakpoint strategy ─────────────────────────
 // Same 0–1280px viewport ruler. Do: two accent ticks carve three device
-// zones. Don't: eight device-specific ticks collide mid-ruler.
+// zones, the middle one a landscape tablet so it can't be mistaken for the
+// phone. Don't: eight device-specific ticks crowd mid-ruler — the crowding is
+// the lesson, so the labels alternate above and below the ruler and every
+// value stays legible instead of overprinting.
 function breakpoints(variant: Variant, size: PreviewSize) {
     const doTicks = [
         { value: 640, at: 50 },
@@ -414,26 +450,41 @@ function breakpoints(variant: Variant, size: PreviewSize) {
     const ticks = variant === "do" ? doTicks : dontTicks;
     return (
         <PreviewFrame size={size} className="flex flex-col justify-center gap-1">
-            <div className="relative mt-5 h-10 w-full rounded-md border border-neutral-200 dark:border-neutral-800">
+            <div className="relative mt-4 mb-3.5 h-10 w-full rounded-md border border-neutral-200 dark:border-neutral-800">
                 {variant === "do" ? (
                     <div className="absolute inset-0 flex">
                         <span className="flex w-1/2 items-center justify-center">
                             <Smartphone aria-hidden className="size-3.5 stroke-[1.5] text-neutral-400 dark:text-neutral-500" />
                         </span>
                         <span className="flex w-[30%] items-center justify-center">
-                            <Tablet aria-hidden className="size-3.5 stroke-[1.5] text-neutral-400 dark:text-neutral-500" />
+                            <Tablet aria-hidden className="size-4 rotate-90 stroke-[1.5] text-neutral-400 dark:text-neutral-500" />
                         </span>
                         <span className="flex flex-1 items-center justify-center">
                             <Monitor aria-hidden className="size-3.5 stroke-[1.5] text-neutral-400 dark:text-neutral-500" />
                         </span>
                     </div>
                 ) : null}
-                {ticks.map((tick) => (
-                    <span key={tick.value} className="absolute -top-1 bottom-0" style={{ left: `${tick.at}%` }}>
-                        <span aria-hidden className="absolute inset-y-0 w-px bg-blue-500/70 dark:bg-blue-400/70" />
-                        <span className={cn(FINE, "absolute -top-3 -translate-x-1/2")}>{tick.value}</span>
-                    </span>
-                ))}
+                {ticks.map((tick, index) => {
+                    const below = variant === "dont" && index % 2 === 1;
+                    return (
+                        <span
+                            key={tick.value}
+                            className={cn("absolute", below ? "-bottom-1 top-0" : "-top-1 bottom-0")}
+                            style={{ left: `${tick.at}%` }}
+                        >
+                            <span aria-hidden className="absolute inset-y-0 w-px bg-blue-500/70 dark:bg-blue-400/70" />
+                            <span
+                                className={cn(
+                                    FINE,
+                                    "absolute -translate-x-1/2 leading-none",
+                                    below ? "-bottom-2.5" : "-top-2.5"
+                                )}
+                            >
+                                {tick.value}
+                            </span>
+                        </span>
+                    );
+                })}
             </div>
             <div className="flex justify-between">
                 <span className={FINE}>0</span>
@@ -445,7 +496,17 @@ function breakpoints(variant: Variant, size: PreviewSize) {
 
 // ── sys-13 · Transition only what changes ───────────────────────────
 // Same Save button under a font-swap width change. Scoped transitions
-// let it snap; `all` makes it drift through ghost widths.
+// let it snap to its new width; `all` makes it drift through the
+// intermediate widths, drawn as fading dashed outlines behind the button.
+// The button itself never wraps or shrinks: the drift is the only change.
+// Intermediate widths the `all` transition paints on its way to the new size,
+// fading as they recede.
+const DRIFT = [
+    { width: 92, opacity: 0.6 },
+    { width: 100, opacity: 0.4 },
+    { width: 108, opacity: 0.25 },
+];
+
 function transitionScope(variant: Variant, size: PreviewSize) {
     return (
         <PreviewFrame size={size} className="flex flex-col justify-center gap-3">
@@ -459,23 +520,22 @@ function transitionScope(variant: Variant, size: PreviewSize) {
                     "transition: all 150ms ease-out"
                 )}
             </CodeChip>
-            <div className="flex items-center gap-2">
-                <span className="relative inline-flex items-center rounded-sm bg-neutral-900 px-2.5 py-1.5 text-[10px] font-semibold leading-none text-white dark:bg-neutral-100 dark:text-neutral-900">
+            <div className="relative isolate flex">
+                {variant === "dont"
+                    ? DRIFT.map((ghost) => (
+                          <span
+                              key={ghost.width}
+                              aria-hidden
+                              className="absolute inset-y-0 left-0 -z-10 rounded-sm border border-dashed border-neutral-400 dark:border-neutral-500"
+                              style={{ width: ghost.width, opacity: ghost.opacity }}
+                          />
+                      ))
+                    : null}
+                <span className="inline-flex shrink-0 items-center whitespace-nowrap rounded-sm bg-neutral-900 px-2.5 py-1.5 text-[10px] font-semibold leading-none text-white dark:bg-neutral-100 dark:text-neutral-900">
                     Save changes
-                    {variant === "do" ? (
-                        <span aria-hidden className="absolute inset-0 scale-[0.96] rounded-sm border border-dashed border-blue-500/60 dark:border-blue-400/60" />
-                    ) : null}
                 </span>
-                {variant === "dont" ? (
-                    <>
-                        <span aria-hidden className="h-7 w-[104px] rounded-sm border border-dashed border-neutral-300 opacity-70 dark:border-neutral-600" />
-                        <span aria-hidden className="h-7 w-[116px] rounded-sm border border-dashed border-neutral-300 opacity-40 dark:border-neutral-600" />
-                    </>
-                ) : null}
             </div>
-            <span className={ANNOT}>
-                {variant === "do" ? "font swap → width snaps · 0ms" : "font swap → width drifts · 150ms"}
-            </span>
+            <span className={ANNOT}>{variant === "do" ? "width: instant" : "width: drifts for 150ms"}</span>
         </PreviewFrame>
     );
 }

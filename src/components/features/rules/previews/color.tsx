@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 // changed. Color rules use the exact hues the rule discusses, so raw hex values
 // appear here deliberately — the hex IS the content.
 
-const NOTE = "font-mono text-[10px] tabular-nums";
+const NOTE = "font-mono text-[10px] tabular-nums text-pretty";
 
 // Evidence annotation for the default (theme-following) stage.
 function Note({ children, className }: { children: ReactNode; className?: string }) {
@@ -39,14 +39,41 @@ function CardNote({ children, className }: { children: ReactNode; className?: st
     return <span className={cn(NOTE, "text-neutral-400", className)}>{children}</span>;
 }
 
+// A label that names a palette step has to name the step actually painted,
+// and it also has to agree with the do/dont caption printed under the pane,
+// which quotes the light step. So the light step always shows, and dark mode
+// adds the step it really paints ("neutral-200 · dark 800"); `stacked` puts
+// that on its own line where there's no room inline.
+export function ThemedValue({
+    light,
+    dark,
+    stacked = false,
+}: {
+    light: ReactNode;
+    dark: ReactNode;
+    stacked?: boolean;
+}) {
+    return (
+        <>
+            {light}
+            {stacked ? (
+                <span className="hidden dark:block">dark {dark}</span>
+            ) : (
+                <span className="hidden dark:inline"> · dark {dark}</span>
+            )}
+        </>
+    );
+}
+
 // ── color-1 · 60-30-10 ─────────────────────────────────────────────
-// A believable mini app: top bar, sidebar, content with one CTA. Do paints it
-// 60% neutral / 30% secondary / 10% accent; Don't floods chrome with brand blue
-// so the real CTA has nothing left to stand out with.
+// A believable mini app: top bar, sidebar, content with one CTA. Do keeps the
+// chrome neutral and spends blue on the CTA alone; Don't floods the chrome with
+// brand blue so the real CTA has nothing left to stand out with. Name the
+// painted regions rather than a coverage percentage that changes with width.
 function SixtyThirtyTen({ variant }: { variant: Variant }) {
     const flooded = variant === "dont";
     return (
-        <div className="flex h-[118px] flex-col gap-2">
+        <div className="flex h-[118px] flex-col gap-1.5">
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border border-neutral-200 dark:border-neutral-800">
                 <div
                     className={cn(
@@ -112,7 +139,6 @@ function SixtyThirtyTen({ variant }: { variant: Variant }) {
                     <div className="flex-1 bg-white p-2 dark:bg-neutral-950">
                         <div className="h-2 w-16 rounded-full bg-neutral-400 dark:bg-neutral-500" />
                         <div className="mt-1.5 h-1.5 w-full rounded-full bg-neutral-200 dark:bg-neutral-800" />
-                        <div className="mt-1 h-1.5 w-3/4 rounded-full bg-neutral-200 dark:bg-neutral-800" />
                         <span
                             className={cn(
                                 "mt-2 inline-flex rounded-sm px-1.5 py-0.5 text-[8px] font-semibold text-white",
@@ -124,8 +150,8 @@ function SixtyThirtyTen({ variant }: { variant: Variant }) {
                     </div>
                 </div>
             </div>
-            <div className="flex items-center justify-between">
-                <Note>{flooded ? "accent coverage ≈ 70%" : "accent coverage ≈ 10%"}</Note>
+            <div className="flex flex-col gap-0.5 leading-3">
+                <Note>{flooded ? "blue: header, sidebar, CTA" : "blue: CTA only"}</Note>
                 <Note>{flooded ? "CTA lost in brand chrome" : "one element owns the blue"}</Note>
             </div>
         </div>
@@ -146,9 +172,9 @@ function NeverPureBlack({ variant }: { variant: Variant }) {
                 <p className={cn("mt-1 text-[11px] leading-4", ink)}>
                     Sync now runs offline, and search indexes twice as fast
                 </p>
-                <div className="mt-2 flex items-center justify-between border-t border-neutral-100 pt-1.5">
-                    <CardNote>{pureBlack ? "#000000 on #ffffff" : "#0f172a on #ffffff"}</CardNote>
-                    <CardNote>{pureBlack ? "21:1 — max luminance jump" : "17.9:1 — still AAA, no glare"}</CardNote>
+                <div className="mt-2 flex flex-col gap-0.5 border-t border-neutral-100 pt-1.5 leading-3">
+                    <CardNote>{pureBlack ? "#000000 · 21:1 · AAA" : "#0f172a · 17.9:1 · AAA"}</CardNote>
+                    <CardNote>{pureBlack ? "maximum jump, glare on white" : "softer ink, still past AAA"}</CardNote>
                 </div>
             </div>
         </div>
@@ -194,7 +220,7 @@ function SemanticColors({ variant }: { variant: Variant }) {
     const hijacked = variant === "dont";
     return (
         <div className="flex h-[118px] flex-col justify-center">
-            <div className="rounded-md border border-neutral-200 p-3 dark:border-neutral-800">
+            <div className="rounded-md border border-neutral-200 p-2.5 dark:border-neutral-800">
                 <div className="flex items-center gap-2">
                     <span className="size-5 rounded-full bg-neutral-200 dark:bg-neutral-700" />
                     <span className="text-[11px] font-semibold text-neutral-800 dark:text-neutral-100">
@@ -205,7 +231,7 @@ function SemanticColors({ variant }: { variant: Variant }) {
                 <p className="mt-1.5 text-[10px] text-neutral-500 dark:text-neutral-400">
                     Shipped the new onboarding flow to every workspace
                 </p>
-                <div className="mt-2 flex items-center gap-4 border-t border-neutral-100 pt-2 dark:border-neutral-800">
+                <div className="mt-1.5 flex items-center gap-4 border-t border-neutral-100 pt-2 dark:border-neutral-800">
                     <span
                         className={cn(
                             "flex items-center gap-1",
@@ -225,9 +251,16 @@ function SemanticColors({ variant }: { variant: Variant }) {
                     </span>
                 </div>
             </div>
-            <div className="mt-2 flex items-center justify-between">
-                <Note>{hijacked ? "like: rose-500" : "like: blue-500"}</Note>
-                <Note>{hijacked ? "same red as destructive" : "red kept for destructive"}</Note>
+            <div className="mt-1.5 flex items-center justify-between gap-2">
+                <Note>
+                    like:{" "}
+                    {hijacked ? (
+                        <ThemedValue light="rose-500" dark="400" />
+                    ) : (
+                        <ThemedValue light="blue-500" dark="400" />
+                    )}
+                </Note>
+                <Note>{hijacked ? "same red as Delete" : "red means Delete"}</Note>
             </div>
         </div>
     );
@@ -264,7 +297,14 @@ function BorderColors({ variant }: { variant: Variant }) {
                 ))}
             </div>
             <div className="flex items-center justify-between gap-2">
-                <Note className="whitespace-nowrap">{heavy ? "border: neutral-400" : "border: neutral-200"}</Note>
+                <Note className="whitespace-nowrap">
+                    border:{" "}
+                    {heavy ? (
+                        <ThemedValue light="neutral-400" dark="500" />
+                    ) : (
+                        <ThemedValue light="neutral-200" dark="800" />
+                    )}
+                </Note>
                 <Note className="whitespace-nowrap">{heavy ? "lines shout" : "lines recede"}</Note>
             </div>
         </div>
@@ -284,13 +324,18 @@ function DoubleContrastBorders({ variant }: { variant: Variant }) {
         ? "border-neutral-100 dark:border-neutral-900"
         : "border-neutral-300 dark:border-neutral-600";
     return (
-        <div className="flex h-[118px] flex-col justify-center gap-1.5">
+        <div className="flex h-[118px] flex-col justify-center gap-1">
             <div className="flex items-baseline justify-between gap-2">
                 <span className="text-[10px] font-semibold text-neutral-600 dark:text-neutral-300">
                     Invite teammates
                 </span>
                 <Note className="whitespace-nowrap">
-                    {faint ? "input: neutral-100" : "input: neutral-300"}
+                    input:{" "}
+                    {faint ? (
+                        <ThemedValue light="neutral-100" dark="900" />
+                    ) : (
+                        <ThemedValue light="neutral-300" dark="600" />
+                    )}
                 </Note>
             </div>
             <div
@@ -305,32 +350,32 @@ function DoubleContrastBorders({ variant }: { variant: Variant }) {
             </div>
             <div className="flex items-center gap-2">
                 <div className="h-px flex-1 bg-neutral-200 dark:bg-neutral-800" />
-                <Note className="whitespace-nowrap">divider: neutral-200</Note>
-            </div>
-            <div className="flex items-center justify-between gap-2">
                 <Note className="whitespace-nowrap">
-                    {faint ? "fainter than the divider" : "darker than the divider"}
+                    divider: <ThemedValue light="neutral-200" dark="800" />
                 </Note>
-                <div className="flex shrink-0 items-center gap-2">
-                    <span
-                        className={cn(
-                            "rounded-md border px-2.5 py-1 text-[10px] font-semibold text-neutral-700 dark:text-neutral-200",
-                            interactive
-                        )}
-                    >
-                        Cancel
-                    </span>
-                    <span className="rounded-md bg-neutral-900 px-2.5 py-1 text-[10px] font-semibold text-white dark:bg-neutral-100 dark:text-neutral-900">
-                        Send invite
-                    </span>
-                </div>
+            </div>
+            <Note className="self-end">{faint ? "input fainter than the divider" : "input stronger than the divider"}</Note>
+            <div className="mt-1 flex justify-end gap-2">
+                <span
+                    className={cn(
+                        "whitespace-nowrap rounded-md border px-2.5 py-1 text-[10px] font-semibold text-neutral-700 dark:text-neutral-200",
+                        interactive
+                    )}
+                >
+                    Cancel
+                </span>
+                <span className="whitespace-nowrap rounded-md border border-transparent bg-neutral-900 px-2.5 py-1 text-[10px] font-semibold text-white dark:bg-neutral-100 dark:text-neutral-900">
+                    Send invite
+                </span>
             </div>
         </div>
     );
 }
 
 // ── color-8 · Dark mode isn't inverted ─────────────────────────────
-// Renders its own dark canvas via an inset layer, regardless of site theme.
+// Renders its own dark canvas via an inset layer, regardless of site theme. The
+// layer stops 1px short of the frame (inset-px, radius 10 - 1) so the frame's
+// inset hairline still draws its edge in both themes.
 // Do: gray-900 page, gray-800 card sitting lighter, brand genuinely desaturated
 // (#3b82f6 at 91% saturation → #799dd8 at 55%), photo untouched. Don't:
 // filter-invert world — white card, brand flipped to muddy orange (#3b82f6
@@ -338,7 +383,7 @@ function DoubleContrastBorders({ variant }: { variant: Variant }) {
 function DarkModeNotInverted({ variant }: { variant: Variant }) {
     const inverted = variant === "dont";
     return (
-        <div className={cn("absolute inset-0 p-4", inverted ? "bg-black" : "bg-neutral-900")}>
+        <div className={cn("absolute inset-px rounded-[9px] p-[15px]", inverted ? "bg-black" : "bg-neutral-900")}>
             <div className="flex h-[118px] flex-col gap-2">
                 <div className={cn("flex-1 rounded-md p-2.5", inverted ? "bg-white" : "bg-neutral-800")}>
                     <div className="flex items-center justify-between">
@@ -392,9 +437,7 @@ function DarkModeNotInverted({ variant }: { variant: Variant }) {
                     </div>
                 </div>
                 <span className={cn(NOTE, "text-neutral-400")}>
-                    {inverted
-                        ? "filter: invert(1) — card #ffffff, brand #3b82f6 → #c47d09"
-                        : "bg 900 · card 800 (lighter = higher) · brand sat 91% → 55%"}
+                    {inverted ? "invert(1) · brand #3b82f6 → #c47d09" : "card 800 on 900 · brand sat 91% → 55%"}
                 </span>
             </div>
         </div>
@@ -403,7 +446,10 @@ function DarkModeNotInverted({ variant }: { variant: Variant }) {
 
 // ── color-9 · Accessible contrast ratios ───────────────────────────
 // Real helper text on a real white field, ratio measured, verdict attached.
-// The card stays white in dark mode so the quoted ratios stay true.
+// The card stays white in dark mode so the quoted ratios stay true, and the
+// verdict inks clear AA themselves: emerald-700 renders 5.4:1 and rose-700
+// 6.0:1 on white, where emerald-600 would be a 3.7:1 caption on the very rule
+// about contrast.
 function AccessibleContrast({ variant }: { variant: Variant }) {
     const guessed = variant === "dont";
     return (
@@ -413,34 +459,33 @@ function AccessibleContrast({ variant }: { variant: Variant }) {
                 <div className="mt-1 flex h-6 items-center rounded-md border border-neutral-300 px-2">
                     <span className="text-[10px] text-neutral-800">priya@acme.dev</span>
                 </div>
-                <div className="mt-1.5 flex items-center justify-between gap-2">
-                    <span className={cn("text-[10px]", guessed ? "text-[#aaaaaa]" : "text-[#737373]")}>
-                        Used for receipts only
-                    </span>
-                    <span
-                        className={cn(
-                            "flex shrink-0 items-center gap-1",
-                            NOTE,
-                            guessed ? "text-rose-600" : "text-emerald-600"
-                        )}
-                    >
-                        {guessed ? (
-                            <X aria-hidden className="size-3 stroke-[2]" />
-                        ) : (
-                            <Check aria-hidden className="size-3 stroke-[2]" />
-                        )}
-                        {guessed ? "#aaaaaa · 2.3:1 fails AA" : "#737373 · 4.7:1 passes AA"}
-                    </span>
-                </div>
+                <span className={cn("mt-1 block text-[10px]", guessed ? "text-[#aaaaaa]" : "text-[#737373]")}>
+                    Used for receipts only
+                </span>
+                <span
+                    className={cn(
+                        "mt-1 flex items-center gap-1 leading-3",
+                        NOTE,
+                        guessed ? "text-rose-700" : "text-emerald-700"
+                    )}
+                >
+                    {guessed ? (
+                        <X aria-hidden className="size-3 shrink-0 stroke-[2]" />
+                    ) : (
+                        <Check aria-hidden className="size-3 shrink-0 stroke-[2]" />
+                    )}
+                    {guessed ? "#aaaaaa · 2.3:1 fails AA" : "#737373 · 4.7:1 passes AA"}
+                </span>
             </div>
         </div>
     );
 }
 
 // ── color-10 · Opacity over new colors ─────────────────────────────
-// One nav, three states. Do derives hover/selected from blue-500 alpha (they
-// re-theme for free — visible in dark mode); Don't hand-picks light hexes that
-// drift apart and never adapt.
+// One nav, three states. Do derives hover/selected from blue-500 alpha, and the
+// same two fills serve both themes — that is the lesson, so they carry no dark:
+// override and their labels stay true in dark mode. Don't hand-picks light
+// hexes that drift apart and never adapt.
 function OpacityOverNewColors({ variant }: { variant: Variant }) {
     const handPicked = variant === "dont";
     return (
@@ -455,7 +500,7 @@ function OpacityOverNewColors({ variant }: { variant: Variant }) {
                     "flex h-6 items-center gap-1.5 rounded-md px-2",
                     handPicked
                         ? "bg-[#e8f0fe] text-neutral-600"
-                        : "bg-blue-500/10 text-neutral-600 dark:bg-blue-400/10 dark:text-neutral-300"
+                        : "bg-blue-500/10 text-neutral-600 dark:text-neutral-300"
                 )}
             >
                 <FileText aria-hidden className="size-3 stroke-[1.5]" />
@@ -469,7 +514,7 @@ function OpacityOverNewColors({ variant }: { variant: Variant }) {
                     "flex h-6 items-center gap-1.5 rounded-md px-2 font-semibold",
                     handPicked
                         ? "bg-[#dcebf5] text-[#1967d2]"
-                        : "bg-blue-500/15 text-blue-600 dark:bg-blue-400/15 dark:text-blue-400"
+                        : "bg-blue-500/15 text-blue-600 dark:text-blue-400"
                 )}
             >
                 <Send aria-hidden className="size-3 stroke-[1.5]" />
@@ -479,9 +524,7 @@ function OpacityOverNewColors({ variant }: { variant: Variant }) {
                 </Note>
             </div>
             <Note className="mt-1">
-                {handPicked
-                    ? "three unrelated hexes — rebrand touches each one"
-                    : "every state = blue-500 / alpha — rebrand is one edit"}
+                {handPicked ? "3 unrelated hexes · rebrand = 3 edits" : "blue-500 / alpha · rebrand = 1 edit"}
             </Note>
         </div>
     );
@@ -547,9 +590,9 @@ function ShadowsReplaceBorders({ variant }: { variant: Variant }) {
         ["Mastercard ending 8210", "Expires 11/26"],
     ];
     return (
-        <div className="flex h-[118px] flex-col justify-center gap-2">
+        <div className="flex h-[118px] flex-col justify-center gap-1">
             {cards.map(([name, expiry]) => (
-                <div key={name} className={cn("flex items-center gap-2.5 rounded-md p-2.5", surface)}>
+                <div key={name} className={cn("flex items-center gap-2.5 rounded-md px-2.5 py-1.5", surface)}>
                     <CreditCard
                         aria-hidden
                         className="size-4 stroke-[1.5] text-neutral-400 dark:text-neutral-500"
@@ -563,9 +606,17 @@ function ShadowsReplaceBorders({ variant }: { variant: Variant }) {
                 </div>
             ))}
             <Note>
-                {stroked
-                    ? "border: 1px neutral-300 on every card"
-                    : "0 0 0 1px black/6% + 0 2px 4px black/4%"}
+                {stroked ? (
+                    <>
+                        border: 1px <ThemedValue light="neutral-300 per card" dark="600" />
+                    </>
+                ) : (
+                    <ThemedValue
+                        stacked
+                        light="0 0 0 1px black/6% + 0 2px 4px black/4%"
+                        dark="ring white/9% + drop black/50%"
+                    />
+                )}
             </Note>
         </div>
     );

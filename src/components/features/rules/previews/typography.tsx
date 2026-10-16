@@ -6,6 +6,7 @@ import {
     PreviewFrame,
     type PreviewRenderer,
 } from "@/components/features/rules/preview-primitives";
+import { ThemedValue } from "@/components/features/rules/previews/color";
 import { cn } from "@/lib/utils";
 
 // Authored previews for typo-1..typo-13.
@@ -49,7 +50,7 @@ function NavRow({ icon, label, active }: { icon: ReactNode; label: string; activ
 function FileRow({ name, meta, overflow }: { name: string; meta: string; overflow?: boolean }) {
     return (
         <div className="flex items-center gap-2 rounded-md border border-neutral-200 bg-white p-2 dark:border-neutral-800 dark:bg-neutral-900">
-            <span className="flex size-6 shrink-0 items-center justify-center rounded-sm bg-neutral-100 dark:bg-neutral-800">
+            <span className="flex size-6 shrink-0 items-center justify-center rounded-[4px] bg-neutral-100 dark:bg-neutral-800">
                 <FileText
                     aria-hidden
                     className="size-3.5 stroke-[1.5] text-neutral-500 dark:text-neutral-400"
@@ -280,23 +281,30 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
                         <Spec className="shrink-0 text-right">
                             {isDo ? "14px" : "10px"}
                             <br />
-                            {isDo ? "neutral-500" : "neutral-900"}
+                            {isDo ? (
+                                <ThemedValue stacked light="neutral-500" dark="400" />
+                            ) : (
+                                <ThemedValue stacked light="neutral-900" dark="50" />
+                            )}
                         </Spec>
                     </div>
                 </PreviewFrame>
             );
 
-        // Numeric alignment — the same order summary; only the amount column
-        // changes: right-aligned tabular figures vs left-aligned proportional.
+        // Numeric alignment — the same order summary, right-aligned in both
+        // panes; only font-variant-numeric changes. The amounts are 1-heavy on
+        // purpose: Manrope's proportional 1 is far narrower than its 0 or 8, so
+        // proportional figures let the decimal points wander while tabular
+        // figures stack every column. Alignment is not the variable here.
         case "typo-7": {
             const lines: Array<[string, string]> = [
-                ["Subtotal", "$1,284.00"],
+                ["Subtotal", "$1,111.10"],
                 ["Shipping", "$24.50"],
-                ["Tax", "$102.72"],
+                ["Tax", "$808.08"],
             ];
             const amountClass = cn(
-                "w-[72px] shrink-0 text-[12px] text-neutral-800 dark:text-neutral-100",
-                isDo ? "text-right tabular-nums" : "text-left"
+                "w-[72px] shrink-0 text-right text-[12px] text-neutral-800 dark:text-neutral-100",
+                isDo ? "tabular-nums" : "proportional-nums"
             );
             return (
                 <PreviewFrame size={size} className="flex items-center justify-center">
@@ -305,7 +313,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
                             <span className="text-[11px] font-semibold text-neutral-900 dark:text-neutral-50">
                                 Order summary
                             </span>
-                            <Spec>{isDo ? "right · tabular-nums" : "left · proportional"}</Spec>
+                            <Spec>{isDo ? "tabular-nums" : "proportional-nums"}</Spec>
                         </div>
                         <div className="mt-2 space-y-1">
                             {lines.map(([label, amount]) => (
@@ -321,7 +329,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
                             <span className="text-[11px] font-semibold text-neutral-900 dark:text-neutral-50">
                                 Total
                             </span>
-                            <span className={cn(amountClass, "font-semibold")}>$1,411.22</span>
+                            <span className={amountClass}>$1,943.68</span>
                         </div>
                     </div>
                 </PreviewFrame>
@@ -366,6 +374,9 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
 
         // Limit font weights — the same digest settings card; only the weight
         // assignments change, and each line carries its weight as evidence.
+        // The avoid pane spends a different weight on every role, including
+        // a bold meta line and a medium description, so the four-weight
+        // scramble is visible without reading the tags.
         // app/layout.tsx loads Manrope at 400/500/600/700 only, so every tag
         // below is a weight the page actually renders — no phantom 300.
         case "typo-9": {
@@ -380,25 +391,25 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
                     text: "Weekly digest",
                     base: "text-[13px] text-neutral-900 dark:text-neutral-50",
                     doW: "font-semibold",
-                    dontW: "font-bold",
+                    dontW: "font-semibold",
                 },
                 {
                     text: "A summary of team activity every Monday",
                     base: "text-[11px] text-neutral-600 dark:text-neutral-300",
                     doW: "font-normal",
-                    dontW: "font-normal",
+                    dontW: "font-medium",
                 },
                 {
                     text: "Sent to 12 people",
                     base: "text-[10px] text-neutral-400 dark:text-neutral-500",
                     doW: "font-normal",
-                    dontW: "font-medium",
+                    dontW: "font-bold",
                 },
                 {
                     text: "Edit schedule",
                     base: "text-[11px] text-neutral-900 dark:text-neutral-50",
                     doW: "font-semibold",
-                    dontW: "font-semibold",
+                    dontW: "font-normal",
                 },
             ];
             const tagFor = (weightClass: string) =>
@@ -412,7 +423,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
             const used = [...new Set(rows.map((row) => tagFor(isDo ? row.doW : row.dontW)))].sort();
             return (
                 <PreviewFrame size={size} className="flex items-center justify-center">
-                    <div className="w-full max-w-[240px]">
+                    <div className="w-full max-w-[260px]">
                         <Spec className="block">
                             <span className={ACCENT_TEXT}>{used.length}</span> weights ·{" "}
                             {used.join(", ")}
@@ -464,7 +475,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
         case "typo-11":
             return (
                 <PreviewFrame size={size} className="flex items-center justify-center">
-                    <div className="flex w-full max-w-[250px] items-start gap-2.5 rounded-md border border-neutral-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900">
+                    <div className="flex w-full max-w-[280px] items-start gap-2.5 rounded-md border border-neutral-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900">
                         <span className="flex size-6 shrink-0 items-center justify-center rounded-sm bg-neutral-100 dark:bg-neutral-800">
                             <ShieldAlert
                                 aria-hidden
@@ -503,9 +514,9 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
         // column; only the wrapping strategy changes, orphan vs even lines.
         //
         // The heading is chosen because it actually breaks differently. The
-        // previous copy wrapped identically under `balance` and `auto`, so
+        // previous copy wrapped identically under `balance` and `wrap`, so
         // the pair claimed a difference the pixels did not have. Measured at
-        // 19ch: auto gives 194px / 58px — one word stranded — and balance
+        // 19ch: wrap gives 194px / 58px — one word stranded — and balance
         // gives 122px / 130px. Because the column is sized in `ch`, that
         // wrap is the same on the card and on the detail page.
         //
@@ -515,18 +526,19 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
         // correctly inside @layer base, so a utility does beat them — but on a
         // real element the pane would start from `pretty`/`balance` and would
         // also switch typeface, which is a second variable and would change the
-        // measured wrap below. A div starts from the initial `auto`, so the
-        // utility under test is the only thing that differs between panes.
+        // measured wrap below. A div starts from the initial `wrap`, which the
+        // avoid pane also states explicitly, so the utility under test is the
+        // only thing that differs between panes.
         case "typo-12":
             return (
                 <PreviewFrame size={size} className="flex flex-col justify-center">
                     <Spec className="block">
-                        {isDo ? "balance — even lines" : "auto — one word alone"}
+                        {isDo ? "balance — even lines" : "wrap — one word alone"}
                     </Spec>
                     <div
                         className={cn(
                             "mt-2 max-w-[19ch] text-[17px] font-semibold leading-snug tracking-[-0.01em] text-neutral-900 dark:text-neutral-50",
-                            isDo && "text-balance"
+                            isDo ? "text-balance" : "text-wrap"
                         )}
                     >
                         One workspace for every project
@@ -542,7 +554,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
         //
         // Chrome only rebalances when the greedy last line really is one
         // short word, so the copy and the measure are picked to produce that.
-        // Measured at 23ch: auto ends on "work." alone at 29px, pretty pulls
+        // Measured at 23ch: wrap ends on "work." alone at 29px, pretty pulls
         // "your" down to end on "your work." at 56px. The earlier copy left
         // a two-word last line, which pretty leaves untouched — the pane
         // looked authored but taught nothing.
@@ -564,12 +576,12 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
                             <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-neutral-900 dark:text-neutral-50">
                                 Automatic backups
                             </span>
-                            <Spec className="shrink-0">{isDo ? "pretty" : "auto"}</Spec>
+                            <Spec className="shrink-0">{isDo ? "pretty" : "wrap"}</Spec>
                         </div>
                         <div
                             className={cn(
                                 "mt-1.5 max-w-[23ch] text-[12px] leading-[1.5] text-neutral-500 dark:text-neutral-400",
-                                isDo && "text-pretty"
+                                isDo ? "text-pretty" : "text-wrap"
                             )}
                         >
                             Backups run hourly and keep the last thirty days of your work.
