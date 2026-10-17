@@ -3,7 +3,8 @@ import { cn } from "@/lib/utils";
 /**
  * Cubic-bezier plot with a rideable progress dot.
  * Outer data-anim="dot-x" = time (linear); inner data-anim="dot-y" = value (pane easing).
- * Fully clipped — never bleeds outside the stage.
+ * The dot rides the same inset box the path is drawn in, so it sits on the
+ * curve's endpoints and is never cut by the frame's clip at rest or at the end.
  */
 export function EasingGraph({
     x1,
@@ -22,10 +23,8 @@ export function EasingGraph({
 }) {
     const w = 100;
     const h = 60;
-    // Inset the path slightly so stroke/dot stay inside the viewBox.
-    const pad = 4;
-    const path = `M ${pad} ${h - pad} C ${pad + x1 * (w - 2 * pad)} ${h - pad - y1 * (h - 2 * pad)}, ${pad + x2 * (w - 2 * pad)} ${h - pad - y2 * (h - 2 * pad)}, ${w - pad} ${pad}`;
-    const area = `${path} L ${w - pad} ${h - pad} L ${pad} ${h - pad} Z`;
+    const path = `M 0 ${h} C ${x1 * w} ${h - y1 * h}, ${x2 * w} ${h - y2 * h}, ${w} 0`;
+    const area = `${path} L ${w} ${h} L 0 ${h} Z`;
 
     return (
         <div aria-hidden="true">
@@ -35,24 +34,27 @@ export function EasingGraph({
                     size === "lg" ? "h-28" : "h-14"
                 )}
             >
-            <svg
-                viewBox={`0 0 ${w} ${h}`}
-                preserveAspectRatio="none"
-                className="absolute inset-0 size-full"
-            >
-                <path d={area} className="fill-blue-500/12 dark:fill-blue-400/12" />
-                <path
-                    d={path}
-                    className="fill-none stroke-blue-600 dark:stroke-blue-400"
-                    strokeWidth="2"
-                    vectorEffect="non-scaling-stroke"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                />
-            </svg>
+            {/* Curve and dot share one plot box, inset a fixed 12px: room for
+                the dot (5px radius + 2px ring) at both ends on any pane width.
+                A percentage inset collapsed to 6px in a 390px-wide layout and
+                the end dot lost its ring to the frame's clip. */}
+            <div className={cn("absolute", size === "lg" ? "inset-3" : "inset-2")}>
+                <svg
+                    viewBox={`0 0 ${w} ${h}`}
+                    preserveAspectRatio="none"
+                    className="absolute inset-0 size-full overflow-visible"
+                >
+                    <path d={area} className="fill-blue-500/12 dark:fill-blue-400/12" />
+                    <path
+                        d={path}
+                        className="fill-none stroke-blue-600 dark:stroke-blue-400"
+                        strokeWidth="2"
+                        vectorEffect="non-scaling-stroke"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                    />
+                </svg>
 
-            {/* Dot rides the full graph box; padding is baked into the path. */}
-            <div className="absolute inset-0">
                 <div
                     data-anim="dot-x"
                     className="absolute inset-0 will-change-transform"

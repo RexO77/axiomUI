@@ -1,3 +1,4 @@
+// design-system: strict
 "use client";
 
 import {
@@ -21,6 +22,7 @@ import {
     type Track,
 } from "@/lib/showcase-engine";
 import {
+    paneReadout,
     showcaseSpecs,
     type PaneSpec,
     type ShowcaseSpec,
@@ -30,8 +32,8 @@ import { InterruptShowcase } from "@/components/features/rules/demos/interrupt-s
 import { LoadShowcase } from "@/components/features/rules/demos/load-showcase";
 import { TooltipToolbarShowcase } from "@/components/features/rules/demos/tooltip-showcase";
 import {
+    CONTROL_RADIUS,
     ControlButton,
-    Hint,
     PaneChrome,
 } from "@/components/features/rules/demos/showcase-chrome";
 import { type PreviewSize, type Variant } from "@/components/features/rules/preview-primitives";
@@ -40,12 +42,21 @@ import { type PreviewSize, type Variant } from "@/components/features/rules/prev
  * SHOWCASE STORYBOARD
  *   rest → trigger → play (easing-aware bars + ms readouts)
  *   settle after hold · rate: 1× / ½× / ¼× · reduced → duration 0
+ *
+ *   Layout: panes, then one control row (action left, speed right), then
+ *   the hint lines. Every rule gets the same rows in the same order, so the
+ *   page doesn't reflow from rule to rule.
  * ───────────────────────────────────────────────────────── */
 
 const RATES = [1, 0.5, 0.25] as const;
 type Rate = (typeof RATES)[number];
 /** Hold at end state so the lesson can be studied before settle-back. */
 const SETTLE_HOLD_MS = 1400;
+
+type Readout = ReturnType<typeof paneReadout>;
+
+/** A pinned pane ignores the speed control (motion-25 bakes its review speed in). */
+const paneRate = (pane: PaneSpec, rate: number) => (pane.pinRate ? 1 : rate);
 
 const reverseTracks = (tracks: Track[]): Track[] =>
     tracks.map((track) => ({
@@ -91,8 +102,12 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
 
     const isGesture = spec.trigger === "press" || spec.trigger === "hover";
     const skipDo = Boolean(spec.doRequiresHover) && !canHover;
-
-    const nominalMs = (pane: PaneSpec) => Math.round(tracksDurationMs(pane.tracks));
+    // Speed is for timed playthroughs: gestures are driven by the hand, reduced
+    // motion has no playthrough to slow down, and fully pinned specs ignore it.
+    const ratePinned = Boolean(spec.do.pinRate && spec.dont.pinRate);
+    const showSpeed = !isGesture && !reduced && !ratePinned;
+    const playbackRate = isGesture ? 1 : rate;
+    const holdRate = ratePinned ? 1 : playbackRate;
 
     const writeMs = (el: HTMLSpanElement | null, ms: number) => {
         if (el) el.textContent = `${ms}ms`;
@@ -114,8 +129,8 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
         dontBarRef.current?.getAnimations().forEach((a) => a.cancel());
         if (doBarRef.current) doBarRef.current.style.transform = "scaleX(0)";
         if (dontBarRef.current) dontBarRef.current.style.transform = "scaleX(0)";
-        writeMs(doMsRef.current, nominalMs(spec.do));
-        writeMs(dontMsRef.current, nominalMs(spec.dont));
+        writeMs(doMsRef.current, paneReadout(spec.do).ms);
+        writeMs(dontMsRef.current, paneReadout(spec.dont).ms);
         stopMsClocks();
     }, [spec]);
 
@@ -123,26 +138,24 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
         (
             bar: HTMLDivElement | null,
             msLabel: HTMLSpanElement | null,
-            pane: PaneSpec,
+            readout: Readout,
             currentRate: number,
             isReduced: boolean,
             rafSlot: "do" | "dont"
-        ): Animation | null => {
-            if (!bar) return null;
+        ) => {
+            if (!bar) return;
             bar.getAnimations().forEach((a) => a.cancel());
-            const nominal = nominalMs(pane);
             if (isReduced) {
-                writeMs(msLabel, nominal);
-                return null;
+                // End states only: the bar and the counter land where they finish.
+                bar.style.transform = "scaleX(1)";
+                writeMs(msLabel, readout.ms);
+                return;
             }
-            const primary = pane.tracks.reduce((a, b) =>
-                b.durationMs > a.durationMs ? b : a
-            );
             const anim = bar.animate(
                 [{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }],
                 {
-                    duration: Math.max(1, tracksDurationMs(pane.tracks)),
-                    easing: primary.easing ?? EASE.out,
+                    duration: Math.max(1, readout.ms),
+                    easing: readout.easing,
                     fill: "forwards",
                 }
             );
@@ -153,33 +166,35 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
             const tick = () => {
                 const t = anim.currentTime;
                 if (typeof t === "number") {
-                    writeMs(msLabel, Math.min(nominal, Math.round(t)));
+                    writeMs(msLabel, Math.min(readout.ms, Math.round(t)));
                 }
                 if (anim.playState === "finished" || anim.playState === "idle") {
-                    writeMs(msLabel, nominal);
+                    writeMs(msLabel, readout.ms);
                     slot.current = null;
                     return;
                 }
                 slot.current = requestAnimationFrame(tick);
             };
             slot.current = requestAnimationFrame(tick);
-            return anim;
         },
         []
     );
 
     const enter = useCallback((options?: { countsAsInteraction?: boolean }) => {
         const counts = options?.countsAsInteraction !== false;
+        autoplayed.current = true;
         clearTimeout(settleTimer.current);
         stopMsClocks();
 
         if (doRef.current && !skipDo) {
-            playPane(doRef.current, spec.do.tracks, { rate, reduced });
-            runBar(doBarRef.current, doMsRef.current, spec.do, rate, reduced, "do");
+            const r = paneRate(spec.do, playbackRate);
+            playPane(doRef.current, spec.do.tracks, { rate: r, reduced });
+            runBar(doBarRef.current, doMsRef.current, paneReadout(spec.do), r, reduced, "do");
         }
         if (dontRef.current) {
-            playPane(dontRef.current, spec.dont.tracks, { rate, reduced });
-            runBar(dontBarRef.current, dontMsRef.current, spec.dont, rate, reduced, "dont");
+            const r = paneRate(spec.dont, playbackRate);
+            playPane(dontRef.current, spec.dont.tracks, { rate: r, reduced });
+            runBar(dontBarRef.current, dontMsRef.current, paneReadout(spec.dont), r, reduced, "dont");
         }
         setEngaged(true);
 
@@ -195,12 +210,15 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
             (spec.trigger === "replay" || spec.trigger === "action");
         if (!canSettle) return;
 
-        const hold = (tracksDurationMs(spec.do.tracks) + SETTLE_HOLD_MS) / rate;
+        // Wait for the slower pane, at the rate each one actually plays.
+        const wallMs = (pane: PaneSpec) => tracksDurationMs(pane.tracks) / paneRate(pane, playbackRate);
+        const hold =
+            Math.max(skipDo ? 0 : wallMs(spec.do), wallMs(spec.dont)) + SETTLE_HOLD_MS / holdRate;
         settleTimer.current = setTimeout(() => {
             const settle = (el: HTMLDivElement | null, pane: PaneSpec, skip: boolean) => {
                 if (!el || skip) return;
                 playPane(el, pane.exitTracks ?? reverseTracks(pane.tracks), {
-                    rate,
+                    rate: paneRate(pane, playbackRate),
                     reduced,
                 });
             };
@@ -209,18 +227,29 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
             clearBars();
             setEngaged(false);
         }, hold);
-    }, [spec, rate, reduced, runBar, skipDo, clearBars]);
+    }, [spec, playbackRate, holdRate, reduced, runBar, skipDo, clearBars]);
 
     const exit = useCallback(() => {
         clearTimeout(settleTimer.current);
-        if (doRef.current && spec.do.exitTracks && !skipDo) {
-            playPane(doRef.current, spec.do.exitTracks, { rate, reduced });
-        }
-        if (dontRef.current && spec.dont.exitTracks) {
-            playPane(dontRef.current, spec.dont.exitTracks, { rate, reduced });
-        }
+        stopMsClocks();
+        const leave = (
+            el: HTMLDivElement | null,
+            bar: HTMLDivElement | null,
+            msLabel: HTMLSpanElement | null,
+            pane: PaneSpec,
+            slot: "do" | "dont",
+            skip: boolean
+        ) => {
+            if (!el || skip || !pane.exitTracks) return;
+            const r = paneRate(pane, playbackRate);
+            playPane(el, pane.exitTracks, { rate: r, reduced });
+            // The readout follows the exit, so a 160ms dismiss reads 160ms.
+            runBar(bar, msLabel, paneReadout(pane, "exit"), r, reduced, slot);
+        };
+        leave(doRef.current, doBarRef.current, doMsRef.current, spec.do, "do", skipDo);
+        leave(dontRef.current, dontBarRef.current, dontMsRef.current, spec.dont, "dont", false);
         setEngaged(false);
-    }, [spec, rate, reduced, skipDo]);
+    }, [spec, playbackRate, reduced, runBar, skipDo]);
 
     // Hotkey for keyboard-lesson rules (motion-2): plain key only.
     useEffect(() => {
@@ -247,9 +276,9 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
     }
 
     useEffect(() => {
-        // Rest labels show nominal duration.
-        writeMs(doMsRef.current, nominalMs(spec.do));
-        writeMs(dontMsRef.current, nominalMs(spec.dont));
+        // Rest labels show what the next play will count to.
+        writeMs(doMsRef.current, paneReadout(spec.do).ms);
+        writeMs(dontMsRef.current, paneReadout(spec.dont).ms);
     }, [spec]);
 
     // Autoplay once when a play-style demo mounts — rest shells aren't empty for long.
@@ -257,8 +286,10 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
         if (reduced) return;
         if (spec.trigger !== "replay" && spec.trigger !== "action") return;
         if (autoplayed.current) return;
-        autoplayed.current = true;
-        const t = window.setTimeout(() => enter({ countsAsInteraction: false }), 350);
+        const t = window.setTimeout(() => {
+            if (autoplayed.current) return;
+            enter({ countsAsInteraction: false });
+        }, 350);
         return () => window.clearTimeout(t);
         // Only re-run when the rule changes; rate/enter identity intentionally omitted.
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -279,11 +310,50 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
     const isHover = spec.trigger === "hover";
 
     const controlLabel =
+        spec.trigger === "toggle"
+            ? engaged
+                ? (spec.controlEngaged ?? spec.control ?? "Toggle")
+                : (spec.control ?? "Toggle")
+            : spec.tallyDontMs && plays > 0
+              ? "Open again"
+              : spec.trigger === "replay"
+                ? (spec.control ?? "Play both")
+                : (spec.control ?? "Run");
+
+    const tallySeconds = spec.tallyDontMs ? ((plays * spec.tallyDontMs) / 1000).toFixed(1) : "0";
+    const tally =
         spec.tallyDontMs && plays > 0
-            ? "Open again"
-            : spec.trigger === "replay"
-              ? (spec.control ?? "Play both")
-              : (spec.control ?? "Run");
+            ? reduced
+                ? `opened ×${plays} — would cost ${tallySeconds}s with motion on`
+                : `opened ×${plays} — ${tallySeconds}s spent waiting`
+            : null;
+
+    const gestureHint =
+        spec.trigger === "press"
+            ? (spec.hint ?? "Press & hold either side — both react together")
+            : spec.trigger === "hover"
+              ? canHover
+                  ? (spec.hint ?? "Hover the panes — both react together")
+                  : spec.doRequiresHover
+                    ? "Tap — only the don’t pane moves; the do pane is obeying this rule"
+                    : "Tap the panes to preview the hover state"
+              : null;
+
+    const hints = [
+        gestureHint,
+        spec.hotkey
+            ? `Or press ${spec.hotkey.toUpperCase()} — feel the don’t pane lag behind your keystroke`
+            : null,
+        // Per-rule hint for button-driven demos (gesture hints carry their own).
+        // Reduced motion hides the speed control, so a hint that points at it
+        // swaps for its reduced wording.
+        spec.hint && !isGesture && !spec.hotkey
+            ? reduced
+                ? (spec.hintReduced ?? spec.hint)
+                : spec.hint
+            : null,
+        reduced ? "Reduced motion — end states only; this page is honoring it" : null,
+    ].filter((hint): hint is string => hint !== null);
 
     return (
         <div className="motion-showcase">
@@ -334,7 +404,13 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
                           }
                         : undefined
                 }
-                onFocus={isHover ? () => enter() : undefined}
+                onFocus={
+                    isHover
+                        ? (event) => {
+                              if (event.currentTarget.matches(":focus-visible")) enter();
+                          }
+                        : undefined
+                }
                 onBlur={isHover ? exit : undefined}
                 role={isGesture ? "button" : undefined}
                 tabIndex={isGesture ? 0 : undefined}
@@ -347,8 +423,8 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
                 }
                 className={cn(
                     "grid grid-cols-2 gap-3",
-                    isGesture &&
-                        "cursor-pointer select-none rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 dark:focus-visible:ring-neutral-500"
+                    // The global focus outline follows this radius.
+                    isGesture && "cursor-pointer select-none rounded-field"
                 )}
             >
                 <ShowcasePane
@@ -364,78 +440,63 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
                     paneRef={dontRef}
                     barRef={dontBarRef}
                     msRef={dontMsRef}
-                    tally={
-                        spec.tallyDontMs && plays > 0
-                            ? `opened ×${plays} — ${((plays * spec.tallyDontMs) / 1000).toFixed(1)}s spent waiting`
-                            : null
-                    }
+                    tally={tally}
                 />
             </div>
 
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-                {spec.trigger === "press" ? (
-                    <Hint>{spec.hint ?? "Press & hold either side — both react together"}</Hint>
-                ) : spec.trigger === "hover" ? (
-                    <Hint>
-                        {canHover
-                            ? (spec.hint ?? "Hover the panes — both react together")
-                            : spec.doRequiresHover
-                              ? "Tap — only the don't pane moves; the do pane is obeying this rule"
-                              : "Tap the panes to preview the hover state"}
-                    </Hint>
-                ) : spec.trigger === "toggle" ? (
-                    <ControlButton onClick={engaged ? exit : () => enter()}>
-                        {spec.control ?? "Toggle"}
-                    </ControlButton>
-                ) : (
-                    <ControlButton onClick={() => enter()}>
-                        <Play aria-hidden="true" className="size-3.5" />
+            {!isGesture ? (
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                    <ControlButton onClick={spec.trigger === "toggle" && engaged ? exit : () => enter()} pressed={spec.trigger === "toggle" ? engaged : undefined}>
+                        {spec.trigger === "toggle" ? null : (
+                            <Play aria-hidden="true" className="size-3.5" />
+                        )}
                         {controlLabel}
                     </ControlButton>
-                )}
 
-                {spec.hotkey ? (
-                    <Hint>
-                        Or press {spec.hotkey.toUpperCase()} — feel the don&apos;t pane lag
-                        behind your keystroke
-                    </Hint>
-                ) : null}
+                    {showSpeed ? <SpeedControl rate={rate} onChange={setRate} /> : null}
+                </div>
+            ) : null}
 
-                {/* Per-rule hint for button-driven demos (gesture hints render above). */}
-                {spec.hint && !isGesture && !spec.hotkey ? <Hint>{spec.hint}</Hint> : null}
+            {hints.length > 0 ? (
+                <div className={cn("flex flex-col gap-1 text-xs text-ink-muted", isGesture ? "mt-3" : "mt-2")}>
+                    {hints.map((hint) => (
+                        <p key={hint}>{hint}</p>
+                    ))}
+                </div>
+            ) : null}
+        </div>
+    );
+}
 
-                {/* Speed is for timed playthroughs — press/hover are gesture-driven. */}
-                {!isGesture ? (
-                    <div
-                        role="group"
-                        aria-label="Playback speed"
-                        className="flex overflow-hidden rounded-md border border-neutral-300 dark:border-neutral-700"
-                    >
-                        {RATES.map((r) => (
-                            <button
-                                key={r}
-                                type="button"
-                                aria-pressed={rate === r}
-                                onClick={() => setRate(r)}
-                                className={cn(
-                                    // 44px on touch, where the guideline applies;
-                                    // 36px keeps the row dense for a mouse.
-                                    "inline-flex min-h-9 items-center justify-center px-3 text-xs font-medium tabular-nums transition-colors pointer-coarse:min-h-11 pointer-coarse:px-4",
-                                    rate === r
-                                        ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
-                                        : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
-                                )}
-                            >
-                                {r === 1 ? "1×" : r === 0.5 ? "½×" : "¼×"}
-                            </button>
-                        ))}
-                    </div>
-                ) : null}
-
-                {reduced ? (
-                    <Hint>Reduced motion — end states only; this page is honoring it</Hint>
-                ) : null}
-            </div>
+function SpeedControl({ rate, onChange }: { rate: Rate; onChange: (rate: Rate) => void }) {
+    return (
+        // No overflow-hidden: it would clip the focus outline of the segments.
+        <div
+            role="group"
+            aria-label="Playback speed"
+            className={cn("ml-auto flex shrink-0 border border-line-strong", CONTROL_RADIUS)}
+        >
+            {RATES.map((r) => (
+                <button
+                    key={r}
+                    type="button"
+                    aria-pressed={rate === r}
+                    onClick={() => onChange(r)}
+                    className={cn(
+                        // 44px on touch, where the guideline applies;
+                        // 36px keeps the row dense for a mouse.
+                        "relative inline-flex min-h-9 items-center justify-center px-3 text-xs font-medium tabular-nums transition-colors first:rounded-l-[11px] last:rounded-r-[11px] pointer-coarse:min-h-11 pointer-coarse:px-4",
+                        // Segments abut, so the focused one must paint above
+                        // its neighbours or the active fill covers its ring.
+                        "focus-visible:z-10",
+                        rate === r
+                            ? "bg-inverse text-on-inverse"
+                            : "text-ink-secondary hover:bg-fill hover:text-ink"
+                    )}
+                >
+                    {r === 1 ? "1×" : r === 0.5 ? "½×" : "¼×"}
+                </button>
+            ))}
         </div>
     );
 }
@@ -462,27 +523,31 @@ function ShowcasePane({
                 caption={pane.caption}
                 paneRef={paneRef}
                 bar={
-                    <div className="flex items-center gap-2">
-                        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800">
+                    // A thin, quiet instrument: it measures the motion, it isn't
+                    // one more thing on the page competing with it.
+                    // A container, so the readout tag can drop out where the pane
+                    // is too narrow for it (the caption states the same fact).
+                    <div className="@container flex items-center gap-2">
+                        <div className="h-1 min-w-6 flex-1 overflow-hidden rounded-full bg-fill-strong dark:bg-fill">
                             <div
                                 ref={barRef}
-                                className="h-full origin-left rounded-full bg-neutral-900 dark:bg-neutral-100"
+                                className="h-full origin-left rounded-full bg-ink-faint"
                                 style={{ transform: "scaleX(0)" }}
                             />
                         </div>
-                        <span
-                            ref={msRef}
-                            className="w-12 shrink-0 text-right text-xs font-medium tabular-nums text-neutral-500 dark:text-neutral-400"
-                        />
+                        <span className="flex shrink-0 items-baseline gap-1.5 text-xs font-medium tabular-nums text-ink-muted">
+                            <span ref={msRef} className="min-w-10 text-right" />
+                            {pane.readoutTag ? (
+                                <span className="hidden font-normal @[14rem]:inline">· {pane.readoutTag}</span>
+                            ) : null}
+                        </span>
                     </div>
                 }
             >
                 {pane.scene("lg")}
             </PaneChrome>
             {tally ? (
-                <p className="mt-1 text-xs font-medium tabular-nums text-rose-600 dark:text-rose-300">
-                    {tally}
-                </p>
+                <p className="mt-1 text-xs font-medium tabular-nums text-dont-ink">{tally}</p>
             ) : null}
         </div>
     );
@@ -570,7 +635,7 @@ export function PanePreview({
             className="motion-showcase cursor-pointer"
         >
             {pane.scene(size)}
-            <p className="mt-2 px-0.5 font-mono text-xs leading-5 text-neutral-500 dark:text-neutral-400">
+            <p className="mt-2 px-0.5 font-mono text-xs leading-5 text-ink-muted">
                 {pane.caption}
             </p>
         </div>

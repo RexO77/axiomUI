@@ -86,7 +86,8 @@ export function ModalScene({ size }: { size: PreviewSize }) {
                 data-anim="panel"
                 className={cn(
                     "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg border border-blue-500 bg-white p-2.5 shadow-xl dark:bg-neutral-900",
-                    size === "lg" ? "w-[7.5rem]" : "w-20"
+                    // Wide enough for Cancel + Delete inside its own padding.
+                    size === "lg" ? "w-[8.5rem]" : "w-20"
                 )}
                 style={{ opacity: 0 }}
             >
@@ -470,96 +471,164 @@ export function SliderScene({ size }: { size: PreviewSize }) {
 }
 
 /** Parent chip containing a child chip (motion-23: inherited motion variables).
- *  Both carry data-anim targets so tracks can give them separate durations.
- *  Duration labels are printed on the chips so the abstraction reads at a
- *  glance; the don't pane's child label is rose (silently inherited). */
+ *
+ *  The child is a sibling laid over a dashed slot inside the parent, not a
+ *  DOM child, so it travels on its own track instead of riding the parent's
+ *  transform: whatever duration it runs is the duration you see. The slot
+ *  moves with the parent, so a child on a different clock visibly trails it.
+ *  The parent label swaps 220ms → 140ms when the parent is sped up. */
 export function NestedChipsScene({
     size,
-    childLabel = "child",
+    childLabel = "220ms",
     childInherits = false,
 }: {
     size: PreviewSize;
     childLabel?: string;
     childInherits?: boolean;
 }) {
+    const isLg = size === "lg";
+    const label = isLg ? (
+        <>
+            <span className="hidden @[10rem]:inline">child · </span>
+            {childLabel}
+        </>
+    ) : "child";
+    const chip = cn(
+        "whitespace-nowrap rounded-md border px-2 py-1 font-mono font-medium leading-4",
+        isLg ? "text-[10px]" : "text-[9px]"
+    );
     return (
         <div
             className={cn(
-                "flex items-center justify-center rounded-lg border border-neutral-200 bg-neutral-50/80 dark:border-neutral-800 dark:bg-neutral-900/50",
-                size === "lg" ? "h-36" : "h-16"
+                "@container flex max-w-full items-end justify-center overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50/80 px-3 dark:border-neutral-800 dark:bg-neutral-900/50",
+                isLg ? "h-36 pb-4" : "h-16 pb-1.5"
             )}
         >
-            <div
-                data-anim="parent"
-                className={cn(
-                    "rounded-lg border border-blue-500/60 bg-white dark:bg-neutral-900",
-                    size === "lg" ? "p-2.5" : "p-1.5"
-                )}
-            >
-                <span
+            <div className="relative max-w-full">
+                <div
+                    data-anim="parent"
                     className={cn(
-                        "mb-1.5 block font-mono font-medium tracking-tight text-neutral-500 dark:text-neutral-400",
-                        size === "lg" ? "text-[10px]" : "text-[8px]"
+                        "rounded-lg border border-blue-500/60 bg-white dark:bg-neutral-900",
+                        isLg ? "p-2.5" : "p-1.5"
                     )}
                 >
-                    {size === "lg" ? "parent · 140ms" : "parent"}
-                </span>
+                    <span
+                        className={cn(
+                            "mb-1.5 grid font-mono font-medium tracking-tight text-neutral-500 dark:text-neutral-400",
+                            isLg ? "text-[10px]" : "text-[8px]"
+                        )}
+                    >
+                        {isLg ? (
+                            <>
+                                <span data-anim="parent-was" className="col-start-1 row-start-1">
+                                    parent · 220ms
+                                </span>
+                                <span
+                                    data-anim="parent-now"
+                                    className="col-start-1 row-start-1"
+                                    style={{ opacity: 0 }}
+                                >
+                                    parent · 140ms
+                                </span>
+                            </>
+                        ) : (
+                            "parent"
+                        )}
+                    </span>
+                    {/* Where the child belongs. Same box as the chip, so at rest
+                        the chip covers it exactly. */}
+                    <div
+                        aria-hidden="true"
+                        className={cn(chip, "w-fit border-dashed border-neutral-300 text-transparent dark:border-neutral-600")}
+                    >
+                        {label}
+                    </div>
+                </div>
                 <div
                     data-anim="child"
                     className={cn(
-                        "rounded-md border px-2 py-1 font-mono font-medium",
-                        size === "lg" ? "text-[10px]" : "text-[9px]",
+                        chip,
+                        "absolute",
+                        isLg ? "bottom-[11px] left-[11px]" : "bottom-[7px] left-[7px]",
                         childInherits
-                            ? "border-rose-300 bg-rose-50 text-rose-600 dark:border-rose-500/50 dark:bg-rose-500/10 dark:text-rose-300"
-                            : "border-blue-500 bg-blue-500/10 text-blue-700 dark:border-blue-400 dark:bg-blue-400/10 dark:text-blue-300"
+                            ? "border-rose-300 bg-rose-50 text-rose-600 dark:border-rose-500/50 dark:bg-rose-950 dark:text-rose-300"
+                            : "border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-400 dark:bg-blue-950 dark:text-blue-300"
                     )}
                 >
-                    {size === "lg" ? childLabel : "child"}
+                    {label}
                 </div>
             </div>
         </div>
     );
 }
 
-/** A single centered button (press feedback, hover scale, hue shift). */
+/** A single centered button (press feedback, hover scale, hue shift).
+ *  `restBounds` draws a dashed outline at the button's rest size behind it,
+ *  hidden while the button is at rest. Any scale reveals the gap between the
+ *  two, so 0.96 and 0.90 read as different numbers rather than "smaller". */
 export function ButtonScene({
     size,
     label,
     variant = "primary",
     background,
+    restBounds = false,
 }: {
     size: PreviewSize;
     label: string;
     variant?: "primary" | "secondary";
     background?: string;
+    restBounds?: boolean;
 }) {
+    const isLg = size === "lg";
+    // Big enough at lg that a 4% press is a visible 2px, not a rounding error.
+    const lgButton = "inline-flex h-10 items-center justify-center whitespace-nowrap rounded-md px-6 text-sm font-semibold";
     return (
         <div
             className={cn(
                 "flex flex-col items-center justify-center gap-2.5 rounded-lg border border-neutral-200 bg-neutral-50/80 dark:border-neutral-800 dark:bg-neutral-900/50",
-                size === "lg" ? "h-36" : "h-16"
+                isLg ? "h-36" : "h-16"
             )}
         >
-            {size === "lg" ? (
+            {isLg ? (
                 <p className="text-[10px] font-medium text-neutral-400 dark:text-neutral-500">
                     Form actions
                 </p>
             ) : null}
-            <span data-anim="panel" className="inline-block" style={background ? { borderRadius: 6 } : undefined}>
-                {background ? (
+            <span className="relative inline-flex">
+                {restBounds && isLg ? (
                     <span
-                        className={cn(
-                            "inline-flex items-center justify-center rounded-md font-semibold text-white",
-                            size === "lg" ? "px-3 py-1.5 text-xs" : "px-2.5 py-1 text-[10px]"
-                        )}
-                        style={{ backgroundColor: background }}
-                        data-anim="fill"
-                    >
-                        {label}
-                    </span>
-                ) : (
-                    <MiniButton label={label} variant={variant} size={size} />
-                )}
+                        aria-hidden="true"
+                        className="absolute inset-0 rounded-md border border-dashed border-neutral-400 dark:border-neutral-500"
+                    />
+                ) : null}
+                <span data-anim="panel" className="relative inline-flex" style={background ? { borderRadius: 6 } : undefined}>
+                    {background ? (
+                        <span
+                            className={
+                                isLg
+                                    ? cn(lgButton, "text-white")
+                                    : "inline-flex items-center justify-center rounded-md px-2.5 py-1 text-[10px] font-semibold text-white"
+                            }
+                            style={{ backgroundColor: background }}
+                            data-anim="fill"
+                        >
+                            {label}
+                        </span>
+                    ) : isLg ? (
+                        <span
+                            className={cn(
+                                lgButton,
+                                variant === "primary"
+                                    ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
+                                    : "border border-neutral-300 bg-white text-neutral-700 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200"
+                            )}
+                        >
+                            {label}
+                        </span>
+                    ) : (
+                        <MiniButton label={label} variant={variant} size={size} />
+                    )}
+                </span>
             </span>
         </div>
     );
