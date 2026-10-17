@@ -4,7 +4,7 @@ import {
   showcaseSpecs,
   type PaneSpec,
 } from "@/components/features/rules/demos/showcase-specs";
-import { tracksDurationMs } from "@/lib/showcase-engine";
+import { EASE, tracksDurationMs } from "@/lib/showcase-engine";
 
 /**
  * The timing bar under each showcase pane ends in a ms counter, printed right
@@ -90,6 +90,17 @@ describe("showcase readouts agree with their captions", () => {
     expect(paneReadout(showcaseSpecs["sys-9"].dont).ms).toBe(560);
     expect(paneReadout(showcaseSpecs["sys-1"].do).ms).toBe(900);
     expect(paneReadout(showcaseSpecs["sys-1"].dont).ms).toBe(900);
+  });
+
+  it("animation overrides follow their track's curve while wait readouts stay linear", () => {
+    for (const variant of VARIANTS) {
+      const pane = showcaseSpecs["motion-10"][variant];
+      const panel = pane.tracks.find((track) => track.target === "panel");
+      expect(panel).toBeDefined();
+      expect(paneReadout(pane)).toEqual({ ms: panel!.durationMs, easing: panel!.easing ?? EASE.out });
+      expect(paneReadout(showcaseSpecs["sys-1"][variant]).easing).toBe(EASE.linear);
+      expect(paneReadout(showcaseSpecs["sys-9"][variant]).easing).toBe(EASE.linear);
+    }
   });
 
   it("a spec whose panes all ignore the speed control pins both of them", () => {

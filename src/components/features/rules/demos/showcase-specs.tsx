@@ -55,6 +55,8 @@ export type PaneSpec = {
      *  its sync receipt lands at 700ms). The caption's first stated ms must
      *  equal it; showcase-readouts.test.ts holds the two together. */
     readoutMs?: number;
+    /** An animated event follows its own curve; waits default to linear. */
+    readoutEasing?: string;
     /** A second fact printed beside the readout, e.g. "synced 700ms". */
     readoutTag?: string;
     /** Always plays at 1×, whatever the speed control says. motion-25 bakes
@@ -460,6 +462,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
             exitTracks: menuFromOriginExit(0.6),
             // The menu's own motion; the pip's later fade-out is not the lesson.
             readoutMs: DUR.medium,
+            readoutEasing: EASE.out,
         },
         dont: {
             caption: "grows from center — detached from its button",
@@ -467,6 +470,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
             tracks: menuFromOrigin(0.6),
             exitTracks: menuFromOriginExit(0.6),
             readoutMs: DUR.medium,
+            readoutEasing: EASE.out,
         },
     },
 
@@ -1063,16 +1067,17 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
 };
 
 /** What a pane's timing bar and ms counter show for one phase of playback.
- *  Enter counts to `readoutMs` when the spec sets one (a wait, so the bar runs
- *  linear); otherwise both phases count the tracks' wall-clock length and the
- *  bar follows the longest track's curve. Exit always reads its own tracks, so
+ *  Enter counts to `readoutMs` when the spec sets one, using its explicit curve
+ *  for an animated event or linear for a wait. Otherwise both phases count the
+ *  tracks' wall-clock length and the bar follows the longest track's curve.
+ *  Exit always reads its own tracks, so
  *  a 160ms dismiss never reports the 220ms entrance. */
 export function paneReadout(
     pane: PaneSpec,
     phase: "enter" | "exit" = "enter"
 ): { ms: number; easing: string } {
     if (phase === "enter" && pane.readoutMs !== undefined) {
-        return { ms: pane.readoutMs, easing: EASE.linear };
+        return { ms: pane.readoutMs, easing: pane.readoutEasing ?? EASE.linear };
     }
     const tracks = phase === "exit" && pane.exitTracks ? pane.exitTracks : pane.tracks;
     const primary = tracks.reduce((a, b) => (b.durationMs > a.durationMs ? b : a));
