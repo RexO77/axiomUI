@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
-import { DUR, EASE, kf, type Track } from "@/lib/showcase-engine";
+import { DUR, EASE, kf, tracksDurationMs, type Track } from "@/lib/showcase-engine";
 import type { PreviewSize } from "@/components/features/rules/preview-primitives";
 import { EasingGraph } from "@/components/features/rules/demos/easing-graph";
 import {
@@ -50,15 +50,32 @@ export type PaneSpec = {
     /** Played on gesture release / toggle-off. Required for toggle/press/hover.
      *  For grid previews it also serves as the "settle back" pass. */
     exitTracks?: Track[];
+    /** What the ms readout counts to, when the pane's whole timeline is not
+     *  the number the lesson is about (sys-9's heart fills at 0ms even though
+     *  its sync receipt lands at 700ms). The caption's first stated ms must
+     *  equal it; showcase-readouts.test.ts holds the two together. */
+    readoutMs?: number;
+    /** An animated event follows its own curve; waits default to linear. */
+    readoutEasing?: string;
+    /** A second fact printed beside the readout, e.g. "synced 700ms". */
+    readoutTag?: string;
+    /** Always plays at 1×, whatever the speed control says. motion-25 bakes
+     *  its review speed into the durations, so the control would double it. */
+    pinRate?: true;
 };
 
 export type ShowcaseSpec = {
     trigger: TriggerKind;
     /** Control-button label for action/toggle triggers. */
     control?: string;
+    /** Toggle label while engaged: the action the next press performs. */
+    controlEngaged?: string;
     /** Per-rule hint line — imperative, names what to do and what to watch.
      *  Overrides the generic per-trigger hint in the deep dive. */
     hint?: string;
+    /** Hint shown instead under reduced motion, where the speed control is
+     *  hidden. Required whenever `hint` tells the reader to change speed. */
+    hintReduced?: string;
     /** Plain key (no modifiers) that fires the action trigger while mounted. */
     hotkey?: string;
     /** Frequency-lesson: per-play wait (ms) accumulated on the don't pane. */
@@ -97,6 +114,49 @@ const flawedToast = (durationMs: number): Track[] => [
         ],
         durationMs
     ),
+];
+
+/** motion-28: an icon fully present, and one gone without moving or blurring. */
+const SHOWN: Keyframe = { opacity: 1, transform: "scale(1)", filter: "blur(0px)" };
+const HIDDEN_IN_PLACE: Keyframe = { opacity: 0, transform: "scale(1)", filter: "blur(0px)" };
+
+/** motion-10: the origin pip shows while the menu grows, then gets out of the
+ *  way 300ms after it lands, so it never sits on a menu item at rest. */
+const ORIGIN_PIP_HOLD_MS = 300;
+const menuFromOrigin = (fromScale: number): Track[] => [
+    t("panel", kf.popIn(fromScale), DUR.medium),
+    t("origin-dot", kf.fadeIn(), 90),
+    t("origin-dot", kf.crossfade(false), DUR.fast, { delayMs: DUR.medium + ORIGIN_PIP_HOLD_MS }),
+];
+/** Settle-back for motion-10. The default reverse would replay the pip's
+ *  fade-out backwards and leave it parked on the menu. */
+const menuFromOriginExit = (fromScale: number): Track[] => [
+    t(
+        "panel",
+        [
+            { opacity: 1, transform: "scale(1)" },
+            { opacity: 0, transform: `scale(${fromScale})` },
+        ],
+        DUR.fast,
+        { easing: EASE.inOut }
+    ),
+    t("origin-dot", [{ opacity: 0 }, { opacity: 0 }], 0),
+];
+
+/** motion-23: the parent moves this far; the child follows on its own clock. */
+const NEST_TRAVEL = "translateY(-40px)";
+const nestMove = (forward: boolean): Keyframe[] =>
+    forward
+        ? [{ transform: "translateY(0)" }, { transform: NEST_TRAVEL }]
+        : [{ transform: NEST_TRAVEL }, { transform: "translateY(0)" }];
+/** One move of the nested pair. In-out on purpose: both chips travel the same
+ *  40px, so the duration gap shows up as distance, which ease-out would hide
+ *  in the first few frames. */
+const nestTracks = (forward: boolean, parentMs: number, childMs: number): Track[] => [
+    t("parent", nestMove(forward), parentMs, { easing: EASE.inOut }),
+    t("child", nestMove(forward), childMs, { easing: EASE.inOut }),
+    t("parent-was", kf.crossfade(!forward), DUR.fast),
+    t("parent-now", kf.crossfade(forward), DUR.fast),
 ];
 
 /** Easing demo: labeled chip on a rail + curve as one instrument.
@@ -227,6 +287,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
     "motion-4": {
         trigger: "replay",
         hint: "Play, then switch to ¼× — watch each dot hug its curve",
+        hintReduced: "Read the two curves — the steep start is where the left one does its travel",
         do: {
             caption: "strong curve · 360ms — most of the travel happens up front",
             scene: (size) =>
@@ -247,7 +308,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
             ],
         },
         dont: {
-            caption: "browser default `ease` · 360ms — a shallow curve, no character",
+            caption: "browser default ease · 360ms — a shallow curve, no character",
             scene: (size) =>
                 easingScene(size, 0.25, 0.1, 0.25, 1, "Panel"),
             tracks: [
@@ -334,7 +395,8 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
      * vs a symmetric 360/360. Toggle to feel both directions. */
     "motion-7": {
         trigger: "toggle",
-        control: "Show / dismiss",
+        control: "Show toast",
+        controlEngaged: "Dismiss",
         hint: "Dismiss is the moment you've already moved on — it should be the fastest thing here",
         do: {
             caption: "in 220ms · out 160ms — exits get out of the way",
@@ -357,13 +419,13 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         hint: "Press and hold either side — 4% is acknowledgment, 10% is drama",
         do: {
             caption: "active: scale(0.96) — a nod, not a flinch",
-            scene: (size) => <ButtonScene size={size} label="Save" />,
+            scene: (size) => <ButtonScene size={size} label="Save" restBounds />,
             tracks: [t("panel", kf.scaleTo(1, 0.96), DUR.fast)],
             exitTracks: [t("panel", kf.scaleTo(0.96, 1), DUR.fast)],
         },
         dont: {
             caption: "active: scale(0.90) — the button cowers",
-            scene: (size) => <ButtonScene size={size} label="Save" />,
+            scene: (size) => <ButtonScene size={size} label="Save" restBounds />,
             tracks: [t("panel", kf.scaleTo(1, 0.9), DUR.fast)],
             exitTracks: [t("panel", kf.scaleTo(0.9, 1), DUR.fast)],
         },
@@ -374,6 +436,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         trigger: "action",
         control: "Open menu",
         hint: "Real objects don't grow from nothing — run it at ¼×",
+        hintReduced: "Real objects don't grow from nothing — the left menu starts at 95%, the right at zero",
         do: {
             caption: "scale(0.95) + fade — it arrives",
             scene: (size) => <MenuScene size={size} origin="top left" />,
@@ -395,18 +458,19 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         do: {
             caption: "grows from its trigger — cause meets effect",
             scene: (size) => <MenuScene size={size} origin="top left" originMarker />,
-            tracks: [
-                t("panel", kf.popIn(0.6), DUR.medium),
-                t("origin-dot", kf.fadeIn(), 90),
-            ],
+            tracks: menuFromOrigin(0.6),
+            exitTracks: menuFromOriginExit(0.6),
+            // The menu's own motion; the pip's later fade-out is not the lesson.
+            readoutMs: DUR.medium,
+            readoutEasing: EASE.out,
         },
         dont: {
             caption: "grows from center — detached from its button",
             scene: (size) => <MenuScene size={size} origin="center" originMarker />,
-            tracks: [
-                t("panel", kf.popIn(0.6), DUR.medium),
-                t("origin-dot", kf.fadeIn(), 90),
-            ],
+            tracks: menuFromOrigin(0.6),
+            exitTracks: menuFromOriginExit(0.6),
+            readoutMs: DUR.medium,
+            readoutEasing: EASE.out,
         },
     },
 
@@ -489,7 +553,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
      * vs animating height (layout work every frame). */
     "motion-14": {
         trigger: "replay",
-        hint: "Play both — they look alike here; under real load only the left stays smooth (see rule 21)",
+        hint: "Same 220ms, same smoothness on an idle thread — rule 21 shows what load does to the right one",
         do: {
             caption: "translateY + opacity · 220ms — compositor only",
             scene: (size) => <ToastScene size={size} />,
@@ -507,7 +571,8 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
      * to the short one and strands the tall one half-visible. */
     "motion-15": {
         trigger: "toggle",
-        control: "Show / dismiss",
+        control: "Show toasts",
+        controlEngaged: "Dismiss",
         hint: "Dismiss them — the fixed-pixel exit strands the taller toast",
         do: {
             caption: "exit translateY(150%) — measured against itself",
@@ -539,13 +604,13 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         doRequiresHover: true,
         do: {
             caption: "@media (hover: hover) — only where hover is real",
-            scene: (size) => <ButtonScene size={size} label="Hover me" variant="secondary" />,
+            scene: (size) => <ButtonScene size={size} label="Hover me" variant="secondary" restBounds />,
             tracks: [t("panel", kf.scaleTo(1, 1.06), DUR.fast)],
             exitTracks: [t("panel", kf.scaleTo(1.06, 1), DUR.fast)],
         },
         dont: {
             caption: "scales on tap — a phantom hover",
-            scene: (size) => <ButtonScene size={size} label="Hover me" variant="secondary" />,
+            scene: (size) => <ButtonScene size={size} label="Hover me" variant="secondary" restBounds />,
             tracks: [t("panel", kf.scaleTo(1, 1.06), DUR.fast)],
             exitTracks: [t("panel", kf.scaleTo(1.06, 1), DUR.fast)],
         },
@@ -709,37 +774,29 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         },
     },
 
-    /* motion-23 · Avoid inheritable motion variables — "speed up the parent":
-     * an explicit child duration survives; an inherited one silently changes. */
+    /* motion-23 · Avoid inheritable motion variables — "speed up the parent"
+     * from 220ms to 140ms. The child chip rides its own clock, and the dashed
+     * slot inside the parent marks where it belongs: an explicit 220ms child
+     * trails its slot and catches up; an inherited one is retimed and moves in
+     * lockstep. Restoring the parent puts both back on 220ms. */
     "motion-23": {
         trigger: "toggle",
         control: "Speed up parent",
+        controlEngaged: "Restore parent",
         hint: "You changed the parent. Watch what the child does about it",
         do: {
             caption: "explicit child duration — the parent's change can't reach it",
-            scene: (size) => <NestedChipsScene size={size} childLabel="child · 220ms" />,
-            tracks: [
-                t("parent", kf.nudgeX(10), DUR.fast),
-                t("child", kf.nudgeX(10), DUR.medium),
-            ],
-            exitTracks: [
-                t("parent", kf.nudgeXBack(10), DUR.fast),
-                t("child", kf.nudgeXBack(10), DUR.medium),
-            ],
+            scene: (size) => <NestedChipsScene size={size} childLabel="220ms" />,
+            tracks: nestTracks(true, DUR.fast, DUR.medium),
+            exitTracks: nestTracks(false, DUR.medium, DUR.medium),
         },
         dont: {
             caption: "inherited child duration — the parent's change silently retimes it",
             scene: (size) => (
-                <NestedChipsScene size={size} childLabel="child · inherits 140ms" childInherits />
+                <NestedChipsScene size={size} childLabel="inherits" childInherits />
             ),
-            tracks: [
-                t("parent", kf.nudgeX(10), DUR.fast),
-                t("child", kf.nudgeX(10), DUR.fast),
-            ],
-            exitTracks: [
-                t("parent", kf.nudgeXBack(10), DUR.fast),
-                t("child", kf.nudgeXBack(10), DUR.fast),
-            ],
+            tracks: nestTracks(true, DUR.fast, DUR.fast),
+            exitTracks: nestTracks(false, DUR.medium, DUR.medium),
         },
     },
 
@@ -764,16 +821,18 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
      * Durations are baked (not the speed control): 880ms ≈ 220ms × 4. */
     "motion-25": {
         trigger: "replay",
-        hint: "This is why the ¼× button exists — every motion bug survives full speed",
+        hint: "Same toast, same flaw — at review speed the pop is obvious; as shipped it slips past every reviewer",
         do: {
             caption: "220ms stretched to 880ms — the opacity pop is unmissable",
             scene: (size) => <ToastScene size={size} />,
             tracks: flawedToast(880),
+            pinRate: true,
         },
         dont: {
             caption: "220ms as shipped — nobody caught it",
             scene: (size) => <ToastScene size={size} />,
             tracks: flawedToast(220),
+            pinRate: true,
         },
     },
 
@@ -829,7 +888,9 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
     "motion-28": {
         trigger: "toggle",
         control: "Change state",
+        controlEngaged: "Change back",
         hint: "Run it at ¼× — the blur is what sells the morph",
+        hintReduced: "Change state to compare end frames — with motion on, the blur is what sells the morph",
         do: {
             caption: "scale + fade + blur · 300ms — one object changing its mind",
             scene: (size) => <IconSwapScene size={size} />,
@@ -873,13 +934,15 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         dont: {
             caption: "hard swap · 0ms — two strangers trading places",
             scene: (size) => <IconSwapScene size={size} />,
+            // Same scene as the do pane, so the incoming icon rests at
+            // scale(0.25) + blur. Key the whole state or the swap shows a speck.
             tracks: [
-                t("icon-out", [{ opacity: 1 }, { opacity: 0 }], 0),
-                t("icon-in", [{ opacity: 0 }, { opacity: 1 }], 0),
+                t("icon-out", [SHOWN, HIDDEN_IN_PLACE], 0),
+                t("icon-in", [HIDDEN_IN_PLACE, SHOWN], 0),
             ],
             exitTracks: [
-                t("icon-out", [{ opacity: 0 }, { opacity: 1 }], 0),
-                t("icon-in", [{ opacity: 1 }, { opacity: 0 }], 0),
+                t("icon-out", [HIDDEN_IN_PLACE, SHOWN], 0),
+                t("icon-in", [SHOWN, HIDDEN_IN_PLACE], 0),
             ],
         },
     },
@@ -953,6 +1016,9 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         do: {
             caption: "fills at 0ms · synced at 700ms — the round trip happens behind you",
             scene: (size) => <LikeScene size={size} />,
+            // The lesson is when the heart fills, not when the receipt lands.
+            readoutMs: 0,
+            readoutTag: "synced 700ms",
             tracks: [
                 t("panel", kf.popIn(0.6), 120),
                 t("sync", kf.fadeIn(), 140, { delayMs: 700 }),
@@ -961,6 +1027,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         dont: {
             caption: "nothing until 560ms — you wait through the round trip",
             scene: (size) => <LikeScene size={size} />,
+            readoutMs: 560,
             tracks: [
                 t("panel", kf.popIn(0.6), 120, { delayMs: 560 }),
                 // Same receipt, arriving with the fill instead of after it —
@@ -980,6 +1047,8 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         do: {
             caption: "skeleton — the layout arrives before the data",
             scene: (size) => <LoadingScene size={size} kind="skeleton" />,
+            // The wait both panes share; the 220ms reveal after it is not the point.
+            readoutMs: 900,
             tracks: [
                 t("placeholder", kf.crossfade(false), DUR.medium, { delayMs: 900 }),
                 t("content", kf.fadeIn(), DUR.medium, { delayMs: 900 }),
@@ -988,6 +1057,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         dont: {
             caption: "spinner — a clock with no hands",
             scene: (size) => <LoadingScene size={size} kind="spinner" />,
+            readoutMs: 900,
             tracks: [
                 t("placeholder", kf.crossfade(false), DUR.medium, { delayMs: 900 }),
                 t("content", kf.fadeIn(), DUR.medium, { delayMs: 900 }),
@@ -995,6 +1065,24 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         },
     },
 };
+
+/** What a pane's timing bar and ms counter show for one phase of playback.
+ *  Enter counts to `readoutMs` when the spec sets one, using its explicit curve
+ *  for an animated event or linear for a wait. Otherwise both phases count the
+ *  tracks' wall-clock length and the bar follows the longest track's curve.
+ *  Exit always reads its own tracks, so
+ *  a 160ms dismiss never reports the 220ms entrance. */
+export function paneReadout(
+    pane: PaneSpec,
+    phase: "enter" | "exit" = "enter"
+): { ms: number; easing: string } {
+    if (phase === "enter" && pane.readoutMs !== undefined) {
+        return { ms: pane.readoutMs, easing: pane.readoutEasing ?? EASE.linear };
+    }
+    const tracks = phase === "exit" && pane.exitTracks ? pane.exitTracks : pane.tracks;
+    const primary = tracks.reduce((a, b) => (b.durationMs > a.durationMs ? b : a));
+    return { ms: Math.round(tracksDurationMs(tracks)), easing: primary.easing ?? EASE.out };
+}
 
 /**
  * Whether a rule renders as a motion showcase. Lives here (a shared module,

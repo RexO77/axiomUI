@@ -1,16 +1,19 @@
+// design-system: strict
 "use client";
 
 import type { ReactNode, RefObject } from "react";
-import { CheckCircle2, XCircle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import type { Variant } from "@/components/features/rules/preview-primitives";
-import { VERDICT_LABEL } from "@/lib/verdict";
+import { VerdictLabel } from "@/components/ui/verdict-label";
 
 /**
  * Shared chrome for showcase panes: Do/Don't header, framed stage, optional
  * timing bar, caption. Used by both the WAAPI showcase (motion-showcase) and
  * the drag prototypes (drag-showcases) so the two read as one system.
+ *
+ * The caption is set in mono, like the grid previews' captions: it states
+ * spec facts (durations, curves, scale values) and reads as evidence.
  */
 export function PaneChrome({
     variant,
@@ -25,23 +28,10 @@ export function PaneChrome({
     bar?: ReactNode;
     children: ReactNode;
 }) {
-    const isDo = variant === "do";
     return (
         <div className="min-w-0">
-            <div className="mb-2 flex items-center gap-1.5">
-                {isDo ? (
-                    <CheckCircle2 aria-hidden="true" className="size-3.5 text-emerald-600 dark:text-emerald-400" />
-                ) : (
-                    <XCircle aria-hidden="true" className="size-3.5 text-rose-600 dark:text-rose-300" />
-                )}
-                <span
-                    className={cn(
-                        "text-[11px] font-semibold",
-                        isDo ? "text-emerald-700 dark:text-emerald-300" : "text-rose-700 dark:text-rose-200"
-                    )}
-                >
-                    {VERDICT_LABEL[variant]}
-                </span>
+            <div className="mb-2 flex">
+                <VerdictLabel verdict={variant} />
             </div>
             {/* No stage border — lg scenes carry their own frame; wrapping
                 them again reads as box-in-box. */}
@@ -49,34 +39,40 @@ export function PaneChrome({
                 {children}
             </div>
             {bar ? <div className="mt-2">{bar}</div> : null}
-            <p className="mt-1.5 text-xs leading-snug text-neutral-500 dark:text-neutral-400">
-                {caption}
-            </p>
+            <p className="mt-1.5 font-mono text-xs leading-5 text-ink-muted">{caption}</p>
         </div>
     );
 }
 
 export function Hint({ children }: { children: ReactNode }) {
-    return <span className="text-xs text-neutral-500 dark:text-neutral-400">{children}</span>;
+    return <span className="text-xs text-ink-muted">{children}</span>;
 }
+
+/** The radius every showcase control shares: 12px, what `rounded-md` drew
+ *  before plan 015 W3-A returns that utility to Tailwind's 6px. */
+export const CONTROL_RADIUS = "rounded-[12px]";
 
 export function ControlButton({
     onClick,
     children,
     disabled = false,
+    pressed,
 }: {
     onClick: () => void;
     children: ReactNode;
     disabled?: boolean;
+    pressed?: boolean;
 }) {
     return (
         <button
             type="button"
             onClick={onClick}
             disabled={disabled}
+            aria-pressed={pressed}
             className={cn(
                 // Matches the speed segments: 44px on touch, dense for a mouse.
-                "inline-flex min-h-9 items-center gap-1.5 rounded-md border border-neutral-300 px-3 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-100 pointer-coarse:min-h-11 pointer-coarse:px-4 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800",
+                "inline-flex min-h-9 shrink-0 items-center gap-1.5 whitespace-nowrap border border-line-strong px-3 text-xs font-medium text-ink-secondary transition-colors hover:bg-fill hover:text-ink pointer-coarse:min-h-11 pointer-coarse:px-4",
+                CONTROL_RADIUS,
                 disabled && "pointer-events-none opacity-50"
             )}
         >
