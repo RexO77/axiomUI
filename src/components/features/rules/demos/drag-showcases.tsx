@@ -152,12 +152,12 @@ function DragSurface({
     children: ReactNode;
 } & ReturnType<typeof useMirroredDrag>) {
     return (
-        <div className="motion-showcase">
+        <div className="motion-showcase @container">
             <div
                 ref={surfaceRef}
                 {...pointerProps}
                 data-vaul-no-drag
-                className="grid cursor-grab select-none grid-cols-2 gap-3 active:cursor-grabbing"
+                className="grid cursor-grab select-none grid-cols-1 gap-3 active:cursor-grabbing @lg:grid-cols-2"
                 style={{ touchAction: "pan-y" }}
             >
                 {children}
@@ -209,30 +209,49 @@ function DragGrip() {
     );
 }
 
+/*
+ * Rail geometry, shared by the markup and the drag logic so the marks drawn on
+ * the rail are the numbers the release verdict actually uses.
+ *
+ *   card travel = rail width − card width − END_GAP
+ *   dismiss     = the card's leading edge passes DISMISS_AT of that travel
+ *   wall        = WALL_AT of the rail; past it the do card rubber-bands
+ */
+const CARD_W = "7rem";
+const RAIL_INSET_PX = 8;
+const END_GAP_PX = 12;
+const DISMISS_AT = 0.6;
+const WALL_AT = 0.68;
+
 function DragCard({
     cardRef,
     railRef,
-    size = "md",
+    wallRef,
     showThreshold = false,
     showWall = false,
 }: {
     cardRef: RefObject<HTMLDivElement | null>;
     railRef?: RefObject<HTMLDivElement | null>;
-    size?: "md" | "sm";
-    /** Visual 60% dismiss mark for the velocity demo. */
+    wallRef?: RefObject<HTMLDivElement | null>;
+    /** Dismiss line for the velocity demo, where the card's leading edge
+     *  reaches 60% of its travel. */
     showThreshold?: boolean;
-    /** Solid right-edge cap — the "wall" the damping demo drags against. */
+    /** The boundary the damping demo drags against. It sits inside the rail
+     *  so the rubber-band overshoot past it stays in view. */
     showWall?: boolean;
 }) {
     return (
         <div
             ref={railRef}
-            className="relative flex h-36 items-center overflow-hidden rounded-lg border border-dashed border-neutral-300 bg-neutral-50/80 px-2 dark:border-neutral-700 dark:bg-neutral-900/50"
+            className="relative flex h-36 items-center overflow-hidden rounded-[16px] border border-dashed border-neutral-300 bg-neutral-50/80 px-2 dark:border-neutral-700 dark:bg-neutral-900/50"
         >
             {showThreshold ? (
                 <div
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-y-2 left-[60%] w-px border-l border-dashed border-rose-400/70"
+                    className="pointer-events-none absolute inset-y-2 w-px border-l border-dashed border-rose-400/70"
+                    style={{
+                        left: `calc(${RAIL_INSET_PX}px + ${CARD_W} + ${DISMISS_AT} * (100% - ${CARD_W} - ${END_GAP_PX}px))`,
+                    }}
                 >
                     {/* Reader-facing annotation, not depicted UI — keep it legible. */}
                     <span className="absolute -top-1.5 left-1 text-xs font-medium tabular-nums text-rose-500 dark:text-rose-300">
@@ -242,16 +261,20 @@ function DragCard({
             ) : null}
             {showWall ? (
                 <div
+                    ref={wallRef}
                     aria-hidden="true"
-                    className="pointer-events-none absolute inset-y-1.5 right-1 w-0.5 rounded-full bg-neutral-400/80 dark:bg-neutral-500/80"
-                />
+                    className="pointer-events-none absolute inset-y-0 right-0 bg-neutral-200/50 dark:bg-neutral-800/50"
+                    style={{ left: `${WALL_AT * 100}%` }}
+                >
+                    <div className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-neutral-400/80 dark:bg-neutral-500/80" />
+                </div>
             ) : null}
+            {/* Opaque under its blue tint: the card slides over the dismiss
+                line and past the wall, and neither may show through it. */}
             <div
                 ref={cardRef}
-                className={cn(
-                    "relative flex flex-col justify-center rounded-lg border border-blue-500 bg-blue-500/10 p-2 shadow-sm dark:border-blue-400 dark:bg-blue-400/10",
-                    size === "md" ? "h-14 w-28" : "h-10 w-16"
-                )}
+                className="relative flex h-14 shrink-0 flex-col justify-center rounded-lg border border-blue-500 bg-white bg-[linear-gradient(rgb(59_130_246/0.1),rgb(59_130_246/0.1))] p-2 shadow-sm dark:border-blue-400 dark:bg-neutral-900 dark:bg-[linear-gradient(rgb(96_165_250/0.1),rgb(96_165_250/0.1))]"
+                style={{ width: CARD_W }}
             >
                 <span className="mb-1 text-xs font-semibold leading-none tracking-tight text-blue-700 dark:text-blue-300">
                     Message
@@ -319,7 +342,7 @@ function VelocityDismiss() {
             const railEl = rail.current;
             const cardEl = doCard.current;
             if (railEl && cardEl) {
-                travel.current = railEl.clientWidth - cardEl.offsetWidth - 12;
+                travel.current = railEl.clientWidth - cardEl.offsetWidth - END_GAP_PX;
             }
         },
         onFrame: (dx) => {
@@ -340,7 +363,7 @@ function VelocityDismiss() {
                     (x / Math.max(1, travel.current)) * 100
                 )}%`
             );
-            if (!ticked.current && x > travel.current * 0.6) {
+            if (!ticked.current && x > travel.current * DISMISS_AT) {
                 ticked.current = true;
                 tapLight();
             }
@@ -348,7 +371,7 @@ function VelocityDismiss() {
         onRelease: (dx, velocity) => {
             const x = Math.min(Math.max(dx, 0), travel.current);
             currentX.current = x;
-            const farEnough = x > travel.current * 0.6;
+            const farEnough = x > travel.current * DISMISS_AT;
             const flick = velocity > 0.5;
             if (flick || farEnough) {
                 dismiss(doCard.current, Math.abs(velocity));
@@ -381,7 +404,7 @@ function VelocityDismiss() {
         <DragSurface
             {...surface}
             readoutRef={readout}
-            hint="Flick short and fast: the left card reads intent, the right demands mileage"
+            hint="Flick short and fast: the Do card reads intent, the Don’t card demands mileage"
         >
             <PaneChrome variant="do" caption={spec.do.caption}>
                 <DragCard cardRef={doCard} railRef={rail} showThreshold />
@@ -399,7 +422,7 @@ function DampedBoundary() {
     const spec = showcaseSpecs["motion-19"];
     const doCard = useRef<HTMLDivElement | null>(null);
     const dontCard = useRef<HTMLDivElement | null>(null);
-    const rail = useRef<HTMLDivElement | null>(null);
+    const wall = useRef<HTMLDivElement | null>(null);
     const readout = useRef<HTMLSpanElement | null>(null);
     const max = useRef(120);
     const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -415,10 +438,16 @@ function DampedBoundary() {
 
     const surface = useMirroredDrag({
         onStart: () => {
-            const railEl = rail.current;
+            // The limit is wherever the drawn wall is: the card's leading
+            // edge meets it at `max`, and everything past it is damped.
+            // offsetLeft ignores transforms, so this is the card at rest.
+            const wallEl = wall.current;
             const cardEl = doCard.current;
-            if (railEl && cardEl) {
-                max.current = railEl.clientWidth - cardEl.offsetWidth - 12;
+            if (wallEl && cardEl) {
+                max.current = Math.max(
+                    0,
+                    wallEl.offsetLeft - cardEl.offsetLeft - cardEl.offsetWidth
+                );
             }
         },
         onFrame: (dx) => {
@@ -455,7 +484,7 @@ function DampedBoundary() {
             hint="Drag past the edge and let go — one card is physical, one is a clamp"
         >
             <PaneChrome variant="do" caption={spec.do.caption}>
-                <DragCard cardRef={doCard} railRef={rail} showWall />
+                <DragCard cardRef={doCard} wallRef={wall} showWall />
             </PaneChrome>
             <PaneChrome variant="dont" caption={spec.dont.caption}>
                 <DragCard cardRef={dontCard} showWall />
@@ -488,7 +517,7 @@ function SliderPane({
     capture: boolean;
 }) {
     return (
-        <div className="flex h-36 flex-col justify-center gap-2.5 rounded-lg border border-neutral-200 bg-neutral-50/80 px-3 dark:border-neutral-800 dark:bg-neutral-900/50">
+        <div className="flex h-36 flex-col justify-center gap-2.5 rounded-[16px] border border-neutral-200 bg-neutral-50/80 px-3 dark:border-neutral-800 dark:bg-neutral-900/50">
             <div className="flex items-center justify-between gap-2">
                 <span className="text-[10px] font-medium text-neutral-500 dark:text-neutral-400">
                     Volume

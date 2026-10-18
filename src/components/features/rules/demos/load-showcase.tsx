@@ -39,20 +39,37 @@ function RaceRail({
     cardRef: RefObject<HTMLDivElement | null>;
     label: string;
 }) {
+    // The dashed rail is the stage: one frame, like the drag rails. MotionRail
+    // carries rounded-lg and cn() doesn't merge, so the pinned radius has to
+    // win outright or it would track the radius scale once that is reset.
     return (
-        <div className="flex h-32 flex-col justify-center">
-            <MotionRail railRef={railRef}>
-                <div ref={cardRef} className="w-fit" style={{ transform: REST }}>
-                    <ProtagonistChip label={label} />
-                </div>
-            </MotionRail>
-        </div>
+        <MotionRail railRef={railRef} className="h-36 rounded-[16px]!">
+            <div ref={cardRef} className="w-fit" style={{ transform: REST }}>
+                <ProtagonistChip label={label} />
+            </div>
+        </MotionRail>
     );
 }
 
+/** Room `card` has before it reaches the rail's far 8px inset. */
 function measureTravel(rail: HTMLElement | null, card: HTMLElement | null) {
     if (!rail || !card) return 120;
-    return Math.max(0, rail.clientWidth - card.offsetWidth - 8);
+    return Math.max(0, rail.clientWidth - card.offsetWidth - 16);
+}
+
+/**
+ * One distance for both cards, so the race is a controlled experiment: same
+ * duration, same distance, same speed — only the timing source differs. The
+ * chips carry different labels, so it is the shorter room of the two; the
+ * wider chip lands on the 8px inset and neither overruns its rail.
+ */
+function sharedTravel(
+    doRail: HTMLElement | null,
+    doCard: HTMLElement | null,
+    dontRail: HTMLElement | null,
+    dontCard: HTMLElement | null
+) {
+    return Math.min(measureTravel(doRail, doCard), measureTravel(dontRail, dontCard));
 }
 
 function far(px: number) {
@@ -64,6 +81,23 @@ function stall(ms: number) {
     while (performance.now() < end) {
         /* deliberate main-thread burn — the demo */
     }
+}
+
+/**
+ * Run the compositor leg, then hand its end state to inline style. A
+ * `fill: "forwards"` effect would outrank every inline write after it, so the
+ * card could never be reset; landing it inline lets `scheduleReset` move it.
+ */
+function slide(el: HTMLElement, destination: string, duration: number) {
+    const anim = el.animate([{ transform: REST }, { transform: destination }], {
+        duration,
+        easing: EASE.linear,
+    });
+    anim.onfinish = () => {
+        el.style.transform = destination;
+        anim.cancel();
+    };
+    return anim;
 }
 
 function resetCard(el: HTMLElement | null) {
@@ -112,6 +146,7 @@ function BlockedThreadRace() {
     const doCard = useRef<HTMLDivElement | null>(null);
     const dontCard = useRef<HTMLDivElement | null>(null);
     const rail = useRef<HTMLDivElement | null>(null);
+    const dontRail = useRef<HTMLDivElement | null>(null);
     const doAnim = useRef<Animation | null>(null);
     const rafId = useRef<number | null>(null);
     const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -137,13 +172,17 @@ function BlockedThreadRace() {
         doAnim.current?.cancel();
         if (rafId.current !== null) cancelAnimationFrame(rafId.current);
 
-        const travel = measureTravel(rail.current, doCard.current);
+        const travel = sharedTravel(
+            rail.current,
+            doCard.current,
+            dontRail.current,
+            dontCard.current
+        );
         const duration = 2600;
-        const destination = far(travel);
 
         if (reduced) {
-            if (doCard.current) doCard.current.style.transform = destination;
-            if (dontCard.current) dontCard.current.style.transform = destination;
+            if (doCard.current) doCard.current.style.transform = far(travel);
+            if (dontCard.current) dontCard.current.style.transform = far(travel);
             scheduleReset(doCard.current, 800, timers.current, () => setRunning(false));
             scheduleReset(dontCard.current, 800, timers.current);
             return;
@@ -153,12 +192,7 @@ function BlockedThreadRace() {
         resetCard(dontCard.current);
         void doCard.current?.offsetHeight;
 
-        if (doCard.current) {
-            doAnim.current = doCard.current.animate(
-                [{ transform: REST }, { transform: destination }],
-                { duration, easing: EASE.linear, fill: "forwards" }
-            );
-        }
+        if (doCard.current) doAnim.current = slide(doCard.current, far(travel), duration);
 
         const start = performance.now();
         lastTick.current = start;
@@ -192,13 +226,13 @@ function BlockedThreadRace() {
     };
 
     return (
-        <div className="motion-showcase">
-            <div className="grid grid-cols-2 gap-3">
+        <div className="motion-showcase @container">
+            <div className="grid grid-cols-1 gap-3 @lg:grid-cols-2">
                 <PaneChrome variant="do" caption={spec.do.caption}>
                     <RaceRail railRef={rail} cardRef={doCard} label="Compositor" />
                 </PaneChrome>
                 <PaneChrome variant="dont" caption={spec.dont.caption}>
-                    <RaceRail cardRef={dontCard} label="Main thread" />
+                    <RaceRail railRef={dontRail} cardRef={dontCard} label="Main thread" />
                 </PaneChrome>
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -206,11 +240,17 @@ function BlockedThreadRace() {
                     Race + block main thread
                 </ControlButton>
                 <Hint>
-                    Watch the right card — it freezes three times; the strip below is
+                    Watch the Don’t card — it freezes three times; the strip below is
                     the receipt
                 </Hint>
             </div>
-            <ThreadMeter samples={samples} durationMs={2600} mode="stalls" />
+            <ThreadMeter
+                samples={samples}
+                durationMs={2600}
+                mode="stalls"
+                recording={running && samples.length === 0}
+                reduced={reduced}
+            />
         </div>
     );
 }
@@ -225,6 +265,7 @@ function IntervalRace() {
     const doCard = useRef<HTMLDivElement | null>(null);
     const dontCard = useRef<HTMLDivElement | null>(null);
     const rail = useRef<HTMLDivElement | null>(null);
+    const dontRail = useRef<HTMLDivElement | null>(null);
     const doAnim = useRef<Animation | null>(null);
     const intervalId = useRef<ReturnType<typeof setInterval> | null>(null);
     const sampleRaf = useRef<number | null>(null);
@@ -256,13 +297,17 @@ function IntervalRace() {
         }
         if (sampleRaf.current !== null) cancelAnimationFrame(sampleRaf.current);
 
-        const travel = measureTravel(rail.current, doCard.current);
+        const travel = sharedTravel(
+            rail.current,
+            doCard.current,
+            dontRail.current,
+            dontCard.current
+        );
         const duration = 1400;
-        const destination = far(travel);
 
         if (reduced) {
-            if (doCard.current) doCard.current.style.transform = destination;
-            if (dontCard.current) dontCard.current.style.transform = destination;
+            if (doCard.current) doCard.current.style.transform = far(travel);
+            if (dontCard.current) dontCard.current.style.transform = far(travel);
             scheduleReset(doCard.current, 800, timers.current, () => setRunning(false));
             scheduleReset(dontCard.current, 800, timers.current);
             return;
@@ -272,12 +317,7 @@ function IntervalRace() {
         resetCard(dontCard.current);
         void doCard.current?.offsetHeight;
 
-        if (doCard.current) {
-            doAnim.current = doCard.current.animate(
-                [{ transform: REST }, { transform: destination }],
-                { duration, easing: EASE.linear, fill: "forwards" }
-            );
-        }
+        if (doCard.current) doAnim.current = slide(doCard.current, far(travel), duration);
 
         const start = performance.now();
         lastTick.current = start;
@@ -313,13 +353,13 @@ function IntervalRace() {
     };
 
     return (
-        <div className="motion-showcase">
-            <div className="grid grid-cols-2 gap-3">
+        <div className="motion-showcase @container">
+            <div className="grid grid-cols-1 gap-3 @lg:grid-cols-2">
                 <PaneChrome variant="do" caption={spec.do.caption}>
                     <RaceRail railRef={rail} cardRef={doCard} label="WAAPI" />
                 </PaneChrome>
                 <PaneChrome variant="dont" caption={spec.dont.caption}>
-                    <RaceRail cardRef={dontCard} label="setInterval" />
+                    <RaceRail railRef={dontRail} cardRef={dontCard} label="setInterval" />
                 </PaneChrome>
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -327,10 +367,16 @@ function IntervalRace() {
                     Play both
                 </ControlButton>
                 <Hint>
-                    Same 1400ms, same distance — count the jumps on the right
+                    Same 1400ms, same distance — count the jumps on the Don’t card
                 </Hint>
             </div>
-            <ThreadMeter samples={samples} durationMs={1400} mode="healthy" />
+            <ThreadMeter
+                samples={samples}
+                durationMs={1400}
+                mode="healthy"
+                recording={running && samples.length === 0}
+                reduced={reduced}
+            />
         </div>
     );
 }
