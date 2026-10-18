@@ -71,8 +71,8 @@ export function InterruptShowcase() {
     };
 
     return (
-        <div className="motion-showcase">
-            <div className="grid grid-cols-2 gap-3">
+        <div className="motion-showcase @container">
+            <div className="grid grid-cols-1 gap-3 @lg:grid-cols-2">
                 <PaneChrome variant="do" caption={spec.do.caption}>
                     <InterruptRail cardRef={doCard} label="Transition" />
                 </PaneChrome>
@@ -83,8 +83,8 @@ export function InterruptShowcase() {
             <div className="mt-3 flex flex-wrap items-center gap-2">
                 <ControlButton onClick={toggle}>Toggle</ControlButton>
                 <Hint>
-                    Hit Toggle again mid-flight — the left card turns from where it is,
-                    the right snaps to the far end first
+                    Hit Toggle again mid-flight — the Do card turns from where it is,
+                    the Don’t card snaps to the far end first
                 </Hint>
             </div>
         </div>
@@ -98,13 +98,14 @@ function InterruptRail({
     cardRef: RefObject<HTMLDivElement | null>;
     label: string;
 }) {
+    // The dashed rail is the stage: one frame, like the drag rails. MotionRail
+    // carries rounded-lg and cn() doesn't merge, so the pinned radius has to
+    // win outright or it would track the radius scale once that is reset.
     return (
-        <div className="flex h-32 flex-col justify-center">
-            <MotionRail>
-                <div ref={cardRef} className="w-fit" style={{ transform: REST }}>
-                    <ProtagonistChip label={label} />
-                </div>
-            </MotionRail>
-        </div>
+        <MotionRail className="h-36 rounded-[16px]!">
+            <div ref={cardRef} className="w-fit" style={{ transform: REST }}>
+                <ProtagonistChip label={label} />
+            </div>
+        </MotionRail>
     );
 }

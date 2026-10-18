@@ -68,14 +68,14 @@ export function TooltipToolbarShowcase() {
     };
 
     return (
-        <div className="motion-showcase">
+        <div className="motion-showcase @container">
             <div
                 ref={surfaceRef}
                 data-vaul-no-drag
                 onPointerMove={(e) => setHoverIndex(indexFromEvent(e))}
                 onPointerDown={(e) => setHoverIndex(indexFromEvent(e))}
                 onPointerLeave={() => setHoverIndex(null)}
-                className="grid grid-cols-2 gap-3"
+                className="grid grid-cols-1 gap-3 @lg:grid-cols-2"
                 style={{ touchAction: "manipulation" }}
             >
                 <PaneChrome variant="do" caption={spec.do.caption}>
@@ -97,8 +97,8 @@ export function TooltipToolbarShowcase() {
             </div>
             <div className="mt-3 flex min-h-[28px] items-center">
                 <Hint>
-                    Sweep left → right across the buttons — left pane waits once, then
-                    tooltips are instant
+                    Sweep across Cut, Copy and Paste — the Do toolbar waits once, then
+                    every tooltip is instant
                 </Hint>
             </div>
         </div>
@@ -158,30 +158,13 @@ function ToolbarPane({
     }, [hovered, instantAfterFirst, sessionOpen, onOpened]);
 
     return (
-        <div className="flex h-32 flex-col justify-center gap-2">
-            {/* Real toolbar strip — rest state isn't floating buttons in a void */}
-            <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-1.5 dark:border-neutral-800 dark:bg-neutral-900/60">
-                <div className="mb-1.5 flex items-center justify-between px-1">
-                    <span className="text-[9px] font-medium uppercase tracking-wide text-neutral-400">
-                        Toolbar
-                    </span>
-                    {instantAfterFirst ? (
-                        <span
-                            className={cn(
-                                "rounded-full px-1.5 py-0.5 text-[9px] font-medium tabular-nums",
-                                sessionOpen
-                                    ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
-                                    : "bg-neutral-200/80 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400"
-                            )}
-                        >
-                            {sessionOpen ? "session open · 0ms" : "first wait 300ms"}
-                        </span>
-                    ) : (
-                        <span className="rounded-full bg-neutral-200/80 px-1.5 py-0.5 text-[9px] font-medium text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
-                            always 300ms
-                        </span>
-                    )}
-                </div>
+        <div className="flex h-36 items-center justify-center rounded-[16px] border border-dashed border-neutral-300 bg-neutral-50/80 px-2 dark:border-neutral-700 dark:bg-neutral-900/50">
+            {/* Real toolbar strip — rest state isn't floating buttons in a void.
+                The stage is dashed like every other showcase rail; the toolbar
+                is the one solid object on it. The status row sits under the
+                buttons so tooltips rise into the stage above the toolbar,
+                where a real one would, not over it. */}
+            <div className="w-full min-w-0 rounded-lg border border-neutral-200 bg-white p-1.5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
                 <div className="flex items-end justify-center gap-1">
                     {LABELS.map((label, i) => {
                         const active = hovered === i;
@@ -214,6 +197,27 @@ function ToolbarPane({
                             </div>
                         );
                     })}
+                </div>
+                <div className="mt-1.5 flex items-center justify-between px-1">
+                    <span className="text-[9px] font-medium uppercase tracking-wide text-neutral-400">
+                        Toolbar
+                    </span>
+                    {instantAfterFirst ? (
+                        <span
+                            className={cn(
+                                "rounded-full px-1.5 py-0.5 text-[9px] font-medium tabular-nums",
+                                sessionOpen
+                                    ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                                    : "bg-neutral-200/80 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400"
+                            )}
+                        >
+                            {sessionOpen ? "session open · 0ms" : "first wait 300ms"}
+                        </span>
+                    ) : (
+                        <span className="rounded-full bg-neutral-200/80 px-1.5 py-0.5 text-[9px] font-medium text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
+                            always 300ms
+                        </span>
+                    )}
                 </div>
             </div>
         </div>
