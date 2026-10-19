@@ -14,22 +14,22 @@ export type RuleDeepDive = {
 export const ruleDeepDives: Record<string, RuleDeepDive> = {
   // ── Typography & text ─────────────────────────────────────────────
   "typo-1": {
-    whyItMatters: "Readers recognize whole words by their shape, the ascender and descender pattern, not letter by letter. Title Case flattens that shape by capitalizing every word, forcing the eye back into slower letter-by-letter decoding. Sentence case keeps only one capital, preserving the silhouette a fluent reader scans.",
-    riskWhenIgnored: "Buttons and headers read slower and feel more formal than intended. Long labels like Create New Account From Existing Template become a wall of jarring capitals that stalls scanning at every capitalized word.",
+    whyItMatters: "Sentence case has one rule that anyone applies the same way: capitalize the first word and proper nouns, nothing else. Title Case has no rule everyone agrees on. Style guides split over short words like with, for, and to, so a team that adopts it ships “Sign In With Google” on one screen and “Continue with Email” on the next. Sentence case also sets the tone, reading as a person speaking plainly where Title Case reads as a headline or a form heading. And because only proper nouns keep their capitals, they stand out: in “Connect to Slack”, the product is the one capitalized word after the first.",
+    riskWhenIgnored: "Casing drifts the moment a second writer touches the copy, so “Sign In With Google” and “Continue with Email” ship side by side and the interface reads as unedited. Proper nouns lose their only marker too: in “Share With Team Members”, nothing tells the reader whether Team Members is a product feature or simply the people on their team.",
     implementationNotes: [
-      "Set button and label copy to sentence case: Create new account, not Create New Account.",
-      "Capitalize only the first word and proper nouns.",
+      "Set titles and buttons in sentence case: “Invite your team” and “Skip for now”, not “Invite Your Team” and “Skip For Now”.",
+      "Capitalize only the first word and proper nouns, including product and feature names such as Slack or Google Drive.",
       "Enforce via a lint rule or CMS transform, not manual review.",
       "Audit existing headers and nav items for stray Title Case.",
     ],
     reviewPrompts: [
       "Is only the first word (and proper nouns) capitalized in this label?",
       "Do buttons and headers avoid capitalizing every word?",
-      "Does the copy match sentence case across similar components on the page?",
+      "Can a reader tell a product or feature name from ordinary words by its capitals alone?",
     ],
   },
   "typo-2": {
-    whyItMatters: "Uppercase letters are all the same height with no ascenders or descenders, so words lose the silhouette readers rely on for fast recognition. Tight tracking makes letters visually collide, compounding the loss. Adding tracking, around 0.05em, opens breathing room between letters so the eye can still separate them.",
+    whyItMatters: "All-caps labels can look crowded at default spacing, especially in small, condensed or bold text. Modest extra tracking, around 0.05em, separates neighboring strokes. Use it as a starting point and check the actual font: the goal is a label whose letters remain distinct, rather than one fixed spacing value for every typeface.",
     riskWhenIgnored: "Uppercase labels at default tracking look cramped and letters visually merge, especially in condensed or bold weights. Small uppercase text like tab labels or badges becomes noticeably harder to parse at a glance.",
     implementationNotes: [
       "Apply tracking-wider (0.05em) to any uppercase text.",
@@ -70,7 +70,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     reviewPrompts: [
       "Does line-height tighten as heading size increases?",
       "Do multi-line headings read as one grouped statement, not separate floating lines?",
-      "Is the heading's line-height nearer 1.1x its size than the 1.5x used for body copy?",
+      "Is the heading’s line-height nearer 1.1x its size than the 1.5x used for body copy?",
     ],
   },
   "typo-5": {
@@ -89,7 +89,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "typo-6": {
-    whyItMatters: "Perceived importance and legibility travel on two different channels. Lowering contrast drops an element's visual weight without touching how resolvable its letterforms are: 14px neutral-500 on white measures about 4.7:1 and still clears the 4.5:1 AA floor, while the same line at 10px in neutral-900 keeps all 17.9:1 of its contrast and strains acuity anyway. Shrink the type instead and you spend legibility on hierarchy you could have had for free.",
+    whyItMatters: "Perceived importance and legibility travel on two different channels. Lowering contrast drops an element’s visual weight without touching how resolvable its letterforms are: 14px neutral-500 on white measures about 4.7:1 and still clears the 4.5:1 AA floor, while the same line at 10px in neutral-900 keeps all 17.9:1 of its contrast and strains acuity anyway. Shrink the type instead and you spend legibility on hierarchy you could have had for free.",
     riskWhenIgnored: "A caption dropped to 10px to read as less important lands under the legible floor, so the timestamp or helper line beneath a field gets pinch-zoomed instead of read, and on a phone it is usually skipped entirely.",
     implementationNotes: [
       "De-emphasize with text-neutral-500 at 14px rather than shrinking neutral-900 to 10px.",
@@ -135,7 +135,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
   },
   "typo-9": {
     whyItMatters: "Hierarchy works by contrast: two weights, say Regular and Semibold, create one unambiguous distinction between normal and emphasized text. Adding Light, Medium, and Bold into the same interface gives every weight a neighbor close enough to blur into it, so the contrast that signals importance disappears.",
-    riskWhenIgnored: "With five weights in play, a Medium label and a Regular label sit close enough in visual weight that users can't tell which one is meant to stand out, and hierarchy collapses across the screen.",
+    riskWhenIgnored: "With five weights in play, a Medium label and a Regular label sit close enough in visual weight that users can’t tell which one is meant to stand out, and hierarchy collapses across the screen.",
     implementationNotes: [
       "Restrict a typeface to two weights: Regular and Semibold.",
       "Never introduce Light, Medium, and Bold alongside them.",
@@ -150,7 +150,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
   },
   "typo-10": {
     whyItMatters: "Layout containers have fixed dimensions, but real content, names, filenames, descriptions, is unbounded in length, so every text container needs an explicit overflow plan. Ellipsis truncation (text-ellipsis, overflow-hidden) signals more exists while keeping the layout grid intact, unlike overflow that pushes neighboring elements around.",
-    riskWhenIgnored: "An unhandled long filename or title overflows its card, pushing adjacent buttons off-screen or breaking the row's alignment, and the layout looks broken rather than merely full.",
+    riskWhenIgnored: "An unhandled long filename or title overflows its card, pushing adjacent buttons off-screen or breaking the row’s alignment, and the layout looks broken rather than merely full.",
     implementationNotes: [
       "Apply text-ellipsis and overflow-hidden to any container with variable-length text.",
       "Never let text overflow and break surrounding layout.",
@@ -164,7 +164,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "typo-11": {
-    whyItMatters: "What fails below 12px is stroke weight, not overall size. A typical UI sans draws its stems at roughly 8-9% of the em, so a 10px regular stem falls under one CSS pixel and antialiases to grey instead of rendering as a solid stroke, while the x-height drops to about five pixels, too few rows to keep a, e, and s distinct from each other. Mobile keeps the higher floor of the two, 14px against 12px, because phones get read while moving and in unpredictable light, where that thinned rendering has no margin left.",
+    whyItMatters: "What fails below 12px is stroke weight, not overall size. A typical UI sans draws its stems at roughly 8-9% of the em, so a 10px regular stem falls under one CSS pixel and antialiases to gray instead of rendering as a solid stroke, while the x-height drops to about five pixels, too few rows to keep a, e, and s distinct from each other. Mobile keeps the higher floor of the two, 14px against 12px, because phones get read while moving and in unpredictable light, where that thinned rendering has no margin left.",
     riskWhenIgnored: "Body text set at 11px on mobile forces users to zoom in or hold the phone closer to read comfortably, and subtext dropping to 9px becomes illegible for anyone with even mild vision strain.",
     implementationNotes: [
       "Set body text to 16px by default and treat 14px mobile / 12px desktop as floors, not targets.",
@@ -194,7 +194,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "typo-13": {
-    whyItMatters: "Balance evens out every line in a block, which gets expensive and unnecessary for longer copy; pretty wrapping instead only prevents the specific case of a lone short word stranded on the final line, leaving earlier lines at their natural browser-determined length. It targets captions and card copy where only the last line's orphan risk matters.",
+    whyItMatters: "Balance evens out every line in a block, which gets expensive and unnecessary for longer copy; pretty wrapping instead only prevents the specific case of a lone short word stranded on the final line, leaving earlier lines at their natural browser-determined length. It targets captions and card copy where only the last line’s orphan risk matters.",
     riskWhenIgnored: "A card description wraps cleanly except the last line drops to one dangling word, like today. sitting alone below a full paragraph, which reads as a layout glitch on repeat visits.",
     implementationNotes: [
       "Apply text-wrap: pretty to description, caption, and list item text.",
@@ -226,7 +226,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "layout-2": {
-    whyItMatters: "Line length governs how far the eye travels before jumping back to find the next line's start. At 45-75 characters, roughly 65ch, that return sweep stays short enough that readers rarely lose their place; past that range, saccade length and re-fixation errors climb.",
+    whyItMatters: "Line length governs how far the eye travels before jumping back to find the next line’s start. At 45-75 characters, roughly 65ch, that return sweep stays short enough that readers rarely lose their place; past that range, saccade length and re-fixation errors climb.",
     riskWhenIgnored: "Setting width: 100% on a 27-inch monitor stretches a paragraph past 120 characters per line, so readers skip lines or reread the same one twice, and time-on-page for long-form content quietly drops.",
     implementationNotes: [
       "Cap body copy by character count, not by container width: anywhere in the 45-75ch band reads comfortably, and max-w-prose lands near its top.",
@@ -241,8 +241,8 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "layout-3": {
-    whyItMatters: "This is Gestalt's law of proximity: the eye reads spatial closeness as relatedness before it reads borders or lines. A tight gap-2 between a label and its input signals these belong together; a wider gap-6 before the next label signals a new group starts here.",
-    riskWhenIgnored: "Set every gap to gap-4 uniformly and a label ends up equidistant from its own input and the next label, so users can't tell which label belongs to which field and start mis-tabbing between them.",
+    whyItMatters: "This is Gestalt’s law of proximity: the eye reads spatial closeness as relatedness before it reads borders or lines. A tight gap-2 between a label and its input signals these belong together; a wider gap-6 before the next label signals a new group starts here.",
+    riskWhenIgnored: "Set every gap to gap-4 uniformly and a label ends up equidistant from its own input and the next label, so users can’t tell which label belongs to which field and start mis-tabbing between them.",
     implementationNotes: [
       "Use gap-2 (8px) between a label and its input, and gap-6 (24px) before the next label.",
       "Never apply one flat gap value, like gap-4 everywhere, across both relationships.",
@@ -256,11 +256,11 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "layout-4": {
-    whyItMatters: "A right-pointing play triangle carries most of its area against the flat left edge and tapers to a point on the right, so its centroid sits about a third of the way in from that edge, left of the bounding box's center. Center the box and the shape reads as sitting left; nudging it 1-2px right puts perceived center back on true center. Typefaces make the same correction when they overshoot round letterforms past the baseline.",
+    whyItMatters: "A right-pointing play triangle carries most of its area against the flat left edge and tapers to a point on the right, so its centroid sits about a third of the way in from that edge, left of the bounding box’s center. Center the box and the shape reads as sitting left; nudging it 1-2px right puts perceived center back on true center. Typefaces make the same correction when they overshoot round letterforms past the baseline.",
     riskWhenIgnored: "Center a play icon by its bounding box alone and it reads as off-center inside its button, a defect reviewers will flag even when the CSS math is technically correct.",
     implementationNotes: [
       "Nudge asymmetric icons 1-2px away from their heavy side: a right-pointing play triangle moves right.",
-      "Don't trust absolute centering, such as margin: auto, as the final check for asymmetric shapes.",
+      "Don’t trust absolute centering, such as margin: auto, as the final check for asymmetric shapes.",
       "Verify alignment by eye, not by inspecting computed box dimensions.",
       "Apply the same correction to any icon with uneven mass: arrows, chevrons, triangles.",
     ],
@@ -271,7 +271,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "layout-5": {
-    whyItMatters: "Text is wider than it is tall, so equal padding on both axes, like py-2 px-2, leaves a button that reads as visually square and cramped around its label. Keeping horizontal padding at 1.5x to 2x vertical, such as py-2 px-4 (8px / 16px), restores a proportion that matches the text's own shape.",
+    whyItMatters: "Text is wider than it is tall, so equal padding on both axes, like py-2 px-2, leaves a button that reads as visually square and cramped around its label. Keeping horizontal padding at 1.5x to 2x vertical, such as py-2 px-4 (8px / 16px), restores a proportion that matches the text’s own shape.",
     riskWhenIgnored: "Apply py-2 px-2 to a text button and the label crowds both edges evenly while vertical space looks generous by comparison, giving the button a squat, tile-like shape instead of one that reads as clickable.",
     implementationNotes: [
       "Default to py-2 px-4, 8px vertical and 16px horizontal.",
@@ -286,28 +286,28 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "layout-6": {
-    whyItMatters: "Line height includes leading above and below the letterforms, but an icon carries no leading of its own, so centering it against full line height sits it a few pixels lower than the text's cap height. Aligning to cap height instead matches where the letters' visual mass actually starts.",
+    whyItMatters: "Line height includes leading above and below the letterforms, but an icon carries no leading of its own, so centering it against full line height sits it a few pixels lower than the text’s cap height. Aligning to cap height instead matches where the letters’ visual mass actually starts.",
     riskWhenIgnored: "Flex-center an icon against a label with generous line-height and the icon appears to float slightly below the text, a mismatch obvious in any icon-plus-label button or nav item once you look for it.",
     implementationNotes: [
-      "Align icons to the text's cap height, not the full line-height box.",
-      "Don't assume flex-center, align-items: center, is correct by default — it fails when line-height runs large relative to font size.",
+      "Align icons to the text’s cap height, not the full line-height box.",
+      "Don’t assume flex-center, align-items: center, is correct by default — it fails when line-height runs large relative to font size.",
       "Check alignment visually against the top of capital letters, not against computed heights.",
       "Adjust with a small negative margin or transform when auto-centering falls short.",
     ],
     reviewPrompts: [
-      "Does the icon's optical center line up with the cap height of the adjacent text?",
-      "Does the icon look like it's sitting slightly low or high relative to the label?",
+      "Does the icon’s optical center line up with the cap height of the adjacent text?",
+      "Does the icon look like it’s sitting slightly low or high relative to the label?",
       "Was the alignment verified by eye rather than trusting flex-center alone?",
     ],
   },
   "layout-7": {
-    whyItMatters: "Separation between sections needs one contrast channel, not two stacked together. A white card on a light-grey background already reads as a distinct region through figure-ground contrast; adding a border on top is redundant and starts competing with the content it's meant to frame.",
-    riskWhenIgnored: "Wrap a white card in a grey border on an already-white page and the border becomes the loudest element on screen, drawing more attention than the content it boxes in, while the page reads as a grid of boxes rather than a layout.",
+    whyItMatters: "Separation between sections needs one contrast channel, not two stacked together. A white card on a light-gray background already reads as a distinct region through figure-ground contrast; adding a border on top is redundant and starts competing with the content it’s meant to frame.",
+    riskWhenIgnored: "Wrap a white card in a gray border on an already-white page and the border becomes the loudest element on screen, drawing more attention than the content it boxes in, while the page reads as a grid of boxes rather than a layout.",
     implementationNotes: [
-      "Separate sections with a background-color shift, like a white card on a light-grey page.",
+      "Separate sections with a background-color shift, like a white card on a light-gray page.",
       "Drop the border when a background-color difference already exists.",
       "Reserve borders for cases with no background contrast available.",
-      "Test by removing borders temporarily — if sections still read as separate, the border wasn't needed.",
+      "Test by removing borders temporarily — if sections still read as separate, the border wasn’t needed.",
     ],
     reviewPrompts: [
       "Is background-color contrast, rather than a border, doing the work of separating this section?",
@@ -316,12 +316,12 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "layout-8": {
-    whyItMatters: "A layout region reads as one system when a single gap value repeats in every direction; the eye calibrates to that rhythm and treats any deviation as a mistake, not a variation. Mixing gap-6 rows with gap-3 columns breaks that calibration because the grid no longer has one unit to measure by.",
-    riskWhenIgnored: "Set rows to gap-6 and columns to gap-3 in the same card grid and the layout reads as accidentally uneven, with cards sitting closer together side-to-side than top-to-bottom for no visible reason.",
+    whyItMatters: "A layout region reads as one system when a single gap value repeats in every direction; the eye calibrates to that rhythm and treats any deviation as a mistake, not a variation. Mixing gap-6 rows with gap-2 columns breaks that calibration because the grid no longer has one unit to measure by.",
+    riskWhenIgnored: "Set rows to gap-6 and columns to gap-2 in the same card grid and the layout reads as accidentally uneven, with cards sitting closer together side-to-side than top-to-bottom for no visible reason.",
     implementationNotes: [
-      "Pick one gutter size per layout region and apply it in both directions: gap-6 for rows and columns alike.",
-      "Don't mix values, such as gap-6 rows with gap-3 columns, within the same grid.",
-      "Extend the same gutter value to nested grids in that region unless there's a clear hierarchy reason not to.",
+      "Pick one gutter for siblings of the same kind and apply it in both directions: gap-2 for rows and columns alike.",
+      "Don’t mix values, such as gap-6 rows with gap-2 columns, within one grid of like items; a larger gap belongs only where it marks a new group.",
+      "Extend the same gutter value to nested grids in that region unless there’s a clear hierarchy reason not to.",
       "Audit grid and flex gap properties for row-gap versus column-gap mismatches.",
     ],
     reviewPrompts: [
@@ -331,13 +331,13 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "layout-9": {
-    whyItMatters: "Padding that stays fixed while the viewport shrinks eats a growing share of available width, so p-6 on a 1440px screen and the same p-6 on a 375px phone aren't equivalent — 24px each side is 48px of gutter, a thirtieth of the desktop width and an eighth of the phone's. Scaling padding down per breakpoint, p-6 at lg down to p-4 at md down to p-3 at sm, holds the proportion roughly constant instead of the pixel value.",
+    whyItMatters: "Padding that stays fixed while the viewport shrinks eats a growing share of available width, so p-6 on a 1440px screen and the same p-6 on a 375px phone aren’t equivalent — 24px each side is 48px of gutter, a thirtieth of the desktop width and an eighth of the phone’s. Scaling padding down per breakpoint, p-6 at lg down to p-4 at md down to p-3 at sm, holds the proportion roughly constant instead of the pixel value.",
     riskWhenIgnored: "Ship p-6 at every breakpoint and on a small phone the content area shrinks to a narrow column squeezed between two thick padding bands, forcing text to wrap awkwardly or truncate.",
     implementationNotes: [
       "Scale padding down per breakpoint: p-6 at lg, p-4 at md, p-3 at sm.",
       "Never hardcode one padding value, like p-6, across every breakpoint.",
       "Reduce margins alongside padding, not just container padding, for full proportional scaling.",
-      "Check the smallest supported viewport first — that's where fixed spacing does the most damage.",
+      "Check the smallest supported viewport first — that’s where fixed spacing does the most damage.",
     ],
     reviewPrompts: [
       "Does padding visibly shrink from desktop to tablet to mobile breakpoints?",
@@ -393,7 +393,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "color-2": {
-    whyItMatters: "#000000 on #ffffff is the largest luminance step a screen can produce, about 21:1, and at that extreme the white ground appears to encroach on the thin parts of every stroke, so edges look over-sharp and long reads get tiring. A near-black blue-grey such as #0f172a still measures 17.9:1, far above the 4.5:1 AA floor, while pulling the step back from the maximum. The slight blue cast also matches the cool white most displays emit, so the text reads as ink instead of a hole punched through the screen.",
+    whyItMatters: "#000000 on #ffffff is the largest luminance step a screen can produce, about 21:1, and at that extreme the white ground appears to encroach on the thin parts of every stroke, so edges look over-sharp and long reads get tiring. A near-black blue-gray such as #0f172a still measures 17.9:1, far above the 4.5:1 AA floor, while pulling the step back from the maximum. The slight blue cast also matches the cool white most displays emit, so the text reads as ink instead of a hole punched through the screen.",
     riskWhenIgnored: "A long article set in #000000 on #ffffff has stroke edges that appear to shimmer as the eye moves, and readers describe the page as harsh or fatiguing after a few paragraphs without being able to point at what is wrong.",
     implementationNotes: [
       "Replace every #000000 text and background value with the palette near-black, #0f172a.",
@@ -408,16 +408,16 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "color-3": {
-    whyItMatters: "In physical environments, shadows are tinted by ambient bounce light and the color of nearby surfaces, never neutral grey — that's why shadow-indigo-500/20 under an indigo element reads as believable while shadow-black/20 reads as a flat drop-shadow filter. Mixing brand hue into the shadow simulates that light-source physics instead of faking depth with pure darkness.",
-    riskWhenIgnored: "A grey shadow under a saturated colored card looks pasted on rather than lifted off the page, making elevated elements feel like flat cutouts instead of physical objects.",
+    whyItMatters: "In physical environments, shadows are tinted by ambient bounce light and the color of nearby surfaces, never neutral gray — that’s why shadow-indigo-500/20 under an indigo element reads as believable while shadow-black/20 reads as a flat drop-shadow filter. Mixing brand hue into the shadow simulates that light-source physics instead of faking depth with pure darkness.",
+    riskWhenIgnored: "A gray shadow under a saturated colored card looks pasted on rather than lifted off the page, making elevated elements feel like flat cutouts instead of physical objects.",
     implementationNotes: [
       "Swap shadow-black/20 for a hue-matched shadow like shadow-indigo-500/20.",
-      "Match the shadow tint to the element's own dominant color, not a global default.",
+      "Match the shadow tint to the element’s own dominant color, not a global default.",
       "Keep opacity low (10-20%) so the tint reads as ambient, not a color cast.",
       "Test shadows against both light and dark surfaces for believability.",
     ],
     reviewPrompts: [
-      "Does the shadow under a colored element pick up that element's hue?",
+      "Does the shadow under a colored element pick up that element’s hue?",
       "Would the shadow look wrong if swapped for flat black?",
       "Does the elevated element feel like it is floating rather than pasted on?",
     ],
@@ -462,7 +462,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
       "Increase to neutral-400+ only if the surface itself is already off-white.",
     ],
     reviewPrompts: [
-      "Can you spot the outline button's border without focusing hard?",
+      "Can you spot the outline button’s border without focusing hard?",
       "Is the interactive border visibly darker than passive divider borders?",
       "Does the input field read as clickable/editable at a glance?",
     ],
@@ -503,7 +503,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     implementationNotes: [
       "Measure every text and background pairing with a contrast checker; target 4.5:1 or better for body copy.",
       "Use the 3:1 allowance only for genuinely large text: 24px/18pt regular, or 18.66px/14pt bold.",
-      "Replace guessed greys with checked ones: on white you need roughly #767676 or darker to clear 4.5:1.",
+      "Replace guessed grays with checked ones: on white you need roughly #767676 or darker to clear 4.5:1.",
       "Re-measure whenever a text or background token changes, in both themes.",
     ],
     reviewPrompts: [
@@ -539,7 +539,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     reviewPrompts: [
       "Does every image have a subtle outline separating it from the background?",
       "Does the outline switch from black-based to white-based in dark mode?",
-      "Is any image using a tinted grey outline instead of pure black or pure white?",
+      "Is any image using a tinted gray outline instead of pure black or pure white?",
     ],
   },
   "color-12": {
@@ -575,18 +575,18 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "comp-2": {
-    whyItMatters: "A giant red button sitting in the main UI primes users for loss aversion anxiety on every glance, yet its constant visibility also breeds habituation, so the warning eventually stops registering. Splitting the action into a neutral grey trigger and a red confirm step puts the alarm exactly once, at the moment it can prevent a mistake.",
+    whyItMatters: "A giant red button sitting in the main UI primes users for loss aversion anxiety on every glance, yet its constant visibility also breeds habituation, so the warning eventually stops registering. Splitting the action into a neutral gray trigger and a red confirm step puts the alarm exactly once, at the moment it can prevent a mistake.",
     riskWhenIgnored: "A prominent red Delete button next to routine controls gets hit by muscle memory or a stray tap, and without a confirm step the destructive action fires immediately, destroying data with no recovery path.",
     implementationNotes: [
       "Style the initial trigger as a secondary Delete… button, matching the surrounding secondary actions.",
       "Move the red styling exclusively to the confirming Delete button inside the modal.",
       "Never let the red state appear anywhere outside the confirmation step.",
-      "Name what will be lost in the modal — this can't be undone is the line that earns the extra click.",
+      "Name what will be lost in the modal — this can’t be undone is the line that earns the extra click.",
       "Scope the confirm to permanent deletions. Where the delete can be reversed, keep the secondary trigger and swap the modal for an undo window, which protects the same mistake without asking a question first.",
     ],
     reviewPrompts: [
       "Is the initial Delete… trigger styled as a secondary action rather than red?",
-      "Does clicking it open a confirmation step before anything is removed?",
+      "For a permanent delete, does clicking it open a confirmation step before anything is removed?",
       "Is red reserved for the confirming button inside the modal?",
     ],
   },
@@ -607,7 +607,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
   },
   "comp-4": {
     whyItMatters: "Shape carries meaning before users read a single label: circles read as organic and human, rectangles read as structured content. Putting a person in a circle and a document in a rect lets users sort avatars from files at a glance, relying on shape recognition instead of parsing text.",
-    riskWhenIgnored: "A user avatar rendered as a square gets mentally grouped with file thumbnails and folder icons, so users skim past a real person's profile picture thinking it is just another content tile.",
+    riskWhenIgnored: "A user avatar rendered as a square gets mentally grouped with file thumbnails and folder icons, so users skim past a real person’s profile picture thinking it is just another content tile.",
     implementationNotes: [
       "Render every user avatar as a circle, with no exceptions for team or group avatars.",
       "Keep content types like documents and projects as squares or rects.",
@@ -662,12 +662,12 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     reviewPrompts: [
       "Does the archive action show both an icon and a text label?",
       "Is the toolbar free of icon-only buttons for non-universal actions?",
-      "Could a first-time user name each icon's action without hovering?",
+      "Could a first-time user name each icon’s action without hovering?",
     ],
   },
   "comp-8": {
     whyItMatters: "A disabled control answers no question: it does not say what is missing, and the native disabled attribute also drops the element out of the tab order, so a keyboard or screen-reader user cannot even reach a tooltip hung on it. Visible helper text, or aria-disabled in place of disabled so the control stays focusable, restores the link between the blocked state and the thing the user has to do to clear it.",
-    riskWhenIgnored: "A greyed-out Save with nothing beside it gets clicked three or four times, because the user reads the page as broken rather than guessing that a required field two sections up is still empty, and the ticket that follows reports the save button as dead.",
+    riskWhenIgnored: "A grayed-out Save with nothing beside it gets clicked three or four times, because the user reads the page as broken rather than guessing that a required field two sections up is still empty, and the ticket that follows reports the save button as dead.",
     implementationNotes: [
       "Pair every disabled control with visible text naming the unmet condition.",
       "Prefer aria-disabled=true over the disabled attribute when the reason lives in a tooltip, so Tab still reaches it, and guard the handler yourself since aria-disabled does not block activation.",
@@ -711,7 +711,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "comp-11": {
-    whyItMatters: "Fitts's law says a larger, closer target is faster and easier to hit, so a full card click area turns the entire surface into one generous target instead of forcing precision onto a small title link. Shrinking the target to just the title text ignores decades of pointing-device research for no visual gain.",
+    whyItMatters: "Fitts’s law says a larger, closer target is faster and easier to hit, so a full card click area turns the entire surface into one generous target instead of forcing precision onto a small title link. Shrinking the target to just the title text ignores decades of pointing-device research for no visual gain.",
     riskWhenIgnored: "A card where only the title text is clickable makes users miss the target repeatedly when clicking the image or whitespace, producing frustrated re-clicks and a sense that the card is unresponsive.",
     implementationNotes: [
       "Wrap the entire card in the click handler, not just the title text.",
@@ -758,7 +758,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "form-2": {
-    whyItMatters: "Placeholder text vanishes the instant a user types the first character, so the field's identity has to be held in working memory for the rest of the entry. Working memory for that kind of transient detail is fragile, especially on longer forms or when a user gets interrupted mid-field. A persistent label keeps the field's purpose visible the entire time, while the placeholder is free to hold a format example instead.",
+    whyItMatters: "Placeholder text vanishes the instant a user types the first character, so the field’s identity has to be held in working memory for the rest of the entry. Working memory for that kind of transient detail is fragile, especially on longer forms or when a user gets interrupted mid-field. A persistent label keeps the field’s purpose visible the entire time, while the placeholder is free to hold a format example instead.",
     riskWhenIgnored: "A user tabs back to a field after being interrupted and finds an empty box with no label, so they cannot tell if it is the email field or the name field without retyping to check.",
     implementationNotes: [
       "Always render a persistent label like Email above the field, never only a placeholder.",
@@ -769,7 +769,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     reviewPrompts: [
       "Does a persistent label stay visible after text is entered?",
       "Is the placeholder used only for an example format, not as the field name?",
-      "Would the field's purpose still be clear if the input were fully typed over?",
+      "Would the field’s purpose still be clear if the input were fully typed over?",
     ],
   },
   "form-3": {
@@ -788,7 +788,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "form-4": {
-    whyItMatters: "An input's width is a visual promise about how much content belongs inside it, so a short field like a zip code should look short and a long field like a street address should look long. This uses affordance the same way a small jar signals it holds less than a large one. Full-width inputs for short answers break that promise and leave users unsure if they missed something.",
+    whyItMatters: "An input’s width is a visual promise about how much content belongs inside it, so a short field like a zip code should look short and a long field like a street address should look long. This uses affordance the same way a small jar signals it holds less than a large one. Full-width inputs for short answers break that promise and leave users unsure if they missed something.",
     riskWhenIgnored: "A full-width zip code input makes users wonder whether they are supposed to enter more than five digits, so they hesitate or re-check the field before submitting.",
     implementationNotes: [
       "Size the Zip code input short and the Address input long, matching expected content length.",
@@ -799,7 +799,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     reviewPrompts: [
       "Does the zip code field look noticeably shorter than the address field?",
       "Is any short-answer input stretched to the full width of the form?",
-      "Does each input's width roughly match its expected content length?",
+      "Does each input’s width roughly match its expected content length?",
     ],
   },
   "form-5": {
@@ -814,7 +814,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     reviewPrompts: [
       "Are mutually exclusive choices like Pick a plan shown as radio buttons, not checkboxes?",
       "Can more than one option be selected where only one choice makes sense?",
-      "Does the control's shape (circle vs square) match how many can be selected?",
+      "Does the control’s shape (circle vs square) match how many can be selected?",
     ],
   },
   "form-6": {
@@ -833,8 +833,8 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "form-7": {
-    whyItMatters: "A switch's visual language comes from a physical light switch: flipping it fires an immediate, standalone effect, which is why Dark mode as a switch feels correct. A checkbox instead signals select now, submit later, matching a pending choice like Email me product updates that only lands when the form is saved. Putting a switch on that row creates a signifier mismatch, promising an action that has not happened yet — and the Save changes button sitting below it is the tell.",
-    riskWhenIgnored: "A switch on Email me product updates reads as already applied, so a user flips it, sees it settle in the on position, and closes the page without pressing Save changes — the setting never reaches the server and nothing on screen said it wouldn't.",
+    whyItMatters: "A switch’s visual language comes from a physical light switch: flipping it fires an immediate, standalone effect, which is why Dark mode as a switch feels correct. A checkbox instead signals select now, submit later, matching a pending choice like Email me product updates that only lands when the form is saved. Putting a switch on that row creates a signifier mismatch, promising an action that has not happened yet — and the Save changes button sitting below it is the tell.",
+    riskWhenIgnored: "A switch on Email me product updates reads as already applied, so a user flips it, sees it settle in the on position, and closes the page without pressing Save changes — the setting never reaches the server and nothing on screen said it wouldn’t.",
     implementationNotes: [
       "Use a switch for Dark mode, since it applies the moment it is flipped.",
       "Use a checkbox for Email me product updates, since it only takes effect when the form is saved.",
@@ -896,14 +896,14 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     whyItMatters: "Every keystroke a user does not have to make is friction removed, and a smart default like country auto-detected from locale replaces a 195-option scroll with a single confirmable guess. This works because most users match the common case, so pre-filling the likely answer turns a search task into a verification task. An empty dropdown with 195 options forces every user to scroll and search even when the answer is predictable.",
     riskWhenIgnored: "A signup form shows an empty country dropdown with 195 entries, so users scroll or type to search for their own country every single time, even though locale data already knows the answer.",
     implementationNotes: [
-      "Auto-detect and pre-select country from the user's locale instead of leaving it empty.",
-      "Default date pickers to today's date rather than a blank calendar.",
+      "Auto-detect and pre-select country from the user’s locale instead of leaving it empty.",
+      "Default date pickers to today’s date rather than a blank calendar.",
       "Never leave a long list (195 options here) unselected when a reasonable default is inferable.",
       "Always let the user override the default; never lock the pre-filled value.",
     ],
     reviewPrompts: [
       "Is the country field pre-filled based on locale instead of shown empty?",
-      "Do date pickers default to today's date rather than opening blank?",
+      "Do date pickers default to today’s date rather than opening blank?",
       "Can the user still change any pre-filled default before submitting?",
     ],
   },
@@ -925,16 +925,16 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
 
   // ── System & logic ───────────────────────────────────────────────
   "sys-1": {
-    whyItMatters: "Perceived-performance research shows a grey layout pulse mimicking the final content structure reads as progress in motion, while a spinning wheel is an abstract token unrelated to what is loading. Skeletons prime the eye for where text and images will land, cutting perceived wait time even when actual load time is identical.",
+    whyItMatters: "Perceived-performance research shows a gray layout pulse mimicking the final content structure reads as progress in motion, while a spinning wheel is an abstract token unrelated to what is loading. Skeletons prime the eye for where text and images will land, cutting perceived wait time even when actual load time is identical.",
     riskWhenIgnored: "A full-screen spinner spends the whole wait saying only that something is happening, so the content lands in one jump at the end and the reader starts over locating what they came for. A 900ms wait spent that way reads as a stall, and some of them reload before it resolves.",
     implementationNotes: [
-      "Replace spinners with grey bars matching the shape of each content block, image, title, body.",
+      "Replace spinners with gray bars matching the shape of each content block, image, title, body.",
       "Pulse the bars at a slow, consistent rate (1.5-2s cycle) so it reads as alive, not stuck.",
       "Match skeleton block dimensions to real content so nothing shifts when it swaps in.",
       "Swap skeleton for content directly, never fade to blank first.",
     ],
     reviewPrompts: [
-      "Does the loading state show grey bars shaped like the final layout instead of a spinner?",
+      "Does the loading state show gray bars shaped like the final layout instead of a spinner?",
       "Does the skeleton match the real content dimensions with no layout jump on load?",
       "Is there any full-screen spinner used for initial content loading?",
     ],
@@ -955,7 +955,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "sys-3": {
-    whyItMatters: "Fitts's law makes time-to-target a function of size and distance, and a fingertip contacts roughly 8-10mm of glass, far more than most visual hit areas cover. The familiar numbers come from different places: Apple's HIG asks for 44x44pt, Material for 48x48dp, and WCAG 2.5.5 sets 44x44 CSS px as an AAA target, while WCAG 2.2's AA floor, 2.5.8, is only 24x24 px and can be satisfied by spacing instead of size. A 16x16 glyph gives you a 16x16 target unless something grows it, and only padding does: padding joins the hit area, margin merely holds the neighbours off.",
+    whyItMatters: "Fitts’s law makes time-to-target a function of size and distance, and a fingertip contacts roughly 8-10mm of glass, far more than most visual hit areas cover. The familiar numbers come from different places: Apple’s HIG asks for 44x44pt, Material for 48x48dp, and WCAG 2.5.5 sets 44x44 CSS px as an AAA target, while WCAG 2.2’s AA floor, 2.5.8, is only 24x24 px and can be satisfied by spacing instead of size. A 16x16 glyph gives you a 16x16 target unless something grows it, and only padding does: padding joins the hit area, margin merely holds the neighbours off.",
     riskWhenIgnored: "A 16x16 delete button at the end of a file row is smaller than the contact patch of the thumb reaching for it, so the tap lands on the row instead and opens the file — and the user only learns which control they hit after the wrong screen arrives.",
     implementationNotes: [
       "Grow small controls to 44x44 with padding, not margin: only padding belongs to the hit area.",
@@ -985,7 +985,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "sys-5": {
-    whyItMatters: "Naming a token for what it is, blue-500, keeps the base palette stable while an alias layer such as accent maps meaning on top, so a rebrand edits the aliases and the palette underneath survives. Naming directly by function, as $button-blue does, welds one component's intent into the value, and the weld holds the moment anything else borrows that color.",
+    whyItMatters: "Naming a token for what it is, blue-500, keeps the base palette stable while an alias layer such as accent maps meaning on top, so a rebrand edits the aliases and the palette underneath survives. Naming directly by function, as $button-blue does, welds one component’s intent into the value, and the weld holds the moment anything else borrows that color.",
     riskWhenIgnored: "A token named $button-blue ends up on the Payment overdue banner because that blue happened to look right, so the next rebrand moves the button and repaints the warning with it, and nobody connects the two until a customer asks why an overdue notice is the same color as Save.",
     implementationNotes: [
       "Structure tokens in three layers: blue-500 in the palette, accent as the alias, then the component that consumes the alias.",
@@ -1060,7 +1060,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "sys-10": {
-    whyItMatters: "A failed request is a normal event, not an exception, and the browser's default handling of one is hostile: an img that 404s collapses to its alt box, so everything below it jumps up the page. Rendering a placeholder at the same dimensions, with a retry, holds the layout still and keeps the failure legible as a failure rather than as a page that looks half-built.",
+    whyItMatters: "A failed request is a normal event, not an exception, and the browser’s default handling of one is hostile: an img that 404s collapses to its alt box, so everything below it jumps up the page. Rendering a placeholder at the same dimensions, with a retry, holds the layout still and keeps the failure legible as a failure rather than as a page that looks half-built.",
     riskWhenIgnored: "One CDN hiccup and a grid of product cards shows broken-image glyphs at assorted sizes while the rows reflow around each failure, so the page reads as broken rather than as temporarily missing a few pictures.",
     implementationNotes: [
       "Reserve the space before the request resolves, with aspect-ratio or a fixed box, so a failure cannot shift the layout.",
@@ -1128,7 +1128,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
       "Reserve full standard motion for rare surfaces like a first-run modal, and keep even that under 300ms.",
       "Audit every animated surface for weekly-or-more usage and shorten or strip motion above that threshold.",
       "Time the command palette open path separately from onboarding modals in your motion tokens.",
-      "Recheck a surface's motion once it moves from rare to daily use, like a settings panel becoming a habit.",
+      "Recheck a surface’s motion once it moves from rare to daily use, like a settings panel becoming a habit.",
     ],
     reviewPrompts: [
       "Does the command palette open without any perceptible delay?",
@@ -1257,10 +1257,10 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-10": {
-    whyItMatters: "A scale animation always has one fixed point, the single pixel that does not move, and the eye finds it for free: it is the only stable reference in a frame where everything else is expanding. Put that point on the trigger and the animation states its own cause — the menu grew out of the button you pressed — with no arrow or highlight needed. Put it at the panel's center and the fixed point lands in the middle of content still too small to read, so it names nothing, and the link between click and result has to be worked out afterwards from position alone. Modals are the exception only because nothing on screen launched them from a particular place.",
+    whyItMatters: "A scale animation always has one fixed point, the single pixel that does not move, and the eye finds it for free: it is the only stable reference in a frame where everything else is expanding. Put that point on the trigger and the animation states its own cause — the menu grew out of the button you pressed — with no arrow or highlight needed. Put it at the panel’s center and the fixed point lands in the middle of content still too small to read, so it names nothing, and the link between click and result has to be worked out afterwards from position alone. Modals are the exception only because nothing on screen launched them from a particular place.",
     riskWhenIgnored: "A popover that scales from center instead of its trigger appears to materialize disconnected from the button that opened it, forcing users to visually search for the connection.",
     implementationNotes: [
-      "Set transform-origin to the trigger element's position.",
+      "Set transform-origin to the trigger element’s position.",
       "Reserve center-origin scaling exclusively for modals with no single anchor point.",
       "Calculate origin dynamically if the trigger can appear in different screen positions.",
       "Recheck origin behavior when a popover is repositioned by collision detection near screen edges.",
@@ -1282,12 +1282,12 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
     reviewPrompts: [
       "Does the first tooltip in a session wait briefly before appearing?",
-      "Do adjacent tooltips appear instantly once you're already hovering the toolbar?",
+      "Do adjacent tooltips appear instantly once you’re already hovering the toolbar?",
       "Does every toolbar item impose its own separate hover delay?",
     ],
   },
   "motion-12": {
-    whyItMatters: "A transition negotiates with the element's current position. Interrupt a 420ms transform transition at 38% of its travel and the new target is computed from where the element actually is, so it eases home from there. A keyframe animation has no notion of a current position to negotiate with: re-triggering replays a declared timeline, so the same interruption teleports the element to the value the old run was aiming at and starts the trip over from the far end.",
+    whyItMatters: "A transition negotiates with the element’s current position. Interrupt a 420ms transform transition at 38% of its travel and the new target is computed from where the element actually is, so it eases home from there. A keyframe animation has no notion of a current position to negotiate with: re-triggering replays a declared timeline, so the same interruption teleports the element to the value the old run was aiming at and starts the trip over from the far end.",
     riskWhenIgnored: "A keyframe-driven toggle interrupted halfway jumps to a declared keyframe value instead of easing from where it stands, so the control snaps to the far end of its travel before it starts back, and a user clicking quickly sees it move the wrong way first.",
     implementationNotes: [
       "Drive any interruptible toggle or state flip with a transition, as in transition: transform 420ms, never an @keyframes run.",
@@ -1323,7 +1323,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
       "Animate translateY plus opacity for movement and appearance.",
       "Replace any animated height, top, left, width, padding, or margin with a transform equivalent.",
       "Use a fixed or measured wrapper size if content height needs to appear to change.",
-      "Profile with the browser's performance panel to confirm no layout thrashing during the animation.",
+      "Profile with the browser’s performance panel to confirm no layout thrashing during the animation.",
     ],
     reviewPrompts: [
       "Does the animation stay smooth even while other work is happening on the page?",
@@ -1332,7 +1332,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-15": {
-    whyItMatters: "A percentage translate like translateY(150%) is relative to the element's own rendered size, so a toast or drawer slides fully offscreen regardless of its content length, while a hardcoded pixel offset assumes one fixed height and breaks the moment content changes.",
+    whyItMatters: "A percentage translate like translateY(150%) is relative to the element’s own rendered size, so a toast or drawer slides fully offscreen regardless of its content length, while a hardcoded pixel offset assumes one fixed height and breaks the moment content changes.",
     riskWhenIgnored: "A drawer using a hardcoded pixel offset leaves a visible sliver on screen the moment its content grows taller than the value the offset assumed, exposing part of the panel that should be hidden.",
     implementationNotes: [
       "Use a percentage offset such as translateY(150%) for offscreen positioning, never a pixel count.",
@@ -1381,7 +1381,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     riskWhenIgnored: "A user flicks a card quickly but only a short distance, the gesture snaps back because it did not clear the distance threshold, and the interaction feels unresponsive or broken.",
     implementationNotes: [
       "Dismiss when either distance or velocity crosses its threshold, not distance alone.",
-      "Read pointer velocity from the gesture library's velocity output on release.",
+      "Read pointer velocity from the gesture library’s velocity output on release.",
       "Set a velocity threshold that catches quick short flicks a static swipe distance would miss.",
       "Test with deliberately short, fast flicks in addition to slow full-distance drags.",
     ],
@@ -1397,7 +1397,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     implementationNotes: [
       "Apply increasing friction past the edge instead of clamping position outright.",
       "Scale resistance with overdrag distance so it gets harder to pull the further past the boundary.",
-      "Never let the dragged element's position stop updating outright at the limit.",
+      "Never let the dragged element’s position stop updating outright at the limit.",
       "Spring the element back to the boundary on release using the same damped curve.",
     ],
     reviewPrompts: [
@@ -1407,8 +1407,8 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-20": {
-    whyItMatters: "Once a drag starts, the element should keep tracking that one pointer even if it strays outside the element's bounds or a second finger touches down. setPointerCapture on drag start redirects all subsequent pointer events to the dragged element regardless of what is under the cursor, which is exactly the pointer capture semantics browsers expose for this case. Without it, moving fast enough to leave the element's hit area silently drops the gesture.",
-    riskWhenIgnored: "A user drags quickly and their pointer slips outside the element's bounding box mid-gesture, the drag handler stops receiving events, and the element abruptly freezes or drops.",
+    whyItMatters: "Once a drag starts, the element should keep tracking that one pointer even if it strays outside the element’s bounds or a second finger touches down. setPointerCapture on drag start redirects all subsequent pointer events to the dragged element regardless of what is under the cursor, which is exactly the pointer capture semantics browsers expose for this case. Without it, moving fast enough to leave the element’s hit area silently drops the gesture.",
+    riskWhenIgnored: "A user drags quickly and their pointer slips outside the element’s bounding box mid-gesture, the drag handler stops receiving events, and the element abruptly freezes or drops.",
     implementationNotes: [
       "Call setPointerCapture on the drag target inside the pointerdown handler.",
       "Release capture explicitly on pointerup or pointercancel.",
@@ -1416,7 +1416,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
       "Verify the element keeps tracking the pointer even when dragged outside its own bounds.",
     ],
     reviewPrompts: [
-      "Does the drag keep following the pointer even when it moves outside the element's edges?",
+      "Does the drag keep following the pointer even when it moves outside the element’s edges?",
       "Does introducing a second touch during a drag leave the first drag unaffected?",
       "Does releasing the pointer cleanly end the drag without a stuck or jumping element?",
     ],
@@ -1442,7 +1442,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     implementationNotes: [
       "Drive programmatic motion with element.animate() targeting transform and opacity.",
       "Never reach for setInterval to animate a layout-affecting property.",
-      "Use the returned Animation object's play, pause, and reverse methods for runtime control.",
+      "Use the returned Animation object’s play, pause, and reverse methods for runtime control.",
       "Chain or update keyframes only after the values needed are actually known.",
     ],
     reviewPrompts: [
@@ -1452,7 +1452,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-23": {
-    whyItMatters: "Setting a CSS custom property like --swipe-amount on a parent element forces the browser to recompute styles for every descendant that references it, since custom property invalidation cascades down the whole subtree on each update. Writing directly to element.style.transform touches only that one element's compositor layer. For a value updating every drag frame, that difference is the gap between 60fps and a dropped-frame stutter.",
+    whyItMatters: "Setting a CSS custom property like --swipe-amount on a parent element forces the browser to recompute styles for every descendant that references it, since custom property invalidation cascades down the whole subtree on each update. Writing directly to element.style.transform touches only that one element’s compositor layer. For a value updating every drag frame, that difference is the gap between 60fps and a dropped-frame stutter.",
     riskWhenIgnored: "A drag handler updates a --swipe-amount variable on a parent container every pointermove, style recalculation cascades to every child that reads it, and the drag visibly stutters under a large or nested DOM tree.",
     implementationNotes: [
       "Write drag distance straight to element.style.transform on the dragged element.",
@@ -1461,7 +1461,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
       "Profile style recalculation in devtools while dragging to confirm it stays scoped to one element.",
     ],
     reviewPrompts: [
-      "Is the drag transform written directly to the dragged element's style, not a parent variable?",
+      "Is the drag transform written directly to the dragged element’s style, not a parent variable?",
       "Does dragging stay smooth even inside a deeply nested or large DOM subtree?",
       "Does devtools performance recording show no wide style recalculation during the drag?",
     ],
@@ -1482,7 +1482,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-25": {
-    whyItMatters: "Motion flaws like a wrong transform-origin, unsynced property timing, or a muddy color blend are often invisible at full speed but obvious once slowed to 2x-5x duration, since human perception can't parse sub-200ms discrepancies at normal playback. Reviewing in slow time exposes exactly which property lags, which easing curve snaps instead of glides, and where a blend passes through an ugly intermediate hue. This is a review technique, not a shipped behavior.",
+    whyItMatters: "Motion flaws like a wrong transform-origin, unsynced property timing, or a muddy color blend are often invisible at full speed but obvious once slowed to 2x-5x duration, since human perception can’t parse sub-200ms discrepancies at normal playback. Reviewing in slow time exposes exactly which property lags, which easing curve snaps instead of glides, and where a blend passes through an ugly intermediate hue. This is a review technique, not a shipped behavior.",
     riskWhenIgnored: "An entrance animation has its scale and opacity slightly out of sync, it looks fine at full speed in a quick check, and it ships with a barely-perceptible but bothersome mismatch that only shows up slowed down.",
     implementationNotes: [
       "Slow the animation to 2x-5x its normal duration using devtools or a temporary multiplier.",
@@ -1497,13 +1497,13 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-26": {
-    whyItMatters: "A title, supporting copy, and action buttons are semantically separate pieces, so animating an entire panel as one fading block erases that distinction and asks the eye to parse everything at once. Splitting them into staggered groups at 80-100ms apart lets each piece register as its own idea in sequence, mirroring how a reader's attention naturally moves from heading to body to action. This is the panel-level counterpart to per-item list stagger, applied to content roles instead of repeated items.",
+    whyItMatters: "A title, supporting copy, and action buttons are semantically separate pieces, so animating an entire panel as one fading block erases that distinction and asks the eye to parse everything at once. Splitting them into staggered groups at 80-100ms apart lets each piece register as its own idea in sequence, mirroring how a reader’s attention naturally moves from heading to body to action. This is the panel-level counterpart to per-item list stagger, applied to content roles instead of repeated items.",
     riskWhenIgnored: "A modal fades in as one container, the title, body text, and buttons all appear simultaneously, and users report the panel feels like a flash of content rather than something they read.",
     implementationNotes: [
       "Split the panel into title, copy, and action groups with roughly 80-100ms stagger between them.",
       "Never wrap the whole panel in a single fade or scale as though it were one object.",
       "Order the stagger to match reading order: title first, then copy, then actions.",
-      "Keep each group's individual animation short so the full sequence still resolves quickly.",
+      "Keep each group’s individual animation short so the full sequence still resolves quickly.",
     ],
     reviewPrompts: [
       "Do the title, copy, and actions animate in as separate staggered groups?",
@@ -1518,11 +1518,11 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
       "Exit with opacity 0 and a small translateY(-12px) over about 150ms.",
       "Never use large-magnitude exits like translateY(-100%) or scale(0.5).",
       "Keep exit duration shorter than the matching enter animation.",
-      "Confirm the exit doesn't shift or reflow unrelated surrounding layout.",
+      "Confirm the exit doesn’t shift or reflow unrelated surrounding layout.",
     ],
     reviewPrompts: [
       "Does the exit use a small translate and fade rather than a dramatic scale or slide?",
-      "Is the exit noticeably quicker than the element's entrance animation?",
+      "Is the exit noticeably quicker than the element’s entrance animation?",
       "Does surrounding content stay stable in place while the element exits?",
     ],
   },
@@ -1560,7 +1560,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
 
   // ── Accessibility & inclusivity ──────────────────────────────────
   "a11y-1": {
-    whyItMatters: "The default focus ring is browser chrome, and outline: none removes it with nothing standing in its place; for a keyboard user that is the equivalent of hiding the cursor. focus-visible is the browser's own heuristic for when a ring is wanted: it fires for Tab and keyboard activation and stays quiet for a mouse press, so focus-visible:ring-2 ring-blue-500 puts the marker exactly where WCAG 2.4.7 needs it without ringing every click.",
+    whyItMatters: "The default focus ring is browser chrome, and outline: none removes it with nothing standing in its place; for a keyboard user that is the equivalent of hiding the cursor. focus-visible is the browser’s own heuristic for when a ring is wanted: it fires for Tab and keyboard activation and stays quiet for a mouse press, so focus-visible:ring-2 ring-blue-500 puts the marker exactly where WCAG 2.4.7 needs it without ringing every click.",
     riskWhenIgnored: "A keyboard user tabs into a delete dialog and nothing on screen moves, so they cannot tell whether focus is sitting on Cancel or on Delete, and pressing Enter becomes a coin flip.",
     implementationNotes: [
       "Replace outline: none with focus-visible:ring-2 ring-blue-500 in the same rule, never on its own.",
@@ -1581,16 +1581,16 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
       "Carry the error on three channels: the color, a shaped icon, and a written message under the field.",
       "Never let a red border be the only indicator of an error state.",
       "Give errors a distinct icon shape, not a red-tinted copy of the neutral one.",
-      "View the screen in greyscale: if you cannot find the failed field, neither can a colorblind user.",
+      "View the screen in grayscale: if you cannot find the failed field, neither can a colorblind user.",
     ],
     reviewPrompts: [
       "Does every flagged input carry an icon and a message, not only a color change?",
-      "In greyscale, can you still tell which field has the error?",
+      "In grayscale, can you still tell which field has the error?",
       "Does the message name the actual problem rather than only marking the field?",
     ],
   },
   "a11y-3": {
-    whyItMatters: "An adult fingertip contacts roughly 8-10mm of glass, and the point the OS reports is the centroid of that whole patch, not the pixel the user aimed at. Controls sharing an edge therefore sit closer together than the input device can resolve, and the tap goes to whichever target the centroid happened to fall in. Material asks for at least 8dp between adjacent targets for exactly this reason, and WCAG 2.2's 2.5.8 lets spacing stand in for size on the same logic.",
+    whyItMatters: "An adult fingertip contacts roughly 8-10mm of glass, and the point the OS reports is the centroid of that whole patch, not the pixel the user aimed at. Controls sharing an edge therefore sit closer together than the input device can resolve, and the tap goes to whichever target the centroid happened to fall in. Material asks for at least 8dp between adjacent targets for exactly this reason, and WCAG 2.2’s 2.5.8 lets spacing stand in for size on the same logic.",
     riskWhenIgnored: "A pair of edge-to-edge icon buttons, archive next to delete, means a thumb aimed at the seam fires whichever one caught the centroid, so the user destroys a message they meant to file.",
     implementationNotes: [
       "Leave at least 8px between adjacent touch targets; gap-2 in a flex or grid row does it.",

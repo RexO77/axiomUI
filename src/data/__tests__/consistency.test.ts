@@ -1,7 +1,11 @@
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
+import { ruleDeepDives } from "@/data/deep-dives";
 import { rules } from "@/data/ui-logic";
+import { hasShowcase } from "@/components/features/rules/demos/registry";
 import { showcaseSpecs } from "@/components/features/rules/demos/showcase-specs";
+import { getStaticRulePreview } from "@/components/features/rules/rule-preview";
 import { tracksDurationMs } from "@/lib/showcase-engine";
 
 /**
@@ -265,5 +269,222 @@ describe("every rule's do and dont form a comparable pair", () => {
       .filter((r) => !r.do.trim() || !r.dont.trim())
       .map((r) => r.id);
     expect(empty, `empty side: ${empty.join(", ")}`).toEqual([]);
+  });
+});
+
+// ── Arithmetic in captions ──────────────────────────────────────────
+
+/** Every string a reader sees for a rule: the card copy and the deep dive. */
+function ruleProse(id: string): { field: string; text: string }[] {
+  const rule = rules.find((r) => r.id === id)!;
+  return [
+    { field: "desc", text: rule.desc },
+    { field: "do", text: rule.do },
+    { field: "dont", text: rule.dont },
+    ...deepDiveProse(id).map((text, i) => ({ field: `deepDive[${i}]`, text })),
+  ];
+}
+
+/** The authored deep-dive strings for one rule, in render order. */
+function deepDiveProse(id: string): string[] {
+  const dive = ruleDeepDives[id];
+  if (!dive) return [];
+  return [
+    dive.whyItMatters ?? "",
+    dive.riskWhenIgnored ?? "",
+    ...(dive.implementationNotes ?? []),
+    ...(dive.reviewPrompts ?? []),
+  ].filter(Boolean);
+}
+
+/**
+ * `Outer 12px = Inner 4px + Padding 8px`, `12 = 4 + 8`. comp-3's Don't once
+ * read `Outer 4px = Inner 4px + Padding 8px` — an equation that is simply
+ * false, printed beside the pane that was meant to show the formula broken.
+ * A Don't that breaks a formula has to say so in words, not in bad maths.
+ */
+const STATED_SUM = /(\d+)(?:px)?\s*=\s*(?:[A-Za-z]+\s+)?(\d+)(?:px)?\s*\+\s*(?:[A-Za-z]+\s+)?(\d+)(?:px)?/g;
+
+describe("stated sums add up", () => {
+  it("every 'A = B + C' in a rule's copy is arithmetically true", () => {
+    const wrong: string[] = [];
+
+    for (const rule of rules) {
+      for (const { field, text } of ruleProse(rule.id)) {
+        for (const match of text.matchAll(STATED_SUM)) {
+          const [, total, a, b] = match.map(Number);
+          if (total !== a + b) {
+            wrong.push(`${rule.id}.${field}: ${a} + ${b} is ${a + b}, not ${total} (${match[0]})`);
+          }
+        }
+      }
+    }
+
+    expect(wrong, wrong.join("\n")).toEqual([]);
+  });
+});
+
+// ── Breakpoint counts ───────────────────────────────────────────────
+
+/**
+ * Breakpoints and tiers are off by one, which is exactly how sys-11 once
+ * printed "3 tiers: 640px / 1024px / 1280px" (three breakpoints, four tiers)
+ * beside a preview that drew two. A caption that counts breakpoints must list
+ * that many widths, and a tier count must be one more than the breakpoints.
+ */
+const BREAKPOINT_LIST = /(\d+) breakpoints?:\s*((?:\d+px\s*\/?\s*)+)/g;
+const TIERS_FOR_BREAKPOINTS = /(\d+) breakpoints?\b[^()]*\((\d+) tiers?\)/g;
+/** "3 tiers: 640px / 1024px / 1280px" — widths listed under a tier count are breakpoints. */
+const TIER_LIST = /(\d+) tiers?:\s*((?:\d+px\s*\/?\s*)+)/g;
+
+describe("stated breakpoint counts are consistent", () => {
+  it("counted breakpoints list that many widths, and tiers are always breakpoints + 1", () => {
+    const wrong: string[] = [];
+
+    for (const rule of rules) {
+      for (const field of ["desc", "do", "dont"] as const) {
+        const text = rule[field];
+        for (const match of text.matchAll(BREAKPOINT_LIST)) {
+          const listed = match[2].match(/\d+px/g)?.length ?? 0;
+          if (listed !== Number(match[1])) {
+            wrong.push(`${rule.id}.${field}: says ${match[1]} breakpoints, lists ${listed} ("${text}")`);
+          }
+        }
+        for (const match of text.matchAll(TIER_LIST)) {
+          const listed = match[2].match(/\d+px/g)?.length ?? 0;
+          if (listed + 1 !== Number(match[1])) {
+            wrong.push(`${rule.id}.${field}: ${listed} widths make ${listed + 1} tiers, not ${match[1]} ("${text}")`);
+          }
+        }
+        for (const match of text.matchAll(TIERS_FOR_BREAKPOINTS)) {
+          if (Number(match[2]) !== Number(match[1]) + 1) {
+            wrong.push(`${rule.id}.${field}: ${match[1]} breakpoints make ${Number(match[1]) + 1} tiers, not ${match[2]}`);
+          }
+        }
+      }
+    }
+
+    expect(wrong, wrong.join("\n")).toEqual([]);
+  });
+});
+
+// ── Quoted labels exist in the pane ─────────────────────────────────
+
+/** The visible text of a rendered preview, entities decoded, whitespace collapsed. */
+function paneText(ruleId: string, variant: "do" | "dont"): string {
+  const node = getStaticRulePreview(ruleId, variant, "lg");
+  if (!node) return "";
+  return renderToStaticMarkup(node)
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;|&#39;/g, "'")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ");
+}
+
+/** Text inside curly or straight quotes: the captions' way of naming a UI label. */
+const QUOTED_LABEL = /[“"‘']([^”"’']+)[”"’']/g;
+
+/**
+ * Captions whose whole text is the pane's copy, `/`-separated, with no quotes.
+ * typo-1 is the canonical case: it once captioned an invite dialog with
+ * "Create new account", a string that appeared nowhere on screen.
+ */
+const LITERAL_CAPTIONS = new Set(["typo-1"]);
+
+describe("labels a caption quotes appear in the pane it captions", () => {
+  it("every quoted label in a static rule's do/dont is rendered by that pane", () => {
+    const missing: string[] = [];
+
+    for (const rule of rules.filter((candidate) => !hasShowcase(candidate.id))) {
+      for (const variant of ["do", "dont"] as const) {
+        const caption = rule[variant];
+        const labels = LITERAL_CAPTIONS.has(rule.id)
+          ? caption.split(" / ")
+          : [...caption.matchAll(QUOTED_LABEL)].map((match) => match[1]);
+        if (labels.length === 0) continue;
+
+        const text = paneText(rule.id, variant);
+        for (const label of labels) {
+          if (!text.includes(label.trim())) {
+            missing.push(`${rule.id}.${variant}: caption names "${label}", pane shows "${text.trim()}"`);
+          }
+        }
+      }
+    }
+
+    expect(missing, missing.join("\n")).toEqual([]);
+  });
+});
+
+// ── House style in prose ────────────────────────────────────────────
+
+describe("prose follows the house style", () => {
+  /**
+   * Deep-dive prose renders as set text, so contractions and possessives take
+   * the typographic apostrophe (U+2019), as `VERDICT_LABEL.dont` already does.
+   *
+   * Rule titles and descs are deliberately left out. They are what search
+   * matches, and `rule-search.ts` compares raw lowercase strings, so a curly
+   * apostrophe there would stop a typed "don't" from finding anything.
+   */
+  it("deep dives use ’ for contractions and possessives, not a straight '", () => {
+    const straight: string[] = [];
+
+    for (const rule of rules) {
+      for (const text of deepDiveProse(rule.id)) {
+        for (const match of text.matchAll(/\S*(?:[A-Za-z0-9]'[A-Za-z]|[A-Za-z]'(?=\s))\S*/g)) {
+          straight.push(`${rule.id}: "${match[0]}"`);
+        }
+      }
+    }
+
+    expect(straight, straight.join("\n")).toEqual([]);
+  });
+
+  /** The catalog spells it `color`; mixing in British `grey` reads as two authors. */
+  it("spells gray the American way, matching color", () => {
+    const grey: string[] = [];
+
+    for (const rule of rules) {
+      const fields = [rule.title, rule.desc, rule.do, rule.dont, ...rule.tags, ...deepDiveProse(rule.id)];
+      for (const text of fields) {
+        for (const match of text.matchAll(/\S*grey\S*/gi)) {
+          grey.push(`${rule.id}: "${match[0]}"`);
+        }
+      }
+    }
+
+    expect(grey, grey.join("\n")).toEqual([]);
+  });
+});
+
+// ── Claims the catalog no longer teaches ────────────────────────────
+
+/**
+ * typo-1 and typo-2 once rested on the word-shape (Bouma) model: that readers
+ * recognize words by their outline, so Title Case and all caps "flatten" it.
+ * Reading research abandoned that model; fluent readers identify letters in
+ * parallel. Sentence case and tracked caps stand on consistency, tone and
+ * letter spacing instead, and this keeps the old rationale from creeping back.
+ */
+const DISCREDITED = [/word[- ]shape/i, /silhouette/i, /\bbouma\b/i];
+
+describe("rules do not lean on discredited models", () => {
+  it("no rule copy rests on the word-shape model of reading", () => {
+    const hits: string[] = [];
+
+    for (const rule of rules) {
+      for (const { field, text } of ruleProse(rule.id)) {
+        for (const pattern of DISCREDITED) {
+          if (pattern.test(text)) hits.push(`${rule.id}.${field}: matches ${pattern}`);
+        }
+      }
+    }
+
+    expect(hits, hits.join("\n")).toEqual([]);
   });
 });

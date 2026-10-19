@@ -10,10 +10,10 @@ describe("rule-text serializers", () => {
     expect(ruleToText(rule!, "https://example.com")).toBe(
       [
         "Sentence case is king (Typography & text)",
-        "Never use Title Case for buttons, labels, or headers. It slows down reading speed by disrupting word shapes.",
+        "Capitalize only the first word and proper nouns. Sentence case reads as plain speech, removes the per-word capitalization debate, and keeps proper nouns standing out.",
         "",
-        "Do: Create new account",
-        "Don't: Create New Account",
+        "Do: Invite your team / Skip for now",
+        "Don't: Invite Your Team / Skip For Now",
         "",
         "https://example.com/rules/typo-1",
       ].join("\n"),
