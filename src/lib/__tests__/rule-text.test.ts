@@ -10,7 +10,7 @@ describe("rule-text serializers", () => {
     expect(ruleToText(rule!, "https://example.com")).toBe(
       [
         "Sentence case is king (Typography & text)",
-        "Capitalize only the first word and proper nouns. Sentence case reads as plain speech, removes the per-word capitalization debate, and keeps proper nouns standing out.",
+        "Capitalize only the first word and proper nouns instead of using title case. Sentence case reads as plain speech, removes the per-word capitalization debate, and keeps proper nouns standing out.",
         "",
         "Do: Invite your team / Skip for now",
         "Don't: Invite Your Team / Skip For Now",

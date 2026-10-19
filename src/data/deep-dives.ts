@@ -32,15 +32,15 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     whyItMatters: "All-caps labels can look crowded at default spacing, especially in small, condensed or bold text. Modest extra tracking, around 0.05em, separates neighboring strokes. Use it as a starting point and check the actual font: the goal is a label whose letters remain distinct, rather than one fixed spacing value for every typeface.",
     riskWhenIgnored: "Uppercase labels at default tracking look cramped and letters visually merge, especially in condensed or bold weights. Small uppercase text like tab labels or badges becomes noticeably harder to parse at a glance.",
     implementationNotes: [
-      "Apply tracking-wider (0.05em) to any uppercase text.",
-      "Never leave uppercase at tracking-normal (0em).",
-      "Pair uppercase treatments with a smaller font size, since tracking adds visual width.",
+      "Start with tracking-wider (0.05em) for uppercase labels, then adjust for the actual font, size, and weight.",
+      "Check the rendered label for crowded strokes rather than applying one tracking value to every typeface.",
+      "Keep labels with the same font, size, and weight consistent; review distinct treatments separately.",
       "Check condensed and bold uppercase styles first, since they collide most.",
     ],
     reviewPrompts: [
-      "Does every uppercase text element have added letter-spacing?",
+      "Was the starting tracking value checked with the actual font, size, and weight?",
       "Do uppercase labels avoid feeling cramped or merged together?",
-      "Is tracking consistent across all uppercase instances in the UI?",
+      "Do uppercase labels using the same type treatment use consistent tracking?",
     ],
   },
   "typo-3": {

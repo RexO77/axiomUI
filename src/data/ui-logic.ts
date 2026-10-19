@@ -35,7 +35,7 @@ export const rules: Rule[] = [
     category: "typography",
     title: "Sentence case is king",
     id: "typo-1",
-    desc: "Capitalize only the first word and proper nouns. Sentence case reads as plain speech, removes the per-word capitalization debate, and keeps proper nouns standing out.",
+    desc: "Capitalize only the first word and proper nouns instead of using title case. Sentence case reads as plain speech, removes the per-word capitalization debate, and keeps proper nouns standing out.",
     do: "Invite your team / Skip for now",
     dont: "Invite Your Team / Skip For Now",
     tags: ["Labels", "Headings", "Buttons"],
