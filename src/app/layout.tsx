@@ -8,6 +8,7 @@ import { absoluteUrl, siteConfig } from "@/lib/site";
 import "./globals.css";
 
 const ruleCount = rules.length;
+const description = `${ruleCount} UI design rules with live do/don’t previews: typography, layout, color, components, forms, system states, motion, and accessibility.`;
 
 const sourceSerif = Source_Serif_4({
   variable: "--font-source-serif",
@@ -29,11 +30,10 @@ const plexMono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Axiom — UI logic repository",
-    template: "%s | Axiom",
+    default: "Axiom UI — UI logic repository",
+    template: "%s | Axiom UI",
   },
-  description:
-    `${ruleCount} actionable UI design rules covering typography, layout, color, components, forms, system states, and accessibility.`,
+  description,
   keywords: [
     "design system",
     "UI logic",
@@ -56,25 +56,14 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: siteConfig.origin,
-    title: "Axiom — UI logic repository",
-    description:
-      `${ruleCount} actionable UI design rules for consistent, sharp interfaces. Master typography, layout, color, component patterns, forms, and accessibility.`,
-    siteName: "Axiom",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Axiom UI logic repository — design system rules",
-      },
-    ],
+    title: "Axiom UI — UI logic repository",
+    description,
+    siteName: "Axiom UI",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Axiom — UI logic repository",
-    description:
-      `${ruleCount} actionable UI design rules for consistent, sharp interfaces.`,
-    images: ["/og-image.png"],
+    title: "Axiom UI — UI logic repository",
+    description,
   },
   robots: {
     index: true,
@@ -123,9 +112,8 @@ export default function RootLayout({
         "@type": "WebSite",
         "@id": `${siteConfig.origin}/#website`,
         url: siteConfig.origin,
-        name: "Axiom",
-        description:
-          "UI logic repository of repeatable design decisions for consistent, sharp interfaces",
+        name: "Axiom UI",
+        description,
         publisher: {
           "@id": `${siteConfig.origin}/#organization`,
         },
@@ -136,11 +124,13 @@ export default function RootLayout({
       {
         "@type": "Organization",
         "@id": `${siteConfig.origin}/#organization`,
-        name: "Axiom",
+        name: "Axiom UI",
         url: siteConfig.origin,
         logo: {
           "@type": "ImageObject",
-          url: absoluteUrl("/og-image.png"),
+          url: absoluteUrl("/icon.png"),
+          width: 1024,
+          height: 1024,
         },
       },
       {
@@ -159,8 +149,7 @@ export default function RootLayout({
         "@id": `${siteConfig.origin}/#collection`,
         url: siteConfig.origin,
         name: "UI logic rules",
-        description:
-          `${ruleCount} actionable UI design rules covering typography, layout, color, components, forms, system behavior, and accessibility`,
+        description,
         isPartOf: {
           "@id": `${siteConfig.origin}/#website`,
         },

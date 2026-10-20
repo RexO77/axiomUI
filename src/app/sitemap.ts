@@ -3,14 +3,14 @@ import { rules } from "@/data/ui-logic";
 import { absoluteUrl } from "@/lib/site";
 
 // Bump this manually when rule content meaningfully changes. A fresh
-// Date() here would re-stamp all 107 URLs on every deploy, which tells
+// Date() here would re-stamp every URL on every deploy, which tells
 // crawlers everything changed weekly when nothing did.
-const lastModified = new Date("2026-09-07");
+const lastModified = new Date("2026-10-19");
 
 export default function sitemap(): MetadataRoute.Sitemap {
     const mainPage = {
         url: absoluteUrl("/"),
-        lastModified,
+        lastModified: new Date("2026-10-20"),
         changeFrequency: "weekly" as const,
         priority: 1,
     };
