@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { rules } from "@/data/ui-logic";
-import { fullCorpusMarkdown } from "@/lib/rule-corpus";
+import { fullCorpusMarkdown, ruleReviewQuestions, ruleToMarkdown } from "@/lib/rule-corpus";
 
 describe("fullCorpusMarkdown", () => {
   const markdown = fullCorpusMarkdown();
@@ -40,5 +40,39 @@ describe("fullCorpusMarkdown", () => {
   it("embeds no clock-derived value", () => {
     const nowToTheHour = new Date().toISOString().slice(0, 13);
     expect(markdown).not.toContain(nowToTheHour);
+  });
+});
+
+describe("rule markdown", () => {
+  it("gives standalone rule files the same complete reasoning as the full corpus", () => {
+    const corpus = fullCorpusMarkdown();
+    for (const rule of rules) {
+      const markdown = ruleToMarkdown(rule, { headingLevel: 1, includeId: true });
+      expect(markdown.startsWith(`# ${rule.title}\n`), rule.id).toBe(true);
+      expect(markdown, rule.id).toContain(`- ID: ${rule.id}\n`);
+      const asCorpusSection = markdown
+        .replace(`\n- ID: ${rule.id}`, "")
+        .replace(/^(#{1,2}) /gm, (_match, hashes: string) => `${hashes}## `);
+      expect(corpus, rule.id).toContain(asCorpusSection);
+    }
+  });
+
+  it("keeps reasoning nested below the rule heading at every supported level", () => {
+    for (const headingLevel of [1, 2, 3] as const) {
+      const markdown = ruleToMarkdown(rules[0], { headingLevel });
+      expect(markdown.split("\n")[0]).toBe(`${"#".repeat(headingLevel)} ${rules[0].title}`);
+      expect(markdown).not.toMatch(/^- ID:/m);
+      const nestedHeadings = markdown.match(/^#+ /gm)?.slice(1);
+      expect(nestedHeadings).toEqual(Array(4).fill(`${"#".repeat(headingLevel + 1)} `));
+    }
+  });
+
+  it("exposes the authored review questions already included in every rule", () => {
+    for (const rule of rules) {
+      const questions = ruleReviewQuestions(rule);
+      const markdown = ruleToMarkdown(rule, { headingLevel: 1 });
+      expect(questions.length, rule.id).toBeGreaterThan(0);
+      expect(markdown, rule.id).toContain(`## Review questions\n\n${questions.map((question, index) => `${index + 1}. ${question}`).join("\n")}`);
+    }
   });
 });
