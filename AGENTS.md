@@ -14,7 +14,10 @@
 - `npm run lint` runs ESLint with the Next.js Core Web Vitals + TypeScript rules.
 
 ## Coding Style & Naming Conventions
-- Use TypeScript for all React components (`.tsx`) and modules (`.ts`).
+- Use TypeScript for React components (`.tsx`) and application modules (`.ts`).
+- Installer modules in `packages/axiomui/` use directly executable ESM JavaScript
+  (`.mjs`) with `// @ts-check`, zero runtime dependencies and Node >= 18.17.
+  Include those modules in `npm run typecheck`; write their tests in TypeScript.
 - Indentation: match the file you are editing. The tree is genuinely mixed — 2-space and
   4-space files sit side by side inside `src/app/` and `src/lib/` — so read the file before you
   type, and never reformat one purely to change its indentation.
