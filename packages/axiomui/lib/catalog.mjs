@@ -100,8 +100,14 @@ export function loadBundle(root = packageRoot) {
   if (!skillsDir) {
     throw new CliError(`No bundled skills found next to ${root}. Reinstall axiomui.`);
   }
-  const catalog = validateCatalog(JSON.parse(readFileSync(path.join(skillsDir, "catalog.json"), "utf8")));
-  return { catalog, skillsDir };
+  const catalogPath = path.join(skillsDir, "catalog.json");
+  let parsed;
+  try {
+    parsed = JSON.parse(readFileSync(catalogPath, "utf8"));
+  } catch {
+    throw new CliError(`Could not read bundled skills catalog at ${catalogPath}. Reinstall axiomui.`);
+  }
+  return { catalog: validateCatalog(parsed), skillsDir };
 }
 
 /**
@@ -114,7 +120,13 @@ export function readBundledFile(bundle, skill, file) {
   if (!isSkillName(skill.name) || !isSafeRelativeFile(file) || !Object.hasOwn(skill.files, file)) {
     throw new CliError(`The bundled skills catalog does not list ${skill.name}/${file}. Reinstall axiomui.`);
   }
-  const content = readFileSync(path.join(bundle.skillsDir, skill.name, ...file.split("/")));
+  const filePath = path.join(bundle.skillsDir, skill.name, ...file.split("/"));
+  let content;
+  try {
+    content = readFileSync(filePath);
+  } catch {
+    throw new CliError(`Could not read bundled file ${skill.name}/${file} at ${filePath}. Reinstall axiomui.`);
+  }
   if (sha256(content) !== skill.files[file]) {
     throw new CliError(`Bundled file ${skill.name}/${file} does not match its catalog hash. Reinstall axiomui.`);
   }

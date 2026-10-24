@@ -1,5 +1,5 @@
 // @ts-check
-import { existsSync, realpathSync } from "node:fs";
+import { existsSync, lstatSync, readlinkSync, realpathSync } from "node:fs";
 import path from "node:path";
 
 import { didYouMean, usageError } from "./format.mjs";
@@ -171,16 +171,32 @@ export function skillsFolder(folder, scope, context) {
  */
 export function physicalPath(dir) {
   const absolute = path.resolve(dir);
-  let existing = absolute;
-  while (!existsSync(existing)) {
-    const parent = path.dirname(existing);
-    if (parent === existing) {
-      return absolute;
-    }
-    existing = parent;
-  }
+  let candidate = absolute;
+  const visited = new Set();
   try {
-    return path.join(realpathSync(existing), path.relative(existing, absolute));
+    while (true) {
+      let existing = candidate;
+      let entry = lstatSync(existing, { throwIfNoEntry: false });
+      while (!entry) {
+        const parent = path.dirname(existing);
+        if (parent === existing) {
+          return candidate;
+        }
+        existing = parent;
+        entry = lstatSync(existing, { throwIfNoEntry: false });
+      }
+      // lstat also sees links whose destinations have not been created yet.
+      if (entry.isSymbolicLink()) {
+        if (visited.has(existing) || visited.size >= 40) {
+          return absolute;
+        }
+        visited.add(existing);
+        const destination = path.resolve(path.dirname(existing), readlinkSync(existing));
+        candidate = path.join(destination, path.relative(existing, candidate));
+        continue;
+      }
+      return path.join(realpathSync(existing), path.relative(existing, candidate));
+    }
   } catch {
     return absolute;
   }

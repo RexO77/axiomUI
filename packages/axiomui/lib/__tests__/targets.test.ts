@@ -3,7 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { displayPath } from "../format.mjs";
-import { assertProjectScopeAllowed, customTarget, detectAgents, knownTargets, parseAgents, resolveTargets } from "../targets.mjs";
+import { assertProjectScopeAllowed, customTarget, detectAgents, knownTargets, parseAgents, physicalPath, resolveTargets } from "../targets.mjs";
 import { tempDir } from "./helpers";
 
 function fakeMachine(dirs: string[], env: Record<string, string> = {}) {
@@ -72,6 +72,26 @@ describe("resolveTargets", () => {
     symlinkSync("../.agents/skills", path.join(context.cwd, ".claude/skills"));
     expect(resolveTargets(["claude", "codex"], "project", context)).toHaveLength(1);
     expect(knownTargets(["project"], context)).toHaveLength(1);
+  });
+
+  it.each(["relative", "absolute"])("dedupes a %s link before its destination exists", (kind) => {
+    const { context } = fakeMachine([]);
+    mkdirSync(path.join(context.cwd, ".claude"));
+    const destination = path.join(context.cwd, ".agents/skills");
+    symlinkSync(kind === "relative" ? "../.agents/skills" : destination, path.join(context.cwd, ".claude/skills"));
+    expect(existsSync(destination)).toBe(false);
+    expect(physicalPath(path.join(context.cwd, ".claude/skills"))).toBe(physicalPath(destination));
+    expect(resolveTargets(["claude", "codex"], "project", context)).toHaveLength(1);
+    expect(knownTargets(["project"], context)).toHaveLength(1);
+    expect(existsSync(destination)).toBe(false);
+  });
+
+  it("stops resolving a cycle of dangling links", () => {
+    const root = tempDir();
+    const first = path.join(root, "first");
+    symlinkSync("second", first);
+    symlinkSync("first", path.join(root, "second"));
+    expect(physicalPath(first)).toBe(first);
   });
 });
 

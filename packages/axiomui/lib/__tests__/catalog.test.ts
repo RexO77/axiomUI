@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, unlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -56,6 +56,21 @@ describe("bundled catalog", () => {
     const { bundle } = fixture();
     writeFileSync(path.join(bundle.skillsDir, "axiomui", "SKILL.md"), "Modified.\n");
     expect(() => readBundledFile(bundle, bundle.catalog.skills[0], "SKILL.md")).toThrow(/does not match/);
+  });
+
+  it("reports truncated catalog JSON with its path and recovery action", () => {
+    const { root, bundle } = fixture();
+    writeFileSync(path.join(bundle.skillsDir, "catalog.json"), '{"schema":');
+    expect(() => loadBundle(root)).toThrow(CliError);
+    expect(() => loadBundle(root)).toThrow(/catalog\.json.*Reinstall axiomui/);
+  });
+
+  it("reports missing listed files with their path and recovery action", () => {
+    const { bundle } = fixture();
+    unlinkSync(path.join(bundle.skillsDir, "axiomui", "SKILL.md"));
+    const read = () => readBundledFile(bundle, bundle.catalog.skills[0], "SKILL.md");
+    expect(read).toThrow(CliError);
+    expect(read).toThrow(/axiomui\/SKILL\.md.*Reinstall axiomui/);
   });
 
   it("rejects requests for files outside the catalog before reading them", () => {
