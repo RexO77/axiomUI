@@ -273,7 +273,7 @@ export function planInstall(skill, targetDir, { force = false } = {}) {
     return plan;
   }
 
-  plan.linked = linkedParents(skillDir, [...new Set([...bundled, ...Object.keys(sidecar.files)])]);
+  plan.linked = linkedParents(skillDir, bundled);
   if (plan.linked.length > 0 && !force) {
     plan.action = "conflict";
     plan.writeSidecar = false;
@@ -294,6 +294,13 @@ export function planInstall(skill, targetDir, { force = false } = {}) {
   }
   for (const file of Object.keys(sidecar.files).sort()) {
     if (file in skill.files || plan.linked.includes(file) || isUnder(plan.linked, file)) {
+      continue;
+    }
+    const blocked = linkedParent(skillDir, file);
+    if (blocked !== null) {
+      if (!plan.kept.includes(blocked)) {
+        plan.kept.push(blocked);
+      }
       continue;
     }
     const onDisk = hashOnDisk(safeJoin(skillDir, file));
@@ -605,11 +612,14 @@ export function applyRemove(plan) {
   if (plan.action !== "remove") {
     return;
   }
+  // Deactivate before any reference cleanup, including linked folders.
+  if (plan.deletes.includes("SKILL.md")) {
+    unlinkOrThrow(guardedPath(plan.skillDir, "SKILL.md"));
+  }
   for (const dir of plan.linked) {
     unlinkOrThrow(safeJoin(plan.skillDir, dir));
   }
-  // SKILL.md first: if this stops halfway, no agent sees a skill whose files are gone.
-  for (const file of plan.deletes) {
+  for (const file of plan.deletes.filter((file) => file !== "SKILL.md")) {
     const target = guardedPath(plan.skillDir, file);
     unlinkOrThrow(target);
     pruneEmpty(path.dirname(target), plan.skillDir);

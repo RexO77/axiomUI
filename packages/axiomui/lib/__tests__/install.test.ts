@@ -101,6 +101,26 @@ describe("planInstall / applyInstall", () => {
     expect(readSidecar(path.join(target, "demo"))?.files["SKILL.md"]).toBe(sha256("---\nname: demo\n---\n\nv2\n"));
   });
 
+  it.each([false, true])("preserves blocked dropped paths when force is %s", (force) => {
+    const { root, bundle, target } = setup();
+    install(bundle, target);
+    const references = path.join(target, "demo/references");
+    renameSync(references, path.join(root, "old-references"));
+    writeFileSync(references, "my notes\n");
+    const next = makeBundle(path.join(root, "bundle2"), {
+      demo: { files: { "SKILL.md": "v2\n" } },
+    });
+
+    const plan = install(next, target, force);
+
+    expect(plan.action).toBe("update");
+    expect(plan.linked).toEqual([]);
+    expect(plan.kept).toEqual(["references"]);
+    expect(readFileSync(references, "utf8")).toBe("my notes\n");
+    expect(readSidecar(path.join(target, "demo"))?.files).toEqual(next.catalog.skills[0].files);
+    expect(planInstall(next.catalog.skills[0], target).action).toBe("uptodate");
+  });
+
   it("refuses a directory-to-file replacement before changing any installed files", () => {
     const { root, bundle, target } = setup({ "SKILL.md": "v1\n", "references/guide/details.md": "old guide\n" });
     install(bundle, target);
@@ -346,6 +366,23 @@ describe("safeJoin", () => {
 });
 
 describe("planRemove / applyRemove", () => {
+  it("deactivates the skill before a linked-folder cleanup fails", () => {
+    const { root, bundle, target } = setup();
+    install(bundle, target);
+    const references = path.join(target, "demo/references");
+    const outside = path.join(root, "outside-references");
+    renameSync(references, outside);
+    symlinkSync(outside, references);
+    const plan = planRemove("demo", target, { force: true });
+    unlinkSync(references);
+
+    expect(() => applyRemove(plan)).toThrow(/delete/);
+    expect(existsSync(path.join(target, "demo/SKILL.md"))).toBe(false);
+    expect(readFileSync(path.join(outside, "rules/a.md"), "utf8")).toBe(v1["references/rules/a.md"]);
+    applyRemove(planRemove("demo", target));
+    expect(existsSync(path.join(target, "demo"))).toBe(false);
+  });
+
   it("is all or nothing: an edited file skips the whole skill until --force", () => {
     const { bundle, target } = setup();
     install(bundle, target);
