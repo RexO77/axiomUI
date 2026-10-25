@@ -46,6 +46,8 @@ import { CliError } from "./format.mjs";
  * @property {string} skill
  * @property {string} targetDir
  * @property {string} skillDir
+ * @property {boolean} force
+ * @property {{ dev: number, ino: number } | null} identity
  * @property {InstallAction} action
  * @property {string[]} writes files to write, relative to skillDir
  * @property {string[]} deletes files dropped from the bundle and unedited
@@ -62,6 +64,8 @@ import { CliError } from "./format.mjs";
  * @property {string} skill
  * @property {string} targetDir
  * @property {string} skillDir
+ * @property {boolean} force
+ * @property {{ dev: number, ino: number } | null} identity
  * conflict means an edited file or a symlinked folder: nothing is deleted
  * unless --force, so a remove never leaves half a skill behind.
  * @property {"remove" | "conflict" | "foreign" | "absent"} action
@@ -242,6 +246,8 @@ export function planInstall(skill, targetDir, { force = false } = {}) {
     skill: skill.name,
     targetDir: path.resolve(targetDir),
     skillDir,
+    force,
+    identity: null,
     action: "install",
     writes: [],
     deletes: [],
@@ -258,6 +264,7 @@ export function planInstall(skill, targetDir, { force = false } = {}) {
     return plan;
   }
 
+  plan.identity = { dev: stat.dev, ino: stat.ino };
   const sidecar = stat.isDirectory() ? readSidecar(skillDir, skill.name) : null;
   if (!sidecar) {
     plan.foreignKind = stat.isSymbolicLink() ? "symlink" : stat.isDirectory() ? "unmanaged" : "file";
@@ -488,6 +495,10 @@ export function applyInstall(plan, bundle, version) {
   if (!skill) {
     throw new CliError(`Unknown skill ${plan.skill}.`);
   }
+  const current = planInstall(skill, plan.targetDir, { force: plan.force });
+  if (JSON.stringify(current) !== JSON.stringify(plan)) {
+    throw new CliError(`The installation at ${plan.skillDir} changed since planning. Review a new plan before retrying.`);
+  }
   if (plan.action === "install" || (plan.action === "replace" && plan.foreignKind !== "unmanaged")) {
     installFresh(plan, bundle, skill, version);
     return;
@@ -553,6 +564,8 @@ export function planRemove(skillName, targetDir, { force = false } = {}) {
     skill: skillName,
     targetDir: path.resolve(targetDir),
     skillDir,
+    force,
+    identity: null,
     action: "remove",
     deletes: [],
     conflicts: [],
@@ -565,6 +578,7 @@ export function planRemove(skillName, targetDir, { force = false } = {}) {
     plan.action = "absent";
     return plan;
   }
+  plan.identity = { dev: stat.dev, ino: stat.ino };
   const sidecar = stat.isDirectory() ? readSidecar(skillDir, skillName) : null;
   if (!sidecar) {
     plan.action = "foreign";
@@ -611,6 +625,10 @@ export function planRemove(skillName, targetDir, { force = false } = {}) {
 export function applyRemove(plan) {
   if (plan.action !== "remove") {
     return;
+  }
+  const current = planRemove(plan.skill, plan.targetDir, { force: plan.force });
+  if (JSON.stringify(current) !== JSON.stringify(plan)) {
+    throw new CliError(`The installation at ${plan.skillDir} changed since planning. Review a new plan before retrying.`);
   }
   // Deactivate before any reference cleanup, including linked folders.
   if (plan.deletes.includes("SKILL.md")) {

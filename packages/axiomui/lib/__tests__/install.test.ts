@@ -1,4 +1,4 @@
-import {
+import fs, {
   existsSync,
   lstatSync,
   mkdirSync,
@@ -12,6 +12,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import path from "node:path";
+import { syncBuiltinESMExports } from "node:module";
 import { describe, expect, it } from "vitest";
 
 import { sha256, type Bundle } from "../catalog.mjs";
@@ -374,12 +375,23 @@ describe("planRemove / applyRemove", () => {
     renameSync(references, outside);
     symlinkSync(outside, references);
     const plan = planRemove("demo", target, { force: true });
-    unlinkSync(references);
-
-    expect(() => applyRemove(plan)).toThrow(/delete/);
+    const originalUnlink = fs.unlinkSync;
+    try {
+      fs.unlinkSync = (file) => {
+        if (file === references) {
+          throw Object.assign(new Error("cleanup interrupted"), { code: "EACCES" });
+        }
+        originalUnlink(file);
+      };
+      syncBuiltinESMExports();
+      expect(() => applyRemove(plan)).toThrow(/delete/);
+    } finally {
+      fs.unlinkSync = originalUnlink;
+      syncBuiltinESMExports();
+    }
     expect(existsSync(path.join(target, "demo/SKILL.md"))).toBe(false);
     expect(readFileSync(path.join(outside, "rules/a.md"), "utf8")).toBe(v1["references/rules/a.md"]);
-    applyRemove(planRemove("demo", target));
+    applyRemove(planRemove("demo", target, { force: true }));
     expect(existsSync(path.join(target, "demo"))).toBe(false);
   });
 
@@ -441,5 +453,50 @@ describe("legacy downloads", () => {
     expect(found.pristine).toBe(false);
     removeLegacy(found);
     expect(readFileSync(path.join(target, "axiom-website-upgrade/SKILL.md"), "utf8")).toBe("old, with my edits\n");
+  });
+});
+
+describe("changed plans", () => {
+  it.each(["update", "remove"].flatMap((operation) =>
+    ["symlink", "directory", "file"].map((replacement) => [operation, replacement])
+  ))("refuses %s after the skill root becomes a different %s", (operation, replacement) => {
+    const { root, bundle, target } = setup();
+    install(bundle, target);
+    const next = makeBundle(path.join(root, "bundle2"), {
+      demo: { files: { ...v1, "SKILL.md": "v2\n" } },
+    });
+    const update = planInstall(next.catalog.skills[0], target);
+    const removal = planRemove("demo", target);
+    const skillDir = path.join(target, "demo");
+    renameSync(skillDir, path.join(root, "saved-demo"));
+    const privateFiles = { "SKILL.md": "private skill\n", "references/rules/a.md": "private notes\n" };
+    if (replacement === "symlink") {
+      const outside = path.join(root, "outside");
+      writeTree(outside, privateFiles);
+      symlinkSync(outside, skillDir);
+    } else if (replacement === "directory") {
+      writeTree(skillDir, privateFiles);
+    } else {
+      writeFileSync(skillDir, "private file\n");
+    }
+    const before = snapshot(root);
+
+    expect(() => operation === "update" ? applyInstall(update, next, version) : applyRemove(removal)).toThrow();
+    expect(snapshot(root)).toEqual(before);
+  });
+
+  it.each(["update", "remove"])("refuses %s if an owned file was edited after planning", (operation) => {
+    const { root, bundle, target } = setup();
+    install(bundle, target);
+    const next = makeBundle(path.join(root, "bundle2"), {
+      demo: { files: { ...v1, "SKILL.md": "v2\n" } },
+    });
+    const update = planInstall(next.catalog.skills[0], target);
+    const removal = planRemove("demo", target);
+    writeFileSync(path.join(target, "demo/SKILL.md"), "new user edit\n");
+    const before = snapshot(target);
+
+    expect(() => operation === "update" ? applyInstall(update, next, version) : applyRemove(removal)).toThrow();
+    expect(snapshot(target)).toEqual(before);
   });
 });
