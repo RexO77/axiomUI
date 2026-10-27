@@ -88,6 +88,41 @@ describe("terminal prompts", () => {
     expect(io.stdin.listenerCount("keypress")).toBe(0);
   });
 
+  it.each([true, false])("ignores removed initial choices when raw mode is %s", async (raw) => {
+    const io = terminal(raw);
+    const result = multiselect(io, { message: "Choose", choices, initial: ["removed"] });
+    if (raw) {
+      io.stdin.emit("keypress", "", { name: "return" });
+      expect(io.output()).toContain("Select at least one");
+      io.stdin.emit("keypress", " ", { name: "space" });
+      io.stdin.emit("keypress", "", { name: "return" });
+    } else io.stdin.write("\n1\n");
+    expect(await result).toEqual(["a"]);
+  });
+
+  it.each([true, false])("rejects empty choices before opening either prompt in raw mode %s", async (raw) => {
+    const io = terminal(raw);
+    await expect(select(io, { message: "Choose", choices: [], initial: "" })).rejects.toThrow(/at least one choice/);
+    await expect(multiselect(io, { message: "Choose", choices: [], initial: [] })).rejects.toThrow(/at least one choice/);
+    expect(io.output()).toBe("");
+    expect(io.modes).toEqual([]);
+  });
+
+  it.each(["answer", "input"])("still restores the cursor if raw restoration fails after %s", async (exit) => {
+    const io = terminal();
+    Object.assign(io.stdin, { setRawMode: (mode: boolean) => {
+      if (!mode) throw new Error("restore failed");
+      io.stdin.isRaw = mode;
+    } });
+    const result = confirm(io, { message: "Continue?", initial: true });
+    const rejection = expect(result).rejects.toThrow(exit === "input" ? "input failed" : "restore failed");
+    if (exit === "input") io.stdin.emit("error", new Error("input failed"));
+    else io.stdin.emit("keypress", "", { name: "return" });
+    await rejection;
+    expect(io.output()).toContain("\u001b[?25h");
+    expect(io.stdin.listenerCount("keypress")).toBe(0);
+  });
+
   it("moves the selection with arrow keys", async () => {
     const io = terminal();
     const result = select(io, { message: "Choose", choices, initial: "a" });
@@ -104,6 +139,43 @@ describe("terminal prompts", () => {
     io.stdin.emit("keypress", "a", { name: "a" });
     io.stdin.emit("keypress", "", { name: "return" });
     expect(await result).toEqual(["a", "b"]);
+  });
+
+  it.each([false, true])("redraws all wrapped rows in a narrow terminal (wide labels: %s)", async (wide) => {
+    const io = terminal();
+    Object.assign(io.stdout, { columns: 40 });
+    io.paint = createPalette(true);
+    const options = wide ? [{ value: "a", label: "界".repeat(30) }, { value: "b", label: "文".repeat(30) }] : choices;
+    const result = multiselect(io, { message: "Select skills", choices: options, initial: ["a"] });
+    io.stdin.emit("keypress", "", { name: "down" });
+    expect(io.output()).toContain(`\u001b[${wide ? 6 : 4}A`);
+    io.stdin.emit("keypress", "", { name: "return" });
+    await result;
+  });
+
+  it("keeps pasted answers through validation and successive questions", async () => {
+    const io = terminal(false);
+    const result = select(io, { message: "Choose", choices, initial: "a" });
+    io.stdin.write("invalid\n2\ny\n");
+    expect(await result).toBe("b");
+    expect(await confirm(io, { message: "Continue?", initial: false })).toBe(true);
+    expect(io.stdin.listenerCount("data")).toBe(0);
+  });
+
+  it("keeps a partial pasted answer until its next chunk", async () => {
+    const io = terminal(false);
+    const result = select(io, { message: "Choose", choices, initial: "a" });
+    io.stdin.write("invalid\n2");
+    await tick();
+    io.stdin.end("\n");
+    expect(await result).toBe("b");
+  });
+
+  it("accepts the final line at EOF without a newline", async () => {
+    const io = terminal(false);
+    const result = select(io, { message: "Choose", choices, initial: "a" });
+    io.stdin.end("2");
+    expect(await result).toBe("b");
   });
 
   it("uses line input when raw mode is unavailable", async () => {

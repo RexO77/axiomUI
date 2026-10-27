@@ -1,5 +1,7 @@
 // @ts-check
 import readline from "node:readline";
+import { StringDecoder } from "node:string_decoder";
+import { stripVTControlCharacters } from "node:util";
 
 /** Thrown when the user presses Ctrl-C in a prompt. The CLI exits 130. */
 export class CancelledError extends Error {
@@ -48,6 +50,27 @@ const inputClosed = (io) => {
   return Boolean(input.readableEnded || input.destroyed);
 };
 
+const graphemes = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+
+/** @param {string} line */
+function displayWidth(line) {
+  let width = 0;
+  for (const { segment } of graphemes.segment(stripVTControlCharacters(line))) {
+    if (segment === "\t") { width += 8 - width % 8; continue; }
+    if (/^[\p{Mark}\p{Cf}\p{Cc}]+$/u.test(segment)) continue;
+    const code = segment.codePointAt(0) ?? 0;
+    const wide = /\p{Emoji_Presentation}|\uFE0F|\u20E3/u.test(segment) ||
+      code >= 0x1100 && (code <= 0x115f || code === 0x2329 || code === 0x232a ||
+        code >= 0x2e80 && code <= 0xa4cf && code !== 0x303f ||
+        code >= 0xac00 && code <= 0xd7a3 || code >= 0xf900 && code <= 0xfaff ||
+        code >= 0xfe10 && code <= 0xfe19 || code >= 0xfe30 && code <= 0xfe6f ||
+        code >= 0xff01 && code <= 0xff60 || code >= 0xffe0 && code <= 0xffe6 ||
+        code >= 0x1b000 && code <= 0x1b2ff || code >= 0x20000 && code <= 0x3fffd);
+    width += wide ? 2 : 1;
+  }
+  return width;
+}
+
 /**
  * Runs one raw-mode prompt: renders `frame()` and feeds keys to `onKey` until
  * it returns a result. Raw mode and the cursor are restored on every exit path.
@@ -67,7 +90,9 @@ function rawPrompt(io, frame, onKey) {
     const draw = () => {
       const lines = frame();
       stdout.write(`${drawn > 0 ? `\u001b[${drawn}A\r\u001b[0J` : ""}${lines.join("\n")}\n`);
-      drawn = lines.length;
+      drawn = lines.flatMap((line) => line.split("\n")).reduce(
+        (rows, line) => rows + Math.max(1, Math.ceil(displayWidth(line) / Math.max(1, columns(io)))), 0
+      );
     };
     /** @param {{ done: T } | { error: unknown }} result */
     const finish = (result) => {
@@ -77,15 +102,17 @@ function rawPrompt(io, frame, onKey) {
       stdin.removeListener("end", cancel);
       stdin.removeListener("close", cancel);
       stdin.removeListener("error", fail);
-      try {
-        stdin.setRawMode?.(wasRaw);
-        stdin.pause();
-        stdout.write(showCursor);
-      } catch (error) {
-        reject("error" in result ? result.error : error);
-        return;
+      let cleanupError;
+      for (const restore of [
+        () => stdin.setRawMode?.(wasRaw),
+        () => stdin.pause(),
+        () => stdout.write(showCursor),
+      ]) {
+        try { restore(); }
+        catch (error) { cleanupError ??= error; }
       }
       if ("error" in result) reject(result.error);
+      else if (cleanupError) reject(cleanupError);
       else resolve(result.done);
     };
     /** @param {unknown} error */
@@ -123,40 +150,79 @@ function rawPrompt(io, frame, onKey) {
 }
 
 /**
+ * Keep unread pasted lines and partial UTF-8 across questions without leaving
+ * a flowing input listener behind after an answer.
+ * @type {WeakMap<PromptIO["stdin"], { lines: string[], tail: string, skipLf: boolean, decoder: StringDecoder, ended: boolean }>}
+ */
+const lineInputs = new WeakMap();
+
+/**
  * Line-mode fallback when raw mode is unavailable.
  * @param {PromptIO} io
  * @param {string} question
  * @returns {Promise<string>}
  */
 function ask(io, question) {
-  if (inputClosed(io)) return Promise.reject(new CancelledError());
-  return new Promise((resolve, reject) => {
-    const rl = readline.createInterface({ input: io.stdin, output: io.stdout, terminal: false });
-    let settled = false;
-    /** @param {unknown} error */
-    const fail = (error) => {
-      if (settled) return;
-      settled = true;
-      rl.close();
-      reject(error);
-    };
-    rl.on("error", fail);
-    rl.on("SIGINT", () => fail(new CancelledError()));
-    rl.on("close", () => {
-      if (!settled) {
-        settled = true;
-        reject(new CancelledError());
+  let state = lineInputs.get(io.stdin);
+  if (!state) {
+    state = { lines: [], tail: "", skipLf: false, decoder: new StringDecoder("utf8"), ended: false };
+    lineInputs.set(io.stdin, state);
+  }
+  const input = state;
+  /** @param {string} text */
+  const feed = (text) => {
+    for (const character of text) {
+      if (input.skipLf) {
+        input.skipLf = false;
+        if (character === "\n") continue;
       }
-    });
-    try {
-      rl.question(question, (answer) => {
-        settled = true;
-        rl.close();
-        resolve(answer.trim());
-      });
-    } catch (error) {
-      fail(error);
+      if (character === "\r" || character === "\n") {
+        input.lines.push(input.tail);
+        input.tail = "";
+        input.skipLf = character === "\r";
+      } else input.tail += character;
     }
+  };
+  const endInput = () => {
+    if (input.ended) return;
+    feed(input.decoder.end());
+    input.ended = true;
+    if (input.tail) { input.lines.push(input.tail); input.tail = ""; }
+  };
+  if (inputClosed(io)) endInput();
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    /** @param {unknown} [error] */
+    const finish = (error) => {
+      if (settled) return;
+      if (!error && input.lines.length === 0 && !input.ended) return;
+      settled = true;
+      io.stdin.removeListener("data", data);
+      io.stdin.removeListener("end", ended);
+      io.stdin.removeListener("close", ended);
+      io.stdin.removeListener("error", failed);
+      io.stdin.pause();
+      if (error) reject(error);
+      else if (input.lines.length) resolve(input.lines.shift()?.trim() ?? "");
+      else reject(new CancelledError());
+    };
+    /** @param {string | Buffer} chunk */
+    const data = (chunk) => {
+      feed(typeof chunk === "string" ? chunk : input.decoder.write(chunk));
+      finish();
+    };
+    const ended = () => { endInput(); finish(); };
+    /** @param {unknown} error */
+    const failed = (error) => finish(error);
+    try {
+      io.stdout.write(question);
+      if (input.lines.length || input.ended) { finish(); return; }
+      io.stdin.on("data", data);
+      io.stdin.on("end", ended);
+      io.stdin.on("close", ended);
+      io.stdin.on("error", failed);
+      io.stdin.resume();
+    } catch (error) { finish(error); }
   });
 }
 
@@ -166,8 +232,9 @@ function ask(io, question) {
  * @returns {Promise<string[]>}
  */
 export async function multiselect(io, { message, choices, initial }) {
+  if (choices.length === 0) throw new Error("Provide at least one choice for multiselect.");
   const { paint } = io;
-  const selected = new Set(initial);
+  const selected = new Set(choices.filter((choice) => initial.includes(choice.value)).map((choice) => choice.value));
 
   if (!canUseRawMode(io)) {
     io.stdout.write(`${paint.bold(message)}\n`);
@@ -255,6 +322,7 @@ export async function multiselect(io, { message, choices, initial }) {
  * @returns {Promise<string>}
  */
 export async function select(io, { message, choices, initial }) {
+  if (choices.length === 0) throw new Error("Provide at least one choice for select.");
   const { paint } = io;
   let cursor = Math.max(0, choices.findIndex((choice) => choice.value === initial));
 
