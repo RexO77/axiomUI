@@ -437,6 +437,30 @@ describe("planRemove / applyRemove", () => {
 });
 
 describe("legacy downloads", () => {
+  it("keeps a legacy file edited after discovery", () => {
+    const { bundle, target } = setup();
+    writeTree(target, { "axiom-website-upgrade/SKILL.md": "old pristine\n" });
+    const [found] = findLegacy(bundle, target);
+    writeFileSync(found.file, "new notes\n");
+    expect(removeLegacy(found)).toBe(false);
+    expect(readFileSync(found.file, "utf8")).toBe("new notes\n");
+  });
+
+  it.each(["symlink", "directory"])("keeps a legacy root replaced with a different %s", (replacement) => {
+    const { root, bundle, target } = setup();
+    writeTree(target, { "axiom-website-upgrade/SKILL.md": "old pristine\n" });
+    const [found] = findLegacy(bundle, target);
+    const dir = path.dirname(found.file);
+    renameSync(dir, path.join(root, "saved-legacy"));
+    if (replacement === "symlink") {
+      const outside = path.join(root, "outside");
+      writeTree(outside, { "SKILL.md": "old pristine\n" });
+      symlinkSync(outside, dir);
+    } else writeTree(dir, { "SKILL.md": "old pristine\n" });
+    expect(removeLegacy(found)).toBe(false);
+    expect(readFileSync(found.file, "utf8")).toBe("old pristine\n");
+  });
+
   it("recognises a pristine old download by hash and removes only that one", () => {
     const { bundle, target } = setup();
     writeTree(target, { "axiom-website-upgrade/SKILL.md": "old pristine\n" });
@@ -457,6 +481,30 @@ describe("legacy downloads", () => {
 });
 
 describe("changed plans", () => {
+  it.each([true, false])("refuses a redirected containing folder when the target existed: %s", (exists) => {
+    const { root, bundle, target, skill } = setup();
+    mkdirSync(path.dirname(target), { recursive: true });
+    if (exists) mkdirSync(target);
+    const plan = planInstall(skill, target);
+    const replaced = exists ? target : path.dirname(target);
+    renameSync(replaced, path.join(root, "saved-target"));
+    const outside = path.join(root, "outside"); mkdirSync(outside);
+    symlinkSync(outside, replaced);
+    expect(() => applyInstall(plan, bundle, version)).toThrow(/changed/);
+    expect(readdirSync(outside)).toEqual([]);
+  });
+
+  it("installs through a stable dangling skills-folder link", () => {
+    const { root, bundle, target } = setup();
+    mkdirSync(path.dirname(target), { recursive: true });
+    const actual = path.join(root, "linked-skills");
+    symlinkSync(actual, target);
+    install(bundle, target);
+    expect(readFileSync(path.join(actual, "demo/SKILL.md"), "utf8")).toBe(v1["SKILL.md"]);
+    expect(lstatSync(target).isSymbolicLink()).toBe(true);
+    expect(planInstall(bundle.catalog.skills[0], target).action).toBe("uptodate");
+  });
+
   it.each(["update", "remove"].flatMap((operation) =>
     ["symlink", "directory", "file"].map((replacement) => [operation, replacement])
   ))("refuses %s after the skill root becomes a different %s", (operation, replacement) => {
