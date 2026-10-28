@@ -245,7 +245,7 @@ describe("axiomui (non-TTY, the way an agent runs it)", () => {
     expect(readdirSync(outside)).toEqual([]);
   });
 
-  it.each([["ad", "--json"], ["add", "--bogus", "--json"], ["add", "--dir", "--json"]])(
+  it.each([["ad", "--json"], ["add", "--bogus", "--json"], ["add", "--dir", "--json"], ["--json"]])(
     "keeps usage errors machine-readable for %j", (...argv) => {
       const { run } = machine();
       const result = run(argv);

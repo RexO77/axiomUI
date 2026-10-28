@@ -261,6 +261,7 @@ export async function main(runtime) {
     }
     if (command === null) {
       if (!interactive) {
+        if (flags.json) throw usageError("A command is required. Run axiomui --help.");
         stderr.write(helpText(version));
         return 2;
       }
