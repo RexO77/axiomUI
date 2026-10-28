@@ -151,6 +151,22 @@ describe("axiomui (non-TTY, the way an agent runs it)", () => {
     expect(existsSync(path.join(home, ".agents/skills/axiomui-motion"))).toBe(false);
   });
 
+  it("guards removal from home unless global or custom targeting is explicit", () => {
+    const { root, home, run } = machine();
+    expect(run(["add", "motion", "-g", "-a", "claude"]).code).toBe(0);
+    const installed = path.join(home, ".claude/skills/axiomui-motion/SKILL.md");
+    const refused = run(["remove", "motion", "--json"], { cwd: home });
+    expect(refused.code).toBe(2);
+    expect(JSON.parse(refused.stdout).error).toContain("--global");
+    expect(existsSync(installed)).toBe(true);
+    expect(run(["remove", "motion", "-g", "--json"], { cwd: home }).code).toBe(0);
+    expect(existsSync(installed)).toBe(false);
+    const custom = path.join(root, "custom");
+    expect(run(["add", "motion", "--dir", custom]).code).toBe(0);
+    expect(run(["remove", "motion", "--dir", custom, "--json"], { cwd: home }).code).toBe(0);
+    expect(existsSync(path.join(custom, "axiomui-motion/SKILL.md"))).toBe(false);
+  });
+
   it("applies list target filters consistently", () => {
     const { cwd, root, run } = machine();
     expect(run(["add", "motion", "-a", "claude"]).code).toBe(0);

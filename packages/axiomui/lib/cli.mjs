@@ -791,6 +791,7 @@ async function update(session, requested) {
  */
 async function remove(session, requested) {
   const { flags, interactive, io, paint } = session;
+  if (!flags.global && !flags.dir) assertProjectScopeAllowed(session.context);
   const targets = searchTargets(session, ["project"]);
   /** @type {RemovePlan[]} */
   const plans = [];
