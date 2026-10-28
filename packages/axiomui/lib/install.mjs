@@ -16,6 +16,7 @@ import path from "node:path";
 
 import { isSafeRelativeFile, isSkillName, readBundledFile, sha256 } from "./catalog.mjs";
 import { CliError } from "./format.mjs";
+import { physicalPath } from "./targets.mjs";
 
 /** @typedef {import("./catalog.mjs").Bundle} Bundle */
 /** @typedef {import("./catalog.mjs").CatalogSkill} CatalogSkill */
@@ -48,6 +49,7 @@ import { CliError } from "./format.mjs";
  * @property {string} skillDir
  * @property {boolean} force
  * @property {{ dev: number, ino: number } | null} identity
+ * @property {TargetGuard} targetGuard
  * @property {InstallAction} action
  * @property {string[]} writes files to write, relative to skillDir
  * @property {string[]} deletes files dropped from the bundle and unedited
@@ -66,6 +68,7 @@ import { CliError } from "./format.mjs";
  * @property {string} skillDir
  * @property {boolean} force
  * @property {{ dev: number, ino: number } | null} identity
+ * @property {TargetGuard} targetGuard
  * conflict means an edited file or a symlinked folder: nothing is deleted
  * unless --force, so a remove never leaves half a skill behind.
  * @property {"remove" | "conflict" | "foreign" | "absent"} action
@@ -77,6 +80,30 @@ import { CliError } from "./format.mjs";
  */
 
 export const sidecarName = ".axiomui.json";
+
+/** @typedef {{ destination: string, ancestor: string, dev: number, ino: number }} TargetGuard */
+
+/** @param {string} targetDir @returns {TargetGuard} */
+function pinTarget(targetDir) {
+  const destination = physicalPath(targetDir);
+  let ancestor = destination;
+  let stat = lstatOrNull(ancestor);
+  while (!stat && path.dirname(ancestor) !== ancestor) {
+    ancestor = path.dirname(ancestor);
+    stat = lstatOrNull(ancestor);
+  }
+  if (!stat?.isDirectory()) throw new CliError(`Expected a skills folder at ${targetDir}.`);
+  return { destination, ancestor, dev: stat.dev, ino: stat.ino };
+}
+
+/** @param {string} targetDir @param {TargetGuard} guard */
+function checkTarget(targetDir, guard) {
+  const stat = lstatOrNull(guard.ancestor);
+  if (!stat?.isDirectory() || stat.dev !== guard.dev || stat.ino !== guard.ino ||
+      physicalPath(targetDir) !== guard.destination) {
+    throw new CliError(`The installation target ${targetDir} changed since planning. Review a new plan before retrying.`);
+  }
+}
 
 /**
  * Joins under `base` and refuses anything that resolves outside it.
@@ -248,6 +275,7 @@ export function planInstall(skill, targetDir, { force = false } = {}) {
     skillDir,
     force,
     identity: null,
+    targetGuard: pinTarget(targetDir),
     action: "install",
     writes: [],
     deletes: [],
@@ -444,7 +472,7 @@ function clearStaleStaging(targetDir, skillName) {
 function installFresh(plan, bundle, skill, version) {
   const staging = safeJoin(plan.targetDir, `${stagingPrefix}${skill.name}-${process.pid}`);
   try {
-    mkdirSync(plan.targetDir, { recursive: true });
+    mkdirSync(plan.targetGuard.destination, { recursive: true });
   } catch (error) {
     throw ioError(error, "create", plan.targetDir);
   }
@@ -495,7 +523,10 @@ export function applyInstall(plan, bundle, version) {
   if (!skill) {
     throw new CliError(`Unknown skill ${plan.skill}.`);
   }
+  checkTarget(plan.targetDir, plan.targetGuard);
   const current = planInstall(skill, plan.targetDir, { force: plan.force });
+  // Earlier installs may have created missing parents; the original anchor still governs.
+  current.targetGuard = plan.targetGuard;
   if (JSON.stringify(current) !== JSON.stringify(plan)) {
     throw new CliError(`The installation at ${plan.skillDir} changed since planning. Review a new plan before retrying.`);
   }
@@ -566,6 +597,7 @@ export function planRemove(skillName, targetDir, { force = false } = {}) {
     skillDir,
     force,
     identity: null,
+    targetGuard: pinTarget(targetDir),
     action: "remove",
     deletes: [],
     conflicts: [],
@@ -626,7 +658,9 @@ export function applyRemove(plan) {
   if (plan.action !== "remove") {
     return;
   }
+  checkTarget(plan.targetDir, plan.targetGuard);
   const current = planRemove(plan.skill, plan.targetDir, { force: plan.force });
+  current.targetGuard = plan.targetGuard;
   if (JSON.stringify(current) !== JSON.stringify(plan)) {
     throw new CliError(`The installation at ${plan.skillDir} changed since planning. Review a new plan before retrying.`);
   }
@@ -701,7 +735,7 @@ export function inspectEntry(targetDir, name) {
  * may be removed; edited ones are only ever reported.
  * @param {Bundle} bundle
  * @param {string} targetDir
- * @returns {{ name: string, replacedBy: string, file: string, pristine: boolean }[]}
+ * @returns {{ name: string, replacedBy: string, file: string, pristine: boolean, sha256: string, identity: { dev: number, ino: number } }[]}
  */
 export function findLegacy(bundle, targetDir) {
   return bundle.catalog.legacy.flatMap((legacy) => {
@@ -716,21 +750,28 @@ export function findLegacy(bundle, targetDir) {
       return [];
     }
     const pristine = legacy.sha256.some((candidate) => `sha256:${candidate}` === hash);
-    return [{ name: legacy.name, replacedBy: legacy.replacedBy, file, pristine }];
+    return [{ name: legacy.name, replacedBy: legacy.replacedBy, file, pristine, sha256: hash,
+      identity: { dev: dirStat.dev, ino: dirStat.ino } }];
   });
 }
 
 /**
  * Deletes a pristine legacy SKILL.md and its folder when that leaves it empty.
- * @param {{ file: string, pristine: boolean }} legacy
+ * Refuses files or directories changed since discovery, including after a prompt.
+ * @param {ReturnType<typeof findLegacy>[number]} legacy
+ * @returns {boolean} whether the unchanged legacy file was removed
  */
 export function removeLegacy(legacy) {
-  if (!legacy.pristine) {
-    return;
+  if (!legacy.pristine) return false;
+  const dir = path.dirname(legacy.file);
+  const stat = lstatOrNull(dir);
+  if (!stat?.isDirectory() || stat.dev !== legacy.identity.dev || stat.ino !== legacy.identity.ino ||
+      hashOnDisk(legacy.file) !== legacy.sha256) {
+    return false;
   }
   unlinkSync(legacy.file);
-  const dir = path.dirname(legacy.file);
   if (readdirSync(dir).length === 0) {
     rmdirSync(dir);
   }
+  return true;
 }
