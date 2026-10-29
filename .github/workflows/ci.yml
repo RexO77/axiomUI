@@ -58,6 +58,9 @@ jobs:
       - name: Deep-dive coverage
         run: npm run check
 
+      - name: Skills in sync
+        run: npm run skills:check
+
       - name: Tests
         run: npm test
 

@@ -13,15 +13,19 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
-  generatedRoots,
+  generatedRootsFor,
   markerFiles,
   renderSkillsTable,
   renderSkillsTree,
   replaceMarkerRegion,
 } from "../src/lib/skills/render.ts";
 
+import { distributedSkillNames } from "../src/lib/skills/distribution.ts";
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const checkOnly = process.argv.includes("--check");
+if (!Array.isArray(distributedSkillNames)) throw new Error("The reviewed distributed skill selection must be an array");
+const generatedRoots = generatedRootsFor(distributedSkillNames);
 
 // Where skills CLI 1.7.0 looks in a cloned repo (dist/cli.mjs, discoverSkills):
 // the root and its direct children, these containers up to three levels deep,
@@ -92,13 +96,13 @@ const readOrNull = (relativePath) => {
 };
 
 // Generated files and marker regions.
-const expected = renderSkillsTree();
+const expected = renderSkillsTree(undefined, distributedSkillNames);
 for (const file of markerFiles) {
   const current = readOrNull(file);
   if (current === null) {
     throw new Error(`${file} is missing; it must exist with skills markers`);
   }
-  expected.set(file, replaceMarkerRegion(current, renderSkillsTable()));
+  expected.set(file, replaceMarkerRegion(current, renderSkillsTable(distributedSkillNames)));
 }
 
 // Files git ignores (Finder's .DS_Store, say) are invisible to a commit, so

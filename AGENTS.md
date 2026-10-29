@@ -5,6 +5,14 @@
 - `src/components/` houses shared UI building blocks used across pages.
 - `src/data/` stores local data modules used by UI components.
 - `public/` holds static assets served at the site root (e.g., `/favicon.ico`).
+- `src/lib/skills/` contains the full source catalog, templates and renderer.
+  `distribution.ts` explicitly selects the currently distributed complete skill folders.
+- `skills/` and `skills.sh.json` are generated. Edit source and run `npm run skills:build`;
+  never edit generated files or infer the expected set from existing output.
+- `npm run skills:check` verifies the selected catalog, reference files and README tables.
+  The public playbook copies join generator ownership when the upgrade skill is selected.
+- `packages/axiomui/README.md` is documentation with a generated skills table; package
+  entry-point and publication wiring are separate from the skill artifacts.
 - Root config lives in `next.config.ts`, `eslint.config.mjs`, and `tsconfig.json`.
 
 ## Build, Test, and Development Commands
@@ -29,7 +37,7 @@
 - Vitest is configured (`vitest.config.ts`). `npm test` runs the suite once; tests live beside
   the code they cover, in `src/**/__tests__/`.
 - The full gate, and exactly what CI runs, is: `npm run lint`, `npm run typecheck`,
-  `npm run check`, `npm test`, `npm run build`. `.husky/pre-commit` runs the first four so a
+  `npm run check`, `npm run skills:check`, `npm test`, `npm run build`. `.husky/pre-commit` runs all but the build so a
   red CI is caught before the push.
 - `npm run check` (`scripts/check-deep-dives.mjs`) asserts all 105 rules have authored
   deep-dive prose. It must print `105/105`.

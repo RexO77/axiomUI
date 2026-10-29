@@ -1,0 +1,14 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "groupings": [
+    {
+      "description": "One skill per domain, with sharper triggers. Install one on its own when an agent works mostly in that area.",
+      "skills": [
+        "axiomui-typography",
+        "axiomui-system",
+        "axiomui-motion"
+      ],
+      "title": "Domains"
+    }
+  ]
+}
