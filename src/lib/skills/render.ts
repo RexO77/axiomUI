@@ -8,13 +8,11 @@ import { categoryNameById } from "@/lib/rule-text";
 import { siteConfig } from "@/lib/site";
 import {
   findSkill,
-  installCommand,
   legacySkills,
   ruleUrl,
   skillAuthor,
   skillCatalog,
   skillDescription,
-  skillInstallCommand,
   skillRules,
   skillsCliCommand,
   skillsRepo,
@@ -36,12 +34,30 @@ export const markerStart = "<!-- skills:start -->";
 export const markerEnd = "<!-- skills:end -->";
 
 /** Files the generator owns outright, relative to the repo root. */
-export const generatedRoots = ["skills/", "public/skills/", "skills.sh.json"] as const;
+export function generatedRootsFor(names?: readonly string[]): string[] {
+  const selected = selectedSkills(names);
+  return ["skills/", "skills.sh.json", ...(selected.some((skill) => skill.template === "axiomui-website-upgrade") ? ["public/skills/"] : [])];
+}
 /** Files where the generator owns only the region between the markers. */
 export const markerFiles = ["README.md", "packages/axiomui/README.md"] as const;
 
 const publicSkillPath = "public/skills/axiomui-website-upgrade/SKILL.md";
 const legacyPublicSkillPath = "public/skills/axiom-website-upgrade/SKILL.md";
+
+/** A reviewed release selection, normalized to catalog order; never inferred from output. */
+function selectedSkills(names?: readonly string[]): SkillSpec[] {
+  if (names === undefined) return skillCatalog;
+  if (names.length === 0) throw new Error("The distributed skill selection must not be empty");
+  const selected = new Set<string>();
+  for (const name of names) {
+    if (!findSkill(name)) throw new Error(`Unknown distributed skill: ${name}`);
+    if (selected.has(name)) throw new Error(`Duplicate distributed skill: ${name}`);
+    selected.add(name);
+  }
+  return skillCatalog.filter((skill) => selected.has(skill.name));
+}
+
+const githubInstallCommand = (skill: SkillSpec) => `${skillsCliCommand} --skill ${skill.name}`;
 
 export function readTemplate(name: string): string {
   return readFileSync(new URL(name, templateDir), "utf8");
@@ -214,7 +230,7 @@ function ruleLookup(singleFile: boolean): string {
         `- Every rule's Do and Don't, in one JSON file: ${rulesJsonUrl}`,
         `- One rule's full reasoning: ${siteConfig.origin}/rules/<id>, for example ${ruleUrl(rules[0].id)}`,
       ].join("\n"),
-      `Before you change a domain, find its rules in the index below and apply the matching rule's Do. Read the rule's page before you defend a tradeoff or break a rule, and cite the rule id when you report the change. To keep the rule files offline, install the full skill with \`${skillInstallCommand(findSkill("axiomui-website-upgrade")!)}\`.`,
+      `Before you change a domain, find its rules in the index below and apply the matching rule's Do. Read the rule's page before you defend a tradeoff or break a rule, and cite the rule id when you report the change. To keep the rule files offline, install the full skill with \`${githubInstallCommand(findSkill("axiomui-website-upgrade")!)}\`.`,
       ...categories.map((category) =>
         [`### ${category.name}`, rulesIn(category.id).map((rule) => `- \`${rule.id}\` ${rule.title}`).join("\n")].join("\n\n")
       ),
@@ -228,16 +244,19 @@ function ruleLookup(singleFile: boolean): string {
   ].join("\n\n");
 }
 
-function skillBody(skill: SkillSpec, { singleFile = false }: { singleFile?: boolean } = {}): string {
+function skillBody(
+  skill: SkillSpec,
+  { singleFile = false, availableSkills = skillCatalog }: { singleFile?: boolean; availableSkills?: readonly SkillSpec[] } = {}
+): string {
   switch (skill.template) {
     case "axiomui":
       return renderTemplate(readTemplate("axiomui.md"), {
         ruleCount: String(rules.length),
         categoryCount: String(categories.length),
-        domainSkills: skillCatalog
+        domainSkills: availableSkills
           .filter((candidate) => candidate.group === "domain")
           .map((candidate) => `\`${candidate.name}\``)
-          .join(", "),
+          .join(", ") || "no standalone domains are distributed at this checkpoint",
         domainTable: domainTable(categoryFile, "Compact Do/Don't"),
         ruleIndex: categories
           .map((category) =>
@@ -275,9 +294,13 @@ function skillBody(skill: SkillSpec, { singleFile = false }: { singleFile?: bool
 }
 
 /** Every file of one skill, keyed by its path inside the skill directory, sorted. */
-export function renderSkill(skill: SkillSpec, license: string | null = readPackageLicense()): Map<string, string> {
+export function renderSkill(
+  skill: SkillSpec,
+  license: string | null = readPackageLicense(),
+  availableSkills: readonly SkillSpec[] = skillCatalog
+): Map<string, string> {
   const files = new Map<string, string>();
-  files.set("SKILL.md", `${frontmatter(skill, license)}\n\n${skillBody(skill)}`);
+  files.set("SKILL.md", `${frontmatter(skill, license)}\n\n${skillBody(skill, { availableSkills })}`);
 
   if (skill.template === "axiomui" || skill.template === "axiomui-website-upgrade") {
     for (const category of categories) {
@@ -297,18 +320,19 @@ export function renderSkill(skill: SkillSpec, license: string | null = readPacka
 }
 
 /** The skills table shared by `skills/README.md` and the two README marker regions. */
-export function renderSkillsTable(): string {
+export function renderSkillsTable(names?: readonly string[]): string {
+  const selected = selectedSkills(names);
   return [
     "| Skill | Group | Rules | What it covers | Install on its own |",
     "|---|---|---|---|---|",
-    ...skillCatalog.map(
+    ...selected.map(
       (skill) =>
-        `| \`${skill.name}\` | ${skill.group === "core" ? "Core" : "Domain"} | ${skillRules(skill).length} | ${skill.summary} | \`${skillInstallCommand(skill)}\` |`
+        `| \`${skill.name}\` | ${skill.group === "core" ? "Core" : "Domain"} | ${skillRules(skill).length} | ${skill.summary} | \`${githubInstallCommand(skill)}\` |`
     ),
   ].join("\n");
 }
 
-function skillsReadme(): string {
+function skillsReadme(selected: readonly SkillSpec[]): string {
   return `${[
     "# Axiom UI agent skills",
     `Axiom UI's ${rules.length} UI design rules, packaged as agent skills for Claude Code, Codex, Cursor, OpenCode, Gemini CLI, GitHub Copilot and Windsurf.`,
@@ -316,24 +340,22 @@ function skillsReadme(): string {
     "## Install",
     [
       "```sh",
-      `${installCommand}            # detects your agents, then asks which skills to install`,
-      `${installCommand} --all -g   # every skill, for every project`,
-      `${skillsCliCommand}     # or with the open skills CLI`,
+      skillsCliCommand,
       "```",
     ].join("\n"),
     "## Skills",
-    "The three core skills each carry every rule. The domain skills carry one domain each, with sharper triggers.",
-    renderSkillsTable(),
+    "Each listed skill is complete and self-contained. Core skills carry every rule; domain skills carry focused rules with sharper triggers. The npm installer has not been published; install these files from GitHub.",
+    renderSkillsTable(selected.map((skill) => skill.name)),
     `Rules and reasoning: ${siteConfig.origin}`,
   ].join("\n\n")}\n`;
 }
 
-function catalogJson(tree: Map<string, string>, legacyPublic: string): string {
+function catalogJson(tree: Map<string, string>, legacyPublic: string | null, selected: readonly SkillSpec[]): string {
   return stableJson({
     schema: 1,
     site: siteConfig.origin,
     repo: skillsRepo,
-    skills: skillCatalog.map((skill) => {
+    skills: selected.map((skill) => {
       const prefix = `skills/${skill.name}/`;
       const files = Object.fromEntries(
         [...tree.entries()]
@@ -350,24 +372,24 @@ function catalogJson(tree: Map<string, string>, legacyPublic: string): string {
         files,
       };
     }),
-    legacy: legacySkills.map((legacy) => ({
+    legacy: legacySkills.filter((legacy) => legacyPublic !== null && selected.some((skill) => skill.name === legacy.replacedBy)).map((legacy) => ({
       name: legacy.name,
       replacedBy: legacy.replacedBy,
       // The current legacy alias counts as pristine too, so a fresh download is recognised.
-      sha256: [...new Set([...legacy.sha256, sha256(legacyPublic)])],
+      sha256: [...new Set([...legacy.sha256, sha256(legacyPublic!)])],
     })),
   });
 }
 
-function skillsShJson(): string {
+function skillsShJson(selected: readonly SkillSpec[]): string {
   const names = (group: SkillSpec["group"]) =>
-    skillCatalog.filter((skill) => skill.group === group).map((skill) => skill.name);
+    selected.filter((skill) => skill.group === group).map((skill) => skill.name);
   return stableJson({
     $schema: "https://skills.sh/schemas/skills.sh.schema.json",
     groupings: [
       {
         title: "Core",
-        description: "Start here. Each core skill carries every Axiom UI rule: the indexed library, the website upgrade playbook, and the read-only audit.",
+        description: "Each distributed core skill carries every Axiom UI rule.",
         skills: names("core"),
       },
       {
@@ -375,7 +397,7 @@ function skillsShJson(): string {
         description: "One skill per domain, with sharper triggers. Install one on its own when an agent works mostly in that area.",
         skills: names("domain"),
       },
-    ],
+    ].filter((group) => group.skills.length > 0),
   });
 }
 
@@ -383,29 +405,28 @@ function skillsShJson(): string {
  * The whole generated tree, keyed by path from the repo root: `skills/**`,
  * `skills.sh.json`, and the two single-file public copies of the playbook.
  */
-export function renderSkillsTree(license: string | null = readPackageLicense()): Map<string, string> {
+export function renderSkillsTree(license: string | null = readPackageLicense(), names?: readonly string[]): Map<string, string> {
+  const selected = selectedSkills(names);
   const tree = new Map<string, string>();
-  for (const skill of skillCatalog) {
-    for (const [filePath, content] of renderSkill(skill, license)) {
+  for (const skill of selected) {
+    for (const [filePath, content] of renderSkill(skill, license, selected)) {
       tree.set(`skills/${skill.name}/${filePath}`, content);
     }
   }
 
-  const playbookSkill = findSkill("axiomui-website-upgrade");
-  if (!playbookSkill) {
-    throw new Error("The catalog has no axiomui-website-upgrade skill");
+  const playbookSkill = selected.find((skill) => skill.template === "axiomui-website-upgrade");
+  let legacyPublic: string | null = null;
+  if (playbookSkill) {
+    // A single-file download must work without sibling references. Retain the
+    // old folder's frontmatter name while keeping both public variants equivalent.
+    const playbook = `${frontmatter(playbookSkill, license)}\n\n${skillBody(playbookSkill, { singleFile: true })}`;
+    legacyPublic = playbook.replace(/^name: axiomui-website-upgrade$/m, "name: axiom-website-upgrade");
+    tree.set(publicSkillPath, playbook);
+    tree.set(legacyPublicSkillPath, legacyPublic);
   }
-  // The site serves the playbook as one file, with no references/ beside it.
-  const playbook = `${frontmatter(playbookSkill, license)}\n\n${skillBody(playbookSkill, { singleFile: true })}`;
-  // Old downloads sit in an `axiom-website-upgrade/` folder, and spec-strict
-  // agents require `name` to match it. That line is the only difference.
-  const legacyPublic = playbook.replace(/^name: axiomui-website-upgrade$/m, "name: axiom-website-upgrade");
-
-  tree.set("skills/README.md", skillsReadme());
-  tree.set("skills/catalog.json", catalogJson(tree, legacyPublic));
-  tree.set("skills.sh.json", skillsShJson());
-  tree.set(publicSkillPath, playbook);
-  tree.set(legacyPublicSkillPath, legacyPublic);
+  tree.set("skills/README.md", skillsReadme(selected));
+  tree.set("skills/catalog.json", catalogJson(tree, legacyPublic, selected));
+  tree.set("skills.sh.json", skillsShJson(selected));
 
   return new Map([...tree.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
 }

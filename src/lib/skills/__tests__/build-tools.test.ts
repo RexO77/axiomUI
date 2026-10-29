@@ -5,6 +5,7 @@ import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { renderSkillsTree } from "@/lib/skills/render";
+import { skillCatalog } from "@/lib/skills/catalog";
 
 const repoRoot = path.resolve(__dirname, "../../../..");
 const roots: string[] = [];
@@ -14,11 +15,12 @@ const fixtureEnv = { ...process.env };
 for (const key of Object.keys(fixtureEnv)) if (key.startsWith("GIT_")) delete fixtureEnv[key];
 const markers = "Before\n<!-- skills:start -->\nold table\n<!-- skills:end -->\nAfter\n";
 
-function fixture() {
+function fixture(names: readonly string[] = skillCatalog.map((skill) => skill.name)) {
   const root = mkdtempSync(path.join(os.tmpdir(), "axiom-build-"));
   roots.push(root);
   cpSync(path.join(repoRoot, "src"), path.join(root, "src"), { recursive: true });
   cpSync(path.join(repoRoot, "scripts"), path.join(root, "scripts"), { recursive: true });
+  writeFileSync(path.join(root, "src/lib/skills/distribution.ts"), `export const distributedSkillNames = ${JSON.stringify(names)} as const;\n`);
   mkdirSync(path.join(root, "packages/axiomui"), { recursive: true });
   writeFileSync(path.join(root, "README.md"), markers);
   writeFileSync(path.join(root, "packages/axiomui/README.md"), markers);
@@ -47,7 +49,7 @@ describe("skill generation command", () => {
     const built = run(root);
     expect(built.status, built.stderr).toBe(0);
     expect(built.stdout).toContain("skills built: 11 skills");
-    for (const [file, content] of renderSkillsTree()) {
+    for (const [file, content] of renderSkillsTree(null)) {
       expect(readFileSync(path.join(root, file), "utf8"), file).toBe(content);
     }
     for (const file of ["README.md", "packages/axiomui/README.md"]) {
@@ -145,4 +147,65 @@ describe("skill generation command", () => {
     expect(result.status, result.stderr).toBe(0);
     expect(result.stdout.trim()).toBe("14");
   });
+
+  it("checks a reviewed subset strictly while preserving the previous public playbook", () => {
+    const names = ["axiomui-motion", "axiomui-system", "axiomui-typography"];
+    const root = fixture(names);
+    const legacy = path.join(root, "public/skills/axiom-website-upgrade/SKILL.md");
+    mkdirSync(path.dirname(legacy), { recursive: true });
+    writeFileSync(legacy, "existing public playbook\n");
+    const built = run(root);
+    expect(built.status, built.stderr).toBe(0);
+    expect(built.stdout).toContain("skills built: 3 skills");
+    expect(readFileSync(legacy, "utf8")).toBe("existing public playbook\n");
+    for (const [file, content] of renderSkillsTree(null, names)) {
+      expect(readFileSync(path.join(root, file), "utf8"), file).toBe(content);
+    }
+    expect(run(root, "--check").status).toBe(0);
+    const missing = path.join(root, "skills/axiomui-motion/references/rules/motion-1.md");
+    rmSync(missing);
+    const extra = path.join(root, "skills/axiomui-audit/SKILL.md");
+    mkdirSync(path.dirname(extra), { recursive: true });
+    writeFileSync(extra, "not selected\n");
+    const check = run(root, "--check");
+    expect(check.status).toBe(1);
+    expect(check.stderr).toContain("missing  skills/axiomui-motion/references/rules/motion-1.md");
+    expect(check.stderr).toContain("extra    skills/axiomui-audit/SKILL.md");
+    expect(existsSync(missing)).toBe(false);
+    expect(run(root).status).toBe(0);
+    expect(existsSync(extra)).toBe(false);
+    expect(readFileSync(legacy, "utf8")).toBe("existing public playbook\n");
+    expect(run(root, "--check").status).toBe(0);
+  });
+
+  it("fails before generation if the reviewed selection module is missing", () => {
+    const root = fixture();
+    rmSync(path.join(root, "src/lib/skills/distribution.ts"));
+    const result = run(root);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("distribution.ts");
+    expect(existsSync(path.join(root, "skills"))).toBe(false);
+  });
+
+  it.each([[], ["axiomui-motion", "axiomui-motion"], ["unknown-skill"]].map((names) => [names]))(
+    "refuses invalid configured selection %j before writing output", (names) => {
+      const root = fixture(names);
+      const result = run(root);
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toMatch(/distributed skill/);
+      expect(existsSync(path.join(root, "skills"))).toBe(false);
+      expect(readFileSync(path.join(root, "README.md"), "utf8")).toBe(markers);
+    }
+  );
+
+
+  it.each(["undefined", "null", '"axiomui-motion"'])("refuses malformed selection export %s", (value) => {
+    const root = fixture();
+    writeFileSync(path.join(root, "src/lib/skills/distribution.ts"), `export const distributedSkillNames = ${value};\n`);
+    const result = run(root);
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("must be an array");
+    expect(existsSync(path.join(root, "skills"))).toBe(false);
+  });
+
 });

@@ -11,6 +11,8 @@
     "start": "next start",
     "lint": "eslint",
     "check": "node scripts/check-deep-dives.mjs",
+    "skills:build": "node --import ./scripts/lib/register-ts.mjs scripts/build-skills.mjs",
+    "skills:check": "node --import ./scripts/lib/register-ts.mjs scripts/build-skills.mjs --check",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "check:attribution": "scripts/check-attribution.sh",

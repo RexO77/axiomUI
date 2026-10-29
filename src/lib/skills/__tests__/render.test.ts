@@ -8,6 +8,8 @@ import { rules } from "@/data/ui-logic";
 import { fullCorpusMarkdown } from "@/lib/rule-corpus";
 import { skillAuthor, skillCatalog } from "@/lib/skills/catalog";
 import {
+  generatedRootsFor,
+  renderSkillsTable,
   markerEnd,
   markerStart,
   readTemplate,
@@ -247,6 +249,77 @@ describe("renderSkillsTree", () => {
     for (const [file, content] of tree) {
       expect(content, file).not.toMatch(attribution);
     }
+  });
+});
+
+describe("reviewed skill distribution", () => {
+  const names = ["axiomui-motion", "axiomui-system", "axiomui-typography"];
+
+  it("renders only selected complete folders with matching tables, groups and hashes", () => {
+    const selected = renderSkillsTree("MIT", names);
+    const catalog = JSON.parse(selected.get("skills/catalog.json")!);
+    expect(catalog.skills.map((skill: { name: string }) => skill.name)).toEqual([
+      "axiomui-typography", "axiomui-system", "axiomui-motion",
+    ]);
+    expect(catalog.legacy).toEqual([]);
+    expect(generatedRootsFor(names)).toEqual(["skills/", "skills.sh.json"]);
+    expect([...selected.keys()].some((file) => file.startsWith("public/"))).toBe(false);
+    for (const skill of catalog.skills) {
+      for (const [file, hash] of Object.entries(skill.files)) {
+        const content = selected.get(`skills/${skill.name}/${file}`)!;
+        expect(hash).toBe(`sha256:${sha256(content)}`);
+        for (const [, reference] of content.matchAll(/`(references\/[a-z0-9/-]+\.md)`/g)) {
+          expect(selected.has(`skills/${skill.name}/${reference}`)).toBe(true);
+        }
+      }
+    }
+    const groups = JSON.parse(selected.get("skills.sh.json")!);
+    expect(groups.groupings).toHaveLength(1);
+    expect(groups.groupings[0].skills).toEqual(catalog.skills.map((skill: { name: string }) => skill.name));
+    const table = renderSkillsTable(names);
+    expect(table.match(/^\| `/gm)).toHaveLength(3);
+    expect(table).not.toContain("axiomui-audit");
+    expect(selected.get("skills/README.md")).toContain(table);
+  });
+
+  it("normalizes selection order without changing its bytes", () => {
+    expect([...renderSkillsTree(null, names)]).toEqual([...renderSkillsTree(null, [...names].reverse())]);
+  });
+
+  it.each([
+    [[], /must not be empty/],
+    [["axiomui-motion", "axiomui-motion"], /Duplicate distributed skill/],
+    [["not-a-skill"], /Unknown distributed skill/],
+    [["constructor"], /Unknown distributed skill/],
+  ] as [string[], RegExp][])("rejects invalid reviewed selection %j", (selection, message) => {
+    expect(() => renderSkillsTree(null, selection)).toThrow(message);
+    expect(() => renderSkillsTable(selection)).toThrow(message);
+    expect(() => generatedRootsFor(selection)).toThrow(message);
+  });
+
+  it("takes public ownership and enables legacy entries only with the replacement skill", () => {
+    const selected = renderSkillsTree(null, ["axiomui-website-upgrade"]);
+    expect(generatedRootsFor(["axiomui-website-upgrade"])).toContain("public/skills/");
+    expect(selected.has("public/skills/axiomui-website-upgrade/SKILL.md")).toBe(true);
+    const legacy = selected.get("public/skills/axiom-website-upgrade/SKILL.md")!;
+    const catalog = JSON.parse(selected.get("skills/catalog.json")!);
+    expect(catalog.legacy).toHaveLength(1);
+    expect(catalog.legacy[0].replacedBy).toBe("axiomui-website-upgrade");
+    expect(catalog.legacy[0].sha256).toContain(sha256(legacy));
+  });
+
+  it("lists only distributed domain alternatives in the router", () => {
+    const router = renderSkillsTree(null, ["axiomui", "axiomui-motion"]).get("skills/axiomui/SKILL.md")!;
+    expect(router).toContain("`axiomui-motion`");
+    expect(router).not.toContain("`axiomui-typography`");
+  });
+
+  it("uses the available GitHub skills route without advertising an unpublished npm install", () => {
+    for (const content of tree.values()) expect(content).not.toContain("npx axiomui");
+    expect(tree.get("skills/README.md")).toContain("npx skills add RexO77/axiomUI");
+    expect(tree.get("skills/README.md")).toContain("npm installer has not been published");
+    expect(tree.get("public/skills/axiomui-website-upgrade/SKILL.md"))
+      .toContain("npx skills add RexO77/axiomUI --skill axiomui-website-upgrade");
   });
 });
 

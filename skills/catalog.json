@@ -1,0 +1,107 @@
+{
+  "legacy": [],
+  "repo": "RexO77/axiomUI",
+  "schema": 1,
+  "site": "https://axiomui.nischal.fyi",
+  "skills": [
+    {
+      "aliases": [
+        "typography",
+        "type"
+      ],
+      "files": {
+        "SKILL.md": "sha256:dc6109f16ed829260df3c5c9545e768f67e1c1aafd666e0177bcbeb48ddebee2",
+        "references/rules/typo-1.md": "sha256:a59707afb1a2573beb0b85eb8ff1a5393c2783da55af95ddc09057ce41e7aa22",
+        "references/rules/typo-10.md": "sha256:084edb77ab6a748118209c48460943b0b451e165c7a43fd39d48678e12935787",
+        "references/rules/typo-11.md": "sha256:f818c0cdac4bc441577ab569df81035774cdf3f4974cbb3076b2355c5cd69330",
+        "references/rules/typo-12.md": "sha256:56a16c0284fb28873848eed540b011cd7c49c5e51f8e225bb171d7b8a7c9bb1b",
+        "references/rules/typo-13.md": "sha256:44db28d276596a0f5cbe9adfec6a6cf8b69934cdae66164660607d9311a01db7",
+        "references/rules/typo-2.md": "sha256:1e6153ea521e12c7ace57a8057c489b70ba3c1dc4ffda1ef60f375f9f8f8fb16",
+        "references/rules/typo-3.md": "sha256:2601abf1dbcdc2dbe6b088e75be0f48f839d5079858846d11d636bf63b3fff2f",
+        "references/rules/typo-4.md": "sha256:827d48383681471c27ed5e20298e742797e6005391913c3fe6753244be563be7",
+        "references/rules/typo-5.md": "sha256:4bb745c5b6d31dc5a884536b7a39aafd10a33371d9fdf44549c162c7d9dc24a4",
+        "references/rules/typo-6.md": "sha256:41ecd67014c0f7fbdfd1f0c7002b8e87d92ccfdcf42709e0f684bb59c729cc59",
+        "references/rules/typo-7.md": "sha256:9f144b4efe2a178fb2e6b51e24bbcf3451ad2b1ba6c189e25e435a0b8ce2509d",
+        "references/rules/typo-8.md": "sha256:bf1e2c252ae92676a9ff0361d39a78bb4c73f2c69c33dab5b11019ce464563f4",
+        "references/rules/typo-9.md": "sha256:3e09935294da9aaca24b3158b52dde4239d4611f217cf8d4bbb5a1154acecbae"
+      },
+      "group": "domain",
+      "name": "axiomui-typography",
+      "ruleCount": 13,
+      "summary": "Casing, tracking, line height, weights, figures and wrapping for interface text.",
+      "title": "Typography & text"
+    },
+    {
+      "aliases": [
+        "system",
+        "states"
+      ],
+      "files": {
+        "SKILL.md": "sha256:7f2f9302aa189d1b712fa794d9280fc4a0827fdc50300eea86e67298b09c0123",
+        "references/rules/sys-1.md": "sha256:4426f2440be50477c44acbf88ad53731f16db6299148570cf65e27cd074876f2",
+        "references/rules/sys-10.md": "sha256:25f2dfd0e29fa298e39e8eb2bd64f631e99db02769bce45254995a2a305f6e37",
+        "references/rules/sys-11.md": "sha256:f04ba8b51d53ee476ba1740f84d5b32db39357e6e4701095124aa2c62e6385f2",
+        "references/rules/sys-13.md": "sha256:fcb3a440a1f086c74f75a94d29cb9fcf3afb4e9638bea68e326e55ccf4ad9c62",
+        "references/rules/sys-14.md": "sha256:c975242dc85296fea7ecf95cb40197ae4a23806d5c8b751d6141ef7546c54af2",
+        "references/rules/sys-2.md": "sha256:4889ef706cf63050cb158c0e89278e02595fa675029fd217a06674bb79ff9836",
+        "references/rules/sys-3.md": "sha256:0d7f8a991929a4ec65e5148bbb8a8fbcb3bd14e4e7d094703792282b8a7dbc30",
+        "references/rules/sys-4.md": "sha256:c62a466046cec2e67d5f68fea2ffa3a166ff28cefacd4e0844b5b512645799a7",
+        "references/rules/sys-5.md": "sha256:d31838ca16009dc056e915bdffe8368a2a2185e196bc12c64a9ebffc8ba52cee",
+        "references/rules/sys-6.md": "sha256:0d4baf7476ac5e066f6fc95a208befececf6d428754f629394aef1f6caa5caa2",
+        "references/rules/sys-7.md": "sha256:dc3bf8930b69de6ac3d4ee2948372437538b65f4ccc5034b750fac5cfc31e354",
+        "references/rules/sys-8.md": "sha256:d5605f12244f044549d6e012f98d42eacc6cb38e5339a12f0e29ee889bc675d5",
+        "references/rules/sys-9.md": "sha256:2dc668cecb156e7790eee1cb412053cac06080d82ca8fcfa2e665683ab009e6f"
+      },
+      "group": "domain",
+      "name": "axiomui-system",
+      "ruleCount": 13,
+      "summary": "Loading, empty and error states, undo, optimistic updates, tokens and breakpoints.",
+      "title": "System & logic"
+    },
+    {
+      "aliases": [
+        "motion",
+        "animation"
+      ],
+      "files": {
+        "SKILL.md": "sha256:1c1fa7415d9fc930e35debafe376e8f2e5a77f31a1c6264cc89a25eb8999af32",
+        "references/rules/motion-1.md": "sha256:361af6a11d32309e687c5ceea0080e0a4b0184c6a864f662155a71707dbbd85c",
+        "references/rules/motion-10.md": "sha256:439c6e867832fcb02015faecf2acb6af1252d5e91f5c9a90e7eb326a7ced1ae6",
+        "references/rules/motion-11.md": "sha256:ad3d7195c2abf5b1a3e6f8c64778be106ee414bab9d4f6b212df100762d4c5ca",
+        "references/rules/motion-12.md": "sha256:85f85ecc0b2ea6831a1634dbdd718d4a9a2a78ba53ec9985d2261b1d8ce9c783",
+        "references/rules/motion-13.md": "sha256:9890c99ed08ae5cc3bce6e8f1b0143e9aa796b908c33bdf9066124142493ed5b",
+        "references/rules/motion-14.md": "sha256:357faf316597237bb0a82e3bfff1f5833045003954e0bb4bc2035564f1a2a05b",
+        "references/rules/motion-15.md": "sha256:37c2ed8eb6457c2aa0e829457231bae78ebcdf5bcc682635cd026464abdfd7b5",
+        "references/rules/motion-16.md": "sha256:22c2fc766badc45795a1d08283b747e27e3d47f85991462ecae34ef37516b43f",
+        "references/rules/motion-17.md": "sha256:6d0e74fb0cc8fe4fe58d06b45b0789770605a66f1fb6c2c72d3671ec9ba11b14",
+        "references/rules/motion-18.md": "sha256:ee786f9713e99ef9d5407c83ecf98252b4c8052f66c482a82801296c7405c94a",
+        "references/rules/motion-19.md": "sha256:8229932e50f4e47fcf0b8422698d90697daed38114e6aec284b57647137c368f",
+        "references/rules/motion-2.md": "sha256:57d550f168d7ed5b7ae5176730bfd8a159e0e723c89d973dafd124672161f709",
+        "references/rules/motion-20.md": "sha256:d26100188f1940cae72fdfb48ea54e6c60469c173ad99a83ef26bd012cc7348a",
+        "references/rules/motion-21.md": "sha256:639e445e39d5b863856495bf47084f33466897f79bab5372253c1203967ae990",
+        "references/rules/motion-22.md": "sha256:f5bef7e0b21b796be6c59519ac2776ba28d830e234663e5f89eca3d128a55deb",
+        "references/rules/motion-23.md": "sha256:f1180e57263c403deb061e5399ce5abf658b2524bead39012e13ea28c7b49698",
+        "references/rules/motion-24.md": "sha256:3c5bfeb777ddc1b3f3f4172e3a58f061eba9b0f9ad2cc08efa0f31926241f1b1",
+        "references/rules/motion-25.md": "sha256:cf8cce48b6b507b34922a830258126af25ccb8dfa0957d5434b46dcbae1439be",
+        "references/rules/motion-26.md": "sha256:6d832dc3c99c8fd101257281c33f5ca09f53344ec714cf27c2bf3388ff711a70",
+        "references/rules/motion-27.md": "sha256:546d7ca96d1dd44c79d871574dbfe2dfaffd00474d1b89df50f3e21207038d57",
+        "references/rules/motion-28.md": "sha256:a756ecfc51053833d3e732282801c29ceefc41c59ffb95bca9a254fac0dbae42",
+        "references/rules/motion-29.md": "sha256:361db24a1c77209983fb9df36dc93172647d032974005a91ea7f985d433f11df",
+        "references/rules/motion-3.md": "sha256:45103213938011673cb13b694606ba62efbaff26d635c22467a30b0dd1742271",
+        "references/rules/motion-4.md": "sha256:3142bccdc235d6ac12bd77b504872eb3c0f0b54cfb9f24d3a6c203e51dd535b8",
+        "references/rules/motion-5.md": "sha256:ac94157b7d1100d79805477276e4fe93a3aff54081d2d0e9ece8d62c7fa0eb99",
+        "references/rules/motion-6.md": "sha256:ed327a573e822b1971995bcad3f68f13ef72a5a131110b5e4c81529fc4abcac1",
+        "references/rules/motion-7.md": "sha256:510727e6e55284daa22ea344f7810d0c9f1db497a932bf4276629a935ae23c27",
+        "references/rules/motion-8.md": "sha256:b79946a9a8cd5fe7efb754ba43aa7e2d1dbdf9f6ffc04c8da803c0ab5d9b7622",
+        "references/rules/motion-9.md": "sha256:c3dc3e2abd388284a51d637f45264f01f45c6c98b205def26fc5e9425b0a02da",
+        "references/rules/sys-13.md": "sha256:fcb3a440a1f086c74f75a94d29cb9fcf3afb4e9638bea68e326e55ccf4ad9c62",
+        "references/rules/sys-14.md": "sha256:c975242dc85296fea7ecf95cb40197ae4a23806d5c8b751d6141ef7546c54af2"
+      },
+      "group": "domain",
+      "name": "axiomui-motion",
+      "ruleCount": 31,
+      "summary": "Exact durations, easing and gesture physics for UI motion.",
+      "title": "Motion & interaction"
+    }
+  ]
+}

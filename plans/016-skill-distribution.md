@@ -1,9 +1,10 @@
 # 016 — Axiom UI skill distribution
 
-Status: source foundations implemented; generated distribution and site integration pending.
+Status: selected complete skills distributed; full catalog, package and site integration pending.
 
 This plan describes the intended distribution contract and the work still needed to
-activate it. The source checkpoint is the merge of PR #33. It does not mean that the
+activate it. PR #33 is the source-foundation baseline; the table below follows the
+incremental distribution delivery. This does not mean that the
 npm package has been published or that the site advertises the new installation flow.
 
 The current catalog has 105 rules and 11 skills. Counts and exact trigger text come
@@ -17,13 +18,13 @@ copy of those descriptions here.
 | Rule serialization | Implemented; shared by skill rendering and the full rules endpoint | `src/lib/rule-text.ts`, `src/lib/rule-corpus.ts` |
 | Skill definitions | Implemented; three core skills and eight domain skills | `src/lib/skills/catalog.ts` |
 | Skill documents | Renderer and authored templates implemented and tested in memory | `src/lib/skills/render.ts`, `src/lib/skills/templates/` |
-| Generation command | Source implemented; npm scripts and committed output still pending | `scripts/build-skills.mjs`, `scripts/lib/register-ts.mjs` |
+| Generation command | Activated with an explicit source-controlled distribution selection | `scripts/build-skills.mjs`, `scripts/lib/register-ts.mjs` |
 | Installer | Catalog loading, target resolution, managed operations, prompts and command handling implemented | `packages/axiomui/lib/` |
 | Package bundling | Standalone bundler implemented; lifecycle activation pending | `packages/axiomui/scripts/bundle-skills.mjs` |
-| Generated distribution | Not yet committed as a synchronized distribution | Planned `skills/`, `skills.sh.json` and public copies |
+| Generated distribution | Complete selected domain folders delivered; remaining skills pending | Planned `skills/`, `skills.sh.json` and public copies |
 | Package entry point | Manifest, bin, package documentation and standalone smoke test pending | Planned `packages/axiomui/package.json`, `bin/` and `test/` |
 | Site installation flow | Pending; existing playbook UI remains | `src/components/features/skills/skill-bonus.tsx` |
-| Synchronization gate | Tests cover the sources; generated-output checks are not wired into CI or pre-commit yet | `.github/workflows/ci.yml`, `.husky/pre-commit` |
+| Synchronization gate | Selected output checked in CI and pre-commit; full-source rendering remains tested | `.github/workflows/ci.yml`, `.husky/pre-commit` |
 | Publication | Separate owner action; no registry publication or release tag is authorized by this plan | Release prerequisites below |
 
 Keep the install modal and rule-indexing requirements in
@@ -250,9 +251,9 @@ npm run build
 git diff --check
 ```
 
-The deep-dive check must report 105/105 at this checkpoint. Current sources have 310
-passing tests across 23 files; rerun the gate for each delivery rather than carrying
-that result forward. Check exact source hashes and explicit allowlists before staging.
+The deep-dive check must agree with the current rule catalog. Rerun the gates for
+each delivery rather than carrying historical results forward. Check exact source
+hashes and explicit allowlists before staging.
 
 After activation, add `npm run skills:check`, the standalone CLI smoke on Node 18 and
 20, and a local package dry run. Inspect the actual tarball and exercise add, list,
