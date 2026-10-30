@@ -123,6 +123,17 @@ describe("renderSkillsTree", () => {
     }
   });
 
+  it("keeps audit reviews usable when the implementation skill is unavailable", () => {
+    const audit = renderSkillsTree(null, ["axiomui-audit"]);
+    const content = audit.get("skills/axiomui-audit/SKILL.md")!;
+    expect(audit.has("skills/axiomui-website-upgrade/SKILL.md")).toBe(false);
+    const { description } = parseFrontmatter(content);
+    expect(description).toContain("only if it is installed");
+    expect(description).toContain("otherwise provide the report for a separate implementation task");
+    expect(content).toContain("If it is unavailable, keep this review read-only");
+    expect(content).toContain("do not assume a handoff occurred");
+  });
+
   it("ships every rule in the core skills, and the same rule file everywhere", () => {
     for (const name of ["axiomui", "axiomui-website-upgrade", "axiomui-audit"]) {
       const ruleFiles = [...skillFiles(name).keys()].filter((file) => file.startsWith("references/rules/"));

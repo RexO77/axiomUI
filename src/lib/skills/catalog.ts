@@ -179,7 +179,7 @@ const coreSkills: SkillSpec[] = [
     title: "Design audit",
     summary: "A read-only design review where every finding cites a rule, a location and a fix.",
     description:
-      "Reviews an existing interface against Axiom UI's {{ruleCount}} UI design rules and reports prioritized findings, each tied to a rule id, a location, and a concrete fix, without editing code. Use when asked to review, audit, critique, or grade a page, component, pull request diff, screenshot, or design system for visual quality, consistency, usability, or accessibility; when preparing a pre-ship design QA pass; or when a review must cite specific, checkable rules instead of opinions. For requests to change the code, use axiomui-website-upgrade.",
+      "Reviews an existing interface against Axiom UI's {{ruleCount}} UI design rules and reports prioritized findings, each tied to a rule id, a location, and a concrete fix, without editing code. Use when asked to review, audit, critique, or grade a page, component, pull request diff, screenshot, or design system for visual quality, consistency, usability, or accessibility; when preparing a pre-ship design QA pass; or when a review must cite specific, checkable rules instead of opinions. For code changes, use axiomui-website-upgrade only if it is installed; otherwise provide the report for a separate implementation task.",
     aliases: ["audit", "review"],
     template: "axiomui-audit",
     categoryId: null,
