@@ -108,6 +108,8 @@ describe("skill catalog", () => {
     expect(trigger("axiomui-website-upgrade")).toContain("use axiomui-audit");
     expect(trigger("axiomui-website-upgrade").replaceAll("axiomui-audit", "")).not.toMatch(/audit/i);
     expect(trigger("axiomui-audit")).toContain("use axiomui-website-upgrade");
+    expect(trigger("axiomui-website-upgrade")).toContain("only if it is installed; otherwise review with the included rules");
+    expect(trigger("axiomui-website-upgrade")).toContain("only if it is installed; otherwise consult the included rule library");
     expect(trigger("axiomui")).toContain("only if it is installed; otherwise apply the rules here");
     expect(trigger("axiomui")).toContain("only if it is installed; otherwise review with this library");
     expect(trigger("axiomui-system")).not.toMatch(/transition|will-change|keyboard|target/i);
