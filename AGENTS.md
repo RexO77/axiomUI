@@ -11,8 +11,9 @@
   never edit generated files or infer the expected set from existing output.
 - `npm run skills:check` verifies the selected catalog, reference files and README tables.
   The public playbook copies join generator ownership when the upgrade skill is selected.
-- `packages/axiomui/README.md` is documentation with a generated skills table; package
-  entry-point and publication wiring are separate from the skill artifacts.
+- `packages/axiomui/` is the standalone installer. Its `prepack` bundles only catalogued
+  skills and the root license; package-local skills, LICENSE and tarballs stay ignored.
+  Its README skills table is generated from the reviewed distribution selection.
 - Root config lives in `next.config.ts`, `eslint.config.mjs`, and `tsconfig.json`.
 
 ## Build, Test, and Development Commands
@@ -38,7 +39,10 @@
   the code they cover, in `src/**/__tests__/`.
 - The full gate, and exactly what CI runs, is: `npm run lint`, `npm run typecheck`,
   `npm run check`, `npm run skills:check`, `npm test`, `npm run build`. `.husky/pre-commit` runs all but the build so a
-  red CI is caught before the push.
+  red CI is caught before the push. CI also exercises the standalone installer from
+  the checkout and a real package tarball on Node 18.17.0 and 20, using throwaway homes.
+  Run `node packages/axiomui/test/smoke.mjs` after changing package behavior; an optional
+  bin path argument exercises an extracted tarball. Regenerate skills first.
 - `npm run check` (`scripts/check-deep-dives.mjs`) asserts all 105 rules have authored
   deep-dive prose. It must print `105/105`.
 - `src/data/__tests__/consistency.test.ts` checks *claims*, not syntax: stated contrast ratios
@@ -60,6 +64,9 @@
   that describe the change and why, never how it was produced.
 - PRs should include a short summary, testing notes (what you ran), and screenshots/GIFs for UI changes.
 - Link related issues or tasks when applicable.
+
+- Package delivery prepares source and validates local tarballs. Release tags and registry
+  publication require separate owner authorization; a merged PR does not publish npm.
 
 ## Configuration & Security Notes
 - Store secrets in `.env.local` (not committed). Client-exposed vars must be prefixed with `NEXT_PUBLIC_`.

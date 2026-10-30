@@ -14,8 +14,13 @@
       "description": "One skill per domain, with sharper triggers. Install one on its own when an agent works mostly in that area.",
       "skills": [
         "axiomui-typography",
+        "axiomui-layout",
+        "axiomui-color",
+        "axiomui-components",
+        "axiomui-forms",
         "axiomui-system",
-        "axiomui-motion"
+        "axiomui-motion",
+        "axiomui-accessibility"
       ],
       "title": "Domains"
     }

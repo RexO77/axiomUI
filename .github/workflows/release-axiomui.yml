@@ -1,0 +1,97 @@
+name: Release axiomui
+
+# Ordinary branch and main pushes do not run this workflow. Registry publication
+# requires a separately authorized axiomui-v<version> tag and NPM_TOKEN. Review
+# plans/016-skill-distribution.md, "Verification and publication prerequisites",
+# and current registry authentication requirements before authorizing a release.
+on:
+  push:
+    tags: ["axiomui-v*"]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Deep-dive coverage
+        run: npm run check
+
+      - name: Skills in sync
+        run: npm run skills:check
+
+      - name: Tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Tag matches package version
+        run: |
+          tag_version="${GITHUB_REF_NAME#axiomui-v}"
+          package_version="$(node -p "require('./packages/axiomui/package.json').version")"
+          if [ "$tag_version" != "$package_version" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match packages/axiomui version $package_version." >&2
+            exit 1
+          fi
+
+      # The same check runs again as the package's prepublishOnly script.
+      - name: License present
+        working-directory: packages/axiomui
+        run: node scripts/bundle-skills.mjs --require-license
+
+      # Install from the real tarball, in a scratch project with a throwaway
+      # home, before anything reaches the registry.
+      - name: Packed tarball works
+        working-directory: packages/axiomui
+        run: |
+          set -eu
+          scratch="$(mktemp -d)"
+          trap 'rm -rf "$scratch"' EXIT
+          repo_root="$(cd ../.. && pwd)"
+          package_version="$(node -p "require('./package.json').version")"
+          npm pack --pack-destination "$scratch"
+          tarball="$scratch/axiomui-$package_version.tgz"
+          test -f "$tarball"
+          mkdir "$scratch/unpacked"
+          tar -xzf "$tarball" -C "$scratch/unpacked"
+          cmp "$repo_root/LICENSE" "$scratch/unpacked/package/LICENSE"
+          node "$repo_root/packages/axiomui/test/smoke.mjs" "$scratch/unpacked/package/bin/axiomui.mjs"
+
+      # Secrets cannot be tested in `if:`, so check the masked env var instead.
+      - name: Require NPM_TOKEN
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "$NPM_TOKEN" ]; then
+            echo "NPM_TOKEN is not set. Add it under Settings → Secrets → Actions, or publish by hand." >&2
+            exit 1
+          fi
+
+      - name: Publish
+        working-directory: packages/axiomui
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public

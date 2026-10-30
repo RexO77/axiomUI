@@ -1,6 +1,7 @@
 ---
 name: axiomui-motion
 description: Axiom UI's motion and interaction rules, with exact durations, easing curves, and reasoning. Use when adding, tuning, or reviewing UI animation; deciding whether something should animate at all, choosing easing and duration, building enter and exit transitions, press feedback, popovers and tooltips, interruptible transitions, gesture and drag physics, reduced-motion fallbacks, or staggering, or fixing motion that feels slow, janky, or decorative. Covers CSS transitions and which properties to transition, @starting-style, WAAPI, will-change, and transform and opacity performance.
+license: MIT
 metadata:
   author: Nischal Skanda
   homepage: https://axiomui.nischal.fyi

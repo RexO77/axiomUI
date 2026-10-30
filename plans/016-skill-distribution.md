@@ -1,11 +1,12 @@
 # 016 — Axiom UI skill distribution
 
-Status: selected complete skills distributed; full catalog, package and site integration pending.
+Status: complete distribution source contract; final integrated verification and delivery are separate checkpoints.
 
-This plan describes the intended distribution contract and the work still needed to
-activate it. PR #33 is the source-foundation baseline; the table below follows the
-incremental distribution delivery. This does not mean that the
-npm package has been published or that the site advertises the new installation flow.
+The source includes all 11 complete skills, package activation and the site installation
+flow. PR #33 is the source-foundation baseline; the table below records the completed
+source scope. It does not claim that final integrated tests, deployment or registry
+publication have run. The npm package remains unpublished; the site directs installs
+to the available GitHub skills flow.
 
 The current catalog has 105 rules and 11 skills. Counts and exact trigger text come
 from `src/lib/skills/catalog.ts` and `src/data/ui-logic.ts`; do not maintain another
@@ -17,14 +18,15 @@ copy of those descriptions here.
 | --- | --- | --- |
 | Rule serialization | Implemented; shared by skill rendering and the full rules endpoint | `src/lib/rule-text.ts`, `src/lib/rule-corpus.ts` |
 | Skill definitions | Implemented; three core skills and eight domain skills | `src/lib/skills/catalog.ts` |
-| Skill documents | Renderer and authored templates implemented and tested in memory | `src/lib/skills/render.ts`, `src/lib/skills/templates/` |
+| Skill documents | Renderer, authored templates and complete local references implemented | `src/lib/skills/render.ts`, `src/lib/skills/templates/` |
 | Generation command | Activated with an explicit source-controlled distribution selection | `scripts/build-skills.mjs`, `scripts/lib/register-ts.mjs` |
 | Installer | Catalog loading, target resolution, managed operations, prompts and command handling implemented | `packages/axiomui/lib/` |
-| Package bundling | Standalone bundler implemented; lifecycle activation pending | `packages/axiomui/scripts/bundle-skills.mjs` |
-| Generated distribution | Complete selected domain folders delivered; remaining skills pending | Planned `skills/`, `skills.sh.json` and public copies |
-| Package entry point | Manifest, bin, package documentation and standalone smoke test pending | Planned `packages/axiomui/package.json`, `bin/` and `test/` |
-| Site installation flow | Pending; existing playbook UI remains | `src/components/features/skills/skill-bonus.tsx` |
-| Synchronization gate | Selected output checked in CI and pre-commit; full-source rendering remains tested | `.github/workflows/ci.yml`, `.husky/pre-commit` |
+| Package bundling | Catalog-validated prepack bundling and postpack cleanup wired | `packages/axiomui/scripts/bundle-skills.mjs` |
+| Generated distribution | All 11 complete skill folders, synchronized metadata and both public playbook copies | `skills/`, `skills.sh.json`, `src/lib/skills/distribution.ts` and `public/skills/` |
+| Package entry point | MIT metadata, executable bin, local/GitHub documentation and standalone smoke implemented | `LICENSE`, `packages/axiomui/package.json`, `bin/` and `test/` |
+| Site installation flow | GitHub skill commands, catalog-derived rows/counts, lazy preview and canonical rule indexing implemented | `src/components/features/skills/skill-bonus.tsx`, `src/app/llms.txt/route.ts` |
+| Synchronization gate | Full selected output checked in CI and pre-commit; checkout and real-tarball smoke configured at Node 18.17.0 and 20 | `.github/workflows/ci.yml`, `.husky/pre-commit` |
+| Release scaffold | Tag-only source prepared; ordinary branch/main pushes cannot publish | `.github/workflows/release-axiomui.yml` |
 | Publication | Separate owner action; no registry publication or release tag is authorized by this plan | Release prerequisites below |
 
 Keep the install modal and rule-indexing requirements in
@@ -41,14 +43,14 @@ whose filenames are not `SKILL.md`, so templates are not installable skill folde
 The renderer produces a complete tree keyed by repository-relative path. Each skill
 owns its local references. No skill requires another skill to be installed first.
 
-The intended generated outputs are:
+The generated outputs are:
 
 - `skills/<name>/SKILL.md` and its `references/` files.
 - `skills/catalog.json`, including every bundled file's content hash.
 - `skills/README.md` and `skills.sh.json`.
 - The canonical single-file public playbook and its legacy alias.
 - The skills tables between `<!-- skills:start -->` and `<!-- skills:end -->`
-  in the root and package READMEs, once those marker regions exist.
+  in the root and package READMEs.
 
 Edit source, then regenerate. Do not edit generated output or commit another copy
 under `packages/axiomui/skills/`. Packaging creates that second copy locally and
@@ -84,8 +86,8 @@ Names must be unique, use the `axiomui` prefix, and satisfy the catalog's name
 validation. Aliases must not collide with names or group words. The catalog tests
 also validate description and summary constraints, category coverage and cross-listing.
 
-Frontmatter carries the skill name, description and owner metadata. The optional
-license field comes from package metadata once that metadata is delivered. Do not
+Frontmatter carries the skill name, description and owner metadata. The MIT license
+field comes from the owner-selected package metadata and root LICENSE. Do not
 add a package version or generation timestamp to every skill document: unchanged
 content must remain byte-identical across builds and package-version changes.
 
@@ -112,9 +114,10 @@ step. Keep its `.mjs` modules in root typechecking and its tests in the existing
 Vitest suite. Do not introduce npm workspaces solely to package the CLI.
 
 The packaged CLI first looks for skills beside its own library and otherwise uses
-the repository's generated `skills/` tree. The fallback is useful only after the
-complete distribution exists. Current source tests use temporary fixture packages;
-they are not proof that the pending bin or a published package works.
+the repository's generated `skills/` tree. The complete distribution supports this
+checkout fallback. Fixture tests remain separate from standalone smoke, which exercises
+the real entry point and an extracted tarball using throwaway homes. Neither proves
+that an npm package has been published.
 
 ## Installer behavior to retain
 
@@ -202,41 +205,36 @@ following linked destinations. `--require-license` checks root license content a
 publishable package license metadata. Neither bundling nor the presence of that
 preflight authorizes publication.
 
-## Remaining integration sequence
+## Integrated source contract
 
-1. Prepare a complete generated-artifact split. Every delivered skill folder must
-   include all of its references and a matching catalog; generated tables and
-   discovery metadata must describe what is actually present. Keep each review unit
-   within 2,000 authored and 5,000 total textual changed lines. Do not land partial
-   folders, stale hashes or disabled checks to meet the limit. If no independent
-   split satisfies those contracts, retain the hold and identify the dependency.
-2. Activate generation scripts only with their required artifacts, README markers
-   and package metadata present. The future root scripts are:
+Generation selects all 11 skills explicitly in `distribution.ts`. Each generated folder
+contains its own complete references and matching file hashes; README tables, discovery
+metadata and both public playbook copies describe the same selection. Incremental
+maintenance deliveries must remain within 2,000 authored and 5,000 total textual changed
+lines, with complete folders and active synchronization checks.
 
-   ```json
-   "skills:build": "node --import ./scripts/lib/register-ts.mjs scripts/build-skills.mjs",
-   "skills:check": "node --import ./scripts/lib/register-ts.mjs scripts/build-skills.mjs --check"
-   ```
+The package manifest, executable bin, documentation, metadata tests and standalone smoke
+ship together with MIT license inputs. Runtime dependencies stay empty and the package
+floor remains Node 18.17. Packed files are restricted to the bin, library modules,
+generated skills, README, license and package metadata. Tests, local tooling and package
+staging files remain outside the tarball. Prepack validates and copies catalogued content;
+postpack cleans the local bundle. Source and extracted-tarball smoke cover add, list,
+update and remove on exact Node 18.17.0 and Node 20 in CI.
 
-3. Deliver the package manifest, executable bin, README, package tests and standalone
-   smoke test together with the inputs they need. Keep runtime dependencies empty
-   and the bin's Node 18.17 floor. Restrict packed files to the bin, library modules,
-   generated skills, README, license and package metadata. Tests, local tooling and
-   generated staging files must stay out of the tarball.
-4. Wire synchronization into CI and pre-commit, mark generated files appropriately,
-   and document source/output ownership in repository guidance. Add the Node 18/20
-   standalone CLI smoke matrix and local pack validation at the usable checkpoint.
-5. Complete the site handoff from 015 W2-L. Render the install list and rule counts
-   from the client-safe catalog, retain per-button copy feedback, fetch the playbook
-   lazily for preview, and preserve download and GitHub access. Keep the existing
-   modal portal, keyboard focus, Escape, background locking, reduced motion and
-   responsive behavior. Use the product name Axiom UI and no decorative dividers.
-   Pin dependent radii before the later radius reset; that reset does not own this
-   component. Index all canonical rule URLs in `llms.txt` and retain its skills links.
-6. Keep the old public playbook path working. Its new canonical copy must be a
-   self-contained single file, with no local `references/` dependency. The two public
-   variants differ only in the legacy frontmatter name. Do not advertise an npm
-   install command as available before publication has been independently confirmed.
+The site handoff implements 015 W2-L with catalog-derived rows and rule counts, primary
+`npx skills add RexO77/axiomUI` installation and full-name per-skill commands. Clipboard
+feedback, lazy playbook preview, retry, download and GitHub access share the existing
+modal flow. Semantic tokens, pinned radii, readable typography and 44px controls accompany
+focus/scroll/pointer locking, Escape, focus restoration, responsive layout and reduced
+motion; no decorative dividers are introduced. The later radius reset does not own this
+component. `llms.txt` indexes all 105 canonical rule URLs by category and retains skills
+links. Final browser verification remains a delivery requirement, not a source-code claim.
+
+The old public playbook path remains supported. The canonical copy is a self-contained
+single file with no local `references/` dependency; the variants differ only in their
+legacy frontmatter name. The npm installer is described as unpublished. Its source is
+runnable from a checkout; site and documentation install actions use the available
+GitHub flow until registry publication is independently confirmed.
 
 ## Verification and publication prerequisites
 
@@ -246,8 +244,11 @@ Current source validation is:
 npm run lint
 npm run typecheck
 npm run check
+npm run skills:check
 npm test
 npm run build
+node packages/axiomui/test/smoke.mjs
+(cd packages/axiomui && npm pack --dry-run)
 git diff --check
 ```
 
@@ -255,9 +256,10 @@ The deep-dive check must agree with the current rule catalog. Rerun the gates fo
 each delivery rather than carrying historical results forward. Check exact source
 hashes and explicit allowlists before staging.
 
-After activation, add `npm run skills:check`, the standalone CLI smoke on Node 18 and
-20, and a local package dry run. Inspect the actual tarball and exercise add, list,
-update and remove in a scratch project with a throwaway home. Keep fixture Git and
+CI includes checkout and extracted-tarball smoke on exact Node 18.17.0 and Node 20,
+plus a package dry run. Rerun these lanes on the final integrated head; their source
+configuration is not proof they have passed. Inspect the actual tarball and exercise
+add, list, update and remove in a scratch project with a throwaway home. Keep fixture Git and
 home state separate from the working repository. Verify deterministic rendering,
 complete local references, catalog hashes, legacy equivalence, attribution and the
 unchanged full-rules endpoint. Browser-test changed installation UI on mobile and
@@ -270,11 +272,12 @@ contents. A published distribution additionally requires an owner-authorized reg
 action and verification of the actual installed version. Neither a successful local
 pack nor a merge proves publication.
 
-Release tags, registry login, package publication and release-workflow activation
-remain separate owner decisions. Do not run them as part of prepared code delivery.
-Recheck the chosen registry authentication and external agent-discovery behavior
-against current primary documentation when those actions are authorized. No release
-workflow is activated by this plan.
+The release workflow source is inert for ordinary branch/main pushes and listens only
+for `axiomui-v*` tags. Its presence does not authorize or perform publication. Creating
+the actual release tag, registry login and package publication remain separate owner
+actions; none has been performed by this delivery. Do not run them as part of prepared
+code delivery. Recheck registry authentication and external agent-discovery behavior
+against current primary documentation when those actions are authorized.
 
 ## Deferred directions
 

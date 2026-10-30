@@ -1,6 +1,7 @@
 ---
 name: axiomui-system
 description: Axiom UI's rules for system feedback and product logic, with Do/Don't values and reasoning. Use when designing loading skeletons, empty states, progress for multi-step flows, undo for destructive actions, optimistic updates, or graceful degradation when a request or an image fails, or when settling date formats, design token naming, or a breakpoint strategy.
+license: MIT
 metadata:
   author: Nischal Skanda
   homepage: https://axiomui.nischal.fyi

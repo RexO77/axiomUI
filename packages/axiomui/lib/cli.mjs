@@ -186,10 +186,10 @@ function helpText(version) {
   return `axiomui ${version} · Axiom UI design rules as agent skills
 
 Usage
-  npx axiomui@latest add [skills...]      install skills (aliases: install, i)
-  npx axiomui@latest list                 bundled skills and where they are installed (ls)
-  npx axiomui@latest update [skills...]   refresh every install axiomui manages
-  npx axiomui@latest remove [skills...]   delete axiomui-managed files (rm)
+  axiomui add [skills...]      install skills (aliases: install, i)
+  axiomui list                 bundled skills and where they are installed (ls)
+  axiomui update [skills...]   refresh every install axiomui manages
+  axiomui remove [skills...]   delete axiomui-managed files (rm)
 
 Skills
   A full name (axiomui-motion), an alias (motion, audit, upgrade), or a group:
@@ -211,9 +211,9 @@ Options
   -v, --version       print the version
 
 Examples
-  npx axiomui@latest add
-  npx axiomui@latest add motion audit --agent claude
-  npx axiomui@latest add --all --global --yes
+  axiomui add
+  axiomui add motion audit --agent claude
+  axiomui add --all --global --yes
 
 Exit codes: 0 done, 1 error, 2 usage error, 3 some skills skipped, 130 cancelled.
 Rules: ${site}
@@ -563,7 +563,7 @@ async function handleLegacy(session, targets, plans) {
         const replacement = bundle.catalog.skills.find((skill) => skill.name === legacy.replacedBy);
         const word = replacement?.aliases[0] ?? legacy.replacedBy;
         notes.push(
-          `Found the old site download ${where}. Its replacement ${legacy.replacedBy} is not up to date in ${show(session, target.dir)}, so the old copy stays. Install it with: npx axiomui@latest add ${word}`
+          `Found the old site download ${where}. Its replacement ${legacy.replacedBy} is not up to date in ${show(session, target.dir)}, so the old copy stays. Install it with: axiomui add ${word}`
         );
         continue;
       }
@@ -754,7 +754,7 @@ async function update(session, requested) {
     for (const note of [...notes, ...legacy.notes]) {
       say(session, paint.dim(note));
     }
-    say(session, `No axiomui skills installed in ${describeTargets(session, targets)}. Install with: npx axiomui@latest add`);
+    say(session, `No axiomui skills installed in ${describeTargets(session, targets)}. Install with: axiomui add`);
     return 0;
   }
 
@@ -923,7 +923,7 @@ function list(session) {
   say(session, "");
   say(session, paint.bold("Installed"));
   if (installs.length === 0) {
-    say(session, `  Nothing yet. Install with: npx axiomui@latest add`);
+    say(session, `  Nothing yet. Install with: axiomui add`);
     return 0;
   }
   for (const target of targets) {

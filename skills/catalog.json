@@ -4,9 +4,10 @@
       "name": "axiom-website-upgrade",
       "replacedBy": "axiomui-website-upgrade",
       "sha256": [
+        "2fb82553a092d07b3d28d930cfed30df0b50f87221ee2e703a5bd05cced0fa29",
         "2dc29a20cfd89ea3c60640d20f03184645c3397d921f93a755caed673b1519c3",
         "7e0a18d842c987621aa8f0e4e250217f5fcf0e2806b09d75b49cec571feb9bac",
-        "2fb82553a092d07b3d28d930cfed30df0b50f87221ee2e703a5bd05cced0fa29"
+        "3543c8f406f55b9779410645503a284af51af808c6372bc38dc2e047ed27be53"
       ]
     }
   ],
@@ -20,7 +21,7 @@
         "router"
       ],
       "files": {
-        "SKILL.md": "sha256:075b8e4b453b58095ad544bb0d7336c6c006c46a22218364b0c26cf1593bf1f5",
+        "SKILL.md": "sha256:77093c438819348563e21f4c499febf6b4368b247face4a8d5c41bba9a91be88",
         "references/accessibility.md": "sha256:14b09dc6361087234891b5a6bcf37527ac4e26f705a46c1a3dbced9ae63a679f",
         "references/color.md": "sha256:061c81544f639864e19cb5013bc51e672860aee300cb7ca171eeb5cd5f89454d",
         "references/components.md": "sha256:8fa40e4bd3d4344e76b4d4e19084c5b462777ed2090ad1813469a7d26e1ac0b4",
@@ -147,7 +148,7 @@
         "playbook"
       ],
       "files": {
-        "SKILL.md": "sha256:c7bf1ff47e4ded48342b5f4bdb8a2259751c22f5772fb492e9a33241770c9f9b",
+        "SKILL.md": "sha256:6b5ce6e3063c841131733727324c2353ac13ee9ff3a74d3d0e85ae7f621b5ecf",
         "references/accessibility.md": "sha256:14b09dc6361087234891b5a6bcf37527ac4e26f705a46c1a3dbced9ae63a679f",
         "references/color.md": "sha256:061c81544f639864e19cb5013bc51e672860aee300cb7ca171eeb5cd5f89454d",
         "references/components.md": "sha256:8fa40e4bd3d4344e76b4d4e19084c5b462777ed2090ad1813469a7d26e1ac0b4",
@@ -274,7 +275,7 @@
         "review"
       ],
       "files": {
-        "SKILL.md": "sha256:a9a65e5f021ff699629bfb819194aeb7e10c1e6028697ae1036aef1ce5293e5d",
+        "SKILL.md": "sha256:5c29823a905ea699cfa022b500db685352c56ad8f1415a01a134db6e8505e097",
         "references/checklists/accessibility.md": "sha256:527df1b2d172fb646ca531fc61106e0fb741c2263a389f4b386f270771178a81",
         "references/checklists/color.md": "sha256:41ef93bfc5e36f93b7da043805e400fedcf9b919b955c7b63f6b1d80dcdd56b4",
         "references/checklists/components.md": "sha256:cf79476bdb5b0fee561af7682402155107615ad2a765781923307ab04bff831c",
@@ -401,7 +402,7 @@
         "type"
       ],
       "files": {
-        "SKILL.md": "sha256:dc6109f16ed829260df3c5c9545e768f67e1c1aafd666e0177bcbeb48ddebee2",
+        "SKILL.md": "sha256:b0b375a4ca4bab777af12b3875642d51a5173aa33ea8df8eb807e2046de64a15",
         "references/rules/typo-1.md": "sha256:a59707afb1a2573beb0b85eb8ff1a5393c2783da55af95ddc09057ce41e7aa22",
         "references/rules/typo-10.md": "sha256:084edb77ab6a748118209c48460943b0b451e165c7a43fd39d48678e12935787",
         "references/rules/typo-11.md": "sha256:f818c0cdac4bc441577ab569df81035774cdf3f4974cbb3076b2355c5cd69330",
@@ -424,11 +425,115 @@
     },
     {
       "aliases": [
+        "layout",
+        "spacing"
+      ],
+      "files": {
+        "SKILL.md": "sha256:bc305f877d9823b7a90e52d3dd56866c24291ed93ac3fda793e501bed3eb83e7",
+        "references/rules/layout-1.md": "sha256:a6bfbc336b938b5169a0478f8e0ba22d4a8dd02756b3375b5a5d07d205db7c78",
+        "references/rules/layout-10.md": "sha256:3e75cfe7e3d984a1fb41d0f64d1e8bee7279126c754f78db237af520b93c6a64",
+        "references/rules/layout-11.md": "sha256:802408228e6810796792f0d25501f9996f81577b5158b58ece166ef91d112f7b",
+        "references/rules/layout-2.md": "sha256:c19e46c5ad29fea3918ddb717d406675dfe6e6b6032ccf0cb52a757318093fe8",
+        "references/rules/layout-3.md": "sha256:a959019eb74c2a3f64ca9282e56e8276b0ca1c68939b9206c2c8a69ae804d277",
+        "references/rules/layout-4.md": "sha256:d41570cf80af78d0ee13cc185699a9acae486efc0917380f5e904c25e087cc8c",
+        "references/rules/layout-5.md": "sha256:40e4dd382de5a7f0713612a4f2481deb3990a1636be0880a6460bdfef52aaf6f",
+        "references/rules/layout-6.md": "sha256:a3009d918ab399f3e1ef1bd1b9429a46fedc3a2565afaf83a330857afea4cbc6",
+        "references/rules/layout-7.md": "sha256:b165e364a53bce81ae32cf54bb4899c685d2be59d530840f548b322841de973a",
+        "references/rules/layout-8.md": "sha256:5f21e77abd3c45df8214990b8870abe96056d110a88ae180f66d25b9333d566a",
+        "references/rules/layout-9.md": "sha256:2af61fdc0bcaecbda92d1330d2a82d18038ce3cbed86717fe59a9feb66be1d80"
+      },
+      "group": "domain",
+      "name": "axiomui-layout",
+      "ruleCount": 11,
+      "summary": "Spacing scale, measure, proximity, optical alignment, gutters and z-index.",
+      "title": "Layout & spacing"
+    },
+    {
+      "aliases": [
+        "color",
+        "colour"
+      ],
+      "files": {
+        "SKILL.md": "sha256:d4da8bd5bc2a3fefe6137c67f2f91d834917924c1cf37f58b9ae93fbe4fedaa0",
+        "references/rules/color-1.md": "sha256:0e5b9167dbf5b992d393f3869030ce718f46b8426f6fa3df29b5b03ed739ff59",
+        "references/rules/color-10.md": "sha256:31cc8d5880600f89227f7f0c79a4d195c9966a9361ea4b49a7216cc9b967ed5d",
+        "references/rules/color-11.md": "sha256:63521a03772283b235d983db63472d7278f3502fc45f5027d63bfd854fd1b64c",
+        "references/rules/color-12.md": "sha256:4d343eada9f3d40b603046c97dcfbeb7c248584780ac40d1bfcb8e6daf74d7d2",
+        "references/rules/color-2.md": "sha256:cf38e508d2786b5cbd7e17a259dd154a1ff5a8c13ffaaee51eb88d4277324a52",
+        "references/rules/color-3.md": "sha256:412b15c1d9c63842dd36e8ae3676a8fd65b8b56143be8627f86465d8274f75ce",
+        "references/rules/color-4.md": "sha256:b525ac872d390a8ff40036333b03b02910508a3a5b630cb41137d1a01d5ea172",
+        "references/rules/color-5.md": "sha256:5dec565d334045536c3feeadc57926f9c80fb7b20f63d17378fe5b97f3a31fc0",
+        "references/rules/color-6.md": "sha256:f2adeb6d9d6feed85e3ab4f887862468d2de5fb5ef3b0ae70d3e766b92b9c78a",
+        "references/rules/color-7.md": "sha256:0b5e291048b09956a9c02c9a7914a2807904a94c2b822517607899b95f676d12",
+        "references/rules/color-8.md": "sha256:eddd7511740c8c8615451e095b5948261b0b181ffa7945e1426ae96647fd31dd",
+        "references/rules/color-9.md": "sha256:5c3c5fb2e1286b4c55d2d85c20da886d40fc27a17b6b715a4346310c64be1360"
+      },
+      "group": "domain",
+      "name": "axiomui-color",
+      "ruleCount": 12,
+      "summary": "Palette balance, contrast, semantic status, hover, dark mode and depth.",
+      "title": "Color & depth"
+    },
+    {
+      "aliases": [
+        "components",
+        "comp"
+      ],
+      "files": {
+        "SKILL.md": "sha256:82bf2e33f2288a2d57ddc1782d70dcc7ca9509a9439fc57902f45db98ce1c4f6",
+        "references/rules/comp-1.md": "sha256:ac46fc2344bba410162f312129c732cb02de574e57f8c035e8bd3d2db65e2659",
+        "references/rules/comp-10.md": "sha256:58e80706262609f42aa731417b96e0fcc3bae8ff11d6c8404048ccf6531d6d91",
+        "references/rules/comp-11.md": "sha256:4f95e9d9a9af99bb9b5205b9860043df060f87af662a99306a531e58e12e2404",
+        "references/rules/comp-12.md": "sha256:289c6e70cb4fa0db9b73d605260de15d342b1008e67fb994d0c679b6630b026f",
+        "references/rules/comp-2.md": "sha256:57918946e3abf4405894d74ff8c476208feb2a2f9463f61301952c8fa6e977b6",
+        "references/rules/comp-3.md": "sha256:a7d8e6b982aeb7e13d43b1a0028e7c79b4c10efc2b17425a7ae612e3d528012c",
+        "references/rules/comp-4.md": "sha256:be23d270900fb381fad2770e3019691933c435f6db69101c9e3eecdf2f08f128",
+        "references/rules/comp-5.md": "sha256:aee5d405b5e8592ddd29f8f38fa1e3481db4136d2ebeb23c372ac74da90bfe58",
+        "references/rules/comp-6.md": "sha256:413d8772d1948a670f45dc59a3341ccda5ef8dda93dd5521afb23d3b8f507523",
+        "references/rules/comp-7.md": "sha256:568cc50482e94c9a3c549da16f434028d4677deb580fcc5d9d7ed05182e6c313",
+        "references/rules/comp-8.md": "sha256:49825db45582ef86ea2adceb906e65524c35a8703f6b33c45604bc7c86065de6",
+        "references/rules/comp-9.md": "sha256:b411f946752657d3e29ae1cdf0f1cc82ed850a2d290d0064afde72169552484b"
+      },
+      "group": "domain",
+      "name": "axiomui-components",
+      "ruleCount": 12,
+      "summary": "Button hierarchy, overlays, radii, icon buttons, disabled and loading states.",
+      "title": "Components & actions"
+    },
+    {
+      "aliases": [
+        "forms",
+        "form",
+        "inputs"
+      ],
+      "files": {
+        "SKILL.md": "sha256:5cdfda059160853e4ca64fbb4d25629df592e8bca593ea9573f8741a18512367",
+        "references/rules/form-1.md": "sha256:edc9a3ddb8c605d147d05a56cc496f7219f60b542cb68618a31aa37500f98a47",
+        "references/rules/form-10.md": "sha256:48b3583759246a96632a6c7f61b6c04db2fc49b399919057eba05c1b688fa25d",
+        "references/rules/form-11.md": "sha256:df9413c3183f92aba8ab96a298c5a3328ee9696b1bbd96bd2947edd885e3a6dd",
+        "references/rules/form-12.md": "sha256:68054045a0345410094f9d266e3bb9273479bef894f46909210e6d89eb40f940",
+        "references/rules/form-2.md": "sha256:2b035d10314971434c2025b6c8b5a9d25918c91166af0b4e9bded607248b7d0e",
+        "references/rules/form-3.md": "sha256:b9748695c51edf518faac5667b934a5ae4adbb72f97822002d11741e5e4ded17",
+        "references/rules/form-4.md": "sha256:cca803c60f68d0ef95fb4847665ed3e0adf9208bbfd37a246e02c907f595de4d",
+        "references/rules/form-5.md": "sha256:a236cca4ddb3f7d2b6b84d6717dd2be880573e0344ad94e3cead06427a91fd30",
+        "references/rules/form-6.md": "sha256:62cb02475994762ccab76c79e7db0f63e04a5a4f703c76dddcc16c01cbfd3dba",
+        "references/rules/form-7.md": "sha256:0202b795c7c070e0ad5982ba252e3b4ef26b9c1d4ab43ab8fc59587b1c8e93bc",
+        "references/rules/form-8.md": "sha256:c3bd47cec271518c484f61c7ea37e7b71f4dbb28036be0fc61be1f1920a07659",
+        "references/rules/form-9.md": "sha256:64a70ac160b86f0f881bb503b22e865b658073fb393975433603a32c27531549"
+      },
+      "group": "domain",
+      "name": "axiomui-forms",
+      "ruleCount": 12,
+      "summary": "Labels, field sizing, control choice, validation timing, hints and defaults.",
+      "title": "Forms & inputs"
+    },
+    {
+      "aliases": [
         "system",
         "states"
       ],
       "files": {
-        "SKILL.md": "sha256:7f2f9302aa189d1b712fa794d9280fc4a0827fdc50300eea86e67298b09c0123",
+        "SKILL.md": "sha256:ed617888351ce7bdcc96863575bac417122f49623650574b734382aa0b57c2e1",
         "references/rules/sys-1.md": "sha256:4426f2440be50477c44acbf88ad53731f16db6299148570cf65e27cd074876f2",
         "references/rules/sys-10.md": "sha256:25f2dfd0e29fa298e39e8eb2bd64f631e99db02769bce45254995a2a305f6e37",
         "references/rules/sys-11.md": "sha256:f04ba8b51d53ee476ba1740f84d5b32db39357e6e4701095124aa2c62e6385f2",
@@ -455,7 +560,7 @@
         "animation"
       ],
       "files": {
-        "SKILL.md": "sha256:1c1fa7415d9fc930e35debafe376e8f2e5a77f31a1c6264cc89a25eb8999af32",
+        "SKILL.md": "sha256:af6e7b9c85df51b31e815021f9cdd012f92d5e4ca9b106898cfcaab050125ec9",
         "references/rules/motion-1.md": "sha256:361af6a11d32309e687c5ceea0080e0a4b0184c6a864f662155a71707dbbd85c",
         "references/rules/motion-10.md": "sha256:439c6e867832fcb02015faecf2acb6af1252d5e91f5c9a90e7eb326a7ced1ae6",
         "references/rules/motion-11.md": "sha256:ad3d7195c2abf5b1a3e6f8c64778be106ee414bab9d4f6b212df100762d4c5ca",
@@ -493,6 +598,31 @@
       "ruleCount": 31,
       "summary": "Exact durations, easing and gesture physics for UI motion.",
       "title": "Motion & interaction"
+    },
+    {
+      "aliases": [
+        "accessibility",
+        "a11y"
+      ],
+      "files": {
+        "SKILL.md": "sha256:b2517c833d6fffe8ddccdbdf34de4c852a7e1af723968d481009eebec2399d0e",
+        "references/rules/a11y-1.md": "sha256:dfb27b5db2be8faaecaab452aaf467e51293490d98de87118ffc8047a6747deb",
+        "references/rules/a11y-2.md": "sha256:c9cf18b35c182d60fd4d345d82156e6a257c631a1ddcb275ff043eb48bddc338",
+        "references/rules/a11y-3.md": "sha256:02206b748f39faa0cec365c8d41b1aa5286d6376a948529e199a121b498e0c5a",
+        "references/rules/color-6.md": "sha256:f2adeb6d9d6feed85e3ab4f887862468d2de5fb5ef3b0ae70d3e766b92b9c78a",
+        "references/rules/color-9.md": "sha256:5c3c5fb2e1286b4c55d2d85c20da886d40fc27a17b6b715a4346310c64be1360",
+        "references/rules/comp-12.md": "sha256:289c6e70cb4fa0db9b73d605260de15d342b1008e67fb994d0c679b6630b026f",
+        "references/rules/form-2.md": "sha256:2b035d10314971434c2025b6c8b5a9d25918c91166af0b4e9bded607248b7d0e",
+        "references/rules/motion-17.md": "sha256:6d0e74fb0cc8fe4fe58d06b45b0789770605a66f1fb6c2c72d3671ec9ba11b14",
+        "references/rules/motion-2.md": "sha256:57d550f168d7ed5b7ae5176730bfd8a159e0e723c89d973dafd124672161f709",
+        "references/rules/sys-3.md": "sha256:0d7f8a991929a4ec65e5148bbb8a8fbcb3bd14e4e7d094703792282b8a7dbc30",
+        "references/rules/sys-8.md": "sha256:d5605f12244f044549d6e012f98d42eacc6cb38e5339a12f0e29ee889bc675d5"
+      },
+      "group": "domain",
+      "name": "axiomui-accessibility",
+      "ruleCount": 11,
+      "summary": "Focus, contrast, target size, keyboard paths, labels and reduced motion.",
+      "title": "Accessibility & inclusivity"
     }
   ]
 }

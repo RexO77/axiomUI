@@ -56,3 +56,8 @@ scripts/.render-parity.json
 /.codex/
 /.opencode/
 /skills-lock.json
+
+# axiomui package: copied at prepack, never committed
+/packages/axiomui/skills/
+/packages/axiomui/LICENSE
+/packages/axiomui/*.tgz
