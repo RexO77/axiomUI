@@ -10,7 +10,7 @@
         "review"
       ],
       "files": {
-        "SKILL.md": "sha256:4e596073f2694a10b37f475dcbe3875ce677d9c2916c306cc394726a23c0fbff",
+        "SKILL.md": "sha256:a9a65e5f021ff699629bfb819194aeb7e10c1e6028697ae1036aef1ce5293e5d",
         "references/checklists/accessibility.md": "sha256:527df1b2d172fb646ca531fc61106e0fb741c2263a389f4b386f270771178a81",
         "references/checklists/color.md": "sha256:41ef93bfc5e36f93b7da043805e400fedcf9b919b955c7b63f6b1d80dcdd56b4",
         "references/checklists/components.md": "sha256:cf79476bdb5b0fee561af7682402155107615ad2a765781923307ab04bff831c",

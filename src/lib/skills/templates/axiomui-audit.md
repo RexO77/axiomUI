@@ -41,7 +41,7 @@ After the table, add two short sections:
 
 - One finding per root cause. When one token causes ten violations, report the token once and list the places it affects.
 - No taste as violation. Every finding cites a rule and shows how the code matches its Don't or misses its Do. When no rule covers a concern, leave it out of the table or put it in a short "Observations" note.
-- Do not edit code. When the user wants the fixes made, hand the report to `axiomui-website-upgrade`.
+- Do not edit code. When the user wants the fixes made, hand the report to `axiomui-website-upgrade` only if that skill is installed. If it is unavailable, keep this review read-only and provide the report as the checklist for a separate implementation task; do not assume a handoff occurred.
 
 ## Checklists
 
