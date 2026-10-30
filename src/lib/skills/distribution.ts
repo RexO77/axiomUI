@@ -5,6 +5,11 @@ export const distributedSkillNames = [
   "axiomui-website-upgrade",
   "axiomui-audit",
   "axiomui-typography",
+  "axiomui-layout",
+  "axiomui-color",
+  "axiomui-components",
+  "axiomui-forms",
   "axiomui-system",
   "axiomui-motion",
+  "axiomui-accessibility",
 ] as const;

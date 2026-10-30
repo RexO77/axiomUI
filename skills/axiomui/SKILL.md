@@ -1,6 +1,7 @@
 ---
 name: axiomui
 description: Axiom UI's library of 105 UI design rules, each with a Do/Don't pair, a canonical URL, and full reasoning. Use when building new interface code and a concrete, citable value is needed for type, spacing, color and contrast, buttons and overlays, form fields and validation, loading and empty states, animation timing and easing, or accessibility; when the user mentions Axiom UI or cites a rule id such as typo-1 or motion-12; or when two UI treatments are on the table and the choice should rest on an established rule rather than taste. To change an existing interface, use axiomui-website-upgrade only if it is installed; otherwise apply the rules here. For a review without edits, use axiomui-audit only if it is installed; otherwise review with this library.
+license: MIT
 metadata:
   author: Nischal Skanda
   homepage: https://axiomui.nischal.fyi
@@ -19,7 +20,7 @@ This skill is the rule library. The other Axiom UI skills each add a procedure f
 - Building new UI and choosing a value or a treatment: stay here. Find the rule and apply it.
 - Changing an existing interface in code: use `axiomui-website-upgrade`. It adds the upgrade loop, the craft standards and a verification contract.
 - Reviewing without editing: use `axiomui-audit`. It adds per-domain checklists, a severity scale and a report format.
-- Working mostly in one domain: use that domain's skill (`axiomui-typography`, `axiomui-system`, `axiomui-motion`). It carries the domain's rules inline, with sharper triggers.
+- Working mostly in one domain: use that domain's skill (`axiomui-typography`, `axiomui-layout`, `axiomui-color`, `axiomui-components`, `axiomui-forms`, `axiomui-system`, `axiomui-motion`, `axiomui-accessibility`). It carries the domain's rules inline, with sharper triggers.
 
 When the matching skill is not installed, stay here. Every rule is in this skill.
 

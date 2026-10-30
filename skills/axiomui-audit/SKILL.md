@@ -1,6 +1,7 @@
 ---
 name: axiomui-audit
 description: Reviews an existing interface against Axiom UI's 105 UI design rules and reports prioritized findings, each tied to a rule id, a location, and a concrete fix, without editing code. Use when asked to review, audit, critique, or grade a page, component, pull request diff, screenshot, or design system for visual quality, consistency, usability, or accessibility; when preparing a pre-ship design QA pass; or when a review must cite specific, checkable rules instead of opinions. For code changes, use axiomui-website-upgrade only if it is installed; otherwise provide the report for a separate implementation task.
+license: MIT
 metadata:
   author: Nischal Skanda
   homepage: https://axiomui.nischal.fyi

@@ -1,0 +1,43 @@
+{
+  "name": "axiomui",
+  "license": "MIT",
+  "version": "0.1.0",
+  "description": "Install Axiom UI's design rules as agent skills for Claude Code, Codex, Cursor, OpenCode, Gemini CLI, GitHub Copilot and Windsurf.",
+  "type": "module",
+  "bin": {
+    "axiomui": "bin/axiomui.mjs"
+  },
+  "files": [
+    "bin",
+    "lib/*.mjs",
+    "skills",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.17"
+  },
+  "scripts": {
+    "prepublishOnly": "node scripts/bundle-skills.mjs --require-license",
+    "prepack": "node scripts/bundle-skills.mjs",
+    "postpack": "node scripts/bundle-skills.mjs --clean"
+  },
+  "keywords": [
+    "agent-skills",
+    "skills",
+    "design-system",
+    "ui",
+    "ux",
+    "accessibility",
+    "motion",
+    "typography"
+  ],
+  "author": "Nischal Skanda",
+  "homepage": "https://axiomui.nischal.fyi",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RexO77/axiomUI.git",
+    "directory": "packages/axiomui"
+  },
+  "bugs": "https://github.com/RexO77/axiomUI/issues"
+}

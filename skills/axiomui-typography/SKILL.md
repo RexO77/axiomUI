@@ -1,6 +1,7 @@
 ---
 name: axiomui-typography
 description: Axiom UI's typography rules for interface text, with Do/Don't values and reasoning. Use when choosing or limiting fonts and weights, setting body or heading line-height, adding tracking to uppercase labels, applying sentence case to buttons and headings, de-emphasizing secondary text, aligning numbers with tabular figures, setting a minimum body size, balancing headings, wrapping or truncating text, or reviewing UI code for typography problems.
+license: MIT
 metadata:
   author: Nischal Skanda
   homepage: https://axiomui.nischal.fyi

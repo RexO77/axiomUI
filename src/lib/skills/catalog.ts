@@ -41,8 +41,6 @@ export const skillAuthor = "Nischal Skanda";
 export const skillsRepo = "RexO77/axiomUI";
 export const skillsRepoUrl = `https://github.com/${skillsRepo}`;
 export const skillsTreeUrl = `${skillsRepoUrl}/tree/main/skills`;
-export const skillsPackage = "axiomui";
-export const installCommand = `npx ${skillsPackage}@latest add`;
 export const skillsCliCommand = `npx skills add ${skillsRepo}`;
 
 /** Words the CLI accepts in place of skill names. Aliases must not collide with these. */
@@ -236,9 +234,9 @@ export function skillRules(skill: SkillSpec): Rule[] {
   return rules.filter((rule) => ids.has(rule.id));
 }
 
-/** The install command for one skill, using its primary (first) alias. */
+/** The available GitHub install command for one canonical skill. */
 export function skillInstallCommand(skill: SkillSpec): string {
-  return `${installCommand} ${skill.aliases[0] ?? skill.name}`;
+  return `${skillsCliCommand} --skill ${skill.name}`;
 }
 
 export function ruleUrl(ruleId: string): string {
@@ -254,8 +252,9 @@ export const legacySkills = [
   {
     name: "axiom-website-upgrade",
     replacedBy: "axiomui-website-upgrade",
-    // sha256 of public/skills/axiom-website-upgrade/SKILL.md at c885413 and 60e86a2.
+    // Recognize pristine legacy downloads from earlier distributed checkpoints.
     sha256: [
+      "2fb82553a092d07b3d28d930cfed30df0b50f87221ee2e703a5bd05cced0fa29",
       "2dc29a20cfd89ea3c60640d20f03184645c3397d921f93a755caed673b1519c3",
       "7e0a18d842c987621aa8f0e4e250217f5fcf0e2806b09d75b49cec571feb9bac",
     ],

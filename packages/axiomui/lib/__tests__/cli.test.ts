@@ -301,7 +301,7 @@ describe("axiomui (non-TTY, the way an agent runs it)", () => {
     // The replacement is not part of this run: the old copy stays, with a hint.
     const motionOnly = run(["add", "motion", "-a", "claude", "--yes"]);
     expect(motionOnly.code).toBe(0);
-    expect(motionOnly.stdout).toContain("npx axiomui@latest add upgrade");
+    expect(motionOnly.stdout).toContain("axiomui add upgrade");
     expect(existsSync(old)).toBe(true);
     expect(run(["update", "--yes"]).code).toBe(0);
     expect(existsSync(old)).toBe(true);

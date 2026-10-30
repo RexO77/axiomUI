@@ -67,6 +67,47 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Run the package lifecycle and inspect its inventory without publication.
+      - name: CLI package
+        working-directory: packages/axiomui
+        run: npm pack --dry-run
+
+  cli-node-floor:
+    name: CLI on Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["18.17.0", "20"]
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Checkout smoke
+        run: node packages/axiomui/test/smoke.mjs
+
+      # No root dependencies are needed by the zero-dependency installer.
+      - name: Packed tarball smoke
+        working-directory: packages/axiomui
+        run: |
+          set -eu
+          scratch="$(mktemp -d)"
+          trap 'rm -rf "$scratch"' EXIT
+          repo_root="$(cd ../.. && pwd)"
+          package_version="$(node -p "require('./package.json').version")"
+          npm pack --pack-destination "$scratch"
+          tarball="$scratch/axiomui-$package_version.tgz"
+          test -f "$tarball"
+          mkdir "$scratch/unpacked"
+          tar -xzf "$tarball" -C "$scratch/unpacked"
+          cmp "$repo_root/LICENSE" "$scratch/unpacked/package/LICENSE"
+          node "$repo_root/packages/axiomui/test/smoke.mjs" "$scratch/unpacked/package/bin/axiomui.mjs"
+
   attribution:
     name: No model attribution
     runs-on: ubuntu-latest

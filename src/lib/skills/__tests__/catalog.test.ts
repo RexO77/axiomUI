@@ -8,11 +8,18 @@ import {
   skillDescription,
   skillGroupWords,
   skillRules,
+  skillInstallCommand,
 } from "@/lib/skills/catalog";
 
 const domainSkills = skillCatalog.filter((skill) => skill.group === "domain");
 
 describe("skill catalog", () => {
+  it("uses available GitHub commands with complete canonical names", () => {
+    for (const skill of skillCatalog) {
+      expect(skillInstallCommand(skill)).toBe(`npx skills add RexO77/axiomUI --skill ${skill.name}`);
+    }
+  });
+
   it("has exactly one domain skill per category, named axiomui-<category>", () => {
     expect(categoriesWithoutSkill).toEqual([]);
     expect(domainSkills.map((skill) => skill.name)).toEqual(
