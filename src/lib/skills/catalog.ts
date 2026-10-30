@@ -149,7 +149,7 @@ const coreSkills: SkillSpec[] = [
     title: "Axiom UI rules",
     summary: "Every Axiom UI rule, indexed by domain, with full reasoning one file away.",
     description:
-      "Axiom UI's library of {{ruleCount}} UI design rules, each with a Do/Don't pair, a canonical URL, and full reasoning. Use when building new interface code and a concrete, citable value is needed for type, spacing, color and contrast, buttons and overlays, form fields and validation, loading and empty states, animation timing and easing, or accessibility; when the user mentions Axiom UI or cites a rule id such as typo-1 or motion-12; or when two UI treatments are on the table and the choice should rest on an established rule rather than taste. To change an existing interface, use axiomui-website-upgrade. For a review without edits, use axiomui-audit.",
+      "Axiom UI's library of {{ruleCount}} UI design rules, each with a Do/Don't pair, a canonical URL, and full reasoning. Use when building new interface code and a concrete, citable value is needed for type, spacing, color and contrast, buttons and overlays, form fields and validation, loading and empty states, animation timing and easing, or accessibility; when the user mentions Axiom UI or cites a rule id such as typo-1 or motion-12; or when two UI treatments are on the table and the choice should rest on an established rule rather than taste. To change an existing interface, use axiomui-website-upgrade only if it is installed; otherwise apply the rules here. For a review without edits, use axiomui-audit only if it is installed; otherwise review with this library.",
     aliases: ["rules", "router"],
     template: "axiomui",
     categoryId: null,

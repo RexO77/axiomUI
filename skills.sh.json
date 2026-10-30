@@ -4,6 +4,7 @@
     {
       "description": "Each distributed core skill carries every Axiom UI rule.",
       "skills": [
+        "axiomui",
         "axiomui-audit"
       ],
       "title": "Core"
