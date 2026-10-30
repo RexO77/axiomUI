@@ -2,6 +2,13 @@
   "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
   "groupings": [
     {
+      "description": "Each distributed core skill carries every Axiom UI rule.",
+      "skills": [
+        "axiomui-audit"
+      ],
+      "title": "Core"
+    },
+    {
       "description": "One skill per domain, with sharper triggers. Install one on its own when an agent works mostly in that area.",
       "skills": [
         "axiomui-typography",
