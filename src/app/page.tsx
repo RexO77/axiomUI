@@ -6,6 +6,7 @@ import {
   useCallback,
   useDeferredValue,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -79,8 +80,9 @@ function MatchAnnouncer({ query, count }: { query: string; count: number }) {
 
 /**
  * At xl the drawer docks beside the grid, so the open rule's card stays in
- * view: on a deep link, a click, or arrow-key paging inside the drawer. Below
- * xl the drawer covers the grid and there is nothing to keep in view.
+ * view when it changes under an already-open drawer: arrow-key paging, or a
+ * deep link on load. Opening from a click needs nothing: the card is already
+ * where the reader is looking, and the dock keeps it there (useDockAnchor).
  *
  * A neighbour glides into view. A card more than two screens away (a deep
  * link, mostly) is jumped to: travelling half the catalog is motion for its
@@ -89,7 +91,12 @@ function MatchAnnouncer({ query, count }: { query: string; count: number }) {
  * re-aimed one frame later, once the card has rendered at its real height.
  */
 function useKeepActiveCardInView(activeRuleId: string | null) {
+  const previousId = useRef<string | null>(null);
+
   useEffect(() => {
+    const wasOpen = previousId.current !== null;
+    previousId.current = activeRuleId;
+
     if (!activeRuleId || !window.matchMedia("(min-width: 1280px)").matches) {
       return;
     }
@@ -99,7 +106,12 @@ function useKeepActiveCardInView(activeRuleId: string | null) {
       return;
     }
 
-    const far = Math.abs(card.getBoundingClientRect().top) > window.innerHeight * 2;
+    const { top, bottom } = card.getBoundingClientRect();
+    if (!wasOpen && bottom > 0 && top < window.innerHeight) {
+      return;
+    }
+
+    const far = Math.abs(top) > window.innerHeight * 2;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     if (!far && !reduced) {
@@ -111,6 +123,53 @@ function useKeepActiveCardInView(activeRuleId: string | null) {
     const frameId = requestAnimationFrame(() => card.scrollIntoView({ block: "nearest" }));
     return () => cancelAnimationFrame(frameId);
   }, [activeRuleId]);
+}
+
+/** The docked panel's exit (duration-medium, 220ms) plus a frame of slack. */
+const UNDOCK_DELAY_MS = 240;
+
+/**
+ * Docking the drawer at xl narrows the lane, which re-wraps every visible
+ * card and changes their heights. Two rules keep that from reading as a jolt:
+ *
+ * - The lane changes width only while the panel is off screen: at once on
+ *   open (the panel waits a frame before it slides in), and only after the
+ *   exit on close. The panel never moves over a grid that is re-laying out.
+ * - Whatever card the reader is looking at keeps its top edge where it was
+ *   across the change, so the page never jumps by the height the cards
+ *   gained or lost.
+ */
+function useDockAnchor(docked: boolean) {
+  const anchor = useRef<{ id: string; top: number } | null>(null);
+
+  const capture = useCallback((preferredRuleId: string | null) => {
+    const inView = (element: Element) => {
+      const { top, bottom } = element.getBoundingClientRect();
+      return bottom > 0 && top < window.innerHeight;
+    };
+
+    let card: Element | null = preferredRuleId
+      ? document.getElementById(`rule-${preferredRuleId}`)
+      : null;
+    if (card && !inView(card)) card = null;
+    card ??= Array.from(document.querySelectorAll("article.rule-card[id]")).find(inView) ?? null;
+
+    anchor.current = card ? { id: card.id, top: card.getBoundingClientRect().top } : null;
+  }, []);
+
+  useLayoutEffect(() => {
+    const pending = anchor.current;
+    anchor.current = null;
+    if (!pending) return;
+
+    const card = document.getElementById(pending.id);
+    if (!card) return;
+
+    const drift = card.getBoundingClientRect().top - pending.top;
+    if (Math.abs(drift) >= 1) window.scrollBy({ top: drift, behavior: "instant" });
+  }, [docked]);
+
+  return capture;
 }
 
 export default function Home() {
@@ -169,17 +228,47 @@ function HomeBody({
     window.history.replaceState(null, "", nextUrl);
   }, [pathname]);
 
+  // The lane stays docked through the panel's exit, then widens (see useDockAnchor).
+  const [holdDock, setHoldDock] = useState(false);
+  const docked = Boolean(activeRuleId) || holdDock;
+  const captureDockAnchor = useDockAnchor(docked);
+
+  // The card the reader just closed is what they are looking at when the lane
+  // widens, so it is the one held in place.
+  const closedRuleId = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!holdDock || activeRuleId) return;
+    const timeoutId = window.setTimeout(() => {
+      captureDockAnchor(closedRuleId.current);
+      setHoldDock(false);
+    }, UNDOCK_DELAY_MS);
+    return () => window.clearTimeout(timeoutId);
+  }, [holdDock, activeRuleId, captureDockAnchor]);
+
+  // Read through a ref so openRule keeps one identity: it is every card's
+  // onDeepDive, and a new function would re-render all of them (memo) on
+  // each open and close.
+  const dockedRef = useRef(docked);
+  useLayoutEffect(() => {
+    dockedRef.current = docked;
+  }, [docked]);
+
   const openRule = useCallback((ruleId: string) => {
     // Start the async prose chunk before the state update renders the drawer.
     void import("@/data/deep-dive-builder");
+    if (!dockedRef.current) captureDockAnchor(ruleId);
+    setHoldDock(false);
     setActiveRuleId(ruleId);
     syncRuleParam(ruleId);
-  }, [syncRuleParam, setActiveRuleId]);
+  }, [captureDockAnchor, syncRuleParam, setActiveRuleId]);
 
   const closeRule = useCallback(() => {
+    closedRuleId.current = activeRuleId;
+    setHoldDock(true);
     setActiveRuleId(null);
     syncRuleParam(null);
-  }, [syncRuleParam, setActiveRuleId]);
+  }, [activeRuleId, syncRuleParam, setActiveRuleId]);
 
   const filteredRules = useMemo(() => filterRules(query), [query]);
 
@@ -219,7 +308,7 @@ function HomeBody({
       >
         <div
           className="main-lane-shell w-full space-y-8 px-3 py-5 sm:px-4 sm:py-7 md:space-y-12 md:py-8"
-          data-drawer-open={activeRuleId ? "true" : undefined}
+          data-drawer-open={docked ? "true" : undefined}
         >
           <div className="mx-auto w-full max-w-[920px]">
             <Header />
