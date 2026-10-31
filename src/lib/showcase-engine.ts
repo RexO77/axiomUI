@@ -1,3 +1,4 @@
+// design-system: strict
 /**
  * WAAPI playback engine for the rule showcases.
  *
@@ -149,15 +150,6 @@ export const kf = {
     slideYOut: (to: string): Keyframe[] => [
         { transform: "translateY(0)" },
         { transform: `translateY(${to})` },
-    ],
-    /** Nudge sideways by a fixed amount (motion-23's parent/child chips). */
-    nudgeX: (px: number): Keyframe[] => [
-        { transform: "translateX(0)" },
-        { transform: `translateX(${px}px)` },
-    ],
-    nudgeXBack: (px: number): Keyframe[] => [
-        { transform: `translateX(${px}px)` },
-        { transform: "translateX(0)" },
     ],
     /** Runner for the "race" scenes: travels the width of its container. */
     race: (): Keyframe[] => [

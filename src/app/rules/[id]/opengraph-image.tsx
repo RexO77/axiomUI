@@ -4,7 +4,7 @@ import { VERDICT_LABEL } from "@/lib/verdict";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-export const alt = "Axiom UI design rule — Do and Don't comparison";
+export const alt = "Axiom UI design rule — Do and Don’t comparison";
 
 type Props = {
   params: Promise<{ id: string }>;

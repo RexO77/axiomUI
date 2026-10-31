@@ -69,6 +69,9 @@ function settleOnSection(id: string, moveFocus = false) {
     requestAnimationFrame(check);
 }
 
+// Full touch targets retain the mobile header's existing glyph positions.
+const MOBILE_CONTROLS = "-mr-1 flex items-center";
+
 function ruleCountLabel(count: number) {
     return `${count} ${count === 1 ? "rule" : "rules"}`;
 }
@@ -188,13 +191,12 @@ function SidebarContent({
     );
 
     return (
-        // The sheet's header sits where the mobile bar's does (12px down, 16px
-        // in), so the theme toggle stays put and the menu glyph becomes the X.
-        <div className={cn("flex h-full min-w-0 flex-1 flex-col", isMobile ? "px-4 pb-4 pt-3" : "p-6")}>
+        // Repeat the mobile bar's control row so its glyphs stay in place.
+        <div className={cn("flex h-full min-w-0 flex-1 flex-col", isMobile ? "px-4 pb-4 pt-2" : "p-6")}>
             <div className="flex items-center justify-between">
                 <Lockup subtitle={!isMobile} />
-                <div className="flex items-center gap-2">
-                    <ThemeToggle />
+                <div className={isMobile ? MOBILE_CONTROLS : "flex items-center gap-2"}>
+                    <ThemeToggle size={isMobile ? "md" : "sm"} />
                     {headerAction}
                 </div>
             </div>
@@ -526,17 +528,17 @@ export function Sidebar() {
 
     return (
         <>
-            {/* Mobile header. Keep the 61px prerendered frame height:
-                page.tsx's prerendered frame holds exactly this height. */}
+            {/* Retain the 61px mobile bar while giving each control a full 44px target. */}
             <div
                 ref={headerRef}
-                className="sticky top-0 z-40 flex min-h-[61px] items-center justify-between bg-surface/80 px-4 py-3 backdrop-blur-md md:hidden"
+                className="sticky top-0 z-40 flex min-h-[61px] items-center justify-between bg-surface/80 px-4 py-2 backdrop-blur-md md:hidden"
             >
                 <Lockup />
-                <div className="flex items-center gap-2">
-                    <ThemeToggle />
+                <div className={MOBILE_CONTROLS}>
+                    <ThemeToggle size="md" />
                     <IconButton
                         ref={menuButtonRef}
+                        size="md"
                         label="Open menu"
                         aria-expanded={isOpen}
                         aria-controls={SHEET_ID}
@@ -599,6 +601,7 @@ export function Sidebar() {
                         onSearchSubmit={submitSearch}
                         headerAction={
                             <IconButton
+                                size="md"
                                 label="Close menu"
                                 onClick={() => { tapNudge(); closeSheet(true); }}
                             >

@@ -144,7 +144,7 @@ const categoryDeepDive: Record<string, CategoryDeepDive> = {
     ],
     reviewPrompts: [
       "Can a keyboard-only user complete this flow without a mouse?",
-      "Does meaning survive when color is removed (greyscale test)?",
+      "Does meaning survive when color is removed (grayscale test)?",
       "Are touch targets large enough and spaced well for motor-impaired users?",
     ],
   },

@@ -1,23 +1,30 @@
+// design-system: strict
 import { categories, rules, type Rule } from "@/data/ui-logic";
 
-function normalize(query: string): string {
-    return query.trim().toLowerCase();
+/**
+ * Lowercases and folds typographic quotes to ASCII, on both sides of the
+ * match. iOS smart punctuation types ’ where a desktop keyboard types ', and
+ * the catalog itself mixes the two, so "don't" and "don’t" must find the same
+ * rules.
+ */
+function fold(text: string): string {
+    return text.toLowerCase().replace(/[‘’]/g, "'").replace(/[“”]/g, '"');
 }
 
 function matches(rule: Rule, needle: string): boolean {
     return (
-        rule.title.toLowerCase().includes(needle) ||
-        rule.desc.toLowerCase().includes(needle) ||
-        rule.do.toLowerCase().includes(needle) ||
-        rule.dont.toLowerCase().includes(needle) ||
+        fold(rule.title).includes(needle) ||
+        fold(rule.desc).includes(needle) ||
+        fold(rule.do).includes(needle) ||
+        fold(rule.dont).includes(needle) ||
         rule.id === needle ||
-        rule.tags.some((tag) => tag.toLowerCase().includes(needle))
+        rule.tags.some((tag) => fold(tag).includes(needle))
     );
 }
 
 /** The rules a search query keeps, in catalog order. A blank query keeps every rule. */
 export function filterRules(query: string): Rule[] {
-    const needle = normalize(query);
+    const needle = fold(query.trim());
     if (!needle) {
         return rules;
     }
