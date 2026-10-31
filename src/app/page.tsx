@@ -39,29 +39,6 @@ function RuleParamSync({ onChange }: { onChange: (id: string | null) => void }) 
   return null;
 }
 
-/**
- * What the prerendered HTML shows until the sidebar hydrates: the mobile
- * header bar and the floating desktop panel, at the live components' exact
- * geometry and surface, with nothing inside. The frame never moves; only its
- * contents arrive.
- */
-function SidebarFrame() {
-  return (
-    <>
-      <div
-        aria-hidden="true"
-        className="sticky top-0 z-40 h-[61px] bg-surface/80 backdrop-blur-md md:hidden"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-y-0 left-0 z-[80] hidden w-[312px] md:block"
-      >
-        <div className="absolute bottom-5 left-5 top-5 w-[280px] rounded-card border border-line bg-surface/95 shadow-panel" />
-      </div>
-    </>
-  );
-}
-
 const FOOTER_LINKS = [
   { label: "Nischal Skanda", href: "https://www.nischal.fyi/" },
   { label: "GitHub", href: "https://github.com/RexO77/axiomUI" },
@@ -233,12 +210,7 @@ function HomeBody({
 
   return (
     <div className="flex min-h-screen flex-col bg-canvas md:flex-row">
-      {/* Temporary: SkillBonus inside the sidebar still calls useSearchParams,
-          which would bail the whole page out of the prerender. Delete this
-          boundary once it reads window.location.search instead. */}
-      <Suspense fallback={<SidebarFrame />}>
-        <Sidebar />
-      </Suspense>
+      <Sidebar />
 
       <main
         id="main-content"
