@@ -120,6 +120,7 @@ export function RuleDrawer({
   const titleEl = useRef<HTMLHeadingElement | null>(null);
   const titleFocusPending = useRef(false);
   const opener = useRef<HTMLElement | null>(null);
+  const closedOpener = useRef<HTMLElement | null>(null);
   const titleId = useId();
 
   const requestClose = useCallback(() => {
@@ -164,6 +165,7 @@ export function RuleDrawer({
       document.removeEventListener("focusin", track);
       titleFocusPending.current = false;
       const target = opener.current;
+      closedOpener.current = target;
       opener.current = null;
       const current = document.activeElement;
       const focusIsOurs =
@@ -277,7 +279,7 @@ export function RuleDrawer({
 
   // Wait for the docked layout to paint before the panel enters.
   const dockRef = useRef<HTMLElement>(null);
-  const ready = isOpen && Boolean(rule) && !contentPending;
+  const ready = isOpen && !contentPending;
   useEffect(() => {
     const dock = dockRef.current;
     if (!dock) return;
@@ -370,9 +372,16 @@ export function RuleDrawer({
           className="fixed inset-y-0 right-0 z-[90] flex w-full overscroll-contain outline-none sm:inset-y-3 sm:right-3 sm:w-[min(calc(100vw-24px),560px)]"
           // Start past the 12px inset and the shadow, so frame one is empty.
           style={{ "--initial-transform": "calc(100% + 2rem)" } as CSSProperties}
-          // Focus goes back to the opener from the effect above, not to
-          // whatever Radix remembers once the exit animation unmounts it.
-          onCloseAutoFocus={(event) => event.preventDefault()}
+          // Finish our return-focus handoff after Radix releases its trap.
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            if (isOpen) return;
+            const current = document.activeElement;
+            if (current !== document.body && current && !inPanel(current)) return;
+            const target = closedOpener.current;
+            if (target?.isConnected) target.focus({ preventScroll: true });
+            else document.getElementById("main-content")?.focus({ preventScroll: true });
+          }}
         >
           <div
             data-rule-panel=""
