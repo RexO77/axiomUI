@@ -1,10 +1,12 @@
-import type { RefObject } from "react";
+import type { ReactNode, RefObject } from "react";
 
 import { cn } from "@/lib/utils";
 
 /**
  * The thing that moves. Blue accent so the eye knows what to watch;
- * optional label so race/load demos aren't anonymous chips.
+ * optional label so race/load demos aren't anonymous chips. Its radii are
+ * pinned in pixels, so the chip keeps its shape when Tailwind's numeric
+ * radius scale changes underneath it.
  */
 export function ProtagonistChip({
     label,
@@ -21,7 +23,7 @@ export function ProtagonistChip({
         <div
             ref={chipRef}
             className={cn(
-                "flex items-center gap-1.5 rounded-md border border-blue-500 bg-blue-500/10 shadow-sm dark:border-blue-400 dark:bg-blue-400/10",
+                "flex items-center gap-1.5 rounded-[12px] border border-blue-500 bg-blue-500/10 shadow-sm dark:border-blue-400 dark:bg-blue-400/10",
                 compact ? "h-6 px-1.5" : "h-9 px-2.5",
                 className
             )}
@@ -44,7 +46,7 @@ export function ProtagonistChip({
             ) : (
                 <span
                     className={cn(
-                        "rounded-sm bg-blue-500/35 dark:bg-blue-400/35",
+                        "rounded-full bg-blue-500/35 dark:bg-blue-400/35",
                         compact ? "h-1 w-4" : "h-1.5 w-6"
                     )}
                 />
@@ -53,21 +55,32 @@ export function ProtagonistChip({
     );
 }
 
-/** Shared dashed rail for race / interrupt / load demos. */
+/**
+ * Shared dashed rail for race / interrupt / load demos. Its colours match the
+ * drag and tooltip stages, which draw the same rail inline.
+ *
+ * The corner is its own prop because cn() concatenates rather than merges: a
+ * radius in `className` would fight the default instead of replacing it.
+ * Leave `className` to size and layout. The default is the 16px every
+ * showcase stage shares.
+ */
 export function MotionRail({
     children,
     railRef,
+    radius = "rounded-field",
     className,
 }: {
-    children: React.ReactNode;
+    children: ReactNode;
     railRef?: RefObject<HTMLDivElement | null>;
+    radius?: "rounded-field" | `rounded-[${string}]`;
     className?: string;
 }) {
     return (
         <div
             ref={railRef}
             className={cn(
-                "relative flex w-full items-center rounded-lg border border-dashed border-neutral-300 bg-neutral-50/80 p-2 dark:border-neutral-700 dark:bg-neutral-900/50",
+                "relative flex w-full items-center border border-dashed border-neutral-300 bg-neutral-50/80 p-2 dark:border-neutral-700 dark:bg-neutral-900/50",
+                radius,
                 className
             )}
             style={{ containerType: "inline-size" }}

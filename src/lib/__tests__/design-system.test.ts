@@ -110,6 +110,16 @@ describe("globals.css token layer", () => {
     expect(outside).not.toMatch(/--color-[\w-]+\s*:/);
   });
 
+  it("leaves Tailwind's numeric radius scale alone", () => {
+    // `:root { --radius-md: 12px }` once made rounded-md 12px, rounded-xl
+    // larger than rounded-2xl, and comp-4's square avatar a circle. Named
+    // radii (frame, field, well, card) belong in @theme; the numeric steps
+    // stay Tailwind's own 2/4/6/8/12/16/24/32.
+    const outside = without(CSS, THEME);
+    expect(outside).not.toMatch(/--radius-(?:xs|sm|md|lg|xl|\dxl)\s*:/);
+    expect(themeBodies).not.toMatch(/--radius-(?:xs|sm|md|lg|xl|\dxl)\s*:/);
+  });
+
   it("defines every raw token for both themes", () => {
     const lightOnly = [...light.keys()].filter((name) => name.startsWith("--ax-") && !dark.has(name));
     expect(lightOnly).toEqual([]);
@@ -240,4 +250,36 @@ describe("files marked `design-system: strict`", () => {
       expect(conflictingPressTransition(classLiterals(source)), name).toBeUndefined();
     });
   }
+});
+
+// ── Preview annotation ink ───────────────────────────────────────────
+
+describe("preview annotation ink", () => {
+  // Achromatic OKLCH has a = b = 0, so linear R = G = B = L³ and that is the
+  // relative luminance WCAG wants. Reading Tailwind's own theme keeps the
+  // check true to the steps the previews actually paint.
+  const tailwindTheme = readFileSync(path.resolve(SRC, "../node_modules/tailwindcss/theme.css"), "utf8");
+  const neutralLuminance = (step: string) => {
+    const match = tailwindTheme.match(new RegExp(`--color-neutral-${step}:\\s*oklch\\(([\\d.]+)% 0 0\\)`));
+    expect(match, `neutral-${step} in tailwindcss/theme.css`).not.toBeNull();
+    return (Number(match![1]) / 100) ** 3;
+  };
+  const ratio = (a: number, b: number) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+
+  const primitives = readFileSync(path.join(SRC, "components/features/rules/preview-primitives.tsx"), "utf8");
+  const ink = primitives.match(/ANNOTATION_INK = "([^"]+)"/)?.[1] ?? "";
+  const frame = primitives.match(/"preview-frame [^"]+"/)?.[0] ?? "";
+
+  it("is readable on the preview frame in both themes", () => {
+    const lightInk = ink.match(/(?:^|\s)text-neutral-(\d+)/)?.[1];
+    const darkInk = ink.match(/dark:text-neutral-(\d+)/)?.[1];
+    const darkFrame = frame.match(/dark:bg-neutral-(\d+)/)?.[1];
+    expect(frame, "preview frame is white in light mode").toMatch(/(?:^|[\s"])bg-white\b/);
+    expect([lightInk, darkInk, darkFrame]).not.toContain(undefined);
+
+    const light = ratio(neutralLuminance(lightInk!), 1);
+    const dark = ratio(neutralLuminance(darkInk!), neutralLuminance(darkFrame!));
+    expect(light, `neutral-${lightInk} on white = ${light.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
+    expect(dark, `neutral-${darkInk} on neutral-${darkFrame} = ${dark.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
+  });
 });

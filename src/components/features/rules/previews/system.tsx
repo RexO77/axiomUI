@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 
 import {
+    ANNOTATION_INK,
     PreviewFrame,
     type PreviewRenderer,
     type PreviewSize,
@@ -33,9 +34,9 @@ import { cn } from "@/lib/utils";
 // ── Local vocabulary ────────────────────────────────────────────────
 
 // Evidence annotation: mono, tabular, muted. Numbers only earn ink here.
-const ANNOT = "font-mono text-[10px] tabular-nums text-neutral-400 dark:text-neutral-500";
+const ANNOT = `font-mono text-[10px] tabular-nums ${ANNOTATION_INK}`;
 // Fine annotation (axis labels, kbd meanings) — 8–9px is reserved for these.
-const FINE = "font-mono text-[8px] tabular-nums text-neutral-400 dark:text-neutral-500";
+const FINE = `font-mono text-[8px] tabular-nums ${ANNOTATION_INK}`;
 
 function Kbd({ label }: { label: string }) {
     return (

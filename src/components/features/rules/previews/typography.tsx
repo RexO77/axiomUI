@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { CreditCard, FileText, History, Settings, ShieldAlert, Users } from "lucide-react";
 
 import {
+    ANNOTATION_INK,
     PreviewFrame,
     type PreviewRenderer,
 } from "@/components/features/rules/preview-primitives";
@@ -23,7 +24,8 @@ function Spec({ children, className }: { children: ReactNode; className?: string
     return (
         <span
             className={cn(
-                "font-mono text-[10px] tabular-nums text-neutral-400 dark:text-neutral-500",
+                "font-mono text-[10px] tabular-nums",
+                ANNOTATION_INK,
                 className
             )}
         >

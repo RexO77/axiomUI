@@ -14,9 +14,13 @@ export type PreviewRenderer = (
     size: PreviewSize
 ) => ReactNode | null;
 
-export function textClass(size: PreviewSize) {
-    return size === "lg" ? "text-xs" : "text-[10px]";
-}
+// The ink for the mono evidence annotations under a mini UI (measurements,
+// narration, axis labels). It sits a step below the scene's own text, so the
+// product stays the protagonist, but it is evidence the reader is meant to
+// read: neutral-500 on the white frame is 4.7:1 and neutral-400 on the dark
+// frame (#0a0a0a) is 7.8:1. The 2.5:1 neutral-400-on-white it replaces is
+// color-9's own Don't.
+export const ANNOTATION_INK = "text-neutral-500 dark:text-neutral-400";
 
 export function PreviewFrame({
     children,
@@ -72,31 +76,6 @@ export function MiniButton({
     );
 }
 
-export function MiniInput({ size, widthClass = "w-full" }: { size: PreviewSize; widthClass?: string }) {
-    return (
-        <div
-            className={cn(
-                "rounded-md border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900",
-                size === "lg" ? "h-6" : "h-5",
-                widthClass
-            )}
-        />
-    );
-}
-
-export function MiniLabel({ label, size }: { label: string; size: PreviewSize }) {
-    return (
-        <span
-            className={cn(
-                "font-semibold text-neutral-500 dark:text-neutral-400",
-                size === "lg" ? "text-[10px]" : "text-[9px]"
-            )}
-        >
-            {label}
-        </span>
-    );
-}
-
 export function MiniLine({
     widthClass,
     className,
@@ -105,90 +84,6 @@ export function MiniLine({
     className?: string;
 }) {
     return <div className={cn("h-2 rounded bg-neutral-200 dark:bg-neutral-800", widthClass, className)} />;
-}
-
-export function MiniBlock({ className }: { className?: string }) {
-    return <div className={cn("size-4 rounded bg-neutral-300 dark:bg-neutral-700", className)} />;
-}
-
-export function MiniAvatar({ shape, size }: { shape: "circle" | "square"; size: PreviewSize }) {
-    return (
-        <div
-            className={cn(
-                shape === "circle" ? "rounded-full" : "rounded-md",
-                size === "lg" ? "size-7" : "size-6",
-                "bg-neutral-300 dark:bg-neutral-700"
-            )}
-        />
-    );
-}
-
-export function MiniSwitch({ on, size }: { on?: boolean; size: PreviewSize }) {
-    return (
-        <div
-            aria-hidden="true"
-            className={cn(
-                "relative rounded-full",
-                size === "lg" ? "h-4 w-8" : "h-3.5 w-7",
-                on ? "bg-neutral-900 dark:bg-neutral-100" : "bg-neutral-300 dark:bg-neutral-700"
-            )}
-        >
-            <span
-                className={cn(
-                    "absolute top-0.5 block rounded-full bg-white",
-                    size === "lg" ? "size-3" : "size-2.5",
-                    on ? "right-0.5" : "left-0.5"
-                )}
-            />
-        </div>
-    );
-}
-
-export function MiniCheckbox({ checked, size }: { checked?: boolean; size: PreviewSize }) {
-    return (
-        <div
-            aria-hidden="true"
-            className={cn(
-                "flex items-center justify-center rounded-sm border",
-                size === "lg" ? "size-4" : "size-3.5",
-                checked
-                    ? "border-neutral-900 bg-neutral-900 text-white dark:border-neutral-100 dark:bg-neutral-100 dark:text-neutral-900"
-                    : "border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-900"
-            )}
-        >
-            {checked ? <span className="block size-1.5 rounded-sm bg-white dark:bg-neutral-900" /> : null}
-        </div>
-    );
-}
-
-export function MiniRadio({ checked, size }: { checked?: boolean; size: PreviewSize }) {
-    return (
-        <div
-            aria-hidden="true"
-            className={cn(
-                "flex items-center justify-center rounded-full border",
-                size === "lg" ? "size-4" : "size-3.5",
-                checked
-                    ? "border-neutral-900 bg-neutral-900 dark:border-neutral-100 dark:bg-neutral-100"
-                    : "border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-900"
-            )}
-        >
-            {checked ? <div className="size-1.5 rounded-full bg-white dark:bg-neutral-900" /> : null}
-        </div>
-    );
-}
-
-export function MiniDot({ active, size }: { active?: boolean; size: PreviewSize }) {
-    return (
-        <span
-            aria-hidden="true"
-            className={cn(
-                "rounded-full",
-                size === "lg" ? "size-2.5" : "size-2",
-                active ? "bg-neutral-900 dark:bg-neutral-100" : "bg-neutral-300 dark:bg-neutral-700"
-            )}
-        />
-    );
 }
 
 export function MiniPill({
@@ -217,18 +112,5 @@ export function MiniPill({
         >
             {label}
         </span>
-    );
-}
-
-export function MiniPlayCircle({ nudge }: { nudge: boolean }) {
-    return (
-        <div className="relative h-12 w-12 rounded-full border border-neutral-300 dark:border-neutral-700">
-            <span
-                className={cn(
-                    "absolute top-1/2 block h-0 w-0 -translate-x-1/2 -translate-y-1/2 border-y-[6px] border-y-transparent border-l-[10px] border-l-neutral-700 dark:border-l-neutral-200",
-                    nudge ? "left-[calc(50%_+_1px)]" : "left-1/2"
-                )}
-            />
-        </div>
     );
 }

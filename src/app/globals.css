@@ -68,14 +68,6 @@
   --ax-shadow-overlay: 0 12px 34px rgba(0, 0, 0, 0.1);
   --ax-shadow-inset: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
 
-  /* Still rewrites Tailwind's rounded-sm/md/lg/xl (8/12/16/24 instead of
-     4/6/8/12). Chrome is moving to rounded-frame/field/well/card; once nothing
-     depends on these, plan 015 W3-A deletes the four lines. */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-
   /* Motion durations. showcase-engine.ts mirrors these as DUR, and
      design-system.test.ts holds the two in step. */
   --motion-fast: 140ms;
@@ -309,8 +301,19 @@
     /* No hover state: the card is a reading surface, not a control. Only the
        controls and demos inside it respond to the pointer. */
     box-shadow: var(--ax-shadow-card);
+    /* Offscreen cards skip layout and paint. The placeholder height is the
+       measured median card (≈360px with side-by-side panes, ≈680px stacked on
+       a phone), so a deep link like /#motion computes its offset from close
+       to the real page height. `auto` then remembers each card's real size
+       once it has rendered. */
     content-visibility: auto;
-    contain-intrinsic-size: 0 560px;
+    contain-intrinsic-size: auto 360px;
+  }
+
+  @media (max-width: 639px) {
+    .rule-card {
+      contain-intrinsic-size: auto 680px;
+    }
   }
 
   .rule-card-panel,
@@ -403,20 +406,16 @@
     animation: rule-drawer-rise 420ms var(--ease-emphasized) backwards;
   }
 
-  /*
-   * Stagger by element type rather than :nth-child — the first child of
-   * .rule-drawer-content is an sr-only <Drawer.Description>, which would throw
-   * off positional indexing. header → section → aside is the visual order.
-   */
+  /* header → section → aside is the reading order. Staggering by element
+     type rather than :nth-child keeps the delays right if a block is added
+     or dropped (the empty state renders none of them). */
   .rule-drawer-content header.rule-drawer-stagger { animation-delay: 0ms; }
   .rule-drawer-content section.rule-drawer-stagger { animation-delay: 80ms; }
   .rule-drawer-content aside.rule-drawer-stagger { animation-delay: 160ms; }
 
-  /*
-   * The drawer's section labels are real <h4> headings (for screen-reader
-   * outline), but globals forces all headings to the serif display face. These
-   * are small sans metadata labels, so restore the body sans face for them.
-   */
+  /* Small metadata headings (the skill modal's section labels) that should
+     read as labels, not titles: the base heading rule sets every h1-h6 in the
+     serif display face, so this puts them back in the body sans. */
   .drawer-label {
     font-family: --theme(--font-sans);
   }
@@ -563,10 +562,37 @@
     --lane-gap: 28px;
     /* Distance the lane must clear past the sidebar's right edge when open. */
     --sidebar-clearance: 312px;
+    /*
+     * With the sidebar collapsed, the floating expand button (36px at 20,20)
+     * stays over the lane's left edge. Content must start past it plus a
+     * 16px gap: 20 + 36 + 16.
+     */
+    --expand-clearance: 72px;
+    /*
+     * The shift the lane assumes before the sidebar hydrates and sets
+     * --main-lane-shift. It has to match the state the sidebar will settle
+     * in, or every load reflows the lane under the reader: from 1024px the
+     * sidebar starts open, below it starts collapsed (see the band below).
+     */
+    --main-lane-default-shift: var(--main-lane-open-shift);
   }
 
   .main-lane-shell {
-    --lane-pad-left: calc(1rem + (var(--main-lane-shift, var(--main-lane-open-shift)) * 2));
+    /*
+     * Open: clear the sidebar. Collapsed: the centered content clears the
+     * expand button on its own once the viewport is wide enough (>=1072px);
+     * below that, pad the left just enough that the content starts at the
+     * clearance, which keeps it as centered as the button allows:
+     *   left edge = (100vw + pad - content - 1rem) / 2 >= clearance
+     *   ⇒ pad >= 2 × clearance + content + 1rem − 100vw, capped at the clearance.
+     */
+    --lane-pad-left: max(
+      calc(1rem + (var(--main-lane-shift, var(--main-lane-default-shift)) * 2)),
+      min(
+        var(--expand-clearance),
+        calc((var(--expand-clearance) * 2) + var(--lane-content) + 1rem - 100vw)
+      )
+    );
     --lane-pad-right: 1rem;
     padding-left: var(--lane-pad-left);
     padding-right: var(--lane-pad-right);
@@ -574,9 +600,21 @@
 }
 
 /*
- * The drawer is a docked side panel only at xl+ (>=1280px). Below that it
- * renders full-screen, so the content lane needs no right reservation and
- * keeps its normal sidebar-aware padding.
+ * 768-1023: the sidebar starts collapsed here, so the first paint lays out the
+ * collapsed lane hydration keeps. Assuming the open lane instead painted a
+ * narrower column, then reflowed it ~3000px shorter after hydration, which
+ * threw hash deep links (/#motion) ~1000px past their heading.
+ */
+@media (min-width: 768px) and (max-width: 1023px) {
+  :root {
+    --main-lane-default-shift: 0px;
+  }
+}
+
+/*
+ * The drawer docks beside the lane only at xl+ (>=1280px). Below that it is a
+ * modal sheet over the page (inset at sm+, full-screen on phones), so the lane
+ * makes no right reservation and keeps its sidebar-aware padding.
  */
 @media (min-width: 1280px) {
   :root {
@@ -588,10 +626,14 @@
     /*
      * Left: hold full sidebar clearance whenever the sidebar is open, so the
      * lane can never slide under it even when the right reservation shrinks
-     * the lane below the content width. Falls to 1rem when the sidebar is
-     * closed. (--sidebar-open is a 0/1 flag set by the sidebar.)
+     * the lane below the content width. With the sidebar closed it falls to
+     * the expand button's clearance, since the squeezed lane no longer
+     * centers past it. (--sidebar-open is a 0/1 flag set by the sidebar.)
      */
-    --lane-pad-left: calc(1rem + (var(--sidebar-open, 0) * var(--sidebar-clearance)));
+    --lane-pad-left: max(
+      calc(1rem + (var(--sidebar-open, 0) * var(--sidebar-clearance))),
+      var(--expand-clearance)
+    );
     /*
      * Right: reserve just enough to clear the panel. The middle term scales
      * the shift to the actual collision (wide screens barely move); the upper
@@ -630,6 +672,17 @@
 [data-vaul-overlay][data-state="closed"] {
   transition-duration: var(--motion-medium) !important;
   animation-duration: var(--motion-medium) !important;
+}
+
+/* vaul turns off text selection on the whole sheet for mouse users, so a
+   rule's prose could not be selected or copied at 640-1279px. Give it back to
+   the reading content only. Touch keeps vaul's default, where a horizontal
+   swipe closes the sheet. */
+@media (hover: hover) and (pointer: fine) {
+  [data-vaul-drawer] .rule-drawer-content {
+    -webkit-user-select: text;
+    user-select: text;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

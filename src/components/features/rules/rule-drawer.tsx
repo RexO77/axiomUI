@@ -529,7 +529,15 @@ function PanelBody({
         </div>
       </div>
 
-      <div className="rule-drawer-content space-y-10 pt-4 sm:space-y-12 sm:pt-5">
+      <div
+        className="rule-drawer-content space-y-10 pt-4 sm:space-y-12 sm:pt-5"
+        onPointerDown={(event) => {
+          // Mouse selection must not start a sheet drag; touch keeps swipe-to-close.
+          if (dialog && event.pointerType === "mouse" && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+            event.stopPropagation();
+          }
+        }}
+      >
         {/* Keyed by category so the header only re-animates when the category
             changes; switching rules within a category leaves it put. */}
         <header key={rule.category} className="rule-drawer-stagger">
