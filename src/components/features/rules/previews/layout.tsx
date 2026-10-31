@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Bell, Play } from "lucide-react";
 
 import {
+    ANNOTATION_INK,
     PreviewFrame,
     type PreviewRenderer,
     type PreviewSize,
@@ -21,7 +22,7 @@ import { cn } from "@/lib/utils";
 // ── Local vocabulary ────────────────────────────────────────────────
 
 // Evidence annotation: mono, tabular, muted.
-const ANNOT = "font-mono text-[10px] tabular-nums text-neutral-400 dark:text-neutral-500";
+const ANNOT = `font-mono text-[10px] tabular-nums ${ANNOTATION_INK}`;
 // Fine annotation (axis labels) — 8–9px reserved for these.
 // Fine annotation (axis labels) — 8-9px is reserved for these. Deliberately
 // carries NO colour: `cn` is plain concatenation, and CSS resolves conflicts by
@@ -30,7 +31,7 @@ const ANNOT = "font-mono text-[10px] tabular-nums text-neutral-400 dark:text-neu
 // twelve accent measurement labels in this file silently rendered grey.
 const FINE = "font-mono text-[9px] tabular-nums";
 // The resting tone, applied explicitly wherever the label is not the protagonist.
-const FINE_MUTED = "text-neutral-400 dark:text-neutral-500";
+const FINE_MUTED = ANNOTATION_INK;
 // Scene copy that happens to be small. Mono is reserved for evidence, so
 // in-scene labels stay in the UI face even at 9px.
 const STAT_LABEL = "text-[9px] font-medium text-neutral-400 dark:text-neutral-500";

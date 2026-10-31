@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import {
+    ANNOTATION_INK,
     MiniButton,
     PreviewFrame,
     type PreviewRenderer,
@@ -135,7 +136,7 @@ function Ann({
                 "font-mono text-[9px] tabular-nums",
                 tone === "accent"
                     ? "text-blue-500 dark:text-blue-400"
-                    : "text-neutral-400 dark:text-neutral-500",
+                    : ANNOTATION_INK,
                 className
             )}
         >

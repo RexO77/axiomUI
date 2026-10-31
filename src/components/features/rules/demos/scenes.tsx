@@ -379,13 +379,13 @@ export function RaceScene({ size, label = "Item" }: { size: PreviewSize; label?:
     return (
         <div className={cn("flex flex-col justify-center", size === "lg" ? "h-32 px-0.5" : "h-16")}>
             <div
-                className="relative flex w-full items-center rounded-lg border border-dashed border-neutral-300 bg-neutral-50/80 p-2 dark:border-neutral-700 dark:bg-neutral-900/50"
+                className="relative flex w-full items-center rounded-[16px] border border-dashed border-neutral-300 bg-neutral-50/80 p-2 dark:border-neutral-700 dark:bg-neutral-900/50"
                 style={{ containerType: "inline-size" }}
             >
                 <div
                     data-anim="panel"
                     className={cn(
-                        "flex items-center gap-1.5 rounded-md border border-blue-500 bg-blue-500/10 shadow-sm dark:border-blue-400 dark:bg-blue-400/10",
+                        "flex items-center gap-1.5 rounded-[12px] border border-blue-500 bg-blue-500/10 shadow-sm dark:border-blue-400 dark:bg-blue-400/10",
                         size === "lg" ? "h-9 px-2.5" : "h-6 px-1.5"
                     )}
                 >
@@ -415,13 +415,13 @@ export function RailCardScene({ size }: { size: PreviewSize }) {
     return (
         <div className={cn("flex flex-col justify-center", isLg ? "h-36 px-1" : "h-16")}>
             <div
-                className="relative flex w-full items-center overflow-hidden rounded-lg border border-dashed border-neutral-300 bg-neutral-50/80 p-2 dark:border-neutral-700 dark:bg-neutral-900/50"
+                className="relative flex w-full items-center overflow-hidden rounded-[16px] border border-dashed border-neutral-300 bg-neutral-50/80 p-2 dark:border-neutral-700 dark:bg-neutral-900/50"
                 style={{ containerType: "inline-size" }}
             >
                 <div
                     data-anim="card"
                     className={cn(
-                        "flex flex-col justify-center rounded-md border border-blue-500 bg-blue-500/10 shadow-sm dark:border-blue-400 dark:bg-blue-400/10",
+                        "flex flex-col justify-center rounded-[12px] border border-blue-500 bg-blue-500/10 shadow-sm dark:border-blue-400 dark:bg-blue-400/10",
                         isLg ? "h-11 w-20 p-1.5" : "h-6 w-10 p-1"
                     )}
                 >

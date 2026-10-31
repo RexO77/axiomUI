@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { CircleAlert } from "lucide-react";
 
 import type { DemoProps, PreviewRenderer } from "@/components/features/rules/preview-primitives";
-import { PreviewFrame } from "@/components/features/rules/preview-primitives";
+import { ANNOTATION_INK, PreviewFrame } from "@/components/features/rules/preview-primitives";
 import { cn } from "@/lib/utils";
 
 // Authored previews for a11y-1..a11y-3:
@@ -38,7 +38,8 @@ function Annotation({ children, className }: { children: ReactNode; className?: 
     return (
         <span
             className={cn(
-                "font-mono text-[10px] tabular-nums text-neutral-400 dark:text-neutral-500",
+                "font-mono text-[10px] tabular-nums",
+                ANNOTATION_INK,
                 className
             )}
         >
@@ -48,7 +49,7 @@ function Annotation({ children, className }: { children: ReactNode; className?: 
 }
 
 // Fine annotation (lens badges, narration) — 8–9px is reserved for these.
-const FINE = "font-mono text-[9px] tabular-nums text-neutral-400 dark:text-neutral-500";
+const FINE = `font-mono text-[9px] tabular-nums ${ANNOTATION_INK}`;
 
 // ── a11y-1 · Focus visible indicators ───────────────────────────────
 // Same form footer, same keystrokes, same focus position: Tab Tab has
@@ -107,7 +108,7 @@ function FocusScene({ variant, size }: DemoProps) {
 // through grayscale(1), so the reader's own screen runs the failure
 // instead of being told about it. Do carries an icon and a sentence, so
 // the filtered copy still reads as an error. Don't only ever had hue, so
-// the filtered copy is a border of some grey — visibly different, but
+// the filtered copy is a border of some gray — visibly different, but
 // carrying no meaning. That gap, not invisibility, is the lesson: the
 // annotation claims exactly that and no more.
 
@@ -162,7 +163,7 @@ function ErrorSignalScene({ variant, size }: DemoProps) {
             <Annotation>
                 {isDo
                     ? "3 signals — icon and text survive"
-                    : "1 signal — grey border, no meaning"}
+                    : "1 signal — gray border, no meaning"}
             </Annotation>
         </PreviewFrame>
     );

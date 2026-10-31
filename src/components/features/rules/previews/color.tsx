@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import {
+    ANNOTATION_INK,
     PreviewFrame,
     type PreviewRenderer,
     type Variant,
@@ -30,13 +31,13 @@ const NOTE = "font-mono text-[10px] tabular-nums text-pretty";
 
 // Evidence annotation for the default (theme-following) stage.
 function Note({ children, className }: { children: ReactNode; className?: string }) {
-    return <span className={cn(NOTE, "text-neutral-400 dark:text-neutral-500", className)}>{children}</span>;
+    return <span className={cn(NOTE, ANNOTATION_INK, className)}>{children}</span>;
 }
 
 // Evidence annotation pinned to a white card that stays white in dark mode
 // (contrast math only holds against the surface it quotes).
 function CardNote({ children, className }: { children: ReactNode; className?: string }) {
-    return <span className={cn(NOTE, "text-neutral-400", className)}>{children}</span>;
+    return <span className={cn(NOTE, "text-neutral-500", className)}>{children}</span>;
 }
 
 // A label that names a palette step has to name the step actually painted,
@@ -505,7 +506,7 @@ function OpacityOverNewColors({ variant }: { variant: Variant }) {
             >
                 <FileText aria-hidden className="size-3 stroke-[1.5]" />
                 <span className="text-[10px] font-medium">Drafts</span>
-                <Note className={cn("ml-auto", { "text-neutral-500 dark:text-neutral-500": handPicked })}>
+                <Note className={cn("ml-auto", { "text-neutral-600 dark:text-neutral-600": handPicked })}>
                     {handPicked ? "#e8f0fe" : "blue-500/10"}
                 </Note>
             </div>
@@ -519,7 +520,7 @@ function OpacityOverNewColors({ variant }: { variant: Variant }) {
             >
                 <Send aria-hidden className="size-3 stroke-[1.5]" />
                 <span className="text-[10px]">Sent</span>
-                <Note className={cn("ml-auto", { "text-neutral-500 dark:text-neutral-500": handPicked })}>
+                <Note className={cn("ml-auto", { "text-neutral-600 dark:text-neutral-600": handPicked })}>
                     {handPicked ? "#dcebf5 + #1967d2" : "blue-500/15"}
                 </Note>
             </div>
@@ -537,6 +538,8 @@ function OpacityOverNewColors({ variant }: { variant: Variant }) {
 // thumbnail is a near-surface tone, so the 1px outline is the ONLY thing
 // drawing its edge: Do flips black/10 → white/10 and the edge holds on both;
 // Don't pins a tinted slate that survives on white and dissolves on black.
+// Each surface is 8px around a 4px thumbnail inset by 4px, so the corners
+// stay concentric (comp-3).
 function NeutralImageOutlines({ variant }: { variant: Variant }) {
     const tinted = variant === "dont";
     const edgeBase = "outline outline-1 -outline-offset-1";
@@ -547,7 +550,7 @@ function NeutralImageOutlines({ variant }: { variant: Variant }) {
             <span className="text-[10px] font-semibold text-neutral-600 dark:text-neutral-300">
                 Recent uploads
             </span>
-            <div className="flex items-center gap-2 rounded-md bg-white p-1">
+            <div className="flex items-center gap-2 rounded-lg bg-white p-1">
                 <div
                     className={cn(
                         "h-6 flex-1 rounded-sm bg-gradient-to-br from-[#fdfdfe] to-[#f3f5f8]",
@@ -555,9 +558,9 @@ function NeutralImageOutlines({ variant }: { variant: Variant }) {
                         onLight
                     )}
                 />
-                <span className={cn(NOTE, "shrink-0 text-neutral-400")}>on #ffffff</span>
+                <span className={cn(NOTE, "shrink-0 text-neutral-500")}>on #ffffff</span>
             </div>
-            <div className="flex items-center gap-2 rounded-md bg-[#0a0a0a] p-1">
+            <div className="flex items-center gap-2 rounded-lg bg-[#0a0a0a] p-1">
                 <div
                     className={cn(
                         "h-6 flex-1 rounded-sm bg-gradient-to-br from-[#0d0d10] to-[#111114]",

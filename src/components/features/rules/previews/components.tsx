@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Archive, ArrowDown, FileText, Share2, Trash2, X } from "lucide-react";
 
 import {
+    ANNOTATION_INK,
     PreviewFrame,
     type PreviewRenderer,
     type PreviewSize,
@@ -22,7 +23,7 @@ import { cn } from "@/lib/utils";
 // only rendered rose because "rose" happens to sort after "neutral" — rename
 // the colour and it would silently go grey. ANNOT_BASE carries no colour.
 const ANNOT_BASE = "font-mono text-[10px] tabular-nums";
-const ANNOT_MUTED = "text-neutral-400 dark:text-neutral-500";
+const ANNOT_MUTED = ANNOTATION_INK;
 const ANNOT = `${ANNOT_BASE} ${ANNOT_MUTED}`;
 const FINE_BASE = "font-mono text-[9px] tabular-nums";
 const FINE = `${FINE_BASE} ${ANNOT_MUTED}`;
@@ -236,18 +237,17 @@ function nestedRadius(variant: Variant, size: PreviewSize) {
 
 // ── comp-4 · Avatars are circles ────────────────────────────────────
 // The same two rows — a person and a file. Organic gets the circle,
-// content keeps its corners.
+// content keeps its corners. Each row is 13px = the 5px tile + 8px padding,
+// so the rows stay concentric with what they hold (comp-3).
 function avatarShapes(variant: Variant, size: PreviewSize) {
     const isDo = variant === "do";
     return (
         <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-2">
             <div className="w-48 space-y-2">
-                <div className="flex items-center gap-2 rounded-md bg-neutral-50 p-2 dark:bg-neutral-900">
+                <div className="flex items-center gap-2 rounded-[13px] bg-neutral-50 p-2 dark:bg-neutral-900">
                     <span
                         className={cn(
                             "flex size-6 shrink-0 items-center justify-center bg-blue-500 text-[9px] font-semibold text-white dark:bg-blue-400 dark:text-neutral-950",
-                            // Pinned, not rounded-md: that follows the global radius
-                            // scale, and at 12px on a 24px tile it drew a circle.
                             isDo ? "rounded-full" : "rounded-[5px]"
                         )}
                     >
@@ -260,7 +260,7 @@ function avatarShapes(variant: Variant, size: PreviewSize) {
                         <span className={FINE}>owner</span>
                     </div>
                 </div>
-                <div className="flex items-center gap-2 rounded-md bg-neutral-50 p-2 dark:bg-neutral-900">
+                <div className="flex items-center gap-2 rounded-[13px] bg-neutral-50 p-2 dark:bg-neutral-900">
                     <span className="flex size-6 shrink-0 items-center justify-center rounded-[5px] bg-neutral-200 dark:bg-neutral-700">
                         <FileText
                             aria-hidden="true"
@@ -376,7 +376,8 @@ function toastVsInline(variant: Variant, size: PreviewSize) {
 
 // ── comp-7 · Icon + label for ambiguous actions ─────────────────────
 // The same three actions. Archive/share/delete are guesses as glyphs;
-// labels retire the guessing.
+// labels retire the guessing. The bar is 13px = the 6px buttons + 1px border
+// + 6px padding, so its corners stay concentric with theirs (comp-3).
 function iconPlusLabel(variant: Variant, size: PreviewSize) {
     const isDo = variant === "do";
     const actions = [
@@ -386,7 +387,7 @@ function iconPlusLabel(variant: Variant, size: PreviewSize) {
     ];
     return (
         <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-3">
-            <div className="flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white p-1.5 dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="flex items-center gap-1.5 rounded-[13px] border border-neutral-200 bg-white p-1.5 dark:border-neutral-800 dark:bg-neutral-900">
                 {actions.map(({ icon: Icon, label }) => (
                     <span
                         key={label}
