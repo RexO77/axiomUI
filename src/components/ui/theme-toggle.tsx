@@ -4,13 +4,19 @@
 import { Moon, Sun } from "lucide-react";
 import { useHaptics } from "@/hooks/use-haptics";
 import { useTheme } from "@/components/providers/theme-provider";
-import { IconButton } from "@/components/ui/icon-button";
+import { IconButton, type IconButtonProps } from "@/components/ui/icon-button";
 
 /**
  * The name follows the theme through CSS rather than state, so the server
  * render is already right for either theme and nothing flips on hydration.
  */
-export function ThemeToggle({ className }: { className?: string }) {
+export function ThemeToggle({
+  size = "sm",
+  className,
+}: {
+  size?: IconButtonProps["size"];
+  className?: string;
+}) {
   const { tapMedium } = useHaptics();
   const { toggleTheme } = useTheme();
 
@@ -21,7 +27,7 @@ export function ThemeToggle({ className }: { className?: string }) {
 
   return (
     <IconButton
-      size="sm"
+      size={size}
       variant="ghost"
       onClick={handleToggle}
       className={className}

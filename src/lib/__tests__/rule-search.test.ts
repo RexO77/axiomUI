@@ -57,6 +57,23 @@ describe("filterRules", () => {
     expect(filterRules("zzqx")).toEqual([]);
   });
 
+  it("folds typographic quotes, so smart punctuation finds the same rules", () => {
+    const typed = filterRules("don’t");
+
+    expect(typed.length).toBeGreaterThan(0);
+    expect(typed).toEqual(filterRules("don't"));
+    expect(filterRules("DON‘T")).toEqual(typed);
+    expect(filterRules("“don’t”")).toEqual(filterRules('"don\'t"'));
+  });
+
+  it("finds catalog text either way it was typed", () => {
+    const rule = rules.find((candidate) => /\w['‘’]\w/.test(candidate.desc))!;
+    const word = rule.desc.match(/\w+['‘’]\w+/)![0];
+
+    expect(filterRules(word.replace(/['‘’]/g, "’"))).toContain(rule);
+    expect(filterRules(word.replace(/['‘’]/g, "'"))).toContain(rule);
+  });
+
   it("finds a rule by its exact id", () => {
     const results = filterRules("motion-12");
 

@@ -35,7 +35,7 @@ export function SearchInput({ instance }: { instance: "desktop" | "mobile" }) {
     };
 
     return (
-        <div className="mt-6">
+        <div className={isDesktop ? "mt-6" : "mt-5"}>
             <div className="relative">
                 <Search
                     aria-hidden="true"
@@ -78,10 +78,14 @@ export function SearchInput({ instance }: { instance: "desktop" | "mobile" }) {
                     // Keep pointer focus in the field and return keyboard focus
                     // after clearing; the shared control provides a 44px hit area.
                     <span className={cn(
-                        "absolute top-1/2 -translate-y-1/2",
-                        isDesktop ? "right-1" : "right-1.5"
+                        "absolute top-1/2 flex -translate-y-1/2",
+                        isDesktop ? "right-1.5" : "right-2"
                     )}>
                         <IconButton
+                            size="xs"
+                            radius={isDesktop
+                                ? "rounded-[calc(var(--radius-field)-6px)]"
+                                : "rounded-[calc(var(--radius-field)-8px)]"}
                             label="Clear search"
                             onMouseDown={(event) => event.preventDefault()}
                             onClick={clear}
