@@ -275,6 +275,39 @@ export function RuleDrawer({
     if (activeRuleId) scrollRef.current?.scrollTo({ top: 0, behavior: "instant" });
   }, [activeRuleId]);
 
+  // Wait for the docked layout to paint before the panel enters.
+  const dockRef = useRef<HTMLElement>(null);
+  const ready = isOpen && Boolean(rule) && !contentPending;
+  useEffect(() => {
+    const dock = dockRef.current;
+    if (!dock) return;
+    if (!isOpen) {
+      dock.dataset.shown = "false";
+      return;
+    }
+    if (!ready || dock.dataset.shown === "true") return;
+
+    let second = 0;
+    let focusFrame = 0;
+    const first = requestAnimationFrame(() => {
+      second = requestAnimationFrame(() => {
+        dock.dataset.shown = "true";
+        // Visibility settles on the next frame, before focus can enter.
+        focusFrame = requestAnimationFrame(() => {
+          if (!document.activeElement?.closest('[aria-modal="true"]')) {
+            titleFocusPending.current = false;
+            titleEl.current?.focus({ preventScroll: true });
+          }
+        });
+      });
+    });
+    return () => {
+      cancelAnimationFrame(first);
+      cancelAnimationFrame(second);
+      cancelAnimationFrame(focusFrame);
+    };
+  }, [isOpen, ready, isXl]);
+
   const panel = (
     <PanelBody
       dialog={!isXl}
@@ -298,11 +331,11 @@ export function RuleDrawer({
   if (isXl) {
     return (
       <aside
+        ref={dockRef}
         aria-labelledby={titleId}
         inert={!isOpen}
-        className={`sidebar-motion fixed inset-y-6 right-6 z-[90] flex w-[min(40vw,480px)] ease-drawer ${
-          isOpen ? "visible translate-x-0" : "invisible translate-x-[calc(100%+3rem)]"
-        }`}
+        data-shown="false"
+        className="sidebar-motion invisible fixed inset-y-6 right-6 z-[90] flex w-[min(40vw,480px)] translate-x-[calc(100%+3rem)] ease-drawer will-change-[translate] data-[shown=true]:visible data-[shown=true]:translate-x-0"
         style={{
           transitionProperty: "translate, visibility",
           transitionDuration: isOpen ? "var(--motion-slow)" : "var(--motion-medium)",
@@ -310,7 +343,7 @@ export function RuleDrawer({
       >
         <div
           data-rule-panel=""
-          className="flex h-full w-full flex-col overflow-hidden rounded-card border border-line bg-surface/95 shadow-panel"
+          className="flex h-full w-full flex-col overflow-hidden rounded-card border border-line bg-surface shadow-panel"
         >
           {panel}
         </div>

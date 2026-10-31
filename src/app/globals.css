@@ -306,19 +306,11 @@
 
   .rule-card {
     background: var(--ax-surface);
+    /* No hover state: the card is a reading surface, not a control. Only the
+       controls and demos inside it respond to the pointer. */
     box-shadow: var(--ax-shadow-card);
-    transition:
-      transform var(--motion-medium) var(--ease-out-strong),
-      box-shadow var(--motion-fast) var(--ease-out-strong);
     content-visibility: auto;
     contain-intrinsic-size: 0 560px;
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    .rule-card:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--ax-shadow-card-hover);
-    }
   }
 
   .rule-card-panel,
@@ -509,14 +501,6 @@
       animation: none;
     }
 
-    .rule-card {
-      transition: none;
-    }
-
-    .rule-card:hover {
-      transform: none;
-    }
-
     .pressable {
       transition: none;
     }
@@ -546,11 +530,12 @@
   }
 }
 
+/* Opacity and translate only: a blur on whole prose blocks repaints them on
+   every frame, and on open this runs while the panel is still sliding. */
 @keyframes rule-drawer-rise {
   from {
     opacity: 0;
     translate: 0 8px;
-    filter: blur(6px);
   }
 }
 
