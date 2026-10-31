@@ -63,7 +63,13 @@ describe("filterRules", () => {
     expect(typed.length).toBeGreaterThan(0);
     expect(typed).toEqual(filterRules("don't"));
     expect(filterRules("DON‘T")).toEqual(typed);
-    expect(filterRules("“don’t”")).toEqual(filterRules('"don\'t"'));
+  });
+
+  it("finds a real quoted phrase with straight or smart double quotes", () => {
+    const straight = filterRules('"Saved successfully"');
+
+    expect(straight.map((rule) => rule.id)).toContain("form-12");
+    expect(filterRules("“Saved successfully”")).toEqual(straight);
   });
 
   it("finds catalog text either way it was typed", () => {
