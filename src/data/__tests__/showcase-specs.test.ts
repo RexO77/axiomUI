@@ -134,7 +134,7 @@ describe("tracks key every rest style they animate", () => {
     for (const [id, spec] of Object.entries(showcaseSpecs)) {
       for (const variant of ["do", "dont"] as const) {
         const pane = spec[variant];
-        const rest = restStyles(renderToStaticMarkup(createElement("div", null, pane.scene("lg"))));
+        const rest = restStyles(renderToStaticMarkup(createElement("div", null, pane.scene())));
 
         const sets: [string, Track[] | undefined][] = [
           ["tracks", pane.tracks],

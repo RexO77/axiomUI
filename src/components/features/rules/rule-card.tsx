@@ -83,7 +83,7 @@ function ComparisonPanel({ rule, variant }: { rule: Rule; variant: "do" | "dont"
 
       {/* The preview IS the card — full deep-dive detail, first impression. */}
       <div className="mt-2 flex-1">
-        <RulePreview rule={rule} variant={variant} size="lg" />
+        <RulePreview rule={rule} variant={variant} />
       </div>
 
       {showFooter ? (

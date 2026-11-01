@@ -36,7 +36,7 @@ import {
     ControlButton,
     PaneChrome,
 } from "@/components/features/rules/demos/showcase-chrome";
-import { type PreviewSize, type Variant } from "@/components/features/rules/preview-primitives";
+import { type Variant } from "@/components/features/rules/preview-primitives";
 
 /* ─────────────────────────────────────────────────────────
  * SHOWCASE STORYBOARD
@@ -544,7 +544,7 @@ function ShowcasePane({
                     </div>
                 }
             >
-                {pane.scene("lg")}
+                {pane.scene()}
             </PaneChrome>
             {tally ? (
                 <p className="mt-1 text-xs font-medium tabular-nums text-dont-ink">{tally}</p>
@@ -581,15 +581,7 @@ function observePreview(el: Element, cb: () => void) {
     };
 }
 
-export function PanePreview({
-    ruleId,
-    variant,
-    size,
-}: {
-    ruleId: string;
-    variant: Variant;
-    size: PreviewSize;
-}) {
+export function PanePreview({ ruleId, variant }: { ruleId: string; variant: Variant }) {
     const spec = showcaseSpecs[ruleId];
     const ref = useRef<HTMLDivElement | null>(null);
     const exitTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -626,7 +618,7 @@ export function PanePreview({
     if (!pane) return null;
 
     return (
-        // No extra frame — lg scenes carry their own stage chrome; a second
+        // No extra frame — scenes carry their own stage chrome; a second
         // border here reads as box-in-box on the rule cards.
         <div
             ref={ref}
@@ -634,7 +626,7 @@ export function PanePreview({
             onPointerEnter={canHover ? playOnce : undefined}
             className="motion-showcase cursor-pointer"
         >
-            {pane.scene(size)}
+            {pane.scene()}
             <p className="mt-2 px-0.5 font-mono text-xs leading-5 text-ink-muted">
                 {pane.caption}
             </p>

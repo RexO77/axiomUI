@@ -61,10 +61,10 @@ const FINE = `font-mono text-[9px] tabular-nums ${ANNOTATION_INK}`;
 // border — a static preview cannot hold :focus-visible, and a genuinely
 // focusable control inside this aria-hidden frame would be a bug.
 
-function FocusScene({ variant, size }: DemoProps) {
+function FocusScene({ variant }: DemoProps) {
     const isDo = variant === "do";
     return (
-        <PreviewFrame size={size} className="flex">
+        <PreviewFrame className="flex">
             <div className="flex w-full flex-1 flex-col justify-between gap-3">
                 <div className="space-y-1">
                     <span className="block text-[10px] font-semibold text-neutral-500 dark:text-neutral-400">
@@ -154,10 +154,10 @@ function CardField({ isDo, lens }: { isDo: boolean; lens: "color" | "gray" }) {
     );
 }
 
-function ErrorSignalScene({ variant, size }: DemoProps) {
+function ErrorSignalScene({ variant }: DemoProps) {
     const isDo = variant === "do";
     return (
-        <PreviewFrame size={size} className="flex flex-col justify-center gap-2">
+        <PreviewFrame className="flex flex-col justify-center gap-2">
             <CardField isDo={isDo} lens="color" />
             <CardField isDo={isDo} lens="gray" />
             <Annotation>
@@ -185,10 +185,10 @@ function ErrorSignalScene({ variant, size }: DemoProps) {
 // like it contradicted its own note. The patch stays as a faint outline
 // for scale, and the crosshair and dot mark the point that decides.
 
-function TargetSpacingScene({ variant, size }: DemoProps) {
+function TargetSpacingScene({ variant }: DemoProps) {
     const isDo = variant === "do";
     return (
-        <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-2">
+        <PreviewFrame className="flex flex-col items-center justify-center gap-2">
             <span className="text-[10px] font-medium text-neutral-500 dark:text-neutral-400">
                 Delete &ldquo;Q3 report.pdf&rdquo;?
             </span>
@@ -228,14 +228,14 @@ function TargetSpacingScene({ variant, size }: DemoProps) {
 
 // ── Dispatcher ──────────────────────────────────────────────────────
 
-export const accessibilityPreviews: PreviewRenderer = (ruleId, variant, size) => {
+export const accessibilityPreviews: PreviewRenderer = (ruleId, variant) => {
     switch (ruleId) {
         case "a11y-1":
-            return <FocusScene variant={variant} size={size} />;
+            return <FocusScene variant={variant} />;
         case "a11y-2":
-            return <ErrorSignalScene variant={variant} size={size} />;
+            return <ErrorSignalScene variant={variant} />;
         case "a11y-3":
-            return <TargetSpacingScene variant={variant} size={size} />;
+            return <TargetSpacingScene variant={variant} />;
         default:
             return null;
     }

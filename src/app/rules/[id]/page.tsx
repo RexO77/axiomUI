@@ -137,7 +137,7 @@ export default async function RulePage({ params }: Props) {
                         </span>
                         <span className="text-sm font-semibold tracking-tight text-ink">Axiom UI</span>
                     </Link>
-                    <ThemeToggle className="-mr-2 ml-auto" />
+                    <ThemeToggle size="responsive" className="-mr-3 ml-auto sm:-mr-2" />
                 </div>
             </header>
 
@@ -208,14 +208,14 @@ export default async function RulePage({ params }: Props) {
                             <section aria-labelledby="verdict-do" className="min-w-0">
                                 <h2 id="verdict-do"><VerdictLabel verdict="do" /></h2>
                                 <div className="mt-3">
-                                    <RulePreview rule={rule} variant="do" size="lg" />
+                                    <RulePreview rule={rule} variant="do" />
                                 </div>
                                 <p className="mt-3 font-mono text-sm leading-6 text-ink-muted">{rule.do}</p>
                             </section>
                             <section aria-labelledby="verdict-dont" className="min-w-0">
                                 <h2 id="verdict-dont"><VerdictLabel verdict="dont" /></h2>
                                 <div className="mt-3">
-                                    <RulePreview rule={rule} variant="dont" size="lg" />
+                                    <RulePreview rule={rule} variant="dont" />
                                 </div>
                                 <p className="mt-3 font-mono text-sm leading-6 text-ink-muted">{rule.dont}</p>
                             </section>

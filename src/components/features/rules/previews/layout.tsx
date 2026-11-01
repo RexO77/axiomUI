@@ -4,9 +4,9 @@ import { Bell, Play } from "lucide-react";
 
 import {
     ANNOTATION_INK,
+    ANNOTATION_INK_ON_FILL,
     PreviewFrame,
     type PreviewRenderer,
-    type PreviewSize,
     type Variant,
 } from "@/components/features/rules/preview-primitives";
 import { cn } from "@/lib/utils";
@@ -23,6 +23,8 @@ import { cn } from "@/lib/utils";
 
 // Evidence annotation: mono, tabular, muted.
 const ANNOT = `font-mono text-[10px] tabular-nums ${ANNOTATION_INK}`;
+// The same, on a tinted page surface inside the frame (layout-7's Do).
+const ANNOT_ON_FILL = `font-mono text-[10px] tabular-nums ${ANNOTATION_INK_ON_FILL}`;
 // Fine annotation (axis labels) — 8–9px reserved for these.
 // Fine annotation (axis labels) — 8-9px is reserved for these. Deliberately
 // carries NO colour: `cn` is plain concatenation, and CSS resolves conflicts by
@@ -70,12 +72,12 @@ function MeasuredGap({ px, className }: { px: number; className?: string }) {
 // ── layout-1 · The 4pt grid system ──────────────────────────────────
 // The same settings card, self-measured: padding and gap values are
 // drawn as ticks. One pane lands on the 4pt grid, one picks lint.
-function fourPtGrid(variant: Variant, size: PreviewSize) {
+function fourPtGrid(variant: Variant) {
     const isDo = variant === "do";
     const pad = isDo ? 16 : 13;
     const gap = isDo ? 8 : 5;
     return (
-        <PreviewFrame size={size} className="flex items-center justify-center">
+        <PreviewFrame className="flex items-center justify-center">
             <div className="flex items-center gap-3">
                 <div
                     className="w-40 rounded-md border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900"
@@ -104,10 +106,10 @@ function fourPtGrid(variant: Variant, size: PreviewSize) {
 // ── layout-2 · Text width limits ────────────────────────────────────
 // Both examples model a 95ch page. Cap Do at 45ch; let Don't fill the page.
 // The viewport pans this page without shrinking its 13px/20px type.
-function textWidth(variant: Variant, size: PreviewSize) {
+function textWidth(variant: Variant) {
     const isDo = variant === "do";
     return (
-        <PreviewFrame size={size} className="flex flex-col justify-center gap-2.5">
+        <PreviewFrame className="flex flex-col justify-center gap-2.5">
             <div className="flex items-baseline justify-between gap-3">
                 <span className="text-[11px] font-semibold text-neutral-800 dark:text-neutral-100">
                     Introducing workspaces
@@ -152,7 +154,7 @@ function textWidth(variant: Variant, size: PreviewSize) {
 // pairs. Don't: uniform gaps — the middle label belongs to no one.
 // The values are the rule's own gap-2 / gap-6 and gap-4 / gap-4, so the
 // ticks can be read straight off the Tailwind scale.
-function proximity(variant: Variant, size: PreviewSize) {
+function proximity(variant: Variant) {
     const isDo = variant === "do";
     const inner = isDo ? 8 : 16;
     const outer = isDo ? 24 : 16;
@@ -170,7 +172,7 @@ function proximity(variant: Variant, size: PreviewSize) {
         </>
     );
     return (
-        <PreviewFrame size={size} className="flex items-center justify-center">
+        <PreviewFrame className="flex items-center justify-center">
             <div>
                 {field("Full name")}
                 <div style={{ height: outer }} className="relative">
@@ -187,10 +189,10 @@ function proximity(variant: Variant, size: PreviewSize) {
 // ── layout-4 · Visual vs mathematical center ────────────────────────
 // The same play button with its centerline drawn. The triangle's mass
 // sits left of its bounding box; only the nudged one looks centered.
-function opticalCenter(variant: Variant, size: PreviewSize) {
+function opticalCenter(variant: Variant) {
     const isDo = variant === "do";
     return (
-        <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-2.5">
+        <PreviewFrame className="flex flex-col items-center justify-center gap-2.5">
             <div className="relative flex size-14 items-center justify-center rounded-full border border-neutral-300 bg-white dark:border-neutral-700 dark:bg-neutral-900">
                 <span
                     aria-hidden="true"
@@ -214,12 +216,12 @@ function opticalCenter(variant: Variant, size: PreviewSize) {
 // ── layout-5 · Button padding formula ───────────────────────────────
 // The same primary button, dimensions drawn. Text wants roughly twice
 // the horizontal breathing room; square padding pinches it.
-function buttonPadding(variant: Variant, size: PreviewSize) {
+function buttonPadding(variant: Variant) {
     const isDo = variant === "do";
     const px = isDo ? 16 : 8;
     const py = 8;
     return (
-        <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-3">
+        <PreviewFrame className="flex flex-col items-center justify-center gap-3">
             <span
                 className="inline-flex items-center rounded-md bg-neutral-900 text-[11px] font-semibold text-white dark:bg-neutral-100 dark:text-neutral-900"
                 style={{ paddingInline: px, paddingBlock: py }}
@@ -240,10 +242,10 @@ function buttonPadding(variant: Variant, size: PreviewSize) {
 // line's cap height; Don't centers it against the whole text block, so
 // the bell drifts down as the copy wraps. The annotation names the
 // flex property doing it, because the miss is a few pixels wide.
-function iconAlignment(variant: Variant, size: PreviewSize) {
+function iconAlignment(variant: Variant) {
     const isDo = variant === "do";
     return (
-        <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-2.5">
+        <PreviewFrame className="flex flex-col items-center justify-center gap-2.5">
             <div
                 className={cn(
                     "flex w-48 gap-2 rounded-md border border-neutral-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900",
@@ -277,7 +279,7 @@ function iconAlignment(variant: Variant, size: PreviewSize) {
 // Don't draws a border around every idea it has. The tally counts the
 // borders the avoid pane actually renders: wrapper, label, two stat
 // boxes — four, not the five it used to claim.
-function containerFallacy(variant: Variant, size: PreviewSize) {
+function containerFallacy(variant: Variant) {
     const isDo = variant === "do";
     // The page surface is painted by its own absolutely positioned layer
     // instead of being passed to PreviewFrame's className. cn() is a plain
@@ -304,7 +306,7 @@ function containerFallacy(variant: Variant, size: PreviewSize) {
             : "border border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-950"
     );
     return (
-        <PreviewFrame size={size} className="flex flex-col justify-center">
+        <PreviewFrame className="flex flex-col justify-center">
             <span aria-hidden="true" className={cn("absolute inset-px rounded-[9px]", pageSurface)} />
             <div className="relative">
                 <div
@@ -336,7 +338,7 @@ function containerFallacy(variant: Variant, size: PreviewSize) {
                         </div>
                     </div>
                 </div>
-                <span className={cn("mt-2 block", ANNOT)}>
+                <span className={cn("mt-2 block", isDo ? ANNOT_ON_FILL : ANNOT)}>
                     {isDo ? "0 borders — surface + space" : "4 borders, 1 idea"}
                 </span>
             </div>
@@ -348,12 +350,12 @@ function containerFallacy(variant: Variant, size: PreviewSize) {
 // The same 2×2 card grid; only the row gutter changes. Both ticks stay
 // accented in both panes — they are the measurement, and dimming the
 // offending value would send the eye away from the defect.
-function gutters(variant: Variant, size: PreviewSize) {
+function gutters(variant: Variant) {
     const isDo = variant === "do";
     const rowGap = isDo ? 8 : 24;
     const cell = "h-9 rounded-md bg-neutral-200/80 dark:bg-neutral-800";
     return (
-        <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-2.5">
+        <PreviewFrame className="flex flex-col items-center justify-center gap-2.5">
             <div className="flex items-center gap-4">
                 <div className="grid w-36 grid-cols-2" style={{ columnGap: 8, rowGap }}>
                     <div className={cell} />
@@ -377,7 +379,7 @@ function gutters(variant: Variant, size: PreviewSize) {
 // padding on mobile starves the content down to a stub. The small
 // frame's tick carries the accent in both panes — it is the one
 // measurement under test.
-function responsiveSpacing(variant: Variant, size: PreviewSize) {
+function responsiveSpacing(variant: Variant) {
     const isDo = variant === "do";
     const mobilePad = isDo ? 12 : 24;
     const frame = (width: number, pad: number, label: string, underTest?: boolean) => (
@@ -393,7 +395,7 @@ function responsiveSpacing(variant: Variant, size: PreviewSize) {
         </div>
     );
     return (
-        <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-2.5">
+        <PreviewFrame className="flex flex-col items-center justify-center gap-2.5">
             <div className="flex items-end gap-4">
                 {frame(72, mobilePad, `sm · p·${mobilePad}`, true)}
                 {frame(128, 24, "lg · p·24")}
@@ -409,11 +411,11 @@ function responsiveSpacing(variant: Variant, size: PreviewSize) {
 // The same page skeleton; section gaps measured. Every gap in the do pane is
 // a whole multiple of the smallest one, so the eye can count in that unit;
 // the avoid pane's 13 and 18 sit off the 8px base entirely.
-function verticalRhythm(variant: Variant, size: PreviewSize) {
+function verticalRhythm(variant: Variant) {
     const isDo = variant === "do";
     const gaps = isDo ? [8, 16, 32] : [8, 13, 18];
     return (
-        <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-2.5">
+        <PreviewFrame className="flex flex-col items-center justify-center gap-2.5">
             <div className="w-44">
                 <TextLine widthClass="w-1/2" className="h-2 bg-neutral-300 dark:bg-neutral-700" />
                 <MeasuredGap px={gaps[0]} className="-mr-8" />
@@ -436,12 +438,12 @@ function verticalRhythm(variant: Variant, size: PreviewSize) {
 // have made the reader compare vocabularies instead of numbers.
 const Z_LAYERS = ["base", "dropdown", "modal"];
 
-function zIndexScale(variant: Variant, size: PreviewSize) {
+function zIndexScale(variant: Variant) {
     const isDo = variant === "do";
     const values = isDo ? ["0", "100", "300"] : ["1", "999", "9999"];
     const topIndex = Z_LAYERS.length - 1;
     return (
-        <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-2.5">
+        <PreviewFrame className="flex flex-col items-center justify-center gap-2.5">
             <div className="relative h-20 w-44">
                 {Z_LAYERS.map((name, index) => {
                     const isTop = index === topIndex;
@@ -480,30 +482,30 @@ function zIndexScale(variant: Variant, size: PreviewSize) {
 
 // ── Dispatcher ──────────────────────────────────────────────────────
 
-export const layoutPreviews: PreviewRenderer = (ruleId, variant, size): ReactNode | null => {
+export const layoutPreviews: PreviewRenderer = (ruleId, variant): ReactNode | null => {
     switch (ruleId) {
         case "layout-1":
-            return fourPtGrid(variant, size);
+            return fourPtGrid(variant);
         case "layout-2":
-            return textWidth(variant, size);
+            return textWidth(variant);
         case "layout-3":
-            return proximity(variant, size);
+            return proximity(variant);
         case "layout-4":
-            return opticalCenter(variant, size);
+            return opticalCenter(variant);
         case "layout-5":
-            return buttonPadding(variant, size);
+            return buttonPadding(variant);
         case "layout-6":
-            return iconAlignment(variant, size);
+            return iconAlignment(variant);
         case "layout-7":
-            return containerFallacy(variant, size);
+            return containerFallacy(variant);
         case "layout-8":
-            return gutters(variant, size);
+            return gutters(variant);
         case "layout-9":
-            return responsiveSpacing(variant, size);
+            return responsiveSpacing(variant);
         case "layout-10":
-            return verticalRhythm(variant, size);
+            return verticalRhythm(variant);
         case "layout-11":
-            return zIndexScale(variant, size);
+            return zIndexScale(variant);
         default:
             return null;
     }

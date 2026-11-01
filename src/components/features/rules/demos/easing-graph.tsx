@@ -1,5 +1,3 @@
-import { cn } from "@/lib/utils";
-
 /**
  * Cubic-bezier plot with a rideable progress dot.
  * Outer data-anim="dot-x" = time (linear); inner data-anim="dot-y" = value (pane easing).
@@ -11,14 +9,12 @@ export function EasingGraph({
     y1,
     x2,
     y2,
-    size,
     label,
 }: {
     x1: number;
     y1: number;
     x2: number;
     y2: number;
-    size: "sm" | "lg";
     label?: string;
 }) {
     const w = 100;
@@ -28,17 +24,12 @@ export function EasingGraph({
 
     return (
         <div aria-hidden="true">
-            <div
-                className={cn(
-                    "relative overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900/60",
-                    size === "lg" ? "h-28" : "h-14"
-                )}
-            >
+            <div className="relative overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900/60 h-28">
             {/* Curve and dot share one plot box, inset a fixed 12px: room for
                 the dot (5px radius + 2px ring) at both ends on any pane width.
                 A percentage inset collapsed to 6px in a 390px-wide layout and
                 the end dot lost its ring to the frame's clip. */}
-            <div className={cn("absolute", size === "lg" ? "inset-3" : "inset-2")}>
+            <div className="absolute inset-3">
                 <svg
                     viewBox={`0 0 ${w} ${h}`}
                     preserveAspectRatio="none"

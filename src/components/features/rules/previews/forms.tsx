@@ -252,13 +252,13 @@ function WidthBracket({ label, widthClass }: { label: string; widthClass: string
     );
 }
 
-export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
+export const formPreviews: PreviewRenderer = (ruleId, variant) => {
     switch (ruleId) {
         // Label placement: identical checkout fields; only the label moves.
         case "form-1": {
             if (variant === "do") {
                 return (
-                    <PreviewFrame size={size} className="flex flex-col justify-center gap-2.5">
+                    <PreviewFrame className="flex flex-col justify-center gap-2.5">
                         <div className="space-y-1">
                             <Label>Full name</Label>
                             <Shell>
@@ -277,7 +277,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
             }
             // Side labels of different lengths shove the inputs out of alignment.
             return (
-                <PreviewFrame size={size} className="flex flex-col justify-center gap-2.5">
+                <PreviewFrame className="flex flex-col justify-center gap-2.5">
                     <div className="flex items-center gap-2">
                         <Label className="shrink-0">Full name</Label>
                         <Shell className="flex-1">
@@ -299,7 +299,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
         case "form-2": {
             if (variant === "do") {
                 return (
-                    <PreviewFrame size={size} className="flex flex-col justify-center gap-3">
+                    <PreviewFrame className="flex flex-col justify-center gap-3">
                         <div className="space-y-1">
                             <div className="flex h-3.5 items-baseline justify-between">
                                 <Label>Work email</Label>
@@ -324,7 +324,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
             }
             // Placeholder was the only label; one keystroke and the field is anonymous.
             return (
-                <PreviewFrame size={size} className="flex flex-col justify-center gap-3">
+                <PreviewFrame className="flex flex-col justify-center gap-3">
                     <div className="space-y-1">
                         <div className="flex h-3.5 items-baseline justify-end">
                             <Ann>0 chars</Ann>
@@ -363,7 +363,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
             );
             if (variant === "do") {
                 return (
-                    <PreviewFrame size={size} className="flex flex-col justify-center gap-1.5">
+                    <PreviewFrame className="flex flex-col justify-center gap-1.5">
                         {field("Full name", "Maya Chen")}
                         {field("Email", "maya@company.com")}
                         {field(<>Phone{optional}</>)}
@@ -372,7 +372,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
                 );
             }
             return (
-                <PreviewFrame size={size} className="flex flex-col justify-center gap-1.5">
+                <PreviewFrame className="flex flex-col justify-center gap-1.5">
                     {field(<>Full name{asterisk}</>, "Maya Chen")}
                     {field(<>Email{asterisk}</>, "maya@company.com")}
                     {field(<>Phone{asterisk}</>)}
@@ -385,7 +385,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
         case "form-4": {
             const zipWide = variant === "dont";
             return (
-                <PreviewFrame size={size} className="flex flex-col justify-center gap-2.5">
+                <PreviewFrame className="flex flex-col justify-center gap-2.5">
                     <div className="space-y-1">
                         <Label>Street address</Label>
                         <Shell>
@@ -408,7 +408,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
             const isDo = variant === "do";
             const Control = isDo ? Radio : Checkbox;
             return (
-                <PreviewFrame size={size} className="flex flex-col justify-center gap-2">
+                <PreviewFrame className="flex flex-col justify-center gap-2">
                     <div className="flex items-baseline justify-between">
                         <Label strong>
                             Pick a plan
@@ -430,7 +430,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
         case "form-6": {
             if (variant === "do") {
                 return (
-                    <PreviewFrame size={size} className="flex flex-col justify-center gap-2">
+                    <PreviewFrame className="flex flex-col justify-center gap-2">
                         <div className="flex items-baseline justify-between">
                             <Label strong>
                                 Billing cycle
@@ -444,7 +444,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
                 );
             }
             return (
-                <PreviewFrame size={size} className="flex flex-col justify-center gap-2">
+                <PreviewFrame className="flex flex-col justify-center gap-2">
                     <div className="flex items-baseline justify-between">
                         <Label strong>
                             Billing cycle
@@ -468,7 +468,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
         case "form-7": {
             const isDo = variant === "do";
             return (
-                <PreviewFrame size={size} className="flex flex-col justify-center gap-2">
+                <PreviewFrame className="flex flex-col justify-center gap-2">
                     <div className="divide-y divide-neutral-200 rounded-md border border-neutral-200 dark:divide-neutral-800 dark:border-neutral-800">
                         <div className="flex items-center justify-between gap-2 px-2.5 py-1.5">
                             <span className="truncate text-[11px] text-neutral-700 dark:text-neutral-200">
@@ -487,7 +487,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
                             </span>
                         </div>
                     </div>
-                    <MiniButton label="Save changes" variant="primary" size={size} className="w-full" />
+                    <MiniButton label="Save changes" variant="primary" className="w-full" />
                     <Ann>
                         {isDo
                             ? "checkbox waits for Save — applies on submit"
@@ -505,7 +505,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
             const isDo = variant === "do";
             const error = <ErrorNote>Email is missing a domain</ErrorNote>;
             return (
-                <PreviewFrame size={size} className="flex flex-col justify-center gap-1">
+                <PreviewFrame className="flex flex-col justify-center gap-1">
                     <Label>Email</Label>
                     <Shell tone={isDo ? "focus" : "error"}>
                         <Value>maya@</Value>
@@ -532,7 +532,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
         case "form-9": {
             const isDo = variant === "do";
             return (
-                <PreviewFrame size={size} className="flex flex-col justify-center gap-2">
+                <PreviewFrame className="flex flex-col justify-center gap-2">
                     <div className="space-y-1">
                         <Label>Card number</Label>
                         <Shell>
@@ -598,7 +598,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
             ];
             if (variant === "do") {
                 return (
-                    <PreviewFrame size={size} className="flex flex-col justify-center gap-1.5">
+                    <PreviewFrame className="flex flex-col justify-center gap-1.5">
                         {fields.map(([order, label, value]) => cell(order, label, value))}
                         <Ann>1 column · eye and Tab agree</Ann>
                     </PreviewFrame>
@@ -607,7 +607,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
             // Two stacked columns: Tab walks down column 1 before column 2,
             // so the top visual row is stops 1 and 3.
             return (
-                <PreviewFrame size={size} className="flex flex-col justify-center gap-1.5">
+                <PreviewFrame className="flex flex-col justify-center gap-1.5">
                     <div className="grid grid-cols-2 gap-x-2.5">
                         <div className="min-w-0 space-y-1.5">
                             {fields.slice(0, 2).map(([order, label, value]) => cell(order, label, value))}
@@ -632,7 +632,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
                 </Ann>
             );
             return (
-                <PreviewFrame size={size} className="flex flex-col justify-center gap-2.5">
+                <PreviewFrame className="flex flex-col justify-center gap-2.5">
                     <div className="space-y-1">
                         <div className="flex h-3.5 items-baseline justify-between gap-2">
                             <Label>Country</Label>
@@ -671,7 +671,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
         case "form-12": {
             const isDo = variant === "do";
             return (
-                <PreviewFrame size={size} className="flex flex-col justify-center gap-2.5">
+                <PreviewFrame className="flex flex-col justify-center gap-2.5">
                     <div className="space-y-1">
                         <div className="flex h-3.5 items-baseline justify-between gap-2">
                             <Label>Display name</Label>
@@ -682,7 +682,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant, size) => {
                         </Shell>
                     </div>
                     <div className="flex items-center justify-between gap-2">
-                        <MiniButton label="Save changes" variant="primary" size={size} />
+                        <MiniButton label="Save changes" variant="primary" />
                         {isDo ? (
                             <span className="flex items-center gap-1 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
                                 <CircleCheck size={12} strokeWidth={1.75} aria-hidden />

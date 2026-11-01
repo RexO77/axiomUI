@@ -14,6 +14,8 @@ import { cn } from "@/lib/utils";
  * - `sm` is a 36px circle with an invisible 44px hit area, for dense desktop
  *   chrome. `md` is a full 44px circle, for touch-first surfaces. Both draw
  *   an 18px glyph with a 1.8 stroke.
+ * - `responsive` draws a 44px control below sm and a 36px control above it,
+ *   with a 44px hit area throughout, so one mounted control can keep focus.
  * - `ghost` shows a fill only on hover. `outline` sits on its own surface with
  *   a hairline, for controls that float over content.
  *
@@ -30,7 +32,7 @@ import { cn } from "@/lib/utils";
  * it is rendered visually hidden inside the control.
  */
 
-type IconButtonSize = "xs" | "sm" | "md";
+type IconButtonSize = "xs" | "sm" | "md" | "responsive";
 type IconButtonVariant = "ghost" | "outline";
 type IconButtonRadius = "rounded-full" | `rounded-[${string}]`;
 
@@ -41,6 +43,7 @@ const SIZE: Record<IconButtonSize, string> = {
   xs: "relative size-7 after:absolute after:left-1/2 after:top-1/2 after:size-11 after:-translate-x-1/2 after:-translate-y-1/2 focus-visible:outline-offset-0 [&_svg]:size-4 [&_svg]:stroke-2",
   sm: "relative size-9 after:absolute after:left-1/2 after:top-1/2 after:size-11 after:-translate-x-1/2 after:-translate-y-1/2 [&_svg]:size-[18px] [&_svg]:stroke-[1.8]",
   md: "size-11 [&_svg]:size-[18px] [&_svg]:stroke-[1.8]",
+  responsive: "relative size-11 sm:size-9 after:absolute after:left-1/2 after:top-1/2 after:size-11 after:-translate-x-1/2 after:-translate-y-1/2 [&_svg]:size-[18px] [&_svg]:stroke-[1.8]",
 };
 
 const VARIANT: Record<IconButtonVariant, string> = {

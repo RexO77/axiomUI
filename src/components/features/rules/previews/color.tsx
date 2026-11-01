@@ -15,6 +15,7 @@ import {
 
 import {
     ANNOTATION_INK,
+    ANNOTATION_INK_ON_FILL,
     PreviewFrame,
     type PreviewRenderer,
     type Variant,
@@ -29,9 +30,19 @@ import { cn } from "@/lib/utils";
 
 const NOTE = "font-mono text-[10px] tabular-nums text-pretty";
 
-// Evidence annotation for the default (theme-following) stage.
-function Note({ children, className }: { children: ReactNode; className?: string }) {
-    return <span className={cn(NOTE, ANNOTATION_INK, className)}>{children}</span>;
+// Evidence annotation for the default (theme-following) stage. `ink` swaps the
+// colour outright rather than stacking a second text colour in className,
+// where stylesheet order, not argument order, would pick the winner.
+function Note({
+    children,
+    className,
+    ink = ANNOTATION_INK,
+}: {
+    children: ReactNode;
+    className?: string;
+    ink?: string;
+}) {
+    return <span className={cn(NOTE, ink, className)}>{children}</span>;
 }
 
 // Evidence annotation pinned to a white card that stays white in dark mode
@@ -489,6 +500,9 @@ function AccessibleContrast({ variant }: { variant: Variant }) {
 // hexes that drift apart and never adapt.
 function OpacityOverNewColors({ variant }: { variant: Variant }) {
     const handPicked = variant === "dont";
+    // Notes on the tinted rows: Don't's light hexes stay light in dark mode, so
+    // their ink stays dark; Do's alpha fills follow the theme, and so does its ink.
+    const rowInk = handPicked ? "text-neutral-600" : ANNOTATION_INK_ON_FILL;
     return (
         <div className="flex h-[118px] flex-col justify-center gap-1">
             <div className="flex h-6 items-center gap-1.5 rounded-md px-2 text-neutral-600 dark:text-neutral-300">
@@ -506,7 +520,7 @@ function OpacityOverNewColors({ variant }: { variant: Variant }) {
             >
                 <FileText aria-hidden className="size-3 stroke-[1.5]" />
                 <span className="text-[10px] font-medium">Drafts</span>
-                <Note className={cn("ml-auto", { "text-neutral-600 dark:text-neutral-600": handPicked })}>
+                <Note className="ml-auto" ink={rowInk}>
                     {handPicked ? "#e8f0fe" : "blue-500/10"}
                 </Note>
             </div>
@@ -520,7 +534,7 @@ function OpacityOverNewColors({ variant }: { variant: Variant }) {
             >
                 <Send aria-hidden className="size-3 stroke-[1.5]" />
                 <span className="text-[10px]">Sent</span>
-                <Note className={cn("ml-auto", { "text-neutral-600 dark:text-neutral-600": handPicked })}>
+                <Note className="ml-auto" ink={rowInk}>
                     {handPicked ? "#dcebf5 + #1967d2" : "blue-500/15"}
                 </Note>
             </div>
@@ -625,71 +639,71 @@ function ShadowsReplaceBorders({ variant }: { variant: Variant }) {
     );
 }
 
-export const colorPreviews: PreviewRenderer = (ruleId, variant, size) => {
+export const colorPreviews: PreviewRenderer = (ruleId, variant) => {
     switch (ruleId) {
         case "color-1":
             return (
-                <PreviewFrame size={size}>
+                <PreviewFrame>
                     <SixtyThirtyTen variant={variant} />
                 </PreviewFrame>
             );
         case "color-2":
             return (
-                <PreviewFrame size={size}>
+                <PreviewFrame>
                     <NeverPureBlack variant={variant} />
                 </PreviewFrame>
             );
         case "color-3":
             return (
-                <PreviewFrame size={size}>
+                <PreviewFrame>
                     <ColoredShadows variant={variant} />
                 </PreviewFrame>
             );
         case "color-4":
             return (
-                <PreviewFrame size={size}>
+                <PreviewFrame>
                     <SemanticColors variant={variant} />
                 </PreviewFrame>
             );
         case "color-5":
             return (
-                <PreviewFrame size={size}>
+                <PreviewFrame>
                     <BorderColors variant={variant} />
                 </PreviewFrame>
             );
         case "color-6":
             return (
-                <PreviewFrame size={size}>
+                <PreviewFrame>
                     <DoubleContrastBorders variant={variant} />
                 </PreviewFrame>
             );
         case "color-8":
             return (
-                <PreviewFrame size={size}>
+                <PreviewFrame>
                     <DarkModeNotInverted variant={variant} />
                 </PreviewFrame>
             );
         case "color-9":
             return (
-                <PreviewFrame size={size}>
+                <PreviewFrame>
                     <AccessibleContrast variant={variant} />
                 </PreviewFrame>
             );
         case "color-10":
             return (
-                <PreviewFrame size={size}>
+                <PreviewFrame>
                     <OpacityOverNewColors variant={variant} />
                 </PreviewFrame>
             );
         case "color-11":
             return (
-                <PreviewFrame size={size}>
+                <PreviewFrame>
                     <NeutralImageOutlines variant={variant} />
                 </PreviewFrame>
             );
         case "color-12":
             return (
-                <PreviewFrame size={size}>
+                <PreviewFrame>
                     <ShadowsReplaceBorders variant={variant} />
                 </PreviewFrame>
             );

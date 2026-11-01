@@ -1,8 +1,6 @@
 import type { ReactNode } from "react";
 
-import { cn } from "@/lib/utils";
 import { DUR, EASE, kf, tracksDurationMs, type Track } from "@/lib/showcase-engine";
-import type { PreviewSize } from "@/components/features/rules/preview-primitives";
 import { EasingGraph } from "@/components/features/rules/demos/easing-graph";
 import {
     ButtonScene,
@@ -44,7 +42,7 @@ export type PaneSpec = {
     /** Timing readout under the pane, e.g. "180ms · ease-out". */
     caption: string;
     /** Rest-frame markup; animated nodes carry data-anim targets. */
-    scene: (size: PreviewSize) => ReactNode;
+    scene: () => ReactNode;
     /** Played on trigger (button press / gesture engage). */
     tracks: Track[];
     /** Played on gesture release / toggle-off. Required for toggle/press/hover.
@@ -163,7 +161,6 @@ const nestTracks = (forward: boolean, parentMs: number, childMs: number): Track[
  *  The printed curve label is derived from the control points, so a pane can
  *  never name a bezier it is not actually running. */
 const easingScene = (
-    size: PreviewSize,
     x1: number,
     y1: number,
     x2: number,
@@ -177,24 +174,12 @@ const easingScene = (
         >
             <div
                 data-anim="panel"
-                className={cn(
-                    "flex items-center gap-1.5 rounded-[12px] border border-blue-500 bg-blue-500/10 shadow-sm dark:border-blue-400 dark:bg-blue-400/10",
-                    size === "lg" ? "h-9 px-2.5" : "h-6 px-1.5"
-                )}
+                className="flex items-center gap-1.5 rounded-[12px] border border-blue-500 bg-blue-500/10 shadow-sm dark:border-blue-400 dark:bg-blue-400/10 h-9 px-2.5"
             >
-                <span
-                    className={cn(
-                        "shrink-0 rounded-full bg-blue-500 dark:bg-blue-400",
-                        size === "lg" ? "size-1.5" : "size-1"
-                    )}
-                />
-                {size === "lg" ? (
-                    <span className="text-[11px] font-semibold tracking-tight text-blue-700 dark:text-blue-300">
-                        {chipLabel}
-                    </span>
-                ) : (
-                    <span className="h-1 w-4 rounded-sm bg-blue-500/35" />
-                )}
+                <span className="shrink-0 rounded-full bg-blue-500 dark:bg-blue-400 size-1.5" />
+                <span className="text-[11px] font-semibold tracking-tight text-blue-700 dark:text-blue-300">
+                    {chipLabel}
+                </span>
             </div>
         </div>
         <EasingGraph
@@ -202,7 +187,6 @@ const easingScene = (
             y1={y1}
             x2={x2}
             y2={y2}
-            size={size}
             label={`cubic-bezier(${x1}, ${y1}, ${x2}, ${y2})`}
         />
     </div>
@@ -217,7 +201,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         tallyDontMs: 220,
         do: {
             caption: "rare modal · 220ms — earns its motion",
-            scene: (size) => <ModalScene size={size} />,
+            scene: () => <ModalScene />,
             tracks: [
                 t("scrim", kf.fadeIn(), DUR.medium),
                 t("panel", kf.riseIn(8), DUR.medium),
@@ -225,7 +209,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         },
         dont: {
             caption: "frequent palette · 220ms — a tax you pay every time",
-            scene: (size) => <PaletteScene size={size} />,
+            scene: () => <PaletteScene />,
             tracks: [t("panel", kf.riseIn(8), DUR.medium)],
         },
     },
@@ -238,7 +222,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         hotkey: "k",
         do: {
             caption: "panel 0ms · keypress 90ms — the result is the feedback",
-            scene: (size) => <PaletteScene size={size} />,
+            scene: () => <PaletteScene />,
             tracks: [
                 t("panel", kf.fadeIn(), 0),
                 t("key", kf.keyPress(), 90),
@@ -246,7 +230,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         },
         dont: {
             caption: "panel 240ms · keypress 90ms — your keystroke waits for a cartoon",
-            scene: (size) => <PaletteScene size={size} />,
+            scene: () => <PaletteScene />,
             tracks: [
                 t("panel", kf.riseIn(8), 240),
                 t("key", kf.keyPress(), 90),
@@ -262,12 +246,12 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         hint: "Open both — only one of them tells you where it came from",
         do: {
             caption: "slides from its edge — motion explains where it lives",
-            scene: (size) => <EdgePanelScene size={size} />,
+            scene: () => <EdgePanelScene />,
             tracks: [t("panel", kf.slideXIn("110%"), DUR.medium)],
         },
         dont: {
             caption: "bounce — motion explains nothing",
-            scene: (size) => <ModalScene size={size} />,
+            scene: () => <ModalScene />,
             tracks: [
                 t("scrim", kf.fadeIn(), DUR.medium),
                 t(
@@ -290,8 +274,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         hintReduced: "Read the two curves — the steep start is where the left one does its travel",
         do: {
             caption: "strong curve · 360ms — most of the travel happens up front",
-            scene: (size) =>
-                easingScene(size, 0.23, 1, 0.32, 1, "Panel"),
+            scene: () => easingScene(0.23, 1, 0.32, 1, "Panel"),
             tracks: [
                 t("panel", kf.race(), DUR.slow),
                 t(
@@ -309,8 +292,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         },
         dont: {
             caption: "browser default ease · 360ms — a shallow curve, no character",
-            scene: (size) =>
-                easingScene(size, 0.25, 0.1, 0.25, 1, "Panel"),
+            scene: () => easingScene(0.25, 0.1, 0.25, 1, "Panel"),
             tracks: [
                 t("panel", kf.race(), DUR.slow, { easing: EASE.browserDefault }),
                 t(
@@ -335,8 +317,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         hint: "Watch the first 100ms — that's where trust is won or lost",
         do: {
             caption: "ease-out · 220ms — responds the instant you ask",
-            scene: (size) =>
-                easingScene(size, 0.23, 1, 0.32, 1, "Menu"),
+            scene: () => easingScene(0.23, 1, 0.32, 1, "Menu"),
             tracks: [
                 t("panel", kf.race(), DUR.medium),
                 t(
@@ -354,8 +335,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         },
         dont: {
             caption: "ease-in · 220ms — dead for the first 100ms",
-            scene: (size) =>
-                easingScene(size, 0.55, 0, 1, 0.45, "Menu"),
+            scene: () => easingScene(0.55, 0, 1, 0.45, "Menu"),
             tracks: [
                 t("panel", kf.race(), DUR.medium, { easing: EASE.in }),
                 t(
@@ -381,12 +361,12 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         hint: "Open both, then read the counters — 500ms is a wait, not a transition",
         do: {
             caption: "menu · 180ms — reads as a response",
-            scene: (size) => <MenuScene size={size} origin="top left" />,
+            scene: () => <MenuScene origin="top left" />,
             tracks: [t("panel", kf.popIn(0.95), 180)],
         },
         dont: {
             caption: "menu · 500ms — reads as loading, not a response",
-            scene: (size) => <MenuScene size={size} origin="top left" />,
+            scene: () => <MenuScene origin="top left" />,
             tracks: [t("panel", kf.popIn(0.95), 500)],
         },
     },
@@ -400,13 +380,13 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         hint: "Dismiss is the moment you've already moved on — it should be the fastest thing here",
         do: {
             caption: "in 220ms · out 160ms — exits get out of the way",
-            scene: (size) => <ToastScene size={size} />,
+            scene: () => <ToastScene />,
             tracks: [t("panel", kf.slideYIn("150%"), DUR.medium)],
             exitTracks: [t("panel", kf.slideYOut("150%"), 160, { easing: EASE.inOut })],
         },
         dont: {
             caption: "360ms both ways — the goodbye takes as long as the hello",
-            scene: (size) => <ToastScene size={size} />,
+            scene: () => <ToastScene />,
             tracks: [t("panel", kf.slideYIn("150%"), DUR.slow)],
             exitTracks: [t("panel", kf.slideYOut("150%"), DUR.slow, { easing: EASE.inOut })],
         },
@@ -419,13 +399,13 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         hint: "Press and hold either side — 4% is acknowledgment, 10% is drama",
         do: {
             caption: "active: scale(0.96) — a nod, not a flinch",
-            scene: (size) => <ButtonScene size={size} label="Save" restBounds />,
+            scene: () => <ButtonScene label="Save" restBounds />,
             tracks: [t("panel", kf.scaleTo(1, 0.96), DUR.fast)],
             exitTracks: [t("panel", kf.scaleTo(0.96, 1), DUR.fast)],
         },
         dont: {
             caption: "active: scale(0.90) — the button cowers",
-            scene: (size) => <ButtonScene size={size} label="Save" restBounds />,
+            scene: () => <ButtonScene label="Save" restBounds />,
             tracks: [t("panel", kf.scaleTo(1, 0.9), DUR.fast)],
             exitTracks: [t("panel", kf.scaleTo(0.9, 1), DUR.fast)],
         },
@@ -439,12 +419,12 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         hintReduced: "Real objects don't grow from nothing — the left menu starts at 95%, the right at zero",
         do: {
             caption: "scale(0.95) + fade — it arrives",
-            scene: (size) => <MenuScene size={size} origin="top left" />,
+            scene: () => <MenuScene origin="top left" />,
             tracks: [t("panel", kf.popIn(0.95), DUR.medium)],
         },
         dont: {
             caption: "scale(0) + fade — it materializes from a point",
-            scene: (size) => <MenuScene size={size} origin="top left" />,
+            scene: () => <MenuScene origin="top left" />,
             tracks: [t("panel", kf.popIn(0), DUR.medium)],
         },
     },
@@ -457,7 +437,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         hint: "The dot marks the origin — only one menu starts where you clicked",
         do: {
             caption: "grows from its trigger — cause meets effect",
-            scene: (size) => <MenuScene size={size} origin="top left" originMarker />,
+            scene: () => <MenuScene origin="top left" originMarker />,
             tracks: menuFromOrigin(0.6),
             exitTracks: menuFromOriginExit(0.6),
             // The menu's own motion; the pip's later fade-out is not the lesson.
@@ -466,7 +446,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         },
         dont: {
             caption: "grows from center — detached from its button",
-            scene: (size) => <MenuScene size={size} origin="center" originMarker />,
+            scene: () => <MenuScene origin="center" originMarker />,
             tracks: menuFromOrigin(0.6),
             exitTracks: menuFromOriginExit(0.6),
             readoutMs: DUR.medium,
@@ -479,13 +459,13 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         trigger: "toolbar",
         do: {
             caption: "one wait, then instant — the toolbar feels learned",
-            scene: (size) => <TooltipScene size={size} />,
+            scene: () => <TooltipScene />,
             tracks: [t("panel", kf.riseIn(4), 100)],
             exitTracks: [t("panel", kf.crossfade(false), 100)],
         },
         dont: {
             caption: "300ms every time — the toolbar never trusts you",
-            scene: (size) => <TooltipScene size={size} />,
+            scene: () => <TooltipScene />,
             tracks: [t("panel", kf.riseIn(4), 100, { delayMs: 300 })],
             exitTracks: [t("panel", kf.crossfade(false), 100)],
         },
@@ -496,7 +476,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         trigger: "interrupt",
         do: {
             caption: "transition · 420ms — turns from where it is",
-            scene: (size) => <RaceScene size={size} label="Transition" />,
+            scene: () => <RaceScene label="Transition" />,
             // Interrupted at 38%: the target flips back to rest and the card
             // eases home from where it actually is.
             tracks: [
@@ -513,7 +493,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         },
         dont: {
             caption: "keyframes · 420ms — teleports back and starts over",
-            scene: (size) => <RaceScene size={size} label="Keyframe" />,
+            scene: () => <RaceScene label="Keyframe" />,
             // Same interruption, restarted from the declared endpoint: the card
             // snaps to the far edge (2% of the timeline) before travelling home.
             tracks: [
@@ -539,12 +519,12 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         hint: "Add the items — the left list was born mid-motion, the right just appeared",
         do: {
             caption: "@starting-style — there is a first frame to animate from",
-            scene: (size) => <ListScene size={size} hiddenAtRest />,
+            scene: () => <ListScene hiddenAtRest />,
             tracks: [t("row", kf.riseIn(6), DUR.medium, { staggerMs: 40 })],
         },
         dont: {
             caption: "mounted, then flipped — there was no first frame",
-            scene: (size) => <ListScene size={size} hiddenAtRest />,
+            scene: () => <ListScene hiddenAtRest />,
             tracks: [t("row", kf.fadeIn(), 0)],
         },
     },
@@ -556,12 +536,12 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         hint: "Same 220ms, same smoothness on an idle thread — rule 21 shows what load does to the right one",
         do: {
             caption: "translateY + opacity · 220ms — compositor only",
-            scene: (size) => <ToastScene size={size} />,
+            scene: () => <ToastScene />,
             tracks: [t("panel", kf.slideYIn("150%"), DUR.medium)],
         },
         dont: {
             caption: "height · 220ms — layout math on every frame",
-            scene: (size) => <GrowBoxScene size={size} />,
+            scene: () => <GrowBoxScene />,
             tracks: [t("panel", kf.growHeight(2, 30), DUR.medium)],
         },
     },
@@ -576,13 +556,13 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         hint: "Dismiss them — the fixed-pixel exit strands the taller toast",
         do: {
             caption: "exit translateY(150%) — measured against itself",
-            scene: (size) => <ToastPairScene size={size} />,
+            scene: () => <ToastPairScene />,
             tracks: [t("panel", kf.slideYIn("150%"), DUR.medium)],
             exitTracks: [t("panel", kf.slideYOut("150%"), 160, { easing: EASE.inOut })],
         },
         dont: {
             caption: "exit translateY(40px) — right for one size, wrong for every other",
-            scene: (size) => <ToastPairScene size={size} />,
+            scene: () => <ToastPairScene />,
             tracks: [t("panel", kf.slideYIn("150%"), DUR.medium)],
             exitTracks: [
                 t(
@@ -604,13 +584,13 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         doRequiresHover: true,
         do: {
             caption: "@media (hover: hover) — only where hover is real",
-            scene: (size) => <ButtonScene size={size} label="Hover me" variant="secondary" restBounds />,
+            scene: () => <ButtonScene label="Hover me" variant="secondary" restBounds />,
             tracks: [t("panel", kf.scaleTo(1, 1.06), DUR.fast)],
             exitTracks: [t("panel", kf.scaleTo(1.06, 1), DUR.fast)],
         },
         dont: {
             caption: "scales on tap — a phantom hover",
-            scene: (size) => <ButtonScene size={size} label="Hover me" variant="secondary" restBounds />,
+            scene: () => <ButtonScene label="Hover me" variant="secondary" restBounds />,
             tracks: [t("panel", kf.scaleTo(1, 1.06), DUR.fast)],
             exitTracks: [t("panel", kf.scaleTo(1.06, 1), DUR.fast)],
         },
@@ -623,14 +603,14 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         hint: "Play both — the left still reports the news without sweeping it across the screen",
         do: {
             caption: "fade in place · 220ms — the signal without the sweep",
-            scene: (size) => <ToastScene size={size} />,
+            scene: () => <ToastScene />,
             tracks: [
                 t("panel", [{ opacity: 0, transform: "translateY(0)" }, { opacity: 1, transform: "translateY(0)" }], DUR.medium),
             ],
         },
         dont: {
             caption: "slides regardless · 220ms — motion the user asked you to remove",
-            scene: (size) => <ToastScene size={size} />,
+            scene: () => <ToastScene />,
             tracks: [t("panel", kf.slideYIn("150%"), DUR.medium)],
         },
     },
@@ -641,7 +621,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         trigger: "drag",
         do: {
             caption: "0.5 px/ms or 60% of the rail — intent counts",
-            scene: (size) => <RailCardScene size={size} />,
+            scene: () => <RailCardScene />,
             tracks: [
                 t(
                     "card",
@@ -665,7 +645,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         },
         dont: {
             caption: "60% of the rail only — your flick is ignored",
-            scene: (size) => <RailCardScene size={size} />,
+            scene: () => <RailCardScene />,
             tracks: [
                 t(
                     "card",
@@ -686,7 +666,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         trigger: "drag",
         do: {
             caption: "overshoot ÷ 3 · spring home in 450ms — the edge pushes back",
-            scene: (size) => <RailCardScene size={size} />,
+            scene: () => <RailCardScene />,
             tracks: [
                 t(
                     "card",
@@ -702,7 +682,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         },
         dont: {
             caption: "hard clamp · flat 220ms return — a dead stop at the wall",
-            scene: (size) => <RailCardScene size={size} />,
+            scene: () => <RailCardScene />,
             tracks: [
                 t(
                     "card",
@@ -724,12 +704,12 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         trigger: "drag",
         do: {
             caption: "setPointerCapture — the drag survives leaving the frame",
-            scene: (size) => <SliderScene size={size} />,
+            scene: () => <SliderScene />,
             tracks: [t("knob", [{ transform: railX(0) }, { transform: railX(1) }], 500)],
         },
         dont: {
             caption: "no capture — the knob is abandoned at the border",
-            scene: (size) => <SliderScene size={size} />,
+            scene: () => <SliderScene />,
             tracks: [
                 t(
                     "knob",
@@ -749,12 +729,12 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         trigger: "load",
         do: {
             caption: "WAAPI transform — sails through every stall",
-            scene: (size) => <RaceScene size={size} label="Compositor" />,
+            scene: () => <RaceScene label="Compositor" />,
             tracks: [t("panel", kf.race(), 420)],
         },
         dont: {
             caption: "rAF + style writes — hostage to the thread",
-            scene: (size) => <RaceScene size={size} label="Main thread" />,
+            scene: () => <RaceScene label="Main thread" />,
             tracks: [t("panel", kf.race(), 420, { easing: "steps(5, end)" })],
         },
     },
@@ -764,12 +744,12 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         trigger: "load",
         do: {
             caption: "element.animate() — one declaration, every frame",
-            scene: (size) => <RaceScene size={size} label="WAAPI" />,
+            scene: () => <RaceScene label="WAAPI" />,
             tracks: [t("panel", kf.race(), DUR.medium)],
         },
         dont: {
             caption: "setInterval every 80ms — animation by flipbook",
-            scene: (size) => <RaceScene size={size} label="setInterval" />,
+            scene: () => <RaceScene label="setInterval" />,
             tracks: [t("panel", kf.race(), DUR.medium, { easing: "steps(8, end)" })],
         },
     },
@@ -786,14 +766,14 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         hint: "You changed the parent. Watch what the child does about it",
         do: {
             caption: "explicit child duration — the parent's change can't reach it",
-            scene: (size) => <NestedChipsScene size={size} childLabel="220ms" />,
+            scene: () => <NestedChipsScene childLabel="220ms" />,
             tracks: nestTracks(true, DUR.fast, DUR.medium),
             exitTracks: nestTracks(false, DUR.medium, DUR.medium),
         },
         dont: {
             caption: "inherited child duration — the parent's change silently retimes it",
-            scene: (size) => (
-                <NestedChipsScene size={size} childLabel="inherits" childInherits />
+            scene: () => (
+                <NestedChipsScene childLabel="inherits" childInherits />
             ),
             tracks: nestTracks(true, DUR.fast, DUR.fast),
             exitTracks: nestTracks(false, DUR.medium, DUR.medium),
@@ -807,12 +787,12 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         hint: "Play both, then read where the last row lands — stagger that delays reading is a bug",
         do: {
             caption: "60ms steps — last row lands at 340ms",
-            scene: (size) => <ListScene size={size} hiddenAtRest />,
+            scene: () => <ListScene hiddenAtRest />,
             tracks: [t("row", kf.riseIn(6), DUR.medium, { staggerMs: 60 })],
         },
         dont: {
             caption: "220ms steps — last row lands at 660ms",
-            scene: (size) => <ListScene size={size} hiddenAtRest />,
+            scene: () => <ListScene hiddenAtRest />,
             tracks: [t("row", kf.riseIn(6), DUR.medium, { staggerMs: 220 })],
         },
     },
@@ -824,13 +804,13 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         hint: "Same toast, same flaw — at review speed the pop is obvious; as shipped it slips past every reviewer",
         do: {
             caption: "220ms stretched to 880ms — the opacity pop is unmissable",
-            scene: (size) => <ToastScene size={size} />,
+            scene: () => <ToastScene />,
             tracks: flawedToast(880),
             pinRate: true,
         },
         dont: {
             caption: "220ms as shipped — nobody caught it",
-            scene: (size) => <ToastScene size={size} />,
+            scene: () => <ToastScene />,
             tracks: flawedToast(220),
             pinRate: true,
         },
@@ -843,7 +823,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         hint: "Three beats read as composition; one fade reads as a screenshot",
         do: {
             caption: "title, body, actions — three beats, 90ms apart",
-            scene: (size) => <CardRevealScene size={size} mode="parts" />,
+            scene: () => <CardRevealScene mode="parts" />,
             tracks: [
                 t("whole", kf.fadeIn(), DUR.fast),
                 t("part", kf.riseIn(8), DUR.medium, { staggerMs: 90 }),
@@ -851,7 +831,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         },
         dont: {
             caption: "title, body, actions together — one fade, no beats",
-            scene: (size) => <CardRevealScene size={size} mode="whole" />,
+            scene: () => <CardRevealScene mode="whole" />,
             tracks: [t("whole", kf.fadeIn(), DUR.slow)],
         },
     },
@@ -863,12 +843,12 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         hint: "Watch where your eye goes — the exit shouldn't compete with what's next",
         do: {
             caption: "-12px + fade · 150ms — leaves the room quietly",
-            scene: (size) => <ButtonScene size={size} label="Dismiss" variant="secondary" />,
+            scene: () => <ButtonScene label="Dismiss" variant="secondary" />,
             tracks: [t("panel", kf.dropOut(-12), 150, { easing: EASE.in })],
         },
         dont: {
             caption: "-100% + scale(0.5) · 400ms — exits are not fireworks",
-            scene: (size) => <ButtonScene size={size} label="Dismiss" variant="secondary" />,
+            scene: () => <ButtonScene label="Dismiss" variant="secondary" />,
             tracks: [
                 t(
                     "panel",
@@ -893,7 +873,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         hintReduced: "Change state to compare end frames — with motion on, the blur is what sells the morph",
         do: {
             caption: "scale + fade + blur · 300ms — one object changing its mind",
-            scene: (size) => <IconSwapScene size={size} />,
+            scene: () => <IconSwapScene />,
             tracks: [
                 t(
                     "icon-out",
@@ -933,7 +913,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         },
         dont: {
             caption: "hard swap · 0ms — two strangers trading places",
-            scene: (size) => <IconSwapScene size={size} />,
+            scene: () => <IconSwapScene />,
             // Same scene as the do pane, so the incoming icon rests at
             // scale(0.25) + blur. Key the whole state or the swap shows a speck.
             tracks: [
@@ -955,12 +935,12 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         hint: "Hit Reload UI — a default state that animates in is a page apologizing for existing",
         do: {
             caption: "already there · 0ms — the default state owes you nothing",
-            scene: (size) => <ButtonScene size={size} label="Ready" variant="secondary" />,
+            scene: () => <ButtonScene label="Ready" variant="secondary" />,
             tracks: [t("panel", [{ opacity: 1 }, { opacity: 1 }], 0)],
         },
         dont: {
             caption: "re-enters · 220ms every visit — ceremony for furniture",
-            scene: (size) => <ButtonScene size={size} label="Ready" variant="secondary" />,
+            scene: () => <ButtonScene label="Ready" variant="secondary" />,
             tracks: [t("panel", kf.riseIn(8), DUR.medium)],
         },
     },
@@ -973,13 +953,13 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         hint: "Hover both — the left stays blue and gets darker, the right becomes a different button",
         do: {
             caption: "blue-600 → blue-700 — same hue, deeper",
-            scene: (size) => <ButtonScene size={size} label="Hover me" background="#155dfc" />,
+            scene: () => <ButtonScene label="Hover me" background="#155dfc" />,
             tracks: [t("fill", kf.background("#155dfc", "#1447e6"), DUR.medium)],
             exitTracks: [t("fill", kf.background("#1447e6", "#155dfc"), DUR.medium)],
         },
         dont: {
             caption: "blue-600 → green-600 — a different opinion, not a hover",
-            scene: (size) => <ButtonScene size={size} label="Hover me" background="#155dfc" />,
+            scene: () => <ButtonScene label="Hover me" background="#155dfc" />,
             tracks: [t("fill", kf.background("#155dfc", "#00a63e"), DUR.medium)],
             exitTracks: [t("fill", kf.background("#00a63e", "#155dfc"), DUR.medium)],
         },
@@ -993,7 +973,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         hint: "Click the right button twice. That's two orders in production",
         do: {
             caption: "spinner + disabled — the button is honest about working",
-            scene: (size) => <SubmitScene size={size} spinner />,
+            scene: () => <SubmitScene spinner />,
             tracks: [
                 t("label", kf.crossfade(false), DUR.fast),
                 t("spinner", kf.crossfade(true), DUR.fast),
@@ -1002,7 +982,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         },
         dont: {
             caption: "still clickable — double-submit roulette",
-            scene: (size) => <SubmitScene size={size} spinner={false} />,
+            scene: () => <SubmitScene spinner={false} />,
             tracks: [t("fill", kf.scaleTo(1, 0.97), 80), t("fill", kf.scaleTo(0.97, 1), 80, { delayMs: 80 })],
         },
     },
@@ -1015,7 +995,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         hint: "Like both — the left heart trusts the server will agree, the right asks permission first",
         do: {
             caption: "fills at 0ms · synced at 700ms — the round trip happens behind you",
-            scene: (size) => <LikeScene size={size} />,
+            scene: () => <LikeScene />,
             // The lesson is when the heart fills, not when the receipt lands.
             readoutMs: 0,
             readoutTag: "synced 700ms",
@@ -1026,7 +1006,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         },
         dont: {
             caption: "nothing until 560ms — you wait through the round trip",
-            scene: (size) => <LikeScene size={size} />,
+            scene: () => <LikeScene />,
             readoutMs: 560,
             tracks: [
                 t("panel", kf.popIn(0.6), 120, { delayMs: 560 }),
@@ -1046,7 +1026,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         hint: "Load both — the same 900ms wait, but one pane spends it teaching you the layout",
         do: {
             caption: "skeleton — the layout arrives before the data",
-            scene: (size) => <LoadingScene size={size} kind="skeleton" />,
+            scene: () => <LoadingScene kind="skeleton" />,
             // The wait both panes share; the 220ms reveal after it is not the point.
             readoutMs: 900,
             tracks: [
@@ -1056,7 +1036,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         },
         dont: {
             caption: "spinner — a clock with no hands",
-            scene: (size) => <LoadingScene size={size} kind="spinner" />,
+            scene: () => <LoadingScene kind="spinner" />,
             readoutMs: 900,
             tracks: [
                 t("placeholder", kf.crossfade(false), DUR.medium, { delayMs: 900 }),
