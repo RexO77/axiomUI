@@ -6,7 +6,6 @@ import {
     ANNOTATION_INK,
     PreviewFrame,
     type PreviewRenderer,
-    type PreviewSize,
     type Variant,
 } from "@/components/features/rules/preview-primitives";
 import { cn } from "@/lib/utils";
@@ -82,10 +81,10 @@ function TextLine({
 // ── comp-1 · Action hierarchy ───────────────────────────────────────
 // The same publish footer. One filled action tells you what the screen
 // wants; three filled actions shout over each other.
-function actionHierarchy(variant: Variant, size: PreviewSize) {
+function actionHierarchy(variant: Variant) {
     const isDo = variant === "do";
     return (
-        <PreviewFrame size={size} className="flex flex-col justify-center gap-3">
+        <PreviewFrame className="flex flex-col justify-center gap-3">
             <div>
                 <span className="block text-[11px] font-semibold text-neutral-800 dark:text-neutral-100">
                     Ready to publish?
@@ -122,10 +121,10 @@ function actionHierarchy(variant: Variant, size: PreviewSize) {
 //
 // Corners are concentric by construction: 12px row and dialog around 6px
 // padding hold 6px buttons (12 = 6 + 6), so the pane obeys comp-3 too.
-function destructiveActions(variant: Variant, size: PreviewSize) {
+function destructiveActions(variant: Variant) {
     const isDo = variant === "do";
     return (
-        <PreviewFrame size={size} className="flex items-center justify-center">
+        <PreviewFrame className="flex items-center justify-center">
             <div className="flex w-full flex-col gap-1.5">
                 <div className="flex items-center justify-between gap-2 rounded-[12px] border border-neutral-200 bg-white p-1.5 dark:border-neutral-800 dark:bg-neutral-900">
                     <div className="min-w-0 pl-1">
@@ -196,12 +195,12 @@ function CornerArc({ radius, className }: { radius: number; className: string })
     );
 }
 
-function nestedRadius(variant: Variant, size: PreviewSize) {
+function nestedRadius(variant: Variant) {
     const isDo = variant === "do";
     const outer = isDo ? 12 : 4;
     const inner = 4;
     return (
-        <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-2.5">
+        <PreviewFrame className="flex flex-col items-center justify-center gap-2.5">
             <div
                 className="relative mt-3 border border-neutral-200 bg-white p-2 dark:border-neutral-700 dark:bg-neutral-900"
                 style={{ borderRadius: outer }}
@@ -239,10 +238,10 @@ function nestedRadius(variant: Variant, size: PreviewSize) {
 // The same two rows — a person and a file. Organic gets the circle,
 // content keeps its corners. Each row is 13px = the 5px tile + 8px padding,
 // so the rows stay concentric with what they hold (comp-3).
-function avatarShapes(variant: Variant, size: PreviewSize) {
+function avatarShapes(variant: Variant) {
     const isDo = variant === "do";
     return (
-        <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-2">
+        <PreviewFrame className="flex flex-col items-center justify-center gap-2">
             <div className="w-48 space-y-2">
                 <div className="flex items-center gap-2 rounded-[13px] bg-neutral-50 p-2 dark:bg-neutral-900">
                     <span
@@ -289,7 +288,7 @@ function avatarShapes(variant: Variant, size: PreviewSize) {
 // the same app. The one variable is the container it is served in: a side
 // drawer that fits the form and leaves the page readable, or a small
 // centred modal that scrims the page and clips five fields off the form.
-function modalVsDrawer(variant: Variant, size: PreviewSize) {
+function modalVsDrawer(variant: Variant) {
     const isDo = variant === "do";
     // Six fields, matching the rule's own shorthand. Rows are label-left so all
     // six fit the drawer's height — and so the modal visibly clips five of them.
@@ -305,7 +304,7 @@ function modalVsDrawer(variant: Variant, size: PreviewSize) {
         </div>
     ));
     return (
-        <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-2">
+        <PreviewFrame className="flex flex-col items-center justify-center gap-2">
             <div className="relative h-[104px] w-full overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900">
                 {/* The page underneath — identical in both panes. */}
                 <div className="space-y-1.5 p-2">
@@ -324,11 +323,27 @@ function modalVsDrawer(variant: Variant, size: PreviewSize) {
                 ) : (
                     <>
                         <div aria-hidden="true" className="absolute inset-0 bg-neutral-950/55 dark:bg-black/70" />
-                        <div className="absolute left-1/2 top-1/2 h-[38px] w-[58%] -translate-x-1/2 -translate-y-1/2 space-y-0.5 overflow-hidden rounded-[6px] border border-blue-500 bg-white p-1 pl-1.5 dark:border-blue-400 dark:bg-neutral-800">
+                        {/* The fields scroll inside a 24px viewport: one whole
+                            row, then the next fading out from where the first
+                            ends, so the cut-off reads as "more below" rather
+                            than a slice. The rail beside the rows is that
+                            viewport's scrollbar; 24px of 82px of rows puts the
+                            thumb at about 7px. */}
+                        <div className="absolute left-1/2 top-1/2 w-[58%] -translate-x-1/2 -translate-y-1/2 space-y-0.5 overflow-hidden rounded-[6px] border border-blue-500 bg-white p-1 pl-1.5 dark:border-blue-400 dark:bg-neutral-800">
                             <span className="block text-[10px] font-semibold leading-3 text-neutral-800 dark:text-neutral-100">
                                 Edit profile
                             </span>
-                            {fieldRows}
+                            <div className="flex gap-1">
+                                <div className="h-6 flex-1 space-y-0.5 overflow-hidden [mask-image:linear-gradient(to_bottom,black_12px,transparent)]">
+                                    {fieldRows}
+                                </div>
+                                <span
+                                    aria-hidden="true"
+                                    className="relative h-6 w-0.5 shrink-0 rounded-full bg-neutral-200 dark:bg-neutral-700"
+                                >
+                                    <span className="absolute inset-x-0 top-0 h-[7px] rounded-full bg-neutral-400 dark:bg-neutral-500" />
+                                </span>
+                            </div>
                         </div>
                     </>
                 )}
@@ -344,10 +359,10 @@ function modalVsDrawer(variant: Variant, size: PreviewSize) {
 // The same invalid email, the same field, the same reserved helper slot
 // under it. The one variable is where the fix is published: in the slot
 // the eye is already in, or in a toast in the opposite corner.
-function toastVsInline(variant: Variant, size: PreviewSize) {
+function toastVsInline(variant: Variant) {
     const isDo = variant === "do";
     return (
-        <PreviewFrame size={size} className="relative flex flex-col justify-center gap-2">
+        <PreviewFrame className="relative flex flex-col justify-center gap-2">
             <div className="w-40">
                 <span className="block text-[10px] font-semibold text-neutral-600 dark:text-neutral-300">
                     Email
@@ -378,7 +393,7 @@ function toastVsInline(variant: Variant, size: PreviewSize) {
 // The same three actions. Archive/share/delete are guesses as glyphs;
 // labels retire the guessing. The bar is 13px = the 6px buttons + 1px border
 // + 6px padding, so its corners stay concentric with theirs (comp-3).
-function iconPlusLabel(variant: Variant, size: PreviewSize) {
+function iconPlusLabel(variant: Variant) {
     const isDo = variant === "do";
     const actions = [
         { icon: Archive, label: "Archive" },
@@ -386,7 +401,7 @@ function iconPlusLabel(variant: Variant, size: PreviewSize) {
         { icon: Trash2, label: "Delete" },
     ];
     return (
-        <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-3">
+        <PreviewFrame className="flex flex-col items-center justify-center gap-3">
             <div className="flex items-center gap-1.5 rounded-[13px] border border-neutral-200 bg-white p-1.5 dark:border-neutral-800 dark:bg-neutral-900">
                 {actions.map(({ icon: Icon, label }) => (
                     <span
@@ -411,10 +426,10 @@ function iconPlusLabel(variant: Variant, size: PreviewSize) {
 // disabled control is judged in real UI rather than floating alone. The
 // helper slot under the button is reserved in both panes — the one
 // variable is whether a sentence occupies it.
-function disabledReason(variant: Variant, size: PreviewSize) {
+function disabledReason(variant: Variant) {
     const isDo = variant === "do";
     return (
-        <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-2">
+        <PreviewFrame className="flex flex-col items-center justify-center gap-2">
             <div className="w-full rounded-md border border-neutral-200 bg-white p-2 dark:border-neutral-800 dark:bg-neutral-900">
                 <div className="flex items-baseline justify-between gap-2">
                     <span className="text-[10px] font-semibold text-neutral-800 dark:text-neutral-100">
@@ -447,12 +462,12 @@ function disabledReason(variant: Variant, size: PreviewSize) {
 // ── comp-10 · Consistent icon size ──────────────────────────────────
 // The same toolbar with a baseline drawn. One size reads as a set;
 // three sizes read as three donors.
-function iconSizes(variant: Variant, size: PreviewSize) {
+function iconSizes(variant: Variant) {
     const isDo = variant === "do";
     const sizes = isDo ? [20, 20, 20] : [16, 20, 24];
     const icons = [Archive, Share2, Trash2];
     return (
-        <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-3">
+        <PreviewFrame className="flex flex-col items-center justify-center gap-3">
             <div className="relative flex items-center gap-4 rounded-lg border border-neutral-200 bg-white px-3 py-2.5 dark:border-neutral-800 dark:bg-neutral-900">
                 <span
                     aria-hidden="true"
@@ -476,10 +491,10 @@ function iconSizes(variant: Variant, size: PreviewSize) {
 // ── comp-11 · Card click area ───────────────────────────────────────
 // The same article card; the dashed accent region is the hit area.
 // The whole card, or just the title text — 16% of the card's area.
-function cardClickArea(variant: Variant, size: PreviewSize) {
+function cardClickArea(variant: Variant) {
     const isDo = variant === "do";
     return (
-        <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-2">
+        <PreviewFrame className="flex flex-col items-center justify-center gap-2">
             <div
                 className={cn(
                     "w-48 rounded-lg border bg-white p-2.5 dark:bg-neutral-900",
@@ -510,10 +525,10 @@ function cardClickArea(variant: Variant, size: PreviewSize) {
 // The same dialog over the same scrimmed page — the backdrop is drawn in
 // both panes, because "closes on backdrop click" is only an exit if the
 // backdrop exists. The one variable is the visible ✕.
-function closeAffordance(variant: Variant, size: PreviewSize) {
+function closeAffordance(variant: Variant) {
     const isDo = variant === "do";
     return (
-        <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-2">
+        <PreviewFrame className="flex flex-col items-center justify-center gap-2">
             <div className="relative h-[88px] w-full overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900">
                 <div className="space-y-1.5 p-2">
                     <TextLine raised widthClass="w-1/3" />
@@ -554,30 +569,30 @@ function closeAffordance(variant: Variant, size: PreviewSize) {
 
 // ── Dispatcher ──────────────────────────────────────────────────────
 
-export const componentPreviews: PreviewRenderer = (ruleId, variant, size): ReactNode | null => {
+export const componentPreviews: PreviewRenderer = (ruleId, variant): ReactNode | null => {
     switch (ruleId) {
         case "comp-1":
-            return actionHierarchy(variant, size);
+            return actionHierarchy(variant);
         case "comp-2":
-            return destructiveActions(variant, size);
+            return destructiveActions(variant);
         case "comp-3":
-            return nestedRadius(variant, size);
+            return nestedRadius(variant);
         case "comp-4":
-            return avatarShapes(variant, size);
+            return avatarShapes(variant);
         case "comp-5":
-            return modalVsDrawer(variant, size);
+            return modalVsDrawer(variant);
         case "comp-6":
-            return toastVsInline(variant, size);
+            return toastVsInline(variant);
         case "comp-7":
-            return iconPlusLabel(variant, size);
+            return iconPlusLabel(variant);
         case "comp-8":
-            return disabledReason(variant, size);
+            return disabledReason(variant);
         case "comp-10":
-            return iconSizes(variant, size);
+            return iconSizes(variant);
         case "comp-11":
-            return cardClickArea(variant, size);
+            return cardClickArea(variant);
         case "comp-12":
-            return closeAffordance(variant, size);
+            return closeAffordance(variant);
         default:
             return null;
     }

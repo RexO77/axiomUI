@@ -582,7 +582,7 @@ function PanelBody({
                       <VerdictLabel verdict={verdict} size="sm" />
                     </h3>
                     <div className="mt-3">
-                      <RulePreview rule={rule} variant={verdict} size="lg" />
+                      <RulePreview rule={rule} variant={verdict} />
                     </div>
                     <p className="mt-3 font-mono text-sm leading-6 text-ink-muted">
                       {verdict === "do" ? rule.do : rule.dont}

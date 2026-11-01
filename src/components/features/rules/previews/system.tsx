@@ -23,7 +23,6 @@ import {
     ANNOTATION_INK,
     PreviewFrame,
     type PreviewRenderer,
-    type PreviewSize,
     type Variant,
 } from "@/components/features/rules/preview-primitives";
 import { cn } from "@/lib/utils";
@@ -57,9 +56,9 @@ function CodeChip({ children }: { children: ReactNode }) {
 // ── sys-2 · Empty states ────────────────────────────────────────────
 // Same "Projects" panel; the only variable is whether the empty body
 // explains itself and offers the next action.
-function emptyStates(variant: Variant, size: PreviewSize) {
+function emptyStates(variant: Variant) {
     return (
-        <PreviewFrame size={size} className="flex">
+        <PreviewFrame className="flex">
             <div className="flex w-full flex-col rounded-md border border-neutral-200 dark:border-neutral-800">
                 <div className="flex items-center justify-between border-b border-neutral-200 px-2.5 py-1.5 dark:border-neutral-800">
                     <span className="text-[10px] font-semibold text-neutral-700 dark:text-neutral-200">Projects</span>
@@ -88,9 +87,9 @@ function emptyStates(variant: Variant, size: PreviewSize) {
 // ── sys-3 · Click targets ───────────────────────────────────────────
 // Same attachment row; the delete affordance is drawn at true size with
 // a dashed hit-area guide — 44px vs a bare 16px glyph.
-function tapTargets(variant: Variant, size: PreviewSize) {
+function tapTargets(variant: Variant) {
     return (
-        <PreviewFrame size={size} className="flex items-center">
+        <PreviewFrame className="flex items-center">
             <div className="flex w-full items-center gap-2.5 rounded-md border border-neutral-200 px-2.5 py-2 dark:border-neutral-800">
                 <FileText aria-hidden className="size-4 shrink-0 stroke-[1.5] text-neutral-400 dark:text-neutral-500" />
                 <div className="min-w-0 flex-1">
@@ -130,14 +129,14 @@ function tapTargets(variant: Variant, size: PreviewSize) {
 // ── sys-4 · Date formats ────────────────────────────────────────────
 // Same activity feed, same fixed timestamp slot. Relative times fit;
 // ISO strings fight the layout and truncate mid-value.
-function dateFormats(variant: Variant, size: PreviewSize) {
+function dateFormats(variant: Variant) {
     const rows = [
         { initial: "M", text: "Maya pushed to main", rel: "2m ago", iso: "2026-08-10T14:02:11Z" },
         { initial: "A", text: "Arun opened #482", rel: "1h ago", iso: "2026-08-10T13:07:44Z" },
         { initial: "S", text: "Sana merged #479", rel: "3h ago", iso: "2026-08-10T11:31:05Z" },
     ];
     return (
-        <PreviewFrame size={size} className="flex flex-col justify-center gap-2">
+        <PreviewFrame className="flex flex-col justify-center gap-2">
             <span className="text-[10px] font-semibold text-neutral-700 dark:text-neutral-200">Activity</span>
             <div className="space-y-2">
                 {rows.map((row) => (
@@ -216,10 +215,10 @@ function Arrow() {
     return <MoveRight aria-hidden className="size-2.5 shrink-0 stroke-[1.5] text-neutral-300 dark:text-neutral-600" />;
 }
 
-function tokenNaming(variant: Variant, size: PreviewSize) {
+function tokenNaming(variant: Variant) {
     if (variant === "do") {
         return (
-            <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-2">
+            <PreviewFrame className="flex flex-col items-center justify-center gap-2">
                 <div className="grid grid-cols-[auto_auto_auto_auto_auto] items-center justify-items-start gap-x-1 gap-y-1.5">
                     <TokenChip swatch="blue" label="blue-500" />
                     <Arrow />
@@ -242,7 +241,7 @@ function tokenNaming(variant: Variant, size: PreviewSize) {
         );
     }
     return (
-        <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-2">
+        <PreviewFrame className="flex flex-col items-center justify-center gap-2">
             <div className="flex items-center gap-1.5">
                 <TokenChip swatch="blue" label="$button-blue" />
                 <div className="flex flex-col items-start gap-1.5">
@@ -281,9 +280,9 @@ function FileRow({ name, meta, ghost }: { name: string; meta: string; ghost?: bo
     );
 }
 
-function undoDelete(variant: Variant, size: PreviewSize) {
+function undoDelete(variant: Variant) {
     return (
-        <PreviewFrame size={size} className="flex flex-col justify-between">
+        <PreviewFrame className="flex flex-col justify-between">
             <div className="space-y-1.5">
                 <span className="block text-[10px] font-semibold text-neutral-700 dark:text-neutral-200">Files</span>
                 {variant === "do" ? <FileRow name="Q3-report.pdf" meta="4.6 MB" ghost /> : null}
@@ -314,9 +313,9 @@ function undoDelete(variant: Variant, size: PreviewSize) {
 // ── sys-7 · Show progress for multi-step ────────────────────────────
 // Same checkout step; the only variable is whether the flow states
 // where you are and how much remains.
-function multiStepProgress(variant: Variant, size: PreviewSize) {
+function multiStepProgress(variant: Variant) {
     return (
-        <PreviewFrame size={size} className="flex flex-col justify-center">
+        <PreviewFrame className="flex flex-col justify-center">
             <div className="space-y-2 rounded-md border border-neutral-200 p-2.5 dark:border-neutral-800">
                 <div className="flex items-baseline justify-between">
                     <span className="text-[11px] font-semibold text-neutral-700 dark:text-neutral-200">Shipping</span>
@@ -352,9 +351,9 @@ function multiStepProgress(variant: Variant, size: PreviewSize) {
 // ── sys-8 · Keyboard navigation ─────────────────────────────────────
 // Same confirm dialog. Do: focus ring on the primary action plus a kbd
 // legend. Don't: a mouse cursor is the only way in — no ring, no keys.
-function keyboardNav(variant: Variant, size: PreviewSize) {
+function keyboardNav(variant: Variant) {
     return (
-        <PreviewFrame size={size} className="flex flex-col items-center justify-center gap-3">
+        <PreviewFrame className="flex flex-col items-center justify-center gap-3">
             <div className="w-full max-w-[200px] space-y-1.5 rounded-md border border-neutral-200 bg-white p-2.5 shadow-sm dark:border-neutral-700 dark:bg-neutral-900">
                 <span className="block text-[10px] font-semibold text-neutral-700 dark:text-neutral-200">
                     Archive project?
@@ -402,9 +401,9 @@ function keyboardNav(variant: Variant, size: PreviewSize) {
 // the slot collapses to the alt text's line box, a small glyph and the
 // file name in the inherited face, flush left, and the content shifts up.
 // No dashed box: an outline would read as a designed empty state.
-function gracefulDegradation(variant: Variant, size: PreviewSize) {
+function gracefulDegradation(variant: Variant) {
     return (
-        <PreviewFrame size={size} className="flex">
+        <PreviewFrame className="flex">
             <div className="w-full space-y-1.5 self-start rounded-md border border-neutral-200 p-2 dark:border-neutral-800">
                 {variant === "do" ? (
                     <div className="flex h-12 items-center justify-center gap-2 rounded-sm bg-neutral-100 dark:bg-neutral-800">
@@ -439,7 +438,7 @@ function gracefulDegradation(variant: Variant, size: PreviewSize) {
 // phone. Don't: eight device-specific ticks crowd mid-ruler — the crowding is
 // the lesson, so the labels alternate above and below the ruler and every
 // value stays legible instead of overprinting.
-function breakpoints(variant: Variant, size: PreviewSize) {
+function breakpoints(variant: Variant) {
     const doTicks = [
         { value: 640, at: 50 },
         { value: 1024, at: 80 },
@@ -450,7 +449,7 @@ function breakpoints(variant: Variant, size: PreviewSize) {
     }));
     const ticks = variant === "do" ? doTicks : dontTicks;
     return (
-        <PreviewFrame size={size} className="flex flex-col justify-center gap-1">
+        <PreviewFrame className="flex flex-col justify-center gap-1">
             <div className="relative mt-4 mb-3.5 h-10 w-full rounded-md border border-neutral-200 dark:border-neutral-800">
                 {variant === "do" ? (
                     <div className="absolute inset-0 flex">
@@ -508,9 +507,9 @@ const DRIFT = [
     { width: 108, opacity: 0.25 },
 ];
 
-function transitionScope(variant: Variant, size: PreviewSize) {
+function transitionScope(variant: Variant) {
     return (
-        <PreviewFrame size={size} className="flex flex-col justify-center gap-3">
+        <PreviewFrame className="flex flex-col justify-center gap-3">
             <CodeChip>
                 {variant === "do" ? (
                     <>
@@ -562,9 +561,9 @@ function HintCard({ accent = false }: { accent?: boolean }) {
     );
 }
 
-function willChange(variant: Variant, size: PreviewSize) {
+function willChange(variant: Variant) {
     return (
-        <PreviewFrame size={size} className="flex flex-col justify-center gap-3">
+        <PreviewFrame className="flex flex-col justify-center gap-3">
             <CodeChip>
                 will-change:{" "}
                 {variant === "do" ? (
@@ -597,7 +596,7 @@ function willChange(variant: Variant, size: PreviewSize) {
 
 // ── Dispatcher ──────────────────────────────────────────────────────
 
-const scenes: Record<string, (variant: Variant, size: PreviewSize) => ReactNode> = {
+const scenes: Record<string, (variant: Variant) => ReactNode> = {
     "sys-2": emptyStates,
     "sys-3": tapTargets,
     "sys-4": dateFormats,
@@ -611,5 +610,5 @@ const scenes: Record<string, (variant: Variant, size: PreviewSize) => ReactNode>
     "sys-14": willChange,
 };
 
-export const systemPreviews: PreviewRenderer = (ruleId, variant, size) =>
-    scenes[ruleId]?.(variant, size) ?? null;
+export const systemPreviews: PreviewRenderer = (ruleId, variant) =>
+    scenes[ruleId]?.(variant) ?? null;

@@ -377,7 +377,7 @@ describe("stated breakpoint counts are consistent", () => {
 
 /** The visible text of a rendered preview, entities decoded, whitespace collapsed. */
 function paneText(ruleId: string, variant: "do" | "dont"): string {
-  const node = getStaticRulePreview(ruleId, variant, "lg");
+  const node = getStaticRulePreview(ruleId, variant);
   if (!node) return "";
   return renderToStaticMarkup(node)
     .replace(/<[^>]+>/g, " ")

@@ -91,7 +91,7 @@ function WeightRow({
     );
 }
 
-export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
+export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
     const isDo = variant === "do";
 
     switch (ruleId) {
@@ -102,7 +102,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
                 ? { title: "Invite your team", skip: "Skip for now", cta: "Send invites" }
                 : { title: "Invite Your Team", skip: "Skip For Now", cta: "Send Invites" };
             return (
-                <PreviewFrame size={size} className="flex items-center justify-center">
+                <PreviewFrame className="flex items-center justify-center">
                     <div className="w-full max-w-[230px] rounded-md border border-neutral-200 bg-white p-3 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
                         <p className="text-[13px] font-semibold text-neutral-900 dark:text-neutral-50">
                             {copy.title}
@@ -129,7 +129,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
         // sample hides the effect the rule is about.
         case "typo-2":
             return (
-                <PreviewFrame size={size} className="flex items-center justify-center">
+                <PreviewFrame className="flex items-center justify-center">
                     <div className="w-full max-w-[220px]">
                         <div className="flex items-baseline justify-between gap-2">
                             <span
@@ -181,7 +181,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
         // changes, and the mono tag states the exact ratio.
         case "typo-3":
             return (
-                <PreviewFrame size={size} className="flex flex-col justify-center">
+                <PreviewFrame className="flex flex-col justify-center">
                     <Spec className="block">
                         16px / {isDo ? "24px" : "18px"} ·{" "}
                         <span className={ACCENT_TEXT}>{isDo ? "1.5" : "1.13"}</span>
@@ -202,7 +202,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
         // only the leading changes.
         case "typo-4":
             return (
-                <PreviewFrame size={size} className="flex flex-col justify-center">
+                <PreviewFrame className="flex flex-col justify-center">
                     <Spec className="block">
                         22px / {isDo ? "24px" : "33px"} ·{" "}
                         <span className={ACCENT_TEXT}>{isDo ? "1.1" : "1.5"}</span>
@@ -234,7 +234,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
                 ? "var(--font-manrope), sans-serif"
                 : "Verdana, 'DejaVu Sans', Geneva, sans-serif";
             return (
-                <PreviewFrame size={size} className="flex items-center justify-center">
+                <PreviewFrame className="flex items-center justify-center">
                     <div className="w-full max-w-[230px]">
                         <Spec className="block">
                             {isDo ? "1 family · Manrope" : "2 sans · Arial + Verdana"}
@@ -260,7 +260,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
         // email's treatment changes: lighter at full size vs tiny at full ink.
         case "typo-6":
             return (
-                <PreviewFrame size={size} className="flex items-center justify-center">
+                <PreviewFrame className="flex items-center justify-center">
                     <div className="flex w-full max-w-[250px] items-center gap-2.5 rounded-md border border-neutral-200 bg-white p-2.5 dark:border-neutral-800 dark:bg-neutral-900">
                         <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-[10px] font-semibold text-neutral-600 dark:bg-neutral-700 dark:text-neutral-200">
                             AC
@@ -309,7 +309,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
                 isDo ? "tabular-nums" : "proportional-nums"
             );
             return (
-                <PreviewFrame size={size} className="flex items-center justify-center">
+                <PreviewFrame className="flex items-center justify-center">
                     <div className="w-full max-w-[230px]">
                         <div className="flex items-baseline justify-between gap-2">
                             <span className="text-[11px] font-semibold text-neutral-900 dark:text-neutral-50">
@@ -344,7 +344,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
         // the rail, center starts none of them there.
         case "typo-8":
             return (
-                <PreviewFrame size={size} className="flex items-center justify-center">
+                <PreviewFrame className="flex items-center justify-center">
                     <div className="w-full max-w-[220px]">
                         <p className="text-center text-[12px] font-semibold text-neutral-900 dark:text-neutral-50">
                             Changelog
@@ -424,7 +424,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
                         : "700";
             const used = [...new Set(rows.map((row) => tagFor(isDo ? row.doW : row.dontW)))].sort();
             return (
-                <PreviewFrame size={size} className="flex items-center justify-center">
+                <PreviewFrame className="flex items-center justify-center">
                     <div className="w-full max-w-[260px]">
                         <Spec className="block">
                             <span className={ACCENT_TEXT}>{used.length}</span> weights ·{" "}
@@ -459,7 +459,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
         // the edge — which is the damage the rule is actually about.
         case "typo-10":
             return (
-                <PreviewFrame size={size} className="flex flex-col justify-center gap-1.5">
+                <PreviewFrame className="flex flex-col justify-center gap-1.5">
                     <Spec className="block">
                         {isDo ? "truncate — row keeps its columns" : "nowrap — row overruns"}
                     </Spec>
@@ -476,7 +476,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
         // change, each line tagged with its rendered size.
         case "typo-11":
             return (
-                <PreviewFrame size={size} className="flex items-center justify-center">
+                <PreviewFrame className="flex items-center justify-center">
                     <div className="flex w-full max-w-[280px] items-start gap-2.5 rounded-md border border-neutral-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900">
                         <span className="flex size-6 shrink-0 items-center justify-center rounded-sm bg-neutral-100 dark:bg-neutral-800">
                             <ShieldAlert
@@ -533,7 +533,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
         // only thing that differs between panes.
         case "typo-12":
             return (
-                <PreviewFrame size={size} className="flex flex-col justify-center">
+                <PreviewFrame className="flex flex-col justify-center">
                     <Spec className="block">
                         {isDo ? "balance — even lines" : "wrap — one word alone"}
                     </Spec>
@@ -566,7 +566,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant, size) => {
         // would already be pretty and the pair would isolate nothing.
         case "typo-13":
             return (
-                <PreviewFrame size={size} className="flex items-center justify-center">
+                <PreviewFrame className="flex items-center justify-center">
                     <div className="w-full max-w-[230px] rounded-md border border-neutral-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900">
                         <div className="flex items-center gap-2">
                             <span className="flex size-6 shrink-0 items-center justify-center rounded-sm bg-neutral-100 dark:bg-neutral-800">
