@@ -23,8 +23,36 @@ import { useSearch } from "@/components/providers/search-provider";
 const SHEET_ID = "mobile-menu";
 const DESKTOP_PANEL_ID = "desktop-sidebar";
 
-/** Below this width the floating panel would squeeze the cards, so it starts collapsed. */
+/**
+ * Below this width the floating panel would squeeze the cards, so it starts
+ * collapsed. The prerender classes below and the lane's band in globals.css
+ * break at the same width.
+ */
 const DESKTOP_OPEN_QUERY = "(min-width: 1024px)";
+
+type DesktopState = "open" | "closed" | "prerender";
+
+/*
+ * How the expand button and the panel look in each state. Both enter on the
+ * slow token and leave on the medium one (motion-6/7). "prerender" is the
+ * server's render, which can't know the width: it keys the state to the same
+ * 1024px query in CSS, so every width paints what hydration keeps. There the
+ * hidden control is `invisible` instead of inert (CSS can't set inert), which
+ * takes it out of the tab order just the same.
+ */
+const EXPAND_BUTTON_CLASSES: Record<DesktopState, string> = {
+    open: "translate-x-1 scale-[0.88] opacity-0 blur-[4px]",
+    closed: "pointer-events-auto translate-x-0 scale-100 opacity-100",
+    prerender:
+        "pointer-events-auto translate-x-0 scale-100 opacity-100 min-[1024px]:pointer-events-none min-[1024px]:invisible min-[1024px]:translate-x-1 min-[1024px]:scale-[0.88] min-[1024px]:opacity-0 min-[1024px]:blur-[4px]",
+};
+
+const PANEL_CLASSES: Record<DesktopState, string> = {
+    open: "pointer-events-auto translate-x-0 scale-100 opacity-100",
+    closed: "-translate-x-2 scale-[0.985] opacity-0 blur-[2px]",
+    prerender:
+        "invisible -translate-x-2 scale-[0.985] opacity-0 blur-[2px] min-[1024px]:pointer-events-auto min-[1024px]:visible min-[1024px]:translate-x-0 min-[1024px]:scale-100 min-[1024px]:opacity-100 min-[1024px]:filter-none",
+};
 
 const FOCUSABLE_SELECTOR =
     'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -280,17 +308,18 @@ export function Sidebar() {
     const [isOpen, setIsOpen] = useState(false);
     // The panel follows the window (open from 1024px, collapsed below, where
     // it would squeeze the cards) until the reader toggles it; from then on
-    // their choice holds. The server assumes a wide window.
-    const isWideEnough = useSyncExternalStore(
+    // their choice holds. The server can't know the width, so it renders
+    // null: both panels then take their state from the media query in CSS,
+    // and hydration resolves to the state that is already on screen.
+    const isWideEnough = useSyncExternalStore<boolean | null>(
         subscribeToDesktopWidth,
         () => window.matchMedia(DESKTOP_OPEN_QUERY).matches,
-        () => true
+        () => null
     );
     const [desktopChoice, setDesktopChoice] = useState<boolean | null>(null);
     const isDesktopOpen = desktopChoice ?? isWideEnough;
-    // Transitions switch on only after the first paint, so a hydrated
-    // render correcting itself for a narrow window doesn't animate on load.
-    const [motionReady, setMotionReady] = useState(false);
+    const desktopState: DesktopState =
+        isDesktopOpen === null ? "prerender" : isDesktopOpen ? "open" : "closed";
     const { tapNudge } = useHaptics();
 
     const headerRef = useRef<HTMLDivElement>(null);
@@ -317,17 +346,6 @@ export function Sidebar() {
         returnFocusRef.current = returnFocus;
         setIsOpen(false);
     };
-
-    useEffect(() => {
-        let second = 0;
-        const first = requestAnimationFrame(() => {
-            second = requestAnimationFrame(() => setMotionReady(true));
-        });
-        return () => {
-            cancelAnimationFrame(first);
-            cancelAnimationFrame(second);
-        };
-    }, []);
 
     // Keep the page outside the sheet out of pointer and keyboard interaction.
     // Portaled dialogs opened from the sheet remain available above it.
@@ -496,7 +514,9 @@ export function Sidebar() {
         return () => window.removeEventListener("axiom:open-search", onOpenSearch);
     }, []);
 
+    // Before hydration the lane already holds the matching default shift.
     useLayoutEffect(() => {
+        if (isDesktopOpen === null) return;
         const root = document.documentElement;
         root.style.setProperty(
             "--main-lane-shift",
@@ -612,20 +632,17 @@ export function Sidebar() {
                 </div>
             </div>
 
-            {/* Desktop sidebar. Each panel enters on the slow token and leaves
-                on the medium one (motion-6/7). */}
+            {/* Desktop sidebar */}
             <div ref={desktopRef} className="pointer-events-none fixed inset-y-0 left-0 z-[80] hidden w-[312px] md:block">
                 <div
-                    inert={isDesktopOpen || undefined}
+                    inert={isDesktopOpen === true || undefined}
                     style={{
-                        transitionProperty: motionReady ? "opacity, translate, scale, filter" : "none",
+                        transitionProperty: "opacity, translate, scale, filter",
                         transitionDuration: isDesktopOpen ? "var(--motion-medium)" : "var(--motion-slow)",
                     }}
                     className={cn(
                         "sidebar-motion absolute left-5 top-5 z-20 rounded-full shadow-overlay ease-drawer",
-                        isDesktopOpen
-                            ? "translate-x-1 scale-[0.88] opacity-0 blur-[4px]"
-                            : "pointer-events-auto translate-x-0 scale-100 opacity-100 blur-0"
+                        EXPAND_BUTTON_CLASSES[desktopState]
                     )}
                 >
                     <IconButton
@@ -649,16 +666,14 @@ export function Sidebar() {
                     // When collapsed the panel is only visually hidden (opacity/transform),
                     // so its controls stay in the tab order — `inert` pulls all descendants
                     // out of focus order and the a11y tree in one standards-compliant step.
-                    inert={!isDesktopOpen || undefined}
+                    inert={isDesktopOpen === false || undefined}
                     style={{
-                        transitionProperty: motionReady ? "opacity, translate, scale, filter" : "none",
+                        transitionProperty: "opacity, translate, scale, filter",
                         transitionDuration: isDesktopOpen ? "var(--motion-slow)" : "var(--motion-medium)",
                     }}
                     className={cn(
                         "sidebar-motion absolute bottom-5 left-5 top-5 flex w-[280px] overflow-hidden rounded-card border border-line bg-surface/95 shadow-panel ease-drawer",
-                        isDesktopOpen
-                            ? "pointer-events-auto translate-x-0 scale-100 opacity-100 blur-0"
-                            : "-translate-x-2 scale-[0.985] opacity-0 blur-[2px]"
+                        PANEL_CLASSES[desktopState]
                     )}
                 >
                     <SidebarContent
@@ -667,7 +682,7 @@ export function Sidebar() {
                             <IconButton
                                 ref={collapseButtonRef}
                                 label="Collapse sidebar"
-                                aria-expanded={isDesktopOpen}
+                                aria-expanded={isDesktopOpen !== false}
                                 aria-controls={DESKTOP_PANEL_ID}
                                 onClick={() => {
                                     tapNudge();

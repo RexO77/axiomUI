@@ -70,6 +70,7 @@ describe("filterRules", () => {
 
     expect(straight.map((rule) => rule.id)).toContain("form-12");
     expect(filterRules("“Saved successfully”")).toEqual(straight);
+    expect(filterRules('“Saved successfully"')).toEqual(straight);
   });
 
   it("finds catalog text either way it was typed", () => {

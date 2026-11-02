@@ -160,8 +160,9 @@ function CommandRow({ command, label, announce }: {
   label: string;
   announce: (message: string) => void;
 }) {
+  // Match the copy pill inside the command row’s 6px inset.
   return (
-    <div className="flex min-w-0 items-center gap-3 rounded-field bg-sunken pl-4 pr-1.5 py-1.5">
+    <div className="flex min-w-0 items-center gap-3 rounded-full bg-sunken pl-4 pr-1.5 py-1.5">
       <code className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap py-2 text-sm leading-6 text-ink">
         <span aria-hidden="true" className="select-none text-ink-muted">$ </span>
         {command}
@@ -703,7 +704,7 @@ export function SkillBonus({ compact = false }: { compact?: boolean }) {
           <button
             type="button"
             onClick={openModal}
-            className="pressable group flex min-h-11 w-full items-center justify-between gap-3 rounded-field px-2 py-1.5 text-left text-xs font-medium text-ink-muted hover:bg-fill hover:text-ink"
+            className="pressable group flex min-h-11 w-full items-center justify-between gap-3 rounded-[20px] px-2 py-1.5 text-left text-xs font-medium text-ink-muted hover:bg-fill hover:text-ink"
           >
             <span className="min-w-0">
               <span className="block text-xs font-normal text-ink-muted">Agent skills</span>
@@ -720,11 +721,11 @@ export function SkillBonus({ compact = false }: { compact?: boolean }) {
           </button>
         </div>
       ) : (
-        <section className="rounded-card bg-surface p-5 text-ink shadow-card">
+        <section className="rounded-card bg-surface text-ink shadow-card">
           <button
             type="button"
             onClick={openModal}
-            className="group min-h-11 w-full rounded-field text-left"
+            className="group min-h-11 w-full rounded-card p-5 text-left"
           >
             <p className="text-xs font-medium text-ink-muted">Agent skills</p>
             <div className="mt-2 flex items-start justify-between gap-3">
