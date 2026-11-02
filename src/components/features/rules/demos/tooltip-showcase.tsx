@@ -163,8 +163,10 @@ function ToolbarPane({
                 The stage is dashed like every other showcase rail; the toolbar
                 is the one solid object on it. The status row sits under the
                 buttons so tooltips rise into the stage above the toolbar,
-                where a real one would, not over it. */}
-            <div className="w-full min-w-0 rounded-lg border border-neutral-200 bg-white p-1.5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+                where a real one would, not over it. Its 13px corner is the
+                buttons' 6px plus its own 6px padding and 1px border: the
+                radius the buttons nest in. */}
+            <div className="w-full min-w-0 rounded-[13px] border border-neutral-200 bg-white p-1.5 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
                 <div className="flex items-end justify-center gap-1">
                     {LABELS.map((label, i) => {
                         const active = hovered === i;

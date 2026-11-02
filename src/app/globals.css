@@ -60,10 +60,6 @@
     0 0 0 1px rgba(0, 0, 0, 0.06),
     0 1px 2px -1px rgba(0, 0, 0, 0.06),
     0 12px 32px -24px rgba(15, 23, 42, 0.2);
-  --ax-shadow-card-hover:
-    0 0 0 1px rgba(0, 0, 0, 0.08),
-    0 2px 4px -2px rgba(0, 0, 0, 0.08),
-    0 18px 40px -26px rgba(15, 23, 42, 0.24);
   /* A control floating free over content, like the sidebar's expand button. */
   --ax-shadow-overlay: 0 12px 34px rgba(0, 0, 0, 0.1);
   --ax-shadow-inset: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
@@ -105,9 +101,6 @@
   --ax-shadow-card:
     0 0 0 1px rgba(255, 255, 255, 0.1),
     0 16px 40px -28px rgba(0, 0, 0, 0.9);
-  --ax-shadow-card-hover:
-    0 0 0 1px rgba(255, 255, 255, 0.14),
-    0 20px 44px -28px rgba(0, 0, 0, 0.95);
   --ax-shadow-overlay: 0 14px 42px rgba(0, 0, 0, 0.35);
   --ax-shadow-inset: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
@@ -137,7 +130,6 @@
 
   --shadow-panel: var(--ax-shadow-panel);
   --shadow-card: var(--ax-shadow-card);
-  --shadow-card-hover: var(--ax-shadow-card-hover);
   --shadow-overlay: var(--ax-shadow-overlay);
 
   --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
@@ -603,9 +595,11 @@
  * 768-1023: the sidebar starts collapsed here, so the first paint lays out the
  * collapsed lane hydration keeps. Assuming the open lane instead painted a
  * narrower column, then reflowed it ~3000px shorter after hydration, which
- * threw hash deep links (/#motion) ~1000px past their heading.
+ * threw hash deep links (/#motion) ~1000px past their heading. The range ends
+ * exactly where sidebar.tsx's `(min-width: 1024px)` begins, with no gap at a
+ * fractional width like 1023.5px.
  */
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (768px <= width < 1024px) {
   :root {
     --main-lane-default-shift: 0px;
   }

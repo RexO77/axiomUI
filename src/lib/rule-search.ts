@@ -2,10 +2,8 @@
 import { categories, rules, type Rule } from "@/data/ui-logic";
 
 /**
- * Lowercases and folds typographic quotes to ASCII, on both sides of the
- * match. iOS smart punctuation types ’ where a desktop keyboard types ', and
- * the catalog itself mixes the two, so "don't" and "don’t" must find the same
- * rules.
+ * Fold typographic quotes on both sides of the match: a smart-punctuation
+ * keyboard and the catalog’s quoted UI copy must find the same rules as ASCII.
  */
 function fold(text: string): string {
     return text.toLowerCase().replace(/[‘’]/g, "'").replace(/[“”]/g, '"');
