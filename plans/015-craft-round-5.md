@@ -718,3 +718,130 @@ Every batch: `npm run lint && npm run typecheck && npm run check && npm test`, t
 checks against the running dev server (Playwright, 1440×900 and 390×844, light and dark via
 `localStorage['axiom-theme:v1']` in an init script, dsf 2 for crops). Wave 1 and wave 3 also need a
 throwaway `npm run build` (see W1-B). Commit per batch, in the owner's voice, with no model attribution.
+
+## Round 6
+
+This section records the audit captured during preparation, before the subsequent reviewed deliveries.
+It is a historical finding list and scope map, not a fresh audit of current main. The original screen
+review covered 1440/1280/1024/768/390px and both themes in the dev server; its scratch evidence is local.
+Reproduce each remaining finding against the delivery checkout before changing code. Current reviewed
+behavior takes precedence over an archived patch or a finding that has already been addressed.
+Owner decisions held: no card hover state, the docked drawer's sequencing, sentence case, 105 rules.
+
+At this checkpoint, the skill modal already uses semantic surfaces and a persistent phone header;
+its labels, scroll locking and focus handling were reviewed during skill distribution. Drawer focus,
+mouse selection, touch targets, preview radii and annotation ink also received earlier fixes. Retain
+those changes and implement only the remaining gaps when their delivery packet is reached.
+
+### Findings
+
+| # | Sev | Finding | Batch |
+|---|-----|---------|-------|
+| 1 | P0 | Toggling the sidebar while docked throws the read card ~900px off screen (no anchor) | R6-A |
+| 2 | P0 | Scrollspy stuck on Typography (ratio threshold vs tall sections); last section unreachable at 1024 | R6-A |
+| 3 | P0 | motion-23 showcase teaches inherited duration; its rule, shorthand and deep dive teach `--swipe-amount` recalc cost | R6-I + R6-J |
+| 4 | P1 | Sidebar collapse/expand snaps the lane under an opaque panel; 72px drift at 1024 | R6-A |
+| 5 | P1 | Fast docked paging teleports ~1650px in one frame (`far` measured mid smooth scroll) | R6-A |
+| 6 | P1 | Typing in desktop search while scrolled clamps scrollY and strands the reader | R6-A |
+| 7 | P1 | Mobile Index jump paints three states (blank card, heading under bar, settled) | R6-A |
+| 8 | P1 | Drawer paging blanks the body ~100ms and replays the 420ms stagger | R6-B |
+| 9 | P1 | Skill modal: blurred scrim drops ~3/4 of open frames; off-token 280/180ms (two reports merged) | R6-C + R6-B |
+| 10 | P1 | Docked drawer never takes focus (focus() while `invisible`) | R6-B |
+| 11 | P1 | Closing a deep-linked drawer paints the UA blue outline around `main` | R6-A + R6-B |
+| 12 | P1 | Card descriptions ~100 chars/line at 1440, on the "Text width limits" card too | R6-F |
+| 13 | P1 | Do panes set product text in neutral-400 and CTAs white on blue-500 (color-9's Don't) | R6-D + R6-E |
+| 14 | P1 | Interrupted press/hover/toggle showcases jump to keyframe 0 | R6-H |
+| 15 | P1 | Re-hovering a settled grid preview cuts it to its empty first frame | R6-H |
+| 16 | P1 | Settle-back reverse leaves comp-9 at 0.97 and replays motion-2's keystroke | R6-H + R6-I |
+| 17 | P1 | motion-1 tally mounts on first click and pushes the page 20-36px | R6-H |
+| 18 | P1 | Drag readouts wrap onto a new line mid-drag, then collapse | R6-J |
+| 19 | P1 | sys-1 skeleton rows differ in width from the content they resolve to | R6-I |
+| 20 | P1 | Skill modal keeps the retired grey ring + white ring-offset; text-link ring touches glyphs | R6-C |
+| 21 | P1 | Sidebar skill row: 11px text at 2.6:1 | R6-C |
+| 22 | P1 | "Preview the playbook" snaps the panel 768→1024px in one frame | R6-C |
+| 23 | P1 | On phones the install view's only close control scrolls away | R6-C |
+| 24 | P2 | Skill modal scroll lock shifts the page 7.5px with classic scrollbars | R6-C |
+| 25 | P2 | Docked drawer inset 24px vs sidebar 20px | R6-B |
+| 26 | P2 | 404: skip link has no target; centred multi-line paragraphs (typo-8's Don't) | R6-F |
+| 27 | P2 | OG eyebrows uppercased; "UI Logic" fallback not sentence case | R6-F |
+| 28 | P2 | Unequal Do/Don't frame heights leave sunken holes and misaligned captions | R6-F |
+| 29 | P2 | sys-4 Don't truncates the ISO string the caption names | R6-D |
+| 30 | P2 | layout-10 and typo-2 dark overrides lose to base classes via cn() order | R6-E (+ guard R6-G) |
+| 31 | P2 | Outline buttons 2px taller than filled ones (comp-1, a11y-1, MiniButton) | R6-D |
+| 32 | P2 | Dev: drawer showcases never autoplay (guard set before timer) | R6-H |
+| 33 | P2 | Showcase chips/stages use two radius systems (6/8 vs 12/16) | R6-I |
+| 34 | P2 | PaletteScene breaks the nested-radius rule | R6-I |
+| 35 | P2 | Hand-built showcases lay out controls differently; motion hints under reduced motion | R6-J |
+| 36 | P2 | Shorthand contradicts the demo: motion-21, sys-9, motion-3, motion-19, motion-14 | R6-I + R6-J |
+| 37 | P2 | motion-27's Do exit uses ease-in | R6-I |
+| 38 | P2 | comp-9 hint asks you to click an inert button | R6-I |
+| 39 | P2 | Skill modal surface off-token (#111216, ad-hoc shadow/radii, raw neutrals) | R6-C |
+| 40 | P2 | Index hover invisible in light; other rows hover to the active fill | R6-A |
+| 41 | P2 | Search placeholder 2.4:1 in light | R6-G |
+| 42 | P2 | Index rows 40px on touch; footer links 32px on touch tablets | R6-A |
+| 43 | P2 | Playbook prose 16/32 and h2→h4 outline | R6-C |
+| 44 | P2 | Strict guardrail misses white/black alpha, sub-12px text, arbitrary shadow/duration | R6-G |
+| 45 | P3 | Search commits the whole grid per keystroke (deferred value) | R6-A |
+| 46 | P3 | Three different scrims → one `bg-scrim` token, no blur | R6-B (token) + A, C |
+| 47 | P3 | Sidebar skill row uses an external-link arrow for a dialog | R6-C |
+| 48 | P3 | motion-2 Do readout says 90ms beside "panel 0ms" | R6-I |
+| 49 | P3 | motion-28 icon too small to study the blur | R6-I |
+| 50 | P3 | motion-11 comment claims a nesting that doesn't exist | R6-J |
+| 51 | P3 | Reduced motion still waits out exits (undock 240ms, modal 180ms) | R6-A + R6-C |
+| 52 | P3 | Vaul sheet slides ~3 frames before its content commits | R6-B |
+| 53 | P3 | Rule page at 390: Copy wraps alone onto an empty row | R6-F |
+| 54 | P3 | OG Do value splits a shadow mid-layer; stale "hover lift" comment | R6-F + R6-B |
+| 55 | P3 | form-7 Don't ring inverts concentricity and adds 2px; form-11 hard-coded "today" | R6-E |
+| 56 | P3 | layout-7 split annotation ink is correct; add a comment so it isn't "fixed" | R6-E |
+| 57 | P3 | Stage nits: motion-26 slot, motion-10 pip, motion-4 at 390, motion-24 readout bar | R6-I + R6-H |
+| 58 | P3 | Dead full-size SkillBonus variant | R6-C (+ call site in R6-A) |
+| 59 | P3 | Unnamed sidebar aside; footer inside main | R6-A |
+
+Deferred to the owner: the duplicated Do/Don't key under showcases on `/rules/[id]` (drop the `dl` or keep it),
+a live double-submit counter for comp-9 (this round only rewords the hint), production timing confirmation
+(all motion was measured in dev), and the 015 open questions above, which still stand.
+
+### Scope ownership
+
+| Batch | Scope | Files |
+|-------|-------|-------|
+| R6-A | Reading anchor, sidebar sequencing, scrollspy, paging/search scroll, Index jump, sidebar a11y, shared scrim token | `src/lib/reading-anchor.ts` (new), `src/components/layout/sidebar.tsx`, `src/app/page.tsx`, `src/app/globals.css` (scrim token definition only) |
+| R6-B | Drawer paging crossfade, focus on open/close, inset, vaul gate, shared scrim adoption, modal CSS timings | `src/components/features/rules/rule-drawer.tsx`, `src/app/globals.css` |
+| R6-C | Skill modal: scrim, timings, focus, row contrast, view swap, phone header, gutter, tokens, prose | `src/components/features/skills/skill-bonus.tsx`, `src/components/layout/sidebar.tsx` (compact caller cleanup only) |
+| R6-D | Preview contrast + button heights, part 1 | `preview-primitives.tsx`, `previews/components.tsx`, `previews/accessibility.tsx`, `previews/system.tsx`, `previews/color.tsx` |
+| R6-E | Preview contrast + cn() overrides, part 2 | `previews/layout.tsx`, `previews/typography.tsx`, `previews/forms.tsx` |
+| R6-F | Reading surfaces: card measure, equal panes, rule page Copy, 404, OG | `rule-card.tsx`, `src/app/rules/[id]/page.tsx`, `src/app/not-found.tsx`, `src/app/opengraph-image.tsx`, `src/app/rules/[id]/opengraph-image.tsx` |
+| R6-G | Guardrails and search placeholder | `search-input.tsx`, `src/lib/__tests__/design-system.test.ts`, `rule-preview.tsx`, `src/app/layout.tsx` |
+| R6-H | Showcase engine: interruptible playback, rest settle, re-hover, tally, autoplay guard | `src/lib/showcase-engine.ts`, `demos/motion-showcase.tsx`, `src/data/__tests__/showcase-specs.test.ts` |
+| R6-I | Showcase specs, scenes and copy (radii, sys-1, sys-9, captions; defer motion-23 transition to R6-J) | `demos/showcase-specs.tsx`, `demos/scenes.tsx`, `demos/protagonist.tsx`, `src/data/ui-logic.ts` (+ `skills:build` output) |
+| R6-J | Custom showcases: motion-23 drag prototype, shared controls row, drag readouts, motion-19/21 | `demos/showcase-chrome.tsx`, `demos/drag-showcases.tsx`, `demos/load-showcase.tsx`, `demos/interrupt-showcase.tsx`, `demos/tooltip-showcase.tsx`, `demos/registry.ts`, motion-23 entries in `demos/showcase-specs.tsx` and `src/data/ui-logic.ts` (+ synchronized generated output) |
+
+Cross-batch contracts: the first consumer, R6-A / packet 24, must define `--ax-scrim` and its
+`bg-scrim` mapping in `globals.css` in the same delivery. Include that definition in packet 24's reviewed
+allowlist and refreshed patch; R6-B and R6-C then adopt the existing token. `PRODUCT_MUTED` is exported
+by R6-D and imported by R6-E.
+
+Keep motion-23's current interactive toggle and matching rule text through packet 31. Move its complete
+drag transition into R6-J / packet 32: component, registry, spec trigger, captions/hints, rule/deep-dive
+copy, relevant tests and synchronized generated references. Do not advertise dragging while the old
+component is still mounted. Refresh both packets' allowlists, residual patches and hashes, and verify
+size limits and the complete working lesson before delivery.
+Keep `<SkillBonus compact />` in R6-A while both variants exist. Removing `compact` belongs with
+R6-C's component cleanup and every caller, in one verified delivery, so an intermediate sidebar never
+renders the standalone card. Refresh packet 26’s allowlist and hash to include the sidebar caller.
+Some listed contracts have already landed; verify their current exports
+and behavior before adding or replacing them.
+
+### Delivery order and validation
+
+The scope groups above describe ownership, not permission to land an unverified parallel wave.
+The prepared manifest is the delivery source of truth: reading position (24), drawer transitions (25),
+skills modal (26), preview contrast (27–28), reading surfaces (29), guardrails (30), showcase engine and
+specifications together (31), then custom showcases (32). The integration of selected branding is a
+separate packet (33). Preserve dependency ancestry and review each packet against live main.
+
+Every delivered checkpoint must pass lint, typecheck, deep-dive coverage, generated-skill synchronization,
+tests, build and installer smoke checks. Land a new guard with the code needed to satisfy it; never
+publish a failing checkpoint while waiting for another scope group. Rule or skill-source changes must
+include their synchronized generated output. Exercise affected UI, including focus, scrolling, responsive
+layout and reduced motion, and record fresh evidence before delivery.
