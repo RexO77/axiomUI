@@ -1,7 +1,15 @@
 // design-system: strict
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import {
+    useDeferredValue,
+    useEffect,
+    useLayoutEffect,
+    useMemo,
+    useRef,
+    useState,
+    useSyncExternalStore,
+} from "react";
 import {
     Menu,
     PanelLeftClose,
@@ -14,8 +22,10 @@ import { SearchInput } from "@/components/features/search/search-input";
 import { SkillBonus } from "@/components/features/skills/skill-bonus";
 import { AxiomLogo } from "@/components/ui/axiom-logo";
 import { CategoryIcon } from "@/components/ui/category-icon";
-import { categories } from "@/data/ui-logic";
+import { categories, resolveRuleId } from "@/data/ui-logic";
 import { countByCategory } from "@/lib/rule-search";
+import { REDUCED_MOTION_QUERY } from "@/lib/media";
+import { captureReadingAnchor, restoreReadingAnchor } from "@/lib/reading-anchor";
 import { cn } from "@/lib/utils";
 import { useHaptics } from "@/hooks/use-haptics";
 import { useSearch } from "@/components/providers/search-provider";
@@ -29,6 +39,9 @@ const DESKTOP_PANEL_ID = "desktop-sidebar";
  * break at the same width.
  */
 const DESKTOP_OPEN_QUERY = "(min-width: 1024px)";
+
+/** The panel's exit (duration-medium, 220ms) plus a frame, as page.tsx waits for the drawer's. */
+const LANE_DELAY_MS = 240;
 
 type DesktopState = "open" | "closed" | "prerender";
 
@@ -57,6 +70,17 @@ const PANEL_CLASSES: Record<DesktopState, string> = {
 const FOCUSABLE_SELECTOR =
     'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+/** A CSS time token in ms. The build minifies 360ms to .36s. */
+function durationMs(value: string) {
+    const time = value.trim();
+    return time.endsWith("ms") ? parseFloat(time) : parseFloat(time) * 1000;
+}
+
+/** The rule open in the drawer, whose card is the one to hold in place. */
+function openRuleId() {
+    return resolveRuleId(new URLSearchParams(window.location.search).get("rule"));
+}
+
 function subscribeToDesktopWidth(onChange: () => void) {
     const query = window.matchMedia(DESKTOP_OPEN_QUERY);
     query.addEventListener("change", onChange);
@@ -67,14 +91,31 @@ function subscribeToDesktopWidth(onChange: () => void) {
  * An Index jump aims at the section's position while the cards above it are
  * still content-visibility placeholders. The cards that render on arrival are
  * taller than their placeholder on a phone, which pushed the heading 250px
- * below the bar. Re-aim on the next frames until the heading holds still.
+ * below the bar, and the target's own first cards painted blank for a frame.
+ *
+ * So the target's first two cards render before the jump, and a
+ * ResizeObserver re-aims as the catalog settles. Its callbacks run after
+ * layout and before paint, so each correction lands in the frame that caused
+ * it and only the settled heading is ever painted.
  */
+const SETTLE_CALLBACKS = 4;
+const SETTLE_MS = 300;
+let stopSectionSettlement: (() => void) | undefined;
+
 function settleOnSection(id: string, moveFocus = false) {
-    let frames = 0;
+    stopSectionSettlement?.();
+    const section = document.getElementById(id);
+    const container = document.getElementById("rulesContainer");
+    if (!section || !container) return;
+    const cards = Array.from(section.querySelectorAll<HTMLElement>(".rule-card")).slice(0, 2);
+    const previousVisibility = cards.map((card) => card.style.contentVisibility);
+    cards.forEach((card) => { card.style.contentVisibility = "visible"; });
+    let callbacks = 0;
+    let stopped = false;
     let focusPending = moveFocus;
     const check = () => {
-        const section = document.getElementById(id);
-        if (!section) return;
+        if (stopped) return;
+        if (!section.isConnected || !container.isConnected) { stop(); return; }
         if (focusPending && !section.closest("[inert]")) {
             const heading = section.querySelector<HTMLElement>("h2");
             if (heading) {
@@ -92,9 +133,36 @@ function settleOnSection(id: string, moveFocus = false) {
         if (Math.abs(section.getBoundingClientRect().top - margin) > 1) {
             section.scrollIntoView({ block: "start" });
         }
-        if (++frames < 4) requestAnimationFrame(check);
     };
-    requestAnimationFrame(check);
+    const observer = new ResizeObserver(() => {
+        check();
+        if (++callbacks >= SETTLE_CALLBACKS) stop();
+    });
+    const timeoutId = window.setTimeout(stop, SETTLE_MS);
+
+    function stop() {
+        if (stopped) return;
+        stopped = true;
+        observer.disconnect();
+        cancelAnimationFrame(frame);
+        window.removeEventListener("wheel", stop);
+        window.removeEventListener("touchstart", stop);
+        window.removeEventListener("keydown", stop);
+        window.removeEventListener("resize", stop);
+        window.clearTimeout(timeoutId);
+        cards.forEach((card, index) => {
+            card.style.contentVisibility = previousVisibility[index];
+        });
+        if (stopSectionSettlement === stop) stopSectionSettlement = undefined;
+    }
+
+    observer.observe(container);
+    window.addEventListener("wheel", stop, { passive: true });
+    window.addEventListener("touchstart", stop, { passive: true });
+    window.addEventListener("keydown", stop);
+    window.addEventListener("resize", stop);
+    const frame = requestAnimationFrame(check);
+    stopSectionSettlement = stop;
 }
 
 // Full touch targets retain the mobile header's existing glyph positions.
@@ -133,8 +201,10 @@ function SidebarContent({
     const { query } = useSearch();
     const [activeCategoryId, setActiveCategoryId] = useState(categories[0]?.id ?? "");
     const isMobile = instance === "mobile";
-    const isSearching = query.trim() !== "";
-    const counts = useMemo(() => countByCategory(query), [query]);
+    // Counts follow the grid, which filters on the deferred query too.
+    const deferredQuery = useDeferredValue(query);
+    const isSearching = deferredQuery.trim() !== "";
+    const counts = useMemo(() => countByCategory(deferredQuery), [deferredQuery]);
     const matchCount = useMemo(
         () => [...counts.values()].reduce((sum, count) => sum + count, 0),
         [counts]
@@ -152,21 +222,27 @@ function SidebarContent({
 
         syncFromHash();
 
-        const observer = new IntersectionObserver(
-            (entries) => {
-                const visibleEntry = entries
-                    .filter((entry) => entry.isIntersecting)
-                    .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        let atBottom = false;
 
-                if (visibleEntry?.target.id) {
-                    setActiveCategoryId(visibleEntry.target.id);
-                }
-            },
-            {
-                rootMargin: "-18% 0px -65% 0px",
-                threshold: [0.12, 0.28, 0.45],
-            }
-        );
+        // The active category is the one under a line a quarter of the way
+        // down the viewport. A thin band at that line, not a ratio threshold:
+        // a section taller than the viewport never shows a large ratio, so a
+        // ratio left the highlight stuck on whichever section had last passed
+        // one. A section leaving the line changes nothing; the next one
+        // entering it takes over.
+        const createObserver = () => {
+            const top = Math.round(window.innerHeight * 0.25);
+            const bottom = Math.max(0, window.innerHeight - top - 1);
+            return new IntersectionObserver(
+                (entries) => {
+                    if (atBottom) return;
+                    const entering = entries.find((entry) => entry.isIntersecting);
+                    if (entering?.target.id) setActiveCategoryId(entering.target.id);
+                },
+                { rootMargin: `-${top}px 0px -${bottom}px 0px`, threshold: 0 }
+            );
+        };
+        let observer = createObserver();
 
         let observedAny = false;
         categoryIds.forEach((id) => {
@@ -186,16 +262,55 @@ function SidebarContent({
             if (firstRendered) setActiveCategoryId(firstRendered);
         }
 
+        // A short last section can never reach the line, so at the bottom of
+        // the page it is the active one. Leaving the bottom hands back to
+        // whichever section is under the line.
+        const onScroll = () => {
+            const bottom =
+                window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
+            if (bottom === atBottom) return;
+            atBottom = bottom;
+
+            const rendered = categoryIds
+                .map((id) => document.getElementById(id))
+                .filter((section) => section !== null);
+            if (bottom) {
+                const last = rendered[rendered.length - 1];
+                if (last) setActiveCategoryId(last.id);
+                return;
+            }
+            const line = window.innerHeight * 0.25;
+            const underLine = rendered.find((section) => {
+                const { top, bottom: sectionBottom } = section.getBoundingClientRect();
+                return top <= line && sectionBottom > line;
+            });
+            if (underLine) setActiveCategoryId(underLine.id);
+        };
+        const onResize = () => {
+            observer.disconnect();
+            observer = createObserver();
+            categoryIds.forEach((id) => {
+                const section = document.getElementById(id);
+                if (section) observer.observe(section);
+            });
+            onScroll();
+        };
+        onScroll();
+        window.addEventListener("scroll", onScroll, { passive: true });
+        window.addEventListener("resize", onResize);
+
         window.addEventListener("hashchange", syncFromHash);
 
         return () => {
             observer.disconnect();
+            window.removeEventListener("scroll", onScroll);
+            window.removeEventListener("resize", onResize);
             window.removeEventListener("hashchange", syncFromHash);
         };
-        // Re-subscribe whenever the query changes: filtering mounts new
+        // Re-subscribe whenever the grid re-filters: filtering mounts new
         // section DOM nodes that the effect above needs to re-observe.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [query]);
+    }, [deferredQuery]);
 
     const search = isMobile ? (
         // Enter closes the sheet and hands over to the results it was
@@ -262,10 +377,10 @@ function SidebarContent({
                                     settleOnSection(cat.id, isMobile);
                                 }}
                                 className={cn(
-                                    "pressable flex min-h-10 items-center gap-3 rounded-full px-2 text-sm",
+                                    "pressable flex min-h-11 items-center gap-3 rounded-full px-2 text-sm [@media(pointer:fine)]:min-h-10",
                                     isActive
-                                        ? "bg-fill font-semibold text-ink"
-                                        : "font-medium text-ink-secondary hover:bg-fill/50 hover:text-ink",
+                                        ? "bg-fill-strong font-semibold text-ink"
+                                        : "font-medium text-ink-secondary hover:bg-fill hover:text-ink",
                                     isEmpty && "pointer-events-none opacity-40"
                                 )}
                             >
@@ -306,6 +421,7 @@ type SheetFocus = "search" | "panel" | null;
 
 export function Sidebar() {
     const [isOpen, setIsOpen] = useState(false);
+    useEffect(() => () => { stopSectionSettlement?.(); }, []);
     // The panel follows the window (open from 1024px, collapsed below, where
     // it would squeeze the cards) until the reader toggles it; from then on
     // their choice holds. The server can't know the width, so it renders
@@ -318,8 +434,20 @@ export function Sidebar() {
     );
     const [desktopChoice, setDesktopChoice] = useState<boolean | null>(null);
     const isDesktopOpen = desktopChoice ?? isWideEnough;
+
+    // The lane follows the panel by the docked drawer's two rules (page.tsx):
+    // it changes width only while the panel is off screen, and the card being
+    // read keeps its top edge across the change. So the lane trails a
+    // collapse, holding until the panel's exit has finished, and leads an
+    // expand, with the panel's entrance gated until the lane has painted.
+    const [holdLane, setHoldLane] = useState(false);
+    const [panelGated, setPanelGated] = useState(false);
+    const laneOpen = isDesktopOpen === null ? null : isDesktopOpen || holdLane;
+    const laneOpenRef = useRef<boolean | null>(null);
+
     const desktopState: DesktopState =
         isDesktopOpen === null ? "prerender" : isDesktopOpen ? "open" : "closed";
+    const panelState: DesktopState = desktopState === "open" && panelGated ? "closed" : desktopState;
     const { tapNudge } = useHaptics();
 
     const headerRef = useRef<HTMLDivElement>(null);
@@ -328,6 +456,7 @@ export function Sidebar() {
     const sheetRef = useRef<HTMLDivElement>(null);
     const expandButtonRef = useRef<HTMLButtonElement>(null);
     const collapseButtonRef = useRef<HTMLButtonElement>(null);
+    const panelRef = useRef<HTMLElement>(null);
     const sheetFocusRef = useRef<SheetFocus>(null);
     const returnFocusRef = useRef(false);
     const desktopFocusRef = useRef(false);
@@ -347,11 +476,71 @@ export function Sidebar() {
         setIsOpen(false);
     };
 
+    // Under reduced motion the panel jumps, so there is no exit to wait out
+    // or entrance to gate, and the lane changes in the same commit.
+    const collapseDesktop = () => {
+        setPanelGated(false);
+        if (window.matchMedia(REDUCED_MOTION_QUERY).matches) {
+            captureReadingAnchor(openRuleId());
+        } else {
+            setHoldLane(true);
+        }
+        setDesktopChoice(false);
+    };
+
+    const expandDesktop = () => {
+        // Re-expanding while the lane is still held: it never narrowed.
+        if (laneOpenRef.current === false) {
+            captureReadingAnchor(openRuleId());
+            if (!window.matchMedia(REDUCED_MOTION_QUERY).matches) setPanelGated(true);
+        }
+        setHoldLane(false);
+        setDesktopChoice(true);
+    };
+
+    // A busy main thread can start the exit a frame or two after the commit,
+    // so if it is still running when the delay is up, wait for it to end.
+    useEffect(() => {
+        if (!holdLane || isDesktopOpen) return;
+        let cancelled = false;
+        const release = () => {
+            if (cancelled) return;
+            captureReadingAnchor(openRuleId());
+            setHoldLane(false);
+        };
+        const timeoutId = window.setTimeout(() => {
+            const running = (panelRef.current?.getAnimations() ?? []).filter(
+                (animation) => animation.playState === "running"
+            );
+            if (running.length === 0) release();
+            else void Promise.all(running.map((animation) => animation.finished)).then(release, release);
+        }, LANE_DELAY_MS);
+        return () => {
+            cancelled = true;
+            window.clearTimeout(timeoutId);
+        };
+    }, [holdLane, isDesktopOpen]);
+
+    // The lane changed in the last commit and has painted once; start the
+    // entrance on the frame after, over a settled page (rule-drawer.tsx gates
+    // the docked panel the same way).
+    useEffect(() => {
+        if (!panelGated) return;
+        let second = 0;
+        const first = requestAnimationFrame(() => {
+            second = requestAnimationFrame(() => setPanelGated(false));
+        });
+        return () => {
+            cancelAnimationFrame(first);
+            cancelAnimationFrame(second);
+        };
+    }, [panelGated]);
+
     // Keep the page outside the sheet out of pointer and keyboard interaction.
     // Portaled dialogs opened from the sheet remain available above it.
     useEffect(() => {
         if (!isOpen) return;
-        const main = document.getElementById("main-content");
+        const main = document.querySelector<HTMLElement>(".main-lane-shell") ?? document.getElementById("main-content");
         const skipLink = document.querySelector<HTMLElement>('a[href="#main-content"]');
         const regions = [main, skipLink, headerRef.current, desktopRef.current].filter(
             (element): element is HTMLElement => element !== null
@@ -499,7 +688,7 @@ export function Sidebar() {
     useEffect(() => {
         const onOpenSearch = () => {
             if (window.matchMedia("(min-width: 768px)").matches) {
-                setDesktopChoice(true);
+                expandDesktop();
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
                         document.getElementById("searchInput-desktop")?.focus();
@@ -515,23 +704,51 @@ export function Sidebar() {
     }, []);
 
     // Before hydration the lane already holds the matching default shift.
+    // The reading anchor is put back right after the new shift applies, in
+    // the same frame, so the re-wrapped page never paints at the wrong place.
     useLayoutEffect(() => {
-        if (isDesktopOpen === null) return;
+        if (laneOpen === null) return;
         const root = document.documentElement;
+        const lane = document.querySelector<HTMLElement>(".main-lane-shell");
+        const column = document.querySelector("#rulesContainer > section");
+        const before = laneOpenRef.current === null ? undefined : column?.getBoundingClientRect();
+        lane?.getAnimations().forEach((animation) => animation.cancel());
+
         root.style.setProperty(
             "--main-lane-shift",
-            isDesktopOpen ? "var(--main-lane-open-shift)" : "0px"
+            laneOpen ? "var(--main-lane-open-shift)" : "0px"
         );
         // Expose open/closed as a 0/1 flag so the content lane can reserve
         // sidebar clearance only when it's actually open (the shift amount
         // alone can't tell open-on-wide-screen apart from closed).
-        root.style.setProperty("--sidebar-open", isDesktopOpen ? "1" : "0");
+        root.style.setProperty("--sidebar-open", laneOpen ? "1" : "0");
+        restoreReadingAnchor();
+        laneOpenRef.current = laneOpen;
 
+        // Where the column keeps its width (a wide window, drawer closed) the
+        // lane only moves sideways. Glide it there rather than snapping the
+        // whole page 80px; where it re-wraps, a slide can't hide that.
+        if (!before || !column || !lane || window.matchMedia(REDUCED_MOTION_QUERY).matches) return;
+        const after = column.getBoundingClientRect();
+        const dx = before.left - after.left;
+        if (Math.abs(after.width - before.width) >= 1 || Math.abs(dx) < 1) return;
+        const tokens = getComputedStyle(root);
+        lane.animate(
+            [{ transform: `translateX(${dx}px)` }, { transform: "none" }],
+            {
+                duration: durationMs(tokens.getPropertyValue("--motion-slow")),
+                easing: tokens.getPropertyValue("--ease-drawer").trim(),
+            }
+        );
+    }, [laneOpen]);
+
+    useLayoutEffect(() => {
+        const root = document.documentElement;
         return () => {
             root.style.removeProperty("--main-lane-shift");
             root.style.removeProperty("--sidebar-open");
         };
-    }, [isDesktopOpen]);
+    }, []);
 
     const submitSearch = () => {
         closeSheet(false);
@@ -541,7 +758,7 @@ export function Sidebar() {
             results.focus({ preventScroll: true });
             const headerHeight = headerRef.current?.offsetHeight ?? 0;
             const top = results.getBoundingClientRect().top + window.scrollY - headerHeight - 16;
-            const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+            const reduced = window.matchMedia(REDUCED_MOTION_QUERY).matches;
             window.scrollTo({ top: Math.max(0, top), behavior: reduced ? "auto" : "smooth" });
         });
     };
@@ -551,6 +768,7 @@ export function Sidebar() {
             {/* Retain the 61px mobile bar while giving each control a full 44px target. */}
             <div
                 ref={headerRef}
+                data-sticky-header
                 className="sticky top-0 z-40 flex min-h-[61px] items-center justify-between bg-surface/80 px-4 py-2 backdrop-blur-md md:hidden"
             >
                 <Lockup />
@@ -589,7 +807,7 @@ export function Sidebar() {
                     onClick={() => { tapNudge(); closeSheet(true); }}
                     style={{ transitionProperty: "opacity", transitionDuration: "var(--motion-medium)" }}
                     className={cn(
-                        "sidebar-motion absolute inset-0 bg-black/20 backdrop-blur-sm ease-out-strong dark:bg-black/40",
+                        "sidebar-motion absolute inset-0 bg-scrim ease-out-strong",
                         isOpen ? "opacity-100" : "opacity-0"
                     )}
                 />
@@ -654,7 +872,7 @@ export function Sidebar() {
                         onClick={() => {
                             tapNudge();
                             desktopFocusRef.current = true;
-                            setDesktopChoice(true);
+                            expandDesktop();
                         }}
                     >
                         <PanelLeftOpen aria-hidden="true" />
@@ -662,7 +880,9 @@ export function Sidebar() {
                 </div>
 
                 <aside
+                    ref={panelRef}
                     id={DESKTOP_PANEL_ID}
+                    aria-label="Sidebar"
                     // When collapsed the panel is only visually hidden (opacity/transform),
                     // so its controls stay in the tab order — `inert` pulls all descendants
                     // out of focus order and the a11y tree in one standards-compliant step.
@@ -673,7 +893,7 @@ export function Sidebar() {
                     }}
                     className={cn(
                         "sidebar-motion absolute bottom-5 left-5 top-5 flex w-[280px] overflow-hidden rounded-card border border-line bg-surface/95 shadow-panel ease-drawer",
-                        PANEL_CLASSES[desktopState]
+                        PANEL_CLASSES[panelState]
                     )}
                 >
                     <SidebarContent
@@ -687,7 +907,7 @@ export function Sidebar() {
                                 onClick={() => {
                                     tapNudge();
                                     desktopFocusRef.current = true;
-                                    setDesktopChoice(false);
+                                    collapseDesktop();
                                 }}
                             >
                                 <PanelLeftClose aria-hidden="true" />
