@@ -425,8 +425,8 @@
   .skill-modal-root {
     /* Defaults match the component's inline values (skill-bonus.tsx) — the
        inline style is the source of truth; keep these in sync. */
-    --skill-modal-open-duration: 280ms;
-    --skill-modal-close-duration: 180ms;
+    --skill-modal-open-duration: 220ms;
+    --skill-modal-close-duration: 140ms;
   }
 
   .skill-modal-scrim {
@@ -474,6 +474,17 @@
     transition-delay: 36ms;
     transition-duration: var(--skill-modal-open-duration);
     transition-timing-function: var(--ease-out-strong);
+  }
+
+  /* Fade the whole surface before changing its width, including its shadow. */
+  .skill-modal-root[data-state="open"] .skill-modal-panel[data-swap="out"],
+  .skill-modal-root[data-state="open"] .skill-modal-panel[data-swap="swapped"] {
+    opacity: 0;
+    transition-duration: var(--skill-modal-close-duration);
+  }
+
+  .skill-modal-root[data-state="open"] .skill-modal-panel[data-swap="swapped"] {
+    transition: none;
   }
 
   .skip-link {

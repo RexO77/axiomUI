@@ -406,7 +406,7 @@ function SidebarContent({
             </div>
 
             <div className="mt-4 [&>div]:border-t-0">
-                <SkillBonus compact />
+                <SkillBonus />
                 <a
                     href="/llms-full.txt"
                     className="pressable mt-1 flex min-h-11 w-full items-center rounded-full px-2 text-xs text-ink-muted hover:bg-fill hover:text-ink"
