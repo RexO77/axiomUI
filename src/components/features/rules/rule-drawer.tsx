@@ -45,7 +45,7 @@ interface RuleDrawerProps {
  * vaul with a scrim, focus held inside, Esc and the scrim close it.
  *
  * Both shells move focus to the rule title on open and hand it back to the
- * control that opened them on close.
+ * control that opened them on close, or the card just read after paging.
  */
 
 const XL_QUERY = "(min-width: 1280px)";
@@ -65,6 +65,11 @@ function useIsXl() {
 }
 
 const inPanel = (element: Element) => element.closest("[data-rule-panel]") !== null;
+
+const inView = (element: Element) => {
+  const { top, bottom } = element.getBoundingClientRect();
+  return bottom > 0 && top < window.innerHeight;
+};
 
 /** How long the last rule stays rendered after close: the exit (220ms) plus slack. */
 const EXIT_HOLD_MS = 400;
@@ -106,6 +111,16 @@ export function RuleDrawer({
   const rule = activeRule ?? (isOpen ? null : heldRule);
   const categoryName = activeRule ? activeCategoryName : heldCategory;
 
+  // Track the rendered rule: activeRuleId leads deferred content by a render.
+  // Keep the paging state through exit so the outgoing rule does not rise again.
+  const shownRuleId = rule?.id ?? null;
+  const [lastShownRuleId, setLastShownRuleId] = useState(shownRuleId);
+  const [paging, setPaging] = useState(false);
+  if (shownRuleId !== lastShownRuleId) {
+    setLastShownRuleId(shownRuleId);
+    setPaging(shownRuleId !== null && lastShownRuleId !== null);
+  }
+
   const [loadedDeepDive, setLoadedDeepDive] = useState<{
     ruleId: string;
     sections: DeepDiveSection[];
@@ -122,25 +137,36 @@ export function RuleDrawer({
   const opener = useRef<HTMLElement | null>(null);
   const closedOpener = useRef<HTMLElement | null>(null);
   const titleId = useId();
+  const lastRuleId = useRef(activeRuleId);
+  useEffect(() => {
+    if (activeRuleId) lastRuleId.current = activeRuleId;
+  }, [activeRuleId]);
 
   const requestClose = useCallback(() => {
     tapMedium();
     onClose();
   }, [onClose, tapMedium]);
 
-  // The title can mount after the open effect has run (the prose arrives a
-  // render late, and vaul portals its content in a layout effect), so the
-  // focus hand-off is finished by whichever happens second.
-  const titleRef = useCallback((node: HTMLHeadingElement | null) => {
-    titleEl.current = node;
-    if (node && titleFocusPending.current) {
-      requestAnimationFrame(() => {
-        if (titleEl.current !== node || !titleFocusPending.current) return;
-        titleFocusPending.current = false;
-        node.focus({ preventScroll: true });
-      });
-    }
+  // Portals and the docked visibility gate can postpone the focus handoff.
+  const focusOwedTitle = useCallback(() => {
+    const node = titleEl.current;
+    if (!titleFocusPending.current || !node) return;
+    const dock = node.closest<HTMLElement>("[data-shown]");
+    if (dock && dock.dataset.shown !== "true") return;
+    const modal = document.activeElement?.closest('[aria-modal="true"]');
+    if (modal && !modal.contains(node)) return;
+    node.focus({ preventScroll: true });
+    if (document.activeElement === node) titleFocusPending.current = false;
   }, []);
+
+  const titleRef = useCallback((node: HTMLHeadingElement | null) => {
+    // A keyed title replacement should retain title focus during paging.
+    if (!node && titleEl.current === document.activeElement) titleFocusPending.current = true;
+    titleEl.current = node;
+    if (node) requestAnimationFrame(() => {
+      if (titleEl.current === node) focusOwedTitle();
+    });
+  }, [focusOwedTitle]);
 
   // Focus in on open, back out on close. While open, remember the last thing
   // focused outside the panel: at xl that is the card you clicked most
@@ -150,8 +176,8 @@ export function RuleDrawer({
 
     const active = document.activeElement;
     opener.current = active instanceof HTMLElement && active !== document.body ? active : null;
-    if (titleEl.current) titleEl.current.focus({ preventScroll: true });
-    else titleFocusPending.current = true;
+    titleFocusPending.current = true;
+    focusOwedTitle();
 
     const track = (event: FocusEvent) => {
       const target = event.target;
@@ -165,37 +191,38 @@ export function RuleDrawer({
       document.removeEventListener("focusin", track);
       titleFocusPending.current = false;
       const target = opener.current;
-      closedOpener.current = target;
+      const card = lastRuleId.current ? document.getElementById(`rule-${lastRuleId.current}`) : null;
+      const openerCard = target?.closest("article.rule-card");
+      const pagedAway = card && openerCard && openerCard !== card && inView(card);
+      const learnMore = card?.querySelector<HTMLElement>('button[aria-label^="Learn more"]');
+      const destination = target?.isConnected && target.id !== "main-content" && !pagedAway
+        ? target
+        : learnMore && inView(learnMore) ? learnMore : document.getElementById("main-content");
+      closedOpener.current = destination;
       opener.current = null;
       const current = document.activeElement;
       const focusIsOurs =
         !current || current === document.body || inPanel(current);
       if (!focusIsOurs) return;
-      // A deep link has no opener: land on the page's main region instead
-      // of letting focus fall to <body> when the panel goes away.
-      if (target?.isConnected) target.focus();
-      else document.getElementById("main-content")?.focus({ preventScroll: true });
+      // Avoid scrolling back to the original card after docked paging.
+      destination?.focus({ preventScroll: true });
     };
-  }, [isOpen]);
+  }, [isOpen, focusOwedTitle]);
 
-  // Changing shells while open must move focus into the newly mounted panel.
+  // Changing shells mounts a new title, including while the drawer is open.
   useEffect(() => {
     if (!isOpen) return;
     titleFocusPending.current = true;
-    const frame = requestAnimationFrame(() => {
-      if (!titleEl.current) return;
-      titleFocusPending.current = false;
-      titleEl.current.focus({ preventScroll: true });
-    });
+    const frame = requestAnimationFrame(focusOwedTitle);
     return () => cancelAnimationFrame(frame);
-  }, [isOpen, isXl]);
+  }, [isOpen, isXl, focusOwedTitle]);
 
-  // Paging can remove the button that was pressed (Previous on the first
-  // rule). Put focus on the new title rather than let it fall to <body>.
+  // Paging can remove the pressed Previous/Next button at a category boundary.
   useEffect(() => {
-    if (!isOpen || !rule) return;
-    if (document.activeElement === document.body) titleEl.current?.focus({ preventScroll: true });
-  }, [isOpen, rule]);
+    if (!isOpen || !rule || document.activeElement !== document.body) return;
+    titleFocusPending.current = true;
+    focusOwedTitle();
+  }, [isOpen, rule, focusOwedTitle]);
 
   // Lighten the sticky header blur during scroll, then restore it after
   // settling. Keep per-frame updates off React's render path.
@@ -297,8 +324,7 @@ export function RuleDrawer({
         // Visibility settles on the next frame, before focus can enter.
         focusFrame = requestAnimationFrame(() => {
           if (!document.activeElement?.closest('[aria-modal="true"]')) {
-            titleFocusPending.current = false;
-            titleEl.current?.focus({ preventScroll: true });
+            focusOwedTitle();
           }
         });
       });
@@ -308,7 +334,7 @@ export function RuleDrawer({
       cancelAnimationFrame(second);
       cancelAnimationFrame(focusFrame);
     };
-  }, [isOpen, ready, isXl]);
+  }, [isOpen, ready, isXl, focusOwedTitle]);
 
   const panel = (
     <PanelBody
@@ -318,6 +344,7 @@ export function RuleDrawer({
       rule={rule}
       categoryName={categoryName}
       pending={contentPending}
+      paging={paging}
       deepDive={deepDive}
       prev={prev}
       next={next}
@@ -337,7 +364,7 @@ export function RuleDrawer({
         aria-labelledby={titleId}
         inert={!isOpen}
         data-shown="false"
-        className="sidebar-motion invisible fixed inset-y-6 right-6 z-[90] flex w-[min(40vw,480px)] translate-x-[calc(100%+3rem)] ease-drawer will-change-[translate] data-[shown=true]:visible data-[shown=true]:translate-x-0"
+        className="sidebar-motion invisible fixed inset-y-5 right-5 z-[90] flex w-[min(40vw,480px)] translate-x-[calc(100%+3rem)] ease-drawer will-change-[translate] data-[shown=true]:visible data-[shown=true]:translate-x-0"
         style={{
           transitionProperty: "translate, visibility",
           transitionDuration: isOpen ? "var(--motion-slow)" : "var(--motion-medium)",
@@ -356,14 +383,15 @@ export function RuleDrawer({
   return (
     <Drawer.Root
       direction="right"
-      open={isOpen}
+      // Wait for deferred content before sliding in an otherwise blank sheet.
+      open={isOpen && (Boolean(rule) || !contentPending)}
       onOpenChange={(open) => {
         if (!open && activeRuleId) requestClose();
       }}
     >
       <Drawer.Portal>
         <Drawer.Overlay
-          className="fixed inset-0 z-[89] bg-black/20 dark:bg-black/50"
+          className="fixed inset-0 z-[89] bg-scrim"
           // Radix dismisses on pointerdown, so focus is already back on the
           // opener when the mousedown lands here. Keep it from blurring it.
           onMouseDown={(event) => event.preventDefault()}
@@ -406,6 +434,7 @@ interface PanelBodyProps {
   rule: Rule | null;
   categoryName: string;
   pending: boolean;
+  paging: boolean;
   deepDive: DeepDiveSection[];
   prev: Rule | null;
   next: Rule | null;
@@ -424,6 +453,7 @@ function PanelBody({
   rule,
   categoryName,
   pending,
+  paging,
   deepDive,
   prev,
   next,
@@ -530,6 +560,7 @@ function PanelBody({
       </div>
 
       <div
+        data-paging={paging ? "" : undefined}
         className="rule-drawer-content space-y-10 pt-4 sm:space-y-12 sm:pt-5"
         onPointerDown={(event) => {
           // Mouse selection must not start a sheet drag; touch keeps swipe-to-close.
@@ -538,9 +569,8 @@ function PanelBody({
           }
         }}
       >
-        {/* Keyed by category so the header only re-animates when the category
-            changes; switching rules within a category leaves it put. */}
-        <header key={rule.category} className="rule-drawer-stagger">
+        {/* Distinct sibling keys keep the title and body in the same paging fade. */}
+        <header key={`${rule.id}-header`} className="rule-drawer-stagger">
           {asTitle(
             <h2
               ref={titleRef}
@@ -554,8 +584,7 @@ function PanelBody({
           {asDescription(<p className="mt-4 text-base leading-7 text-ink-secondary">{summary}</p>)}
         </header>
 
-        {/* Keyed by rule so the body re-animates on every rule change, even
-            when the header stays put within a category. */}
+        {/* Remount the previews and their local state for the selected rule. */}
         <div key={rule.id} className="grid gap-10">
           <section className="rule-drawer-stagger space-y-10">
             {showcase ? (

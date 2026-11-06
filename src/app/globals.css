@@ -332,7 +332,7 @@
 
   /* Enter once, then let go. `backwards` holds the from-frame only during the
      delay, and `translate` composes with any transform the element carries
-     (the card hover lift), so nothing is left pinned at opacity 0 or at a
+     (when present), so nothing is left pinned at opacity 0 or at a
      stale transform after the entrance ends. */
   .reveal {
     animation: fadeUp 240ms var(--ease-out-strong) var(--delay, 0ms) backwards;
@@ -408,6 +408,12 @@
   .rule-drawer-content header.rule-drawer-stagger { animation-delay: 0ms; }
   .rule-drawer-content section.rule-drawer-stagger { animation-delay: 80ms; }
   .rule-drawer-content aside.rule-drawer-stagger { animation-delay: 160ms; }
+
+  /* Paging keeps the content legible without replaying entrance delays. */
+  .rule-drawer-content[data-paging] .rule-drawer-stagger {
+    animation: rule-drawer-fade var(--motion-fast) var(--ease-out-strong) backwards;
+    animation-delay: 0ms;
+  }
 
   /* Small metadata headings (the skill modal's section labels) that should
      read as labels, not titles: the base heading rule sets every h1-h6 in the
@@ -492,7 +498,8 @@
 
   @media (prefers-reduced-motion: reduce) {
     .reveal,
-    .rule-drawer-stagger {
+    .rule-drawer-stagger,
+    .rule-drawer-content[data-paging] .rule-drawer-stagger {
       animation: none;
     }
 
@@ -527,6 +534,10 @@
 
 /* Opacity and translate only: a blur on whole prose blocks repaints them on
    every frame, and on open this runs while the panel is still sliding. */
+@keyframes rule-drawer-fade {
+  from { opacity: 0.4; }
+}
+
 @keyframes rule-drawer-rise {
   from {
     opacity: 0;
@@ -616,8 +627,8 @@
  */
 @media (min-width: 1280px) {
   :root {
-    /* Panel width (min(40vw,480px)) + edge inset (1.5rem) at xl. */
-    --drawer-footprint: 504px;
+    /* Panel width (min(40vw,480px)) + edge inset (1.25rem, matching the sidebar) at xl. */
+    --drawer-footprint: 500px;
   }
 
   .main-lane-shell[data-drawer-open="true"] {
