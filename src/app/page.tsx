@@ -23,6 +23,16 @@ import { Button } from "@/components/ui/button";
 import { CategoryIcon } from "@/components/ui/category-icon";
 import { SearchProvider, useSearch } from "@/components/providers/search-provider";
 import { filterRules } from "@/lib/rule-search";
+import { REDUCED_MOTION_QUERY } from "@/lib/media";
+import {
+  captureReadingAnchor,
+  glideToCard,
+  stopGlide,
+  findReadingAnchor,
+  restoreReadingAnchor,
+  settleReadingAnchor,
+  type ReadingAnchor,
+} from "@/lib/reading-anchor";
 
 /**
  * The only reader of `?rule=` on this page. `useSearchParams` makes the static
@@ -84,20 +94,30 @@ function MatchAnnouncer({ query, count }: { query: string; count: number }) {
  * deep link on load. Opening from a click needs nothing: the card is already
  * where the reader is looking, and the dock keeps it there (useDockAnchor).
  *
- * A neighbour glides into view. A card more than two screens away (a deep
- * link, mostly) is jumped to: travelling half the catalog is motion for its
- * own sake, and cards skipped by content-visibility only have a placeholder
- * height, so a long smooth scroll aims at a stale position. The jump is
- * re-aimed one frame later, once the card has rendered at its real height.
+ * Paging inside the open drawer always glides (glideToCard): the next card
+ * is the neighbour. Measuring the distance mid-glide would read a neighbour
+ * as far away and teleport the page.
+ *
+ * A deep link to a card more than two screens away is jumped to instead:
+ * travelling half the catalog is motion for its own sake, and cards skipped by
+ * content-visibility only have a placeholder height, so a long smooth scroll
+ * aims at a stale position. The jump is re-aimed one frame later, once the
+ * card has rendered at its real height.
  */
 function useKeepActiveCardInView(activeRuleId: string | null) {
   const previousId = useRef<string | null>(null);
+
+  useEffect(() => stopGlide, []);
 
   useEffect(() => {
     const wasOpen = previousId.current !== null;
     previousId.current = activeRuleId;
 
-    if (!activeRuleId || !window.matchMedia("(min-width: 1280px)").matches) {
+    if (!activeRuleId) {
+      stopGlide();
+      return;
+    }
+    if (!window.matchMedia("(min-width: 1280px)").matches) {
       return;
     }
 
@@ -106,16 +126,23 @@ function useKeepActiveCardInView(activeRuleId: string | null) {
       return;
     }
 
+    const reduced = window.matchMedia(REDUCED_MOTION_QUERY).matches;
+
+    if (wasOpen) {
+      if (reduced) card.scrollIntoView({ block: "nearest" });
+      else glideToCard(card);
+      return;
+    }
+
     const { top, bottom } = card.getBoundingClientRect();
-    if (!wasOpen && bottom > 0 && top < window.innerHeight) {
+    if (bottom > 0 && top < window.innerHeight) {
       return;
     }
 
     const far = Math.abs(top) > window.innerHeight * 2;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     if (!far && !reduced) {
-      card.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      glideToCard(card);
       return;
     }
 
@@ -125,7 +152,11 @@ function useKeepActiveCardInView(activeRuleId: string | null) {
   }, [activeRuleId]);
 }
 
-/** The docked panel's exit (duration-medium, 220ms) plus a frame of slack. */
+/**
+ * The docked panel's exit (duration-medium, 220ms) plus a frame of slack.
+ * Under reduced motion the panel leaves at once, so there is nothing to wait
+ * out and the lane widens in the same commit (closeRule).
+ */
 const UNDOCK_DELAY_MS = 240;
 
 /**
@@ -136,40 +167,15 @@ const UNDOCK_DELAY_MS = 240;
  *   open (the panel waits a frame before it slides in), and only after the
  *   exit on close. The panel never moves over a grid that is re-laying out.
  * - Whatever card the reader is looking at keeps its top edge where it was
- *   across the change, so the page never jumps by the height the cards
- *   gained or lost.
+ *   across the change (reading-anchor), so the page never jumps by the
+ *   height the cards gained or lost.
  */
 function useDockAnchor(docked: boolean) {
-  const anchor = useRef<{ id: string; top: number } | null>(null);
-
-  const capture = useCallback((preferredRuleId: string | null) => {
-    const inView = (element: Element) => {
-      const { top, bottom } = element.getBoundingClientRect();
-      return bottom > 0 && top < window.innerHeight;
-    };
-
-    let card: Element | null = preferredRuleId
-      ? document.getElementById(`rule-${preferredRuleId}`)
-      : null;
-    if (card && !inView(card)) card = null;
-    card ??= Array.from(document.querySelectorAll("article.rule-card[id]")).find(inView) ?? null;
-
-    anchor.current = card ? { id: card.id, top: card.getBoundingClientRect().top } : null;
-  }, []);
-
   useLayoutEffect(() => {
-    const pending = anchor.current;
-    anchor.current = null;
-    if (!pending) return;
-
-    const card = document.getElementById(pending.id);
-    if (!card) return;
-
-    const drift = card.getBoundingClientRect().top - pending.top;
-    if (Math.abs(drift) >= 1) window.scrollBy({ top: drift, behavior: "instant" });
+    restoreReadingAnchor();
   }, [docked]);
 
-  return capture;
+  return captureReadingAnchor;
 }
 
 export default function Home() {
@@ -204,6 +210,9 @@ function HomeBody({
   deferredRuleId: string | null;
 }) {
   const { query, setQuery } = useSearch();
+  // The grid filters on the deferred query, so a keystroke paints the field
+  // at once and the 105-card re-render follows when the main thread is free.
+  const deferredQuery = useDeferredValue(query);
   const rulesContainerRef = useRef<HTMLElement>(null);
 
   function clearSearch() {
@@ -264,13 +273,87 @@ function HomeBody({
   }, [captureDockAnchor, syncRuleParam, setActiveRuleId]);
 
   const closeRule = useCallback(() => {
-    closedRuleId.current = activeRuleId;
-    setHoldDock(true);
+    if (window.matchMedia(REDUCED_MOTION_QUERY).matches) {
+      captureDockAnchor(activeRuleId);
+    } else {
+      closedRuleId.current = activeRuleId;
+      setHoldDock(true);
+    }
     setActiveRuleId(null);
     syncRuleParam(null);
-  }, [activeRuleId, syncRuleParam, setActiveRuleId]);
+  }, [activeRuleId, captureDockAnchor, syncRuleParam, setActiveRuleId]);
 
-  const filteredRules = useMemo(() => filterRules(query), [query]);
+  const filteredRules = useMemo(() => filterRules(deferredQuery), [deferredQuery]);
+
+  // Filtering shortens the page. A reader scrolled deep into the catalog
+  // would be clamped to the new bottom, mid-results or past them, so the
+  // first results are brought into view in the same commit that renders
+  // them. Where they were reading is kept, and clearing the search returns
+  // them there, before either change paints.
+  const preSearch = useRef<{ scrollY: number; anchor: ReadingAnchor | null } | null>(null);
+  // Whether the committed grid is filtered, as of the last deferred commit.
+  const filteredGrid = useRef(false);
+
+  useLayoutEffect(() => {
+    // `query` commits before `deferredQuery` re-renders the grid, so this
+    // still sees the unfiltered page.
+    if (query.trim()) {
+      if (!preSearch.current) {
+        preSearch.current = { scrollY: window.scrollY, anchor: findReadingAnchor(null) };
+      }
+    } else if (!filteredGrid.current) {
+      // Typed and deleted before the grid ever filtered: nothing moved, and
+      // the next search must snapshot where the reader is by then.
+      preSearch.current = null;
+    }
+  }, [query]);
+
+  // A blank query (a typed space) keeps every rule, so it counts as no search.
+  const searching = deferredQuery.trim() !== "";
+
+  useLayoutEffect(() => {
+    filteredGrid.current = searching;
+    if (!searching) {
+      const saved = preSearch.current;
+      preSearch.current = null;
+      if (!saved) return;
+      window.scrollTo({ top: saved.scrollY, behavior: "instant" });
+      // Cards that re-mount above the reader start at their placeholder
+      // height, so the same scrollY can land a little off the card they left.
+      const el = rulesContainerRef.current;
+      if (saved.anchor && el) return settleReadingAnchor(saved.anchor, el);
+      return;
+    }
+
+    const el = rulesContainerRef.current;
+    if (!el) return;
+    // The first results may have been skipped by content-visibility, which
+    // would paint them blank for a frame as they arrive. Render them now.
+    const first = Array.from(el.querySelectorAll<HTMLElement>("article.rule-card")).slice(0, 3);
+    first.forEach((card) => {
+      card.style.contentVisibility = "visible";
+    });
+    // Land 16px below the sticky mobile header (zero tall from md up), the
+    // same place the sheet's search submit aims, so it adds no second move.
+    const header = document.querySelector<HTMLElement>("[data-sticky-header]");
+    const offset = (header?.offsetHeight ?? 0) + 16;
+    const top = el.getBoundingClientRect().top;
+    if (top < offset) window.scrollTo({ top: top + window.scrollY - offset, behavior: "instant" });
+
+    let second = 0;
+    const frame = requestAnimationFrame(() => {
+      second = requestAnimationFrame(() => first.forEach((card) => {
+        card.style.contentVisibility = "";
+      }));
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+      cancelAnimationFrame(second);
+      first.forEach((card) => {
+        card.style.contentVisibility = "";
+      });
+    };
+  }, [deferredQuery, searching]);
 
   useKeepActiveCardInView(activeRuleId);
 
@@ -298,23 +381,27 @@ function HomeBody({
     : "";
 
   return (
-    <div className="flex min-h-screen flex-col bg-canvas md:flex-row">
+    <div className="flex min-h-screen flex-col overflow-x-clip bg-canvas md:flex-row">
       <Sidebar />
 
-      <main
-        id="main-content"
-        tabIndex={-1}
-        className="flex-1"
+      {/* The lane holds both landmarks: main for the catalog, and the footer
+          after it as contentinfo, at the same width and spacing. */}
+      <div
+        className="main-lane-shell w-full flex-1 space-y-8 px-3 py-5 sm:px-4 sm:py-7 md:space-y-12 md:py-8"
+        data-drawer-open={docked ? "true" : undefined}
       >
-        <div
-          className="main-lane-shell w-full space-y-8 px-3 py-5 sm:px-4 sm:py-7 md:space-y-12 md:py-8"
-          data-drawer-open={docked ? "true" : undefined}
+        {/* Focus lands here from the skip link and when the drawer closes;
+            it is a landmark, not a control, so it takes no ring. */}
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="space-y-8 outline-none md:space-y-12"
         >
           <div className="mx-auto w-full max-w-[920px]">
             <Header />
           </div>
 
-          <MatchAnnouncer query={query} count={filteredRules.length} />
+          <MatchAnnouncer query={deferredQuery} count={filteredRules.length} />
 
           <section
             ref={rulesContainerRef}
@@ -329,7 +416,7 @@ function HomeBody({
                   <SearchX aria-hidden="true" className="size-6 text-ink-faint" />
                 </div>
                 <h2 className="break-words text-lg font-semibold text-ink">
-                  No rules match “{query.trim()}”
+                  No rules match “{deferredQuery.trim()}”
                 </h2>
                 <p className="mx-auto mt-2 max-w-sm text-pretty text-sm leading-6 text-ink-secondary">
                   Try a broader term — “button”, “font”, or “color” — or clear the
@@ -381,26 +468,26 @@ function HomeBody({
               ))
             )}
           </section>
+        </main>
 
-          <footer className="mx-auto flex w-full max-w-[920px] flex-col gap-2 pt-6 pb-10 text-sm text-ink-muted sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-            <p className="text-pretty leading-6">
-              Built for consistency. Break rules only after mastering them.
-            </p>
-            <ul className="-mx-2 flex flex-wrap items-center">
-              {FOOTER_LINKS.map((link) => (
-                <li key={link.href}>
-                  <a
-                    href={link.href}
-                    className="inline-flex min-h-11 items-center rounded-full px-2 hover:text-ink sm:min-h-8"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </footer>
-        </div>
-      </main>
+        <footer className="mx-auto flex w-full max-w-[920px] flex-col gap-2 pt-6 pb-10 text-sm text-ink-muted sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+          <p className="text-pretty leading-6">
+            Built for consistency. Break rules only after mastering them.
+          </p>
+          <ul className="-mx-2 flex flex-wrap items-center">
+            {FOOTER_LINKS.map((link) => (
+              <li key={link.href}>
+                <a
+                  href={link.href}
+                  className="inline-flex min-h-11 items-center rounded-full px-2 hover:text-ink [@media(pointer:fine)]:min-h-8"
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </footer>
+      </div>
 
       <RuleDrawer
         activeRule={activeRule}
