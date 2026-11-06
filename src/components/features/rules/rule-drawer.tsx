@@ -197,7 +197,7 @@ export function RuleDrawer({
       const learnMore = card?.querySelector<HTMLElement>('button[aria-label^="Learn more"]');
       const destination = target?.isConnected && target.id !== "main-content" && !pagedAway
         ? target
-        : learnMore ?? document.getElementById("main-content");
+        : learnMore && inView(learnMore) ? learnMore : document.getElementById("main-content");
       closedOpener.current = destination;
       opener.current = null;
       const current = document.activeElement;
