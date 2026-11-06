@@ -17,12 +17,12 @@ import {
 import { IconButton } from "@/components/ui/icon-button";
 import { prefersReducedMotion, useReducedMotion } from "@/lib/media";
 import { cn } from "@/lib/utils";
+import { createViewSwap, type SwapPhase } from "@/lib/view-swap";
 
 const skillPath = "/skills/axiomui-website-upgrade/SKILL.md";
 const skillLoadTimeoutMs = 8000;
 const modalOpenDurationMs = 220; // --motion-medium
 const modalCloseDurationMs = 140; // --motion-fast
-const viewFadeFallbackMs = 200;
 const copyResetMs = 1800;
 
 const coreSkills = skillCatalog.filter((skill) => skill.group === "core");
@@ -44,7 +44,6 @@ type LoadState = "idle" | "loading" | "ready" | "error";
 type CopyState = "idle" | "copied" | "error";
 type ModalState = "closed" | "mounted" | "open" | "closing";
 type ModalView = "install" | "preview";
-type SwapPhase = "idle" | "out" | "swapped";
 
 const pillLabels: Record<CopyState, string> = { idle: "Copy", copied: "Copied", error: "Retry" };
 
@@ -203,8 +202,7 @@ export function SkillBonus() {
   const [modalState, setModalState] = useState<ModalState>("closed");
   const [view, setView] = useState<ModalView>("install");
   const [swapPhase, setSwapPhase] = useState<SwapPhase>("idle");
-  const pendingViewRef = useRef<ModalView | null>(null);
-  const swapTimerRef = useRef<number | null>(null);
+  const [viewSwap] = useState(() => createViewSwap<ModalView>("install", setView, setSwapPhase));
   const [skillText, setSkillText] = useState("");
   const [loadState, setLoadState] = useState<LoadState>("idle");
   const [announcement, setAnnouncement] = useState("");
@@ -220,9 +218,8 @@ export function SkillBonus() {
   const isPreviewing = isModalVisible && modalState !== "closing" && view === "preview";
 
   const closeModal = useCallback(() => {
-    if (swapTimerRef.current !== null) window.clearTimeout(swapTimerRef.current);
-    swapTimerRef.current = null;
-    pendingViewRef.current = null;
+    viewSwap.cancel();
+    focusViewHeadingRef.current = false;
     if (announcementTimerRef.current !== null) {
       window.clearTimeout(announcementTimerRef.current);
       announcementTimerRef.current = null;
@@ -230,17 +227,16 @@ export function SkillBonus() {
     setAnnouncement("");
     if (prefersReducedMotion()) {
       setModalState("closed");
-      setView("install");
-      setSwapPhase("idle");
+      viewSwap.reset("install");
       return;
     }
     setModalState((current) => current === "closed" || current === "closing" ? current : "closing");
-  }, []);
+  }, [viewSwap]);
 
   useEffect(() => () => {
-    if (swapTimerRef.current !== null) window.clearTimeout(swapTimerRef.current);
+    viewSwap.cancel(false);
     if (announcementTimerRef.current !== null) window.clearTimeout(announcementTimerRef.current);
-  }, []);
+  }, [viewSwap]);
 
   useEffect(() => {
     setIsMounted(true);
@@ -461,29 +457,17 @@ export function SkillBonus() {
 
     const timeoutId = window.setTimeout(() => {
       setModalState("closed");
-      setView("install");
-      setSwapPhase("idle");
+      viewSwap.reset("install");
     }, reducedMotion ? 0 : modalCloseDurationMs);
 
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [modalState, reducedMotion]);
+  }, [modalState, reducedMotion, viewSwap]);
 
   useEffect(() => {
-    if (swapPhase !== "swapped") return;
-    const frame = window.requestAnimationFrame(() => setSwapPhase("idle"));
-    return () => window.cancelAnimationFrame(frame);
-  }, [swapPhase]);
-
-  useEffect(() => {
-    if (!reducedMotion) return;
-    if (swapTimerRef.current !== null) window.clearTimeout(swapTimerRef.current);
-    swapTimerRef.current = null;
-    if (pendingViewRef.current) setView(pendingViewRef.current);
-    pendingViewRef.current = null;
-    setSwapPhase("idle");
-  }, [reducedMotion]);
+    if (reducedMotion) viewSwap.reduceMotion();
+  }, [reducedMotion, viewSwap]);
 
   // Switching views unmounts the focused control, so move focus to the new
   // view's heading rather than letting it fall back to <body>.
@@ -514,39 +498,18 @@ export function SkillBonus() {
       window.history.replaceState(null, "", nextUrl);
     }
 
-    setView("install");
-    setSwapPhase("idle");
+    viewSwap.reset("install");
     setModalState(prefersReducedMotion() ? "open" : "mounted");
   }
 
-  function commitSwap() {
-    const next = pendingViewRef.current;
-    if (!next) return;
-    pendingViewRef.current = null;
-    if (swapTimerRef.current !== null) window.clearTimeout(swapTimerRef.current);
-    swapTimerRef.current = null;
-    setView(next);
-    setSwapPhase("swapped");
-  }
-
   function showView(next: ModalView) {
-    if (next === view || swapPhase === "out" || swapPhase === "swapped" || modalState === "closing") return;
+    if (modalState === "closing" || !viewSwap.request(next, prefersReducedMotion())) return;
     if (next === "preview" && loadState === "error") setLoadState("idle");
     focusViewHeadingRef.current = true;
-    if (prefersReducedMotion()) {
-      setView(next);
-      setSwapPhase("idle");
-      return;
-    }
-    pendingViewRef.current = next;
-    setSwapPhase("out");
-    if (swapTimerRef.current !== null) window.clearTimeout(swapTimerRef.current);
-    swapTimerRef.current = window.setTimeout(commitSwap, viewFadeFallbackMs);
   }
 
   function handleSwapEnd(event: TransitionEvent<HTMLDivElement>) {
-    if (event.target !== event.currentTarget || event.propertyName !== "opacity") return;
-    if (swapPhase === "out") commitSwap();
+    if (event.target === event.currentTarget && event.propertyName === "opacity") viewSwap.finishFade();
   }
 
   const announce = (message: string) => {
@@ -739,7 +702,6 @@ export function SkillBonus() {
             aria-labelledby="skill-dialog-title"
             tabIndex={-1}
             className={cn(
-              (swapPhase === "out" || swapPhase === "swapped") && "pointer-events-none",
               "skill-modal-panel relative mx-auto flex h-[100dvh] w-full flex-col overflow-hidden rounded-none bg-surface text-ink shadow-overlay outline-none sm:rounded-card",
               view === "preview" ? "max-w-5xl sm:h-full" : "max-w-3xl sm:h-auto sm:max-h-full"
             )}
