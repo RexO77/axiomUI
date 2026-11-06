@@ -1,7 +1,7 @@
 // design-system: strict
 "use client";
 
-import type { CSSProperties, MouseEvent, ReactNode } from "react";
+import type { CSSProperties, MouseEvent, ReactNode, TransitionEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
@@ -17,11 +17,12 @@ import {
 import { IconButton } from "@/components/ui/icon-button";
 import { prefersReducedMotion, useReducedMotion } from "@/lib/media";
 import { cn } from "@/lib/utils";
+import { createViewSwap, type SwapPhase } from "@/lib/view-swap";
 
 const skillPath = "/skills/axiomui-website-upgrade/SKILL.md";
 const skillLoadTimeoutMs = 8000;
-const modalOpenDurationMs = 280;
-const modalCloseDurationMs = 180;
+const modalOpenDurationMs = 220; // --motion-medium
+const modalCloseDurationMs = 140; // --motion-fast
 const copyResetMs = 1800;
 
 const coreSkills = skillCatalog.filter((skill) => skill.group === "core");
@@ -34,7 +35,7 @@ const PILL_PRIMARY =
 const PILL_SECONDARY =
   "pressable inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-line-strong px-4 text-xs font-medium text-ink-secondary hover:bg-fill hover:text-ink";
 const TEXT_LINK =
-  "pressable inline-flex min-h-11 items-center gap-1.5 rounded-full text-sm font-medium text-ink-muted underline-offset-4 hover:text-ink hover:underline";
+  "pressable -mx-2 inline-flex min-h-11 items-center gap-1.5 rounded-full px-2 text-sm font-medium text-ink-secondary underline-offset-4 hover:text-ink hover:underline";
 
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -195,11 +196,13 @@ function SkillRow({ skill, announce }: { skill: SkillSpec; announce: (message: s
   );
 }
 
-export function SkillBonus({ compact = false }: { compact?: boolean }) {
+export function SkillBonus() {
   const pathname = usePathname();
   const [isMounted, setIsMounted] = useState(false);
   const [modalState, setModalState] = useState<ModalState>("closed");
   const [view, setView] = useState<ModalView>("install");
+  const [swapPhase, setSwapPhase] = useState<SwapPhase>("idle");
+  const [viewSwap] = useState(() => createViewSwap<ModalView>("install", setView, setSwapPhase));
   const [skillText, setSkillText] = useState("");
   const [loadState, setLoadState] = useState<LoadState>("idle");
   const [announcement, setAnnouncement] = useState("");
@@ -215,6 +218,8 @@ export function SkillBonus({ compact = false }: { compact?: boolean }) {
   const isPreviewing = isModalVisible && modalState !== "closing" && view === "preview";
 
   const closeModal = useCallback(() => {
+    viewSwap.cancel();
+    focusViewHeadingRef.current = false;
     if (announcementTimerRef.current !== null) {
       window.clearTimeout(announcementTimerRef.current);
       announcementTimerRef.current = null;
@@ -222,15 +227,16 @@ export function SkillBonus({ compact = false }: { compact?: boolean }) {
     setAnnouncement("");
     if (prefersReducedMotion()) {
       setModalState("closed");
-      setView("install");
+      viewSwap.reset("install");
       return;
     }
     setModalState((current) => current === "closed" || current === "closing" ? current : "closing");
-  }, []);
+  }, [viewSwap]);
 
   useEffect(() => () => {
+    viewSwap.cancel(false);
     if (announcementTimerRef.current !== null) window.clearTimeout(announcementTimerRef.current);
-  }, []);
+  }, [viewSwap]);
 
   useEffect(() => {
     setIsMounted(true);
@@ -300,6 +306,9 @@ export function SkillBonus({ compact = false }: { compact?: boolean }) {
 
     const previousBodyOverflow = document.body.style.overflow;
     const previousHtmlOverflow = document.documentElement.style.overflow;
+    const previousBodyPaddingRight = document.body.style.paddingRight;
+    const scrollbarGap = window.innerWidth - document.documentElement.clientWidth;
+    const bodyPaddingRight = parseFloat(getComputedStyle(document.body).paddingRight) || 0;
 
     if (!returnFocusRef.current?.isConnected) {
       returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -389,6 +398,7 @@ export function SkillBonus({ compact = false }: { compact?: boolean }) {
     }
 
     document.body.style.overflow = "hidden";
+    if (scrollbarGap > 0) document.body.style.paddingRight = `${bodyPaddingRight + scrollbarGap}px`;
     document.documentElement.style.overflow = "hidden";
     window.addEventListener("keydown", handleKeyDown, true);
     document.addEventListener("focusin", containFocus);
@@ -396,6 +406,7 @@ export function SkillBonus({ compact = false }: { compact?: boolean }) {
 
     return () => {
       document.body.style.overflow = previousBodyOverflow;
+      document.body.style.paddingRight = previousBodyPaddingRight;
       document.documentElement.style.overflow = previousHtmlOverflow;
       window.removeEventListener("keydown", handleKeyDown, true);
       document.removeEventListener("focusin", containFocus);
@@ -446,13 +457,17 @@ export function SkillBonus({ compact = false }: { compact?: boolean }) {
 
     const timeoutId = window.setTimeout(() => {
       setModalState("closed");
-      setView("install");
+      viewSwap.reset("install");
     }, reducedMotion ? 0 : modalCloseDurationMs);
 
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [modalState, reducedMotion]);
+  }, [modalState, reducedMotion, viewSwap]);
+
+  useEffect(() => {
+    if (reducedMotion) viewSwap.reduceMotion();
+  }, [reducedMotion, viewSwap]);
 
   // Switching views unmounts the focused control, so move focus to the new
   // view's heading rather than letting it fall back to <body>.
@@ -483,16 +498,18 @@ export function SkillBonus({ compact = false }: { compact?: boolean }) {
       window.history.replaceState(null, "", nextUrl);
     }
 
-    setView("install");
+    viewSwap.reset("install");
     setModalState(prefersReducedMotion() ? "open" : "mounted");
   }
 
   function showView(next: ModalView) {
-    if (next === "preview" && loadState === "error") {
-      setLoadState("idle");
-    }
+    if (modalState === "closing" || !viewSwap.request(next, prefersReducedMotion())) return;
+    if (next === "preview" && loadState === "error") setLoadState("idle");
     focusViewHeadingRef.current = true;
-    setView(next);
+  }
+
+  function handleSwapEnd(event: TransitionEvent<HTMLDivElement>) {
+    if (event.target === event.currentTarget && event.propertyName === "opacity") viewSwap.finishFade();
   }
 
   const announce = (message: string) => {
@@ -512,78 +529,80 @@ export function SkillBonus({ compact = false }: { compact?: boolean }) {
   );
 
   const installView = (
-    <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-      <div className="mx-auto max-w-3xl px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-5 sm:px-8 sm:pb-10 sm:pt-7">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <h2
-              id="skill-dialog-title"
-              ref={view === "install" ? viewHeadingRef : undefined}
-              tabIndex={-1}
-              className="text-2xl font-semibold tracking-tight text-ink outline-none sm:text-3xl"
-            >
-              Agent skills
-            </h2>
-            <p className="mt-2 max-w-xl text-pretty text-sm leading-6 text-ink-secondary sm:text-base sm:leading-[26px]">
-              Install Axiom UI&apos;s rules as skills in your coding agent.
-            </p>
-          </div>
-          {closeButton}
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex shrink-0 items-start justify-between gap-4 px-4 pb-3 pt-5 sm:px-8 sm:pt-7">
+        <div className="min-w-0">
+          <h2
+            id="skill-dialog-title"
+            ref={view === "install" ? viewHeadingRef : undefined}
+            tabIndex={-1}
+            className="text-2xl font-semibold tracking-tight text-ink outline-none sm:text-3xl"
+          >
+            Agent skills
+          </h2>
+          <p className="mt-2 max-w-xl text-pretty text-sm leading-6 text-ink-secondary sm:text-base sm:leading-[26px]">
+            Install Axiom UI&apos;s rules as skills in your coding agent.
+          </p>
         </div>
+        {closeButton}
+      </div>
 
-        <section aria-labelledby="skill-install-heading" className="mt-6 sm:mt-8">
-          <h3 id="skill-install-heading" className="sr-only">
-            Install
-          </h3>
-          <CommandRow command={skillsCliCommand} label="Copy install command" announce={announce} />
-          <p className="mt-3 text-pretty text-sm leading-6 text-ink-secondary">
-            Choose which skills and agents to install. Run it in your project, or add{" "}
-            <code className="text-sm text-ink">-g</code> for every project.
-          </p>
-        </section>
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <div className="px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-3 sm:px-8 sm:pb-10 sm:pt-5">
+          <section aria-labelledby="skill-install-heading">
+            <h3 id="skill-install-heading" className="sr-only">
+              Install
+            </h3>
+            <CommandRow command={skillsCliCommand} label="Copy install command" announce={announce} />
+            <p className="mt-3 text-pretty text-sm leading-6 text-ink-secondary">
+              Choose which skills and agents to install. Run it in your project, or add{" "}
+              <code className="text-sm text-ink">-g</code> for every project.
+            </p>
+          </section>
 
-        <section aria-labelledby="skill-core-heading" className="mt-8 sm:mt-10">
-          <h3 id="skill-core-heading" className="drawer-label text-xs font-semibold text-ink-muted">
-            Core
-          </h3>
-          <p className="mt-1 text-sm leading-6 text-ink-secondary">
-            Each core skill carries every rule. Copy a row&apos;s command to install just that skill.
-          </p>
-          <ul className="mt-3 space-y-2">
-            {coreSkills.map((skill) => (
-              <SkillRow key={skill.name} skill={skill} announce={announce} />
-            ))}
-          </ul>
-        </section>
+          <section aria-labelledby="skill-core-heading" className="mt-8 sm:mt-10">
+            <h3 id="skill-core-heading" className="drawer-label text-xs font-semibold text-ink-muted">
+              Core
+            </h3>
+            <p className="mt-1 text-sm leading-6 text-ink-secondary">
+              Each core skill carries every rule. Copy a row&apos;s command to install just that skill.
+            </p>
+            <ul className="mt-3 space-y-2">
+              {coreSkills.map((skill) => (
+                <SkillRow key={skill.name} skill={skill} announce={announce} />
+              ))}
+            </ul>
+          </section>
 
-        <section aria-labelledby="skill-domain-heading" className="mt-8">
-          <h3 id="skill-domain-heading" className="drawer-label text-xs font-semibold text-ink-muted">
-            Domains
-          </h3>
-          <p className="mt-1 text-sm leading-6 text-ink-secondary">
-            Core skills already include these rules. Install one domain on its own for focused triggers.
-          </p>
-          <ul className="mt-3 grid gap-x-6 gap-y-2 sm:grid-cols-2">
-            {domainSkills.map((skill) => (
-              <SkillRow key={skill.name} skill={skill} announce={announce} />
-            ))}
-          </ul>
-        </section>
+          <section aria-labelledby="skill-domain-heading" className="mt-8">
+            <h3 id="skill-domain-heading" className="drawer-label text-xs font-semibold text-ink-muted">
+              Domains
+            </h3>
+            <p className="mt-1 text-sm leading-6 text-ink-secondary">
+              Core skills already include these rules. Install one domain on its own for focused triggers.
+            </p>
+            <ul className="mt-3 grid gap-x-6 gap-y-2 sm:grid-cols-2">
+              {domainSkills.map((skill) => (
+                <SkillRow key={skill.name} skill={skill} announce={announce} />
+              ))}
+            </ul>
+          </section>
 
-        <div className="mt-8 flex flex-col items-start gap-y-1 text-sm text-ink-muted sm:flex-row sm:items-center sm:gap-x-5">
-          <p className="mb-1 sm:mb-0 sm:mr-auto">Prefer a single file?</p>
-          <button type="button" onClick={() => showView("preview")} className={TEXT_LINK}>
-            Preview the playbook
-            <ArrowRight aria-hidden="true" className="size-3.5" />
-          </button>
-          <a href={skillPath} download="SKILL.md" className={TEXT_LINK}>
-            Download SKILL.md
-            <Download aria-hidden="true" className="size-3.5" />
-          </a>
-          <a href={skillsTreeUrl} target="_blank" rel="noreferrer" className={TEXT_LINK}>
-            View on GitHub
-            <ArrowUpRight aria-hidden="true" className="size-3.5" />
-          </a>
+          <div className="mt-8 flex flex-col items-start gap-y-1 text-sm text-ink-muted sm:flex-row sm:items-center sm:gap-x-5">
+            <p className="mb-1 sm:mb-0 sm:mr-auto">Prefer a single file?</p>
+            <button type="button" onClick={() => showView("preview")} className={TEXT_LINK}>
+              Preview the playbook
+              <ArrowRight aria-hidden="true" className="size-3.5" />
+            </button>
+            <a href={skillPath} download="SKILL.md" className={TEXT_LINK}>
+              Download SKILL.md
+              <Download aria-hidden="true" className="size-3.5" />
+            </a>
+            <a href={skillsTreeUrl} target="_blank" rel="noreferrer" className={TEXT_LINK}>
+              View on GitHub
+              <ArrowUpRight aria-hidden="true" className="size-3.5" />
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -671,11 +690,13 @@ export function SkillBonus({ compact = false }: { compact?: boolean }) {
             aria-hidden="true"
             tabIndex={-1}
             onClick={closeModal}
-            className="skill-modal-scrim absolute inset-0 cursor-default bg-black/40 backdrop-blur-md dark:bg-black/70"
+            className="skill-modal-scrim absolute inset-0 cursor-default bg-scrim"
           />
 
           <div
             ref={panelRef}
+            data-swap={swapPhase}
+            onTransitionEnd={handleSwapEnd}
             role="dialog"
             aria-modal="true"
             aria-labelledby="skill-dialog-title"
@@ -699,49 +720,22 @@ export function SkillBonus({ compact = false }: { compact?: boolean }) {
 
   return (
     <>
-      {compact ? (
-        <div className="pt-3">
-          <button
-            type="button"
-            onClick={openModal}
-            className="pressable group flex min-h-11 w-full items-center justify-between gap-3 rounded-[20px] px-2 py-1.5 text-left text-xs font-medium text-ink-muted hover:bg-fill hover:text-ink"
-          >
-            <span className="min-w-0">
-              <span className="block text-xs font-normal text-ink-muted">Agent skills</span>
-              <span className="mt-0.5 block">Install Axiom UI in your agent</span>
-              <code className="mt-1 block truncate text-xs font-normal text-ink-muted">
-                {skillsCliCommand}
-              </code>
-            </span>
-            <ArrowUpRight
-              aria-hidden="true"
-              style={{ transitionProperty: "transform, translate", transitionDuration: reducedMotion ? "0ms" : "var(--motion-fast)", transitionTimingFunction: "var(--ease-out-strong)" }}
-              className="size-4 shrink-0 motion-safe:group-hover:-translate-y-0.5 motion-safe:group-hover:translate-x-0.5"
-            />
-          </button>
-        </div>
-      ) : (
-        <section className="rounded-card bg-surface text-ink shadow-card">
-          <button
-            type="button"
-            onClick={openModal}
-            className="group min-h-11 w-full rounded-card p-5 text-left"
-          >
-            <p className="text-xs font-medium text-ink-muted">Agent skills</p>
-            <div className="mt-2 flex items-start justify-between gap-3">
-              <h3 className="text-2xl font-semibold leading-tight tracking-tight text-ink">
-                Install Axiom UI in your agent
-              </h3>
-              <ArrowUpRight
-                aria-hidden="true"
-                style={{ transitionProperty: "translate, color", transitionDuration: reducedMotion ? "0ms" : "var(--motion-fast)", transitionTimingFunction: "var(--ease-out-strong)" }}
-                className="mt-1 size-4 shrink-0 text-ink-muted group-hover:text-ink-secondary motion-safe:group-hover:-translate-y-0.5 motion-safe:group-hover:translate-x-0.5"
-              />
-            </div>
-            <code className="mt-2 block text-sm text-ink-secondary">{skillsCliCommand}</code>
-          </button>
-        </section>
-      )}
+      <div className="pt-3">
+        <button
+          type="button"
+          onClick={openModal}
+          className="pressable group flex min-h-11 w-full items-center justify-between gap-3 rounded-well px-2 py-1.5 text-left text-xs font-medium text-ink-secondary hover:bg-fill hover:text-ink"
+        >
+          <span className="min-w-0">
+            <span className="block text-xs font-normal text-ink-muted group-hover:text-ink-secondary">Agent skills</span>
+            <span className="mt-0.5 block">Install Axiom UI in your agent</span>
+            <code className="mt-1 block truncate text-xs font-normal text-ink-muted group-hover:text-ink-secondary">
+              {skillsCliCommand}
+            </code>
+          </span>
+          <ArrowRight aria-hidden="true" className="size-4 shrink-0" />
+        </button>
+      </div>
 
       {modal}
     </>
