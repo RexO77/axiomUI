@@ -25,7 +25,7 @@ import { CategoryIcon } from "@/components/ui/category-icon";
 import { categories, resolveRuleId } from "@/data/ui-logic";
 import { countByCategory } from "@/lib/rule-search";
 import { REDUCED_MOTION_QUERY } from "@/lib/media";
-import { captureReadingAnchor, restoreReadingAnchor } from "@/lib/reading-anchor";
+import { captureReadingAnchor, restoreReadingAnchor, stopGlide } from "@/lib/reading-anchor";
 import { cn } from "@/lib/utils";
 import { useHaptics } from "@/hooks/use-haptics";
 import { useSearch } from "@/components/providers/search-provider";
@@ -103,6 +103,7 @@ const SETTLE_MS = 300;
 let stopSectionSettlement: (() => void) | undefined;
 
 function settleOnSection(id: string, moveFocus = false) {
+    stopGlide();
     stopSectionSettlement?.();
     const section = document.getElementById(id);
     const container = document.getElementById("rulesContainer");

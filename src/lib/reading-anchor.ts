@@ -142,12 +142,17 @@ const GLIDE_MAX_STEP_S = 1 / 40;
  * their real height on the way past are aimed at where they actually are.
  * One glide runs at a time; any scroll of the reader's own stops it.
  */
-let glide: { card: HTMLElement; velocity: number; last: number; frame: number; reduced: MediaQueryList } | null = null;
+let glide: { card: HTMLElement; velocity: number; last: number; frame: number; reduced: MediaQueryList; expectedScrollY: number } | null = null;
+
+function stopGlideOnScroll() {
+    // Own updates record the actual position; scrollbar input changes it independently.
+    if (glide && window.scrollY !== glide.expectedScrollY) stopGlide();
+}
 
 function glideStep(now: number) {
     const current = glide;
     if (!current) return;
-    if (!current.card.isConnected || window.innerWidth < 1280 || current.reduced.matches) {
+    if (!current.card.isConnected || window.innerWidth < 1280 || current.reduced.matches || window.scrollY !== current.expectedScrollY) {
         stopGlide();
         return;
     }
@@ -184,6 +189,7 @@ function glideStep(now: number) {
         const finish = Math.sign(distance) * Math.min(Math.abs(distance), 1, GLIDE_MAX_SPEED * dt);
         window.scrollBy({ top: finish, behavior: "instant" });
     }
+    current.expectedScrollY = window.scrollY;
     current.frame = requestAnimationFrame(glideStep);
 }
 
@@ -199,15 +205,17 @@ export function glideToCard(card: HTMLElement) {
         card.scrollIntoView({ block: "nearest", behavior: "instant" });
         return;
     }
-    if (glide) {
+    if (glide && window.scrollY === glide.expectedScrollY) {
         glide.card = card;
         return;
     }
-    glide = { card, velocity: 0, last: performance.now(), frame: requestAnimationFrame(glideStep), reduced };
+    stopGlide();
+    glide = { card, velocity: 0, last: performance.now(), frame: requestAnimationFrame(glideStep), reduced, expectedScrollY: window.scrollY };
     window.addEventListener("wheel", stopGlide, { passive: true });
     window.addEventListener("touchstart", stopGlide, { passive: true });
     window.addEventListener("keydown", stopGlideOnKey);
     window.addEventListener("resize", stopGlide);
+    window.addEventListener("scroll", stopGlideOnScroll, { passive: true });
     reduced.addEventListener("change", stopGlide);
 }
 
@@ -220,6 +228,7 @@ export function stopGlide() {
     window.removeEventListener("touchstart", stopGlide);
     window.removeEventListener("keydown", stopGlideOnKey);
     window.removeEventListener("resize", stopGlide);
+    window.removeEventListener("scroll", stopGlideOnScroll);
 }
 
 function stopGlideOnKey(event: KeyboardEvent) {

@@ -206,6 +206,38 @@ describe("docked paging glide", () => {
     expect(frames.size).toBe(0);
   });
 
+  it("cancels external root scrolling without requiring a wheel or key event", () => {
+    glideToCard(card("target", 6000));
+    step();
+    const calls = win.scrollBy.mock.calls.length;
+    win.scrollY += 200;
+    win.dispatchEvent(new Event("scroll"));
+    expect(frames.size).toBe(0);
+    step();
+    expect(win.scrollBy).toHaveBeenCalledTimes(calls);
+  });
+
+  it("ignores its own scroll events and preserves retargeting", () => {
+    glideToCard(card("target", 6000));
+    step();
+    win.dispatchEvent(new Event("scroll"));
+    expect(frames.size).toBe(1);
+    glideToCard(card("next", 9000));
+    step();
+    win.dispatchEvent(new Event("scroll"));
+    expect(frames.size).toBe(1);
+  });
+
+  it("stops before overwriting external scrolling when its scroll event is delayed", () => {
+    glideToCard(card("target", 6000));
+    step();
+    const calls = win.scrollBy.mock.calls.length;
+    win.scrollY += 200;
+    step();
+    expect(frames.size).toBe(0);
+    expect(win.scrollBy).toHaveBeenCalledTimes(calls);
+  });
+
   it("cancels when the motion preference changes", () => {
     glideToCard(card("target", 6000));
     media.matches = true;
