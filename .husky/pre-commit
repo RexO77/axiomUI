@@ -1,4 +1,4 @@
-# Mirror the CI "Verify" job so a red CI is caught before the push, not after.
+# Run the local verification gate before each commit; run the build before delivery.
 npm run lint
 npm run typecheck
 npm run check

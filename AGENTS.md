@@ -37,10 +37,10 @@
 ## Testing Guidelines
 - Vitest is configured (`vitest.config.ts`). `npm test` runs the suite once; tests live beside
   the code they cover, in `src/**/__tests__/`.
-- The full gate, and exactly what CI runs, is: `npm run lint`, `npm run typecheck`,
-  `npm run check`, `npm run skills:check`, `npm test`, `npm run build`. `.husky/pre-commit` runs all but the build so a
-  red CI is caught before the push. CI also exercises the standalone installer from
-  the checkout and a real package tarball on Node 18.17.0 and 20, using throwaway homes.
+- Before delivery, run the full local gate: `npm run lint`, `npm run typecheck`,
+  `npm run check`, `npm run skills:check`, `npm test`, `npm run build`.
+  `.husky/pre-commit` runs all but the build. Also exercise the standalone installer
+  from the checkout and a real package tarball on Node 18.17.0 and 20, using throwaway homes.
   Run `node packages/axiomui/test/smoke.mjs` after changing package behavior; an optional
   bin path argument exercises an extracted tarball. Regenerate skills first.
 - `npm run check` (`scripts/check-deep-dives.mjs`) asserts all 105 rules have authored
