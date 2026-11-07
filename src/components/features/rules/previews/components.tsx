@@ -5,6 +5,7 @@ import { Archive, ArrowDown, FileText, Share2, Trash2, X } from "lucide-react";
 import {
     ANNOTATION_INK,
     PreviewFrame,
+    PRODUCT_MUTED,
     type PreviewRenderer,
     type Variant,
 } from "@/components/features/rules/preview-primitives";
@@ -33,17 +34,23 @@ const ACCENT_TEXT = "text-blue-600 dark:text-blue-400";
 // baked into the recipe: comp-2's compact confirm buttons used to ship both
 // `px-2.5` and `px-1.5`, and stylesheet order quietly picked the larger one.
 // The 6px corner is pinned so the radius does not follow the global scale.
+// Every recipe carries a 1px border (transparent where the fill is the edge),
+// so a filled button beside an outline one is the same height. The colour
+// stays in each recipe, never in BTN, for the same `cn` reason.
 const BTN = "inline-flex items-center justify-center rounded-[6px] font-semibold";
 const BTN_MD = "px-2.5 py-1.5 text-[10px]";
 const BTN_SM = "px-2 py-1 text-[9px]";
 const BTN_XS = "px-1.5 py-0.5 text-[9px]";
-const BTN_PRIMARY = cn(BTN, "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900");
+const BTN_PRIMARY = cn(
+    BTN,
+    "border border-transparent bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
+);
 const BTN_SECONDARY = cn(
     BTN,
     "border border-neutral-300 text-neutral-600 dark:border-neutral-700 dark:text-neutral-300"
 );
-const BTN_GHOST = cn(BTN, "text-neutral-500 dark:text-neutral-400");
-const BTN_DANGER = cn(BTN, "bg-rose-600 text-white");
+const BTN_GHOST = cn(BTN, "border border-transparent text-neutral-500 dark:text-neutral-400");
+const BTN_DANGER = cn(BTN, "border border-transparent bg-rose-600 text-white");
 
 function Kbd({ label }: { label: string }) {
     return (
@@ -89,7 +96,7 @@ function actionHierarchy(variant: Variant) {
                 <span className="block text-[11px] font-semibold text-neutral-800 dark:text-neutral-100">
                     Ready to publish?
                 </span>
-                <span className="mt-0.5 block text-[10px] text-neutral-400 dark:text-neutral-500">
+                <span className={cn("mt-0.5 block text-[10px]", PRODUCT_MUTED)}>
                     Your changes go live immediately
                 </span>
             </div>
@@ -211,7 +218,7 @@ function nestedRadius(variant: Variant) {
                     r·{outer}
                 </span>
                 <div
-                    className="relative flex h-7 w-44 items-center bg-neutral-100 px-2 text-[10px] text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500"
+                    className="relative flex h-7 w-44 items-center bg-neutral-100 px-2 text-[10px] text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
                     style={{ borderRadius: inner }}
                 >
                     Search projects…
@@ -246,7 +253,7 @@ function avatarShapes(variant: Variant) {
                 <div className="flex items-center gap-2 rounded-[13px] bg-neutral-50 p-2 dark:bg-neutral-900">
                     <span
                         className={cn(
-                            "flex size-6 shrink-0 items-center justify-center bg-blue-500 text-[9px] font-semibold text-white dark:bg-blue-400 dark:text-neutral-950",
+                            "flex size-6 shrink-0 items-center justify-center bg-blue-600 text-[9px] font-semibold text-white dark:bg-blue-400 dark:text-neutral-950",
                             isDo ? "rounded-full" : "rounded-[5px]"
                         )}
                     >
@@ -439,11 +446,12 @@ function disabledReason(variant: Variant) {
                 </div>
                 <TextLine widthClass="w-full" className="mt-1.5" />
                 <TextLine widthClass="w-3/4" className="mt-1" />
+                {/* Disabled ink stays faint on purpose: WCAG 1.4.3 exempts inactive controls. */}
                 <span
                     className={cn(
                         BTN,
                         BTN_MD,
-                        "mt-2 bg-neutral-200 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500"
+                        "mt-2 border border-transparent bg-neutral-200 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500"
                     )}
                 >
                     Export CSV

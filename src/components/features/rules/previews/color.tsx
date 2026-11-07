@@ -17,6 +17,7 @@ import {
     ANNOTATION_INK,
     ANNOTATION_INK_ON_FILL,
     PreviewFrame,
+    PRODUCT_MUTED,
     type PreviewRenderer,
     type Variant,
 } from "@/components/features/rules/preview-primitives";
@@ -112,8 +113,10 @@ function SixtyThirtyTen({ variant }: { variant: Variant }) {
                     <span
                         className={cn(
                             "ml-auto rounded-sm px-1.5 py-px text-[8px] font-semibold",
+                            // blue-700: white on it is 6.8:1, and unlike blue-600 it still
+                            // reads as a chip on the flooded blue-600 bar.
                             flooded
-                                ? "bg-blue-500 text-white"
+                                ? "bg-blue-700 text-white"
                                 : "border border-neutral-200 text-neutral-500 dark:border-neutral-700 dark:text-neutral-400"
                         )}
                     >
@@ -153,8 +156,8 @@ function SixtyThirtyTen({ variant }: { variant: Variant }) {
                         <div className="mt-1.5 h-1.5 w-full rounded-full bg-neutral-200 dark:bg-neutral-800" />
                         <span
                             className={cn(
-                                "mt-2 inline-flex rounded-sm px-1.5 py-0.5 text-[8px] font-semibold text-white",
-                                flooded ? "bg-blue-600" : "bg-blue-500 dark:bg-blue-400 dark:text-blue-950"
+                                "mt-2 inline-flex rounded-sm bg-blue-600 px-1.5 py-0.5 text-[8px] font-semibold text-white",
+                                !flooded && "dark:bg-blue-400 dark:text-blue-950"
                             )}
                         >
                             New report
@@ -214,7 +217,9 @@ function ColoredShadows({ variant }: { variant: Variant }) {
                         <Zap aria-hidden className="size-3.5 stroke-[1.5]" />
                         <span className="text-[11px] font-semibold">Upgrade to Pro</span>
                     </div>
-                    <p className="mt-0.5 text-[10px] tabular-nums text-indigo-100">$12/mo · billed yearly</p>
+                    {/* White, not indigo-100: on indigo-500 the tint is 3.7:1. Size and weight
+                        carry the step down from the heading instead. */}
+                    <p className="mt-0.5 text-[10px] tabular-nums text-white">$12/mo · billed yearly</p>
                 </div>
             </div>
             <div className="flex items-center justify-between gap-2">
@@ -251,9 +256,18 @@ function SemanticColors({ variant }: { variant: Variant }) {
                         )}
                     >
                         <Heart aria-hidden className="size-3.5 stroke-[1.5]" fill="currentColor" />
-                        <span className={cn(NOTE, "text-inherit")}>128</span>
+                        {/* The icon carries the quoted 500 step (an icon needs 3:1); the
+                            count is text, so it sits a step darker to clear 4.5:1. */}
+                        <span
+                            className={cn(
+                                NOTE,
+                                hijacked ? "text-rose-600 dark:text-rose-400" : "text-blue-600 dark:text-blue-400"
+                            )}
+                        >
+                            128
+                        </span>
                     </span>
-                    <span className="flex items-center gap-1 text-neutral-400 dark:text-neutral-500">
+                    <span className={cn("flex items-center gap-1", PRODUCT_MUTED)}>
                         <MessageCircle aria-hidden className="size-3.5 stroke-[1.5]" />
                         <span className={NOTE}>24</span>
                     </span>
@@ -356,7 +370,7 @@ function DoubleContrastBorders({ variant }: { variant: Variant }) {
                     interactive
                 )}
             >
-                <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
+                <span className={cn("text-[10px]", PRODUCT_MUTED)}>
                     teammate@company.com
                 </span>
             </div>
@@ -529,7 +543,7 @@ function OpacityOverNewColors({ variant }: { variant: Variant }) {
                     "flex h-6 items-center gap-1.5 rounded-md px-2 font-semibold",
                     handPicked
                         ? "bg-[#dcebf5] text-[#1967d2]"
-                        : "bg-blue-500/15 text-blue-600 dark:text-blue-400"
+                        : "bg-blue-500/15 text-blue-700 dark:text-blue-400"
                 )}
             >
                 <Send aria-hidden className="size-3 stroke-[1.5]" />
@@ -582,7 +596,8 @@ function NeutralImageOutlines({ variant }: { variant: Variant }) {
                         onDark
                     )}
                 />
-                <span className={cn(NOTE, "shrink-0 text-neutral-500")}>on #0a0a0a</span>
+                {/* Pinned dark surface, so pinned light ink: neutral-500 here is 4.2:1. */}
+                <span className={cn(NOTE, "shrink-0 text-neutral-400")}>on #0a0a0a</span>
             </div>
             <Note>
                 {tinted

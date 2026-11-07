@@ -22,6 +22,7 @@ import {
 import {
     ANNOTATION_INK,
     PreviewFrame,
+    PRODUCT_MUTED,
     type PreviewRenderer,
     type Variant,
 } from "@/components/features/rules/preview-primitives";
@@ -70,8 +71,8 @@ function emptyStates(variant: Variant) {
                             <FolderPlus aria-hidden className="size-3.5 stroke-[1.5] text-neutral-500 dark:text-neutral-400" />
                         </span>
                         <span className="text-[10px] font-medium text-neutral-700 dark:text-neutral-200">No projects yet</span>
-                        <span className="text-[10px] text-neutral-400 dark:text-neutral-500">Create one to start tracking work</span>
-                        <span className="mt-1 inline-flex items-center gap-1 rounded-sm bg-blue-500 px-2 py-1 text-[10px] font-semibold leading-none text-white dark:bg-blue-400 dark:text-neutral-950">
+                        <span className={cn("text-[10px]", PRODUCT_MUTED)}>Create one to start tracking work</span>
+                        <span className="mt-1 inline-flex items-center gap-1 rounded-sm bg-blue-600 px-2 py-1 text-[10px] font-semibold leading-none text-white dark:bg-blue-400 dark:text-neutral-950">
                             <Plus aria-hidden className="size-2.5 stroke-[2.5]" />
                             New project
                         </span>
@@ -127,8 +128,11 @@ function tapTargets(variant: Variant) {
 }
 
 // ── sys-4 · Date formats ────────────────────────────────────────────
-// Same activity feed, same fixed timestamp slot. Relative times fit;
-// ISO strings fight the layout and truncate mid-value.
+// Same activity feed, same timestamp face and ink. Do answers "is this
+// fresh?" in a 64px slot. Don't prints the full ISO string the caption names,
+// never truncated: three times as wide as "2m ago", and the reader still has
+// to work out how long ago it was. If a row ever runs short, the label's
+// truncate gives way before the timestamp does.
 function dateFormats(variant: Variant) {
     const rows = [
         { initial: "M", text: "Maya pushed to main", rel: "2m ago", iso: "2026-08-10T14:02:11Z" },
@@ -148,11 +152,13 @@ function dateFormats(variant: Variant) {
                             {row.text}
                         </span>
                         {variant === "do" ? (
-                            <span className="w-16 shrink-0 text-right text-[10px] tabular-nums text-neutral-400 dark:text-neutral-500">
+                            <span className={cn("w-16 shrink-0 text-right text-[10px] tabular-nums", PRODUCT_MUTED)}>
                                 {row.rel}
                             </span>
                         ) : (
-                            <span className={cn(ANNOT, "w-16 shrink-0 truncate text-right")}>{row.iso}</span>
+                            <span className={cn("shrink-0 whitespace-nowrap text-right text-[10px] tabular-nums", PRODUCT_MUTED)}>
+                                {row.iso}
+                            </span>
                         )}
                     </div>
                 ))}
@@ -203,9 +209,12 @@ function WarningChip({ tone }: { tone: Hue }) {
     );
 }
 
+// The fill is the swatch it claims, blue-500 (blue-400 dark), so the chain on
+// screen is literal. White on blue-500 falls below 4.5:1; the label
+// is neutral-950 instead, 5.3:1 light and 7.5:1 dark.
 function SaveChip() {
     return (
-        <span className="inline-flex items-center whitespace-nowrap rounded-sm border border-transparent bg-blue-500 px-2 py-1 text-[9px] font-semibold leading-none text-white dark:bg-blue-400 dark:text-neutral-950">
+        <span className="inline-flex items-center whitespace-nowrap rounded-sm border border-transparent bg-blue-500 px-2 py-1 text-[9px] font-semibold leading-none text-neutral-950 dark:bg-blue-400">
             Save
         </span>
     );
@@ -358,12 +367,12 @@ function keyboardNav(variant: Variant) {
                 <span className="block text-[10px] font-semibold text-neutral-700 dark:text-neutral-200">
                     Archive project?
                 </span>
-                <span className="block text-[10px] text-neutral-400 dark:text-neutral-500">You can restore it later</span>
+                <span className={cn("block text-[10px]", PRODUCT_MUTED)}>You can restore it later</span>
                 <div className="flex justify-end gap-1.5 pt-0.5">
                     <span className="inline-flex items-center rounded-sm border border-neutral-300 px-2 py-1 text-[10px] font-medium leading-none text-neutral-600 dark:border-neutral-600 dark:text-neutral-300">
                         Cancel
                     </span>
-                    <span className="relative inline-flex items-center rounded-sm bg-neutral-900 px-2 py-1 text-[10px] font-semibold leading-none text-white dark:bg-neutral-100 dark:text-neutral-900">
+                    <span className="relative inline-flex items-center rounded-sm border border-transparent bg-neutral-900 px-2 py-1 text-[10px] font-semibold leading-none text-white dark:bg-neutral-100 dark:text-neutral-900">
                         {variant === "do" ? (
                             <span
                                 aria-hidden

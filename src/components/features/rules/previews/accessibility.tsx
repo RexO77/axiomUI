@@ -11,11 +11,14 @@ import { cn } from "@/lib/utils";
 
 // ── Local vocabulary ────────────────────────────────────────────────
 
+// Both recipes carry a 1px border (transparent on the filled one), so Cancel
+// and Save changes are the same height. The colour stays in each recipe, never
+// in BUTTON_BASE: cn() cannot let a later border colour override an earlier one.
 const BUTTON_BASE =
     "inline-flex items-center justify-center rounded-md px-3 py-1.5 text-[11px] font-semibold";
 const BUTTON_PRIMARY = cn(
     BUTTON_BASE,
-    "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
+    "border border-transparent bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900"
 );
 const BUTTON_SECONDARY = cn(
     BUTTON_BASE,
