@@ -129,9 +129,36 @@ function VerdictIcon({ kind }: { kind: "do" | "dont" }) {
   );
 }
 
+/**
+ * A layered CSS value (box-shadow layers, say) split at its top-level commas,
+ * one layer per line, so a wrap never lands mid-layer. Commas inside
+ * parentheses and prose lists ("Enter 220ms, exit 160ms") are left alone:
+ * every part has to open with two numeric tokens to count as a layer.
+ */
+function layerLines(text: string): string[] | null {
+  const parts: string[] = [];
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    if (char === "(") depth++;
+    else if (char === ")") depth--;
+    else if (char === "," && depth === 0) {
+      parts.push(text.slice(start, i).trim());
+      start = i + 1;
+    }
+  }
+  parts.push(text.slice(start).trim());
+
+  const isLayer = (part: string) => /^(inset\s+)?-?[\d.]+[a-z%]*\s+-?[\d.]/.test(part);
+  if (parts.length < 2 || !parts.every(isLayer)) return null;
+  return parts.map((part, index) => (index < parts.length - 1 ? `${part},` : part));
+}
+
 /** One half of the controlled experiment: label chrome + mono evidence. */
 function VerdictPanel({ kind, text }: { kind: "do" | "dont"; text: string }) {
   const evidence = text.length > 80 ? `${text.slice(0, 77)}…` : text;
+  const lines = evidence === text ? layerLines(text) : null;
 
   return (
     <div
@@ -164,13 +191,16 @@ function VerdictPanel({ kind, text }: { kind: "do" | "dont"; text: string }) {
       <div
         style={{
           display: "flex",
+          flexDirection: lines ? "column" : "row",
           fontFamily: MONO,
           fontSize: 23,
           lineHeight: 1.5,
           color: INK_EVIDENCE,
         }}
       >
-        {evidence}
+        {lines
+          ? lines.map((line, index) => <div key={index} style={{ display: "flex" }}>{line}</div>)
+          : evidence}
       </div>
     </div>
   );
@@ -254,7 +284,7 @@ export default async function Image({ params }: Props) {
                 color: INK,
               }}
             >
-              Axiom
+              Axiom UI
             </div>
             <div
               style={{
@@ -262,8 +292,7 @@ export default async function Image({ params }: Props) {
                 fontFamily: SANS,
                 fontSize: 24,
                 fontWeight: 500,
-                letterSpacing: 4,
-                textTransform: "uppercase",
+                letterSpacing: 0,
                 color: INK_MUTED,
               }}
             >
@@ -301,7 +330,7 @@ export default async function Image({ params }: Props) {
                 color: INK,
               }}
             >
-              Axiom
+              Axiom UI
             </div>
           </div>
           <div
@@ -337,12 +366,11 @@ export default async function Image({ params }: Props) {
               fontFamily: SANS,
               fontSize: 20,
               fontWeight: 700,
-              letterSpacing: 2.6,
-              textTransform: "uppercase",
+              letterSpacing: 0,
               color: ACCENT,
             }}
           >
-            {category?.name ?? "UI Logic"}
+            {category?.name ?? "UI logic"}
           </div>
           <div
             style={{

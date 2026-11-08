@@ -165,21 +165,26 @@ export default async function RulePage({ params }: Props) {
                             {rule.desc}
                         </p>
 
-                        {/* Tags + Cite: one muted Tag glyph labels the whole
+                        {/* Tags + Copy: one muted Tag glyph labels the whole
                             group; repeating it per pill reads as noise. Tags are
-                            32px, the height of the Copy pill beside them. */}
-                        <div className="mt-6 flex flex-wrap items-center gap-2">
-                            <Tag aria-hidden="true" className="size-3.5 shrink-0 text-ink-faint" />
-                            <span className="sr-only">Tags</span>
-                            {rule.tags.map((tag) => (
-                                <span
-                                    key={tag}
-                                    className="inline-flex h-8 items-center rounded-full border border-line bg-fill px-3 text-xs font-medium whitespace-nowrap text-ink-secondary"
-                                >
-                                    {tag}
-                                </span>
-                            ))}
-                            <CopyRuleButton rule={rule} className="ml-auto" />
+                            32px, the height of the Copy pill beside them. On
+                            phones the tags fill the row, so Copy takes its own
+                            line on the text edge instead of wrapping alone to
+                            the far right. */}
+                        <div className="mt-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <Tag aria-hidden="true" className="size-3.5 shrink-0 text-ink-faint" />
+                                <span className="sr-only">Tags</span>
+                                {rule.tags.map((tag) => (
+                                    <span
+                                        key={tag}
+                                        className="inline-flex h-8 items-center rounded-full border border-line bg-fill px-3 text-xs font-medium whitespace-nowrap text-ink-secondary"
+                                    >
+                                        {tag}
+                                    </span>
+                                ))}
+                            </div>
+                            <CopyRuleButton rule={rule} />
                         </div>
                     </header>
 
@@ -203,18 +208,21 @@ export default async function RulePage({ params }: Props) {
                     ) : (
                         // The preview frame is the only frame. min-w-0 lets a
                         // preview that refuses to wrap (typo-10) clip inside its
-                        // own pane instead of widening the page.
-                        <div className="mb-12 grid min-w-0 gap-6 md:grid-cols-2">
-                            <section aria-labelledby="verdict-do" className="min-w-0">
+                        // own pane instead of widening the page. Side by side,
+                        // each pane is a three-row subgrid (label, frame,
+                        // caption): the frames share a height and the captions
+                        // a top even when only one caption wraps.
+                        <div className="mb-12 grid min-w-0 gap-6 md:grid-cols-2 md:gap-y-0">
+                            <section aria-labelledby="verdict-do" className="flex min-w-0 flex-col md:row-span-3 md:grid md:grid-rows-subgrid">
                                 <h2 id="verdict-do"><VerdictLabel verdict="do" /></h2>
-                                <div className="mt-3">
+                                <div className="mt-3 flex min-w-0 flex-1 flex-col [&>.preview-frame]:flex-1">
                                     <RulePreview rule={rule} variant="do" />
                                 </div>
                                 <p className="mt-3 font-mono text-sm leading-6 text-ink-muted">{rule.do}</p>
                             </section>
-                            <section aria-labelledby="verdict-dont" className="min-w-0">
+                            <section aria-labelledby="verdict-dont" className="flex min-w-0 flex-col md:row-span-3 md:grid md:grid-rows-subgrid">
                                 <h2 id="verdict-dont"><VerdictLabel verdict="dont" /></h2>
-                                <div className="mt-3">
+                                <div className="mt-3 flex min-w-0 flex-1 flex-col [&>.preview-frame]:flex-1">
                                     <RulePreview rule={rule} variant="dont" />
                                 </div>
                                 <p className="mt-3 font-mono text-sm leading-6 text-ink-muted">{rule.dont}</p>
