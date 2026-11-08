@@ -12,6 +12,7 @@ import {
 import {
     ANNOTATION_INK,
     MiniButton,
+    PRODUCT_MUTED,
     PreviewFrame,
     type PreviewRenderer,
 } from "@/components/features/rules/preview-primitives";
@@ -74,9 +75,7 @@ function Value({
                 "truncate",
                 size === "sm" ? "text-[10px]" : "text-[11px]",
                 mono && "font-mono tabular-nums",
-                muted
-                    ? "text-neutral-400 dark:text-neutral-500"
-                    : "text-neutral-900 dark:text-neutral-100",
+                muted ? PRODUCT_MUTED : "text-neutral-900 dark:text-neutral-100",
                 className
             )}
         >
@@ -134,8 +133,10 @@ function Ann({
         <span
             className={cn(
                 "font-mono text-[9px] tabular-nums",
+                // Accent ink is text: blue-600 is 5.2:1 on the white frame,
+                // where blue-500 was 3.7:1. Brackets and rules keep blue-500.
                 tone === "accent"
-                    ? "text-blue-500 dark:text-blue-400"
+                    ? "text-blue-600 dark:text-blue-400"
                     : ANNOTATION_INK,
                 className
             )}
@@ -350,7 +351,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
         case "form-3": {
             const asterisk = <span className="text-rose-500 dark:text-rose-400"> *</span>;
             const optional = (
-                <span className="font-normal text-neutral-400 dark:text-neutral-500">
+                <span className={cn("font-normal", PRODUCT_MUTED)}>
                     {" "}
                     (Optional)
                 </span>
@@ -481,9 +482,25 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
                                 Email me product updates
                             </span>
                             {/* Dashed accent marks the one control under test,
-                                so the eye is not left comparing two switches. */}
-                            <span className="flex shrink-0 items-center justify-center rounded-[6px] border border-dashed border-blue-500/60 p-1 dark:border-blue-400/60">
-                                {isDo ? <Checkbox on /> : <Switch on />}
+                                so the eye is not left comparing two switches. The
+                                slot is the same fixed box in both panes, so neither
+                                ring can change the row height or the label's width.
+                                Each ring is concentric with its control: inner
+                                radius + padding + border, 4 + 4 + 1 = 9px on the
+                                checkbox and 8 + 3 + 1 = 12px (full) on the switch.
+                                The ring hangs into the row padding by that same
+                                inset, so the control's edge lines up with the
+                                Dark mode switch above it. */}
+                            <span className="flex h-6 w-10 shrink-0 items-center justify-end">
+                                {isDo ? (
+                                    <span className="-mr-[5px] flex items-center justify-center rounded-[9px] border border-dashed border-blue-500/60 p-1 dark:border-blue-400/60">
+                                        <Checkbox on />
+                                    </span>
+                                ) : (
+                                    <span className="-mr-1 flex items-center justify-center rounded-full border border-dashed border-blue-500/60 p-[3px] dark:border-blue-400/60">
+                                        <Switch on />
+                                    </span>
+                                )}
                             </span>
                         </div>
                     </div>
@@ -624,6 +641,12 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
         // The same two signup fields in both panes. The one variable is
         // whether the answer the app already holds — the request locale, the
         // system clock — arrives in the field or is left for the user to hunt.
+        //
+        // The default date reads "Today", as real date fields show it, rather
+        // than a literal date. The previews are prerendered, so any date
+        // written here goes stale the next morning and the Do would claim a
+        // past day was today; a date computed after mount would pop in on
+        // hydration.
         case "form-11": {
             const isDo = variant === "do";
             const note = (filled: string, empty: string) => (
@@ -646,11 +669,11 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
                     <div className="space-y-1">
                         <div className="flex h-3.5 items-baseline justify-between gap-2">
                             <Label>Start date</Label>
-                            {note("today", "no default")}
+                            {note("defaults to today", "no default")}
                         </div>
                         <Shell>
-                            <Value muted={!isDo} mono>
-                                {isDo ? "07 Sep 2026" : "dd/mm/yyyy"}
+                            <Value muted={!isDo} mono={!isDo}>
+                                {isDo ? "Today" : "dd/mm/yyyy"}
                             </Value>
                             <CalendarDays
                                 size={12}
@@ -683,8 +706,9 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
                     </div>
                     <div className="flex items-center justify-between gap-2">
                         <MiniButton label="Save changes" variant="primary" />
+                        {/* Use the stronger green so the confirmation meets 4.5:1 on white. */}
                         {isDo ? (
-                            <span className="flex items-center gap-1 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                            <span className="flex items-center gap-1 text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
                                 <CircleCheck size={12} strokeWidth={1.75} aria-hidden />
                                 Saved successfully
                             </span>
