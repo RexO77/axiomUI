@@ -4,6 +4,7 @@ import { CreditCard, FileText, History, Settings, ShieldAlert, Users } from "luc
 
 import {
     ANNOTATION_INK,
+    PRODUCT_MUTED,
     PreviewFrame,
     type PreviewRenderer,
 } from "@/components/features/rules/preview-primitives";
@@ -16,7 +17,9 @@ import { cn } from "@/lib/utils";
 // the previews render real copy at honest sizes and annotate the measurement
 // that proves the point.
 
-const ACCENT_TEXT = "text-blue-500 dark:text-blue-400";
+// Blue-600 keeps small measurement text above 4.5:1 on white.
+// Graphical rules and bars keep blue-500.
+const ACCENT_TEXT = "text-blue-600 dark:text-blue-400";
 const ACCENT_BG = "bg-blue-500 dark:bg-blue-400";
 
 /** Mono measurement annotation — the evidence artifact of the static previews. */
@@ -34,13 +37,17 @@ function Spec({ children, className }: { children: ReactNode; className?: string
     );
 }
 
+// The two states are alternatives, never stacked: cn() is plain concatenation,
+// so an active dark:text-neutral-50 beside the base dark:text-neutral-300 lost
+// by stylesheet order and the active row rendered as dim as the rest.
 function NavRow({ icon, label, active }: { icon: ReactNode; label: string; active?: boolean }) {
     return (
         <div
             className={cn(
-                "flex items-center gap-2 rounded-sm px-1.5 py-1 text-[12px] text-neutral-600 dark:text-neutral-300",
-                active &&
-                    "bg-neutral-100 font-semibold text-neutral-900 dark:bg-neutral-800/60 dark:text-neutral-50"
+                "flex items-center gap-2 rounded-sm px-1.5 py-1 text-[12px]",
+                active
+                    ? "bg-neutral-100 font-semibold text-neutral-900 dark:bg-neutral-800/60 dark:text-neutral-50"
+                    : "text-neutral-600 dark:text-neutral-300"
             )}
         >
             {icon}
@@ -385,7 +392,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
             const rows: Array<{ text: string; base: string; doW: string; dontW: string }> = [
                 {
                     text: "Email notifications",
-                    base: "text-[10px] uppercase tracking-[0.05em] text-neutral-400 dark:text-neutral-500",
+                    base: `text-[10px] uppercase tracking-[0.05em] ${PRODUCT_MUTED}`,
                     doW: "font-semibold",
                     dontW: "font-medium",
                 },
@@ -403,7 +410,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
                 },
                 {
                     text: "Sent to 12 people",
-                    base: "text-[10px] text-neutral-400 dark:text-neutral-500",
+                    base: `text-[10px] ${PRODUCT_MUTED}`,
                     doW: "font-normal",
                     dontW: "font-bold",
                 },

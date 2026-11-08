@@ -5,6 +5,7 @@ import { Bell, Play } from "lucide-react";
 import {
     ANNOTATION_INK,
     ANNOTATION_INK_ON_FILL,
+    PRODUCT_MUTED,
     PreviewFrame,
     type PreviewRenderer,
     type Variant,
@@ -25,7 +26,6 @@ import { cn } from "@/lib/utils";
 const ANNOT = `font-mono text-[10px] tabular-nums ${ANNOTATION_INK}`;
 // The same, on a tinted page surface inside the frame (layout-7's Do).
 const ANNOT_ON_FILL = `font-mono text-[10px] tabular-nums ${ANNOTATION_INK_ON_FILL}`;
-// Fine annotation (axis labels) — 8–9px reserved for these.
 // Fine annotation (axis labels) — 8-9px is reserved for these. Deliberately
 // carries NO colour: `cn` is plain concatenation, and CSS resolves conflicts by
 // stylesheet order, not argument order. A colour here beat every caller's
@@ -36,16 +36,31 @@ const FINE = "font-mono text-[9px] tabular-nums";
 const FINE_MUTED = ANNOTATION_INK;
 // Scene copy that happens to be small. Mono is reserved for evidence, so
 // in-scene labels stay in the UI face even at 9px.
-const STAT_LABEL = "text-[9px] font-medium text-neutral-400 dark:text-neutral-500";
+const STAT_LABEL = "text-[9px] font-medium text-neutral-500 dark:text-neutral-300";
 // The measurement accent (protagonist of most layout rules).
 const TICK = "bg-blue-500 dark:bg-blue-400";
 const TICK_TEXT = "text-blue-600 dark:text-blue-400";
 
-function TextLine({ widthClass, className }: { widthClass: string; className?: string }) {
+// `tone` is a prop rather than a className override: cn() is plain
+// concatenation, so a caller's h-2 / dark:bg-neutral-700 shipped beside the
+// base h-1.5 / dark:bg-neutral-800 and lost by stylesheet order. In dark the
+// heading bar rendered at body weight and layout-10 lost its heading.
+function TextLine({
+    widthClass,
+    tone = "body",
+    className,
+}: {
+    widthClass: string;
+    tone?: "title" | "body";
+    className?: string;
+}) {
     return (
         <div
             className={cn(
-                "h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-800",
+                "rounded-full",
+                tone === "title"
+                    ? "h-2 bg-neutral-300 dark:bg-neutral-700"
+                    : "h-1.5 bg-neutral-200 dark:bg-neutral-800",
                 widthClass,
                 className
             )}
@@ -262,7 +277,7 @@ function iconAlignment(variant: Variant) {
                     <span className="block text-[10px] font-semibold leading-[14px] text-neutral-800 dark:text-neutral-100">
                         Backup complete
                     </span>
-                    <span className="mt-0.5 block text-[10px] leading-[14px] text-neutral-400 dark:text-neutral-500">
+                    <span className={cn("mt-0.5 block text-[10px] leading-[14px]", PRODUCT_MUTED)}>
                         128 files synced to cloud storage two minutes ago
                     </span>
                 </div>
@@ -338,6 +353,7 @@ function containerFallacy(variant: Variant) {
                         </div>
                     </div>
                 </div>
+                {/* Match the annotation ink to each pane’s surface. */}
                 <span className={cn("mt-2 block", isDo ? ANNOT_ON_FILL : ANNOT)}>
                     {isDo ? "0 borders — surface + space" : "4 borders, 1 idea"}
                 </span>
@@ -417,7 +433,7 @@ function verticalRhythm(variant: Variant) {
     return (
         <PreviewFrame className="flex flex-col items-center justify-center gap-2.5">
             <div className="w-44">
-                <TextLine widthClass="w-1/2" className="h-2 bg-neutral-300 dark:bg-neutral-700" />
+                <TextLine widthClass="w-1/2" tone="title" />
                 <MeasuredGap px={gaps[0]} className="-mr-8" />
                 <TextLine widthClass="w-full" />
                 <MeasuredGap px={gaps[1]} className="-mr-8" />
