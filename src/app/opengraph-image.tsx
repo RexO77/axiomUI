@@ -191,8 +191,7 @@ export default async function Image() {
                 fontFamily: SANS,
                 fontSize: 20,
                 fontWeight: 700,
-                letterSpacing: 2.6,
-                textTransform: "uppercase",
+                letterSpacing: 0,
                 color: ACCENT,
               }}
             >

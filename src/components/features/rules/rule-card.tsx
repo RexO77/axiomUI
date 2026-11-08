@@ -26,6 +26,10 @@ interface RuleCardProps {
  * Layout follows the card's own width, not the viewport's (@container): the
  * same 768px screen can hold a 424px card beside the sidebar or a 720px one
  * without it, and the previews need ~300px each to read.
+ *
+ * The description stops at 28rem: 32em of text-sm, the rule page's body
+ * measure, about 70 characters a line. It is set in rem, not ch: Manrope's
+ * zero is wide, so ch overshoots.
  */
 function RuleCardComponent({ rule, isActive, onDeepDive }: RuleCardProps) {
   const { tapSuccess } = useHaptics();
@@ -38,7 +42,7 @@ function RuleCardComponent({ rule, isActive, onDeepDive }: RuleCardProps) {
       <div className="grid gap-3 px-3 pt-3 pb-1 @[600px]:grid-cols-[minmax(0,1fr)_auto] @[600px]:items-start @[600px]:gap-4">
         <div className="min-w-0">
           <h3 className="text-lg font-semibold leading-snug text-ink sm:text-xl">{rule.title}</h3>
-          <p className="mt-2 text-sm leading-6 text-ink-secondary">{rule.desc}</p>
+          <p className="mt-2 max-w-[28rem] text-sm leading-6 text-ink-secondary">{rule.desc}</p>
         </div>
         <div className="flex items-start gap-2 @[600px]:justify-end">
           <CopyRuleButton rule={rule} />
@@ -59,7 +63,11 @@ function RuleCardComponent({ rule, isActive, onDeepDive }: RuleCardProps) {
         </div>
       </div>
 
-      <div className="mt-4 grid gap-2 @[600px]:grid-cols-2">
+      {/* Side by side, each panel is a three-row subgrid (label, frame,
+          caption), so both frames take the taller frame's height and both
+          captions start on one line even when one caption wraps and the
+          other does not. Stacked, the panels size themselves. */}
+      <div className="mt-4 grid gap-2 @[600px]:grid-cols-2 @[600px]:gap-y-0">
         <ComparisonPanel rule={rule} variant="do" />
         <ComparisonPanel rule={rule} variant="dont" />
       </div>
@@ -76,13 +84,15 @@ function ComparisonPanel({ rule, variant }: { rule: Rule; variant: "do" | "dont"
   const showFooter = !hasShowcase(rule.id);
 
   return (
-    <section className="rule-card-panel flex min-w-0 flex-col rounded-well bg-sunken p-2.5">
+    <section className="rule-card-panel flex min-w-0 flex-col rounded-well bg-sunken p-2.5 @[600px]:row-span-3 @[600px]:grid @[600px]:grid-rows-subgrid">
       {/* The words and palette come from VerdictLabel, so card, drawer,
           detail page and showcase cannot drift. */}
       <VerdictLabel verdict={variant} size="sm" className="px-0.5" />
 
-      {/* The preview IS the card — full deep-dive detail, first impression. */}
-      <div className="mt-2 flex-1">
+      {/* The preview IS the card — full deep-dive detail, first impression.
+          The frame fills its row, so a short preview never leaves a sunken
+          band between its frame and the caption. */}
+      <div className="mt-2 flex min-w-0 flex-1 flex-col [&>.preview-frame]:flex-1">
         <RulePreview rule={rule} variant={variant} />
       </div>
 
