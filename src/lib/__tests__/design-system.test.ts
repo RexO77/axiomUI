@@ -1,6 +1,10 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { hasShowcase } from "@/components/features/rules/demos/registry";
+import { getStaticRulePreview } from "@/components/features/rules/rule-preview";
+import { rules } from "@/data/ui-logic";
 import { DUR, EASE } from "@/lib/showcase-engine";
 
 /**
@@ -147,6 +151,11 @@ describe("showcase-engine mirrors the motion tokens", () => {
   });
 });
 
+it("uses readable muted ink for the catalog search placeholder", () => {
+  const searchInput = readFileSync(path.join(SRC, "components/features/search/search-input.tsx"), "utf8");
+  expect(searchInput.match(/\bplaceholder:text-[\w-]+/g)).toEqual(["placeholder:text-ink-muted"]);
+});
+
 describe("token contrast", () => {
   const themes = { light, dark };
 
@@ -170,6 +179,7 @@ describe("token contrast", () => {
     it(`${mode}: the primary pill's label clears 4.5:1`, () => {
       expect(contrastRatio(hex(tokens, "on-inverse"), hex(tokens, "inverse"))).toBeGreaterThanOrEqual(4.5);
     });
+
   }
 });
 
@@ -188,13 +198,19 @@ function sourceFiles(dir: string): string[] {
 const strictFiles = sourceFiles(SRC).filter((file) => readFileSync(file, "utf8").startsWith(`${MARKER}\n`));
 
 /** Raw palette steps, numeric motion, Tailwind's generic eases, ring-based
- *  focus, and hex backgrounds: everything the tokens replace. */
+ *  focus, hex backgrounds, white/black alpha (scrims are `bg-scrim`), text
+ *  below the 12px floor, and one-off shadows and durations: everything the
+ *  tokens replace. */
 const FORBIDDEN: [string, RegExp][] = [
   ["raw palette utility", /\b(?:[a-z-]+:)*(?:bg|text|border|ring|divide|outline|placeholder)-(?:neutral|zinc|gray|slate)-\d{2,3}\b/],
   ["numeric duration", /\bduration-\d+\b/],
   ["generic ease", /\bease-(?:in|out|in-out)\b(?!-)/],
   ["ring focus recipe", /focus-visible:ring/],
   ["hex background", /bg-\[#/],
+  ["white/black colour", /\b(?:[a-z-]+:)*(?:bg|text|border|divide|ring)-(?:white|black)(?:\/\d+)?\b/],
+  ["sub-12px text", /text-\[(?:(?:\d|1[01])(?:\.\d+)?|\.\d+)px\]/],
+  ["arbitrary shadow", /shadow-\[/],
+  ["arbitrary duration", /duration-\[/],
 ];
 
 /** Class strings in this codebase are double-quoted or template literals. */
@@ -232,6 +248,13 @@ describe("files marked `design-system: strict`", () => {
   it("include the shared primitives", () => {
     const relative = strictFiles.map((file) => path.relative(SRC, file));
     for (const file of ["components/ui/icon-button.tsx", "components/ui/button.tsx", "components/ui/verdict-label.tsx"]) {
+      expect(relative).toContain(file);
+    }
+  });
+
+  it("include the shells that frame every preview", () => {
+    const relative = strictFiles.map((file) => path.relative(SRC, file));
+    for (const file of ["app/layout.tsx", "components/features/rules/rule-preview.tsx"]) {
       expect(relative).toContain(file);
     }
   });
@@ -281,5 +304,204 @@ describe("preview annotation ink", () => {
     const dark = ratio(neutralLuminance(darkInk!), neutralLuminance(darkFrame!));
     expect(light, `neutral-${lightInk} on white = ${light.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
     expect(dark, `neutral-${darkInk} on neutral-${darkFrame} = ${dark.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+// ── Rendered preview panes ───────────────────────────────────────────
+
+/** One element of renderToStaticMarkup output: its classes, its own text
+ *  (not its descendants'), and its parent. */
+interface PaneElement {
+  classes: string[];
+  text: string;
+  parent: PaneElement | null;
+}
+
+const VOID_ELEMENTS = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"]);
+
+/** renderToStaticMarkup emits well-formed HTML with every attribute
+ *  double-quoted, so a tag-level scan is enough to rebuild the tree. */
+function paneElements(html: string): PaneElement[] {
+  const root: PaneElement = { classes: [], text: "", parent: null };
+  const elements: PaneElement[] = [];
+  let current = root;
+  const token = /<!--[\s\S]*?-->|<\/[\w-]+>|<([\w-]+)((?:\s+[^\s=>/]+(?:="[^"]*")?)*)\s*(\/?)>|([^<]+)/g;
+  for (const [whole, tag, attributes = "", selfClosing, text] of html.matchAll(token)) {
+    if (whole.startsWith("<!--")) continue;
+    if (whole.startsWith("</")) {
+      current = current.parent ?? root;
+    } else if (tag) {
+      const className = attributes.match(/\sclass="([^"]*)"/)?.[1] ?? "";
+      const element: PaneElement = { classes: className.split(/\s+/).filter(Boolean), text: "", parent: current };
+      elements.push(element);
+      if (!selfClosing && !VOID_ELEMENTS.has(tag)) current = element;
+    } else {
+      current.text += text;
+    }
+  }
+  return elements;
+}
+
+/** `dark:hover:bg-x` → { variant: "dark:hover:", utility: "bg-x" }. */
+function splitVariant(name: string): { variant: string; utility: string } {
+  let bracketDepth = 0;
+  let at = -1;
+  for (let index = 0; index < name.length; index++) {
+    const char = name[index];
+    if (char === "[") bracketDepth++;
+    else if (char === "]") bracketDepth--;
+    else if (char === ":" && bracketDepth === 0) at = index;
+  }
+  return { variant: name.slice(0, at + 1), utility: name.slice(at + 1).replace(/^!|!$/g, "") };
+}
+
+const NOT_BG_COLOUR = /^bg-(?:clip|origin|repeat|no-repeat|size|cover|contain|auto|fixed|local|scroll|center|top|bottom|left|right|blend|gradient|linear|radial|conic|none|\[url|position|x-|y-)/;
+const NOT_TEXT_COLOUR = /^text-(?:(?:xs|sm|base|lg|xl|\dxl|\[\d[\w.]*\])(?:\/[\w.[\]]+)?|left|right|center|justify|start|end|wrap|nowrap|balance|pretty|ellipsis|clip)$|^text-shadow\b/;
+const NOT_BORDER_COLOUR = /^border(?:-[xytrblse])?(?:-(?:\d+|\[\d[\w.]*\]))?$|^border-(?:solid|dashed|dotted|double|none|hidden|collapse|separate|spacing)/;
+
+/** The property a utility sets, for the groups cn() stacking has broken. */
+function propertyGroup(utility: string): string | null {
+  if (utility.startsWith("bg-")) return NOT_BG_COLOUR.test(utility) ? null : "background colour";
+  if (utility.startsWith("text-")) {
+    return NOT_TEXT_COLOUR.test(utility) || utility.startsWith("text-[length:") ? null : "text colour";
+  }
+  if (utility.startsWith("h-")) return "height";
+  if (utility.startsWith("border-") && !NOT_BORDER_COLOUR.test(utility)) {
+    const side = utility.match(/^border-([xytrblse])-/)?.[1];
+    return side ? `border-${side} colour` : "border colour";
+  }
+  return null;
+}
+
+type Backdrop = "light" | "dark" | "accent";
+
+/** Infer a backdrop for known palette utilities. Skip faint tints and
+ * leave saturated palette fills out of the neutral contrast heuristic. */
+function backdropTone(utility: string): Backdrop | null {
+  const [fill, alpha] = utility.slice("bg-".length).split("/");
+  if (alpha && Number(alpha) < 50) return null;
+  if (fill === "white") return "light";
+  if (fill === "black") return "dark";
+  const hexFill = fill.match(/^\[#([0-9a-f]{6})\]$/i)?.[1];
+  if (hexFill) return luminance(hexFill) < 0.18 ? "dark" : "light";
+  const palette = fill.match(/^([a-z]+)-(\d{2,3})$/);
+  if (!palette) return null;
+  const [, hue, step] = palette;
+  if (hue !== "neutral") return "accent";
+  return Number(step) >= 500 ? "dark" : "light";
+}
+
+type Mode = "light" | "dark";
+
+/** The utility that sets `group` for an element in a mode: the nearest
+ *  element, itself included, that sets it, as the cascade would inherit or
+ *  paint it. Dark mode reads `dark:` first and falls back to the base
+ *  utility, which applies in both modes. Only those two variants are read,
+ *  so `placeholder:`, `hover:` and the like never decide. `decides` passes
+ *  over utilities that defer to the parent (text-inherit, a faint tint). */
+function resolve(element: PaneElement, mode: Mode, group: string, decides: (utility: string) => boolean) {
+  for (let node: PaneElement | null = element; node; node = node.parent) {
+    const set = node.classes.map(splitVariant).filter(({ utility }) => propertyGroup(utility) === group && decides(utility));
+    const pick = (variant: string) => set.find((candidate) => candidate.variant === variant);
+    const found = mode === "dark" ? (pick("dark:") ?? pick("")) : pick("");
+    if (found) return found;
+  }
+  return null;
+}
+
+function backdrop(element: PaneElement, mode: Mode): Backdrop {
+  const fill = resolve(element, mode, "background colour", (utility) => backdropTone(utility) !== null);
+  return (fill && backdropTone(fill.utility)) ?? mode;
+}
+
+function textColour(element: PaneElement, mode: Mode) {
+  return resolve(element, mode, "text colour", (utility) => !/^text-(?:inherit|current)$/.test(utility));
+}
+
+const panes = rules
+  .filter((rule) => !hasShowcase(rule.id))
+  .flatMap((rule) =>
+    (["do", "dont"] as const).map((variant) => ({
+      id: `${rule.id}.${variant}`,
+      variant,
+      elements: paneElements(renderToStaticMarkup(getStaticRulePreview(rule.id, variant))),
+    }))
+  );
+
+describe("static preview panes", () => {
+  it("preserve colons inside arbitrary utilities and variants", () => {
+    expect(splitVariant("[&:focus]:text-[color:var(--ink)]!")).toEqual({
+      variant: "[&:focus]:",
+      utility: "text-[color:var(--ink)]",
+    });
+  });
+
+  it("render", () => {
+    expect(panes.length).toBeGreaterThan(0);
+    for (const pane of panes) expect(pane.elements.length, pane.id).toBeGreaterThan(0);
+  });
+
+  // cn() concatenates; it does not merge. Two utilities for one property under
+  // one variant leave the winner to stylesheet order, not to the order they
+  // were passed in, so an "override" passed second can silently lose (it did
+  // in layout-10's heading bar and typo-2's active row).
+  it("never stack two utilities for one property on an element", () => {
+    const stacked: string[] = [];
+    for (const pane of panes) {
+      for (const element of pane.elements) {
+        const groups = new Map<string, Set<string>>();
+        for (const name of element.classes) {
+          const { variant, utility } = splitVariant(name);
+          const group = propertyGroup(utility);
+          if (!group) continue;
+          const key = `${variant}${group}`;
+          groups.set(key, (groups.get(key) ?? new Set()).add(name));
+        }
+        for (const [key, names] of groups) {
+          if (names.size > 1) stacked.push(`${pane.id} ${key}: ${[...names].join(" ")}`);
+        }
+      }
+    }
+    expect(stacked, stacked.join("\n")).toEqual([]);
+  });
+
+  // Catch known low-contrast palette pairings in Do panes. These checks use
+  // class recipes to infer the backdrop, including inherited text colors.
+  // Don't panes can deliberately illustrate low contrast.
+  const DIM_ON_LIGHT = /^text-(?:neutral-(?:300|400)|blue-500)(?:\/\d+)?$/;
+  const DIM_ON_DARK = /^text-neutral-(?:500|600|700|800|900|950)(?:\/\d+)?$/;
+
+  // The inactive Export CSV control is exempt from text contrast requirements.
+  const FAINT_BY_DESIGN: Record<string, string[]> = {
+    "comp-8.do": ["Export CSV"],
+  };
+
+  it("avoid known low-contrast palette pairings in Do panes", () => {
+    const dim: string[] = [];
+    for (const pane of panes.filter((candidate) => candidate.variant === "do")) {
+      for (const element of pane.elements) {
+        const text = element.text.trim();
+        if (!text || FAINT_BY_DESIGN[pane.id]?.includes(text)) continue;
+        for (const mode of ["light", "dark"] as const) {
+          const colour = textColour(element, mode);
+          const tone = backdrop(element, mode);
+          if (tone === "accent") continue;
+          const forbidden = tone === "dark" ? DIM_ON_DARK : DIM_ON_LIGHT;
+          if (colour && forbidden.test(colour.utility)) {
+            dim.push(`${pane.id} ${mode}: ${colour.utility} on "${text}"`);
+          }
+        }
+      }
+    }
+    expect(dim, dim.join("\n")).toEqual([]);
+  });
+
+  it("list only faint text that still renders", () => {
+    const stale = Object.entries(FAINT_BY_DESIGN).flatMap(([id, texts]) => {
+      const pane = panes.find((candidate) => candidate.id === id);
+      const rendered = new Set(pane?.elements.map((element) => element.text.trim()));
+      return texts.filter((text) => !rendered.has(text)).map((text) => `${id}: "${text}"`);
+    });
+    expect(stale, stale.join("\n")).toEqual([]);
   });
 });
