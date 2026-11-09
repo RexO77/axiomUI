@@ -1,3 +1,4 @@
+// design-system: strict
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Manrope, Source_Serif_4 } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";

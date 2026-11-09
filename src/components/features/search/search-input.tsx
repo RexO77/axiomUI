@@ -67,7 +67,7 @@ export function SearchInput({ instance }: { instance: "desktop" | "mobile" }) {
                         }
                     }}
                     className={cn(
-                        "peer [&::-webkit-search-cancel-button]:appearance-none w-full rounded-field border border-line bg-sunken py-2 pl-9 text-ink placeholder:text-ink-faint transition-colors duration-medium focus:border-line-strong focus:bg-surface focus-visible:-outline-offset-1",
+                        "peer [&::-webkit-search-cancel-button]:appearance-none w-full rounded-field border border-line bg-sunken py-2 pl-9 text-ink placeholder:text-ink-muted transition-colors duration-medium focus:border-line-strong focus:bg-surface focus-visible:-outline-offset-1",
                         isDesktop
                             ? "min-h-10 pr-12 text-sm"
                             : "min-h-11 pr-12 text-base"

@@ -1,3 +1,4 @@
+// design-system: strict
 import type { Rule } from "@/data/ui-logic";
 import { type PreviewRenderer, type Variant } from "@/components/features/rules/preview-primitives";
 import { hasShowcase, PanePreview } from "@/components/features/rules/demos/registry";
