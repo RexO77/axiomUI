@@ -117,7 +117,9 @@ export function SearchProvider({ children }: { children: ReactNode }) {
             const isTyping = target?.closest("input, textarea, [contenteditable]");
 
             if (isSlash && isTyping) return;
-            if (isCmdK) event.preventDefault();
+            // Both keys are consumed here. Without this the `/` that moved
+            // focus into the field is typed into it, and "/focus" matches nothing.
+            event.preventDefault();
 
             if (!focusSearch()) {
                 window.dispatchEvent(new CustomEvent("axiom:open-search"));
