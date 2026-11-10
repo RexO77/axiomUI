@@ -23,7 +23,7 @@ Keyboard-driven actions are repeated constantly. Do not animate shortcuts, comma
 Every animation needs a job: orientation (where am I?), feedback (did it work?), explanation, continuity (what changed?), or softening a jarring state change. If you can't name the job, cut the animation.
 
 - Do: Drawer slides from its edge
-- Don't: Drawer bounces in
+- Don't: Modal bounces in
 - Reasoning: `references/rules/motion-3.md` · https://axiomui.nischal.fyi/rules/motion-3
 
 ## Use strong custom easing (`motion-4`)
@@ -111,7 +111,7 @@ Animate new elements from their starting visual state instead of mounting them a
 Transform and opacity avoid layout work and stay smooth under load. Avoid animating size, position, padding, or margins.
 
 - Do: translateY + opacity
-- Don't: height + top
+- Don't: height
 - Reasoning: `references/rules/motion-14.md` · https://axiomui.nischal.fyi/rules/motion-14
 
 ## Use percentage transforms (`motion-15`)

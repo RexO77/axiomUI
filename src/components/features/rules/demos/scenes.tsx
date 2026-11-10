@@ -2,7 +2,8 @@ import type { CSSProperties, ReactNode } from "react";
 import { Archive, CheckCircle2, ChevronDown, FileText, Inbox, Moon, Pencil } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { MiniButton, MiniLine } from "@/components/features/rules/preview-primitives";
+import { MiniButton } from "@/components/features/rules/preview-primitives";
+import { MotionRail, ProtagonistChip } from "@/components/features/rules/demos/protagonist";
 
 /**
  * Miniature UI scenes. No hooks, no state — pure markup rendering the rest
@@ -28,7 +29,7 @@ export function AppSurface({
     title?: string;
 }) {
     return (
-        <div className="relative h-44 overflow-hidden rounded-lg border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="relative h-44 overflow-hidden rounded-field border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
             <div className="flex items-center gap-1.5 border-b border-neutral-100 px-2 py-1.5 dark:border-neutral-800">
                 <span className="size-1.5 rounded-full bg-rose-400/80" />
                 <span className="size-1.5 rounded-full bg-amber-400/80" />
@@ -89,7 +90,9 @@ export function PaletteScene() {
             <div
                 data-anim="panel"
                 // top-9 floats it below the window title bar, never over its dots.
-                className="absolute inset-x-2.5 rounded-lg border border-blue-500 bg-white p-1.5 shadow-xl dark:bg-neutral-900 top-9"
+                // 13px = the search field's 6px + 6px padding + 1px border, so
+                // the field sits concentric in the panel (comp-3).
+                className="absolute inset-x-2.5 rounded-[13px] border border-blue-500 bg-white p-1.5 shadow-xl dark:bg-neutral-900 top-9"
                 style={{ opacity: 0 }}
             >
                 <div className="mb-1.5 flex items-center justify-between gap-1 rounded-md bg-neutral-100 px-2 py-1.5 dark:bg-neutral-800">
@@ -145,7 +148,7 @@ export function ToastScene() {
         <AppSurface title="Inbox">
             <div
                 data-anim="panel"
-                className="absolute inset-x-2.5 bottom-2.5 flex flex-col gap-1 rounded-lg border border-blue-500 bg-white px-2.5 py-2 shadow-lg dark:bg-neutral-900"
+                className="absolute inset-x-2.5 bottom-2.5 flex flex-col gap-1 rounded-md border border-blue-500 bg-white px-2.5 py-2 shadow-lg dark:bg-neutral-900"
                 style={{ transform: "translateY(150%)" }}
             >
                 <div className="flex items-center gap-1.5">
@@ -171,7 +174,7 @@ export function MenuScene({
     originMarker?: boolean;
 }) {
     return (
-        <div className="relative h-44 overflow-hidden rounded-lg border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="relative h-44 overflow-hidden rounded-field border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
             {/* Fake app chrome so rest isn't a black void */}
             <div className="absolute inset-x-0 top-0 flex items-center gap-1 border-b border-neutral-100 px-2 py-1.5 dark:border-neutral-800">
                 <span className="size-1.5 rounded-full bg-rose-400/80" />
@@ -219,7 +222,7 @@ export function MenuScene({
 /** Tooltip above a button. */
 export function TooltipScene() {
     return (
-        <div className="relative flex items-end justify-center rounded-lg border border-neutral-200 bg-neutral-50/80 dark:border-neutral-800 dark:bg-neutral-900/50 h-36 pb-4">
+        <div className="relative flex items-end justify-center rounded-field border border-neutral-200 bg-neutral-50/80 dark:border-neutral-800 dark:bg-neutral-900/50 h-36 pb-4">
             <div
                 data-anim="panel"
                 className="absolute top-3 rounded-md bg-neutral-900 px-2 py-1 text-[9px] font-medium text-white dark:bg-neutral-100 dark:text-neutral-900"
@@ -241,7 +244,7 @@ const LIST_ROWS = [
 
 export function ListScene({ hiddenAtRest }: { hiddenAtRest: boolean }) {
     return (
-        <div className="relative flex flex-col justify-center gap-2 rounded-lg border border-neutral-200 bg-neutral-50/50 px-2 dark:border-neutral-800 dark:bg-neutral-900/40 h-40">
+        <div className="relative flex flex-col justify-center gap-2 rounded-field border border-neutral-200 bg-neutral-50/50 px-2 dark:border-neutral-800 dark:bg-neutral-900/40 h-40">
             {hiddenAtRest ? (
                 <div
                     aria-hidden="true"
@@ -276,20 +279,9 @@ export function ListScene({ hiddenAtRest }: { hiddenAtRest: boolean }) {
 export function RaceScene({ label = "Item" }: { label?: string }) {
     return (
         <div className="flex flex-col justify-center h-32 px-0.5">
-            <div
-                className="relative flex w-full items-center rounded-[16px] border border-dashed border-neutral-300 bg-neutral-50/80 p-2 dark:border-neutral-700 dark:bg-neutral-900/50"
-                style={{ containerType: "inline-size" }}
-            >
-                <div
-                    data-anim="panel"
-                    className="flex items-center gap-1.5 rounded-[12px] border border-blue-500 bg-blue-500/10 shadow-sm dark:border-blue-400 dark:bg-blue-400/10 h-9 px-2.5"
-                >
-                    <span className="shrink-0 rounded-full bg-blue-500 dark:bg-blue-400 size-1.5" />
-                    <span className="text-[11px] font-semibold tracking-tight text-blue-700 dark:text-blue-300">
-                        {label}
-                    </span>
-                </div>
-            </div>
+            <MotionRail hug>
+                <ProtagonistChip anim="panel" label={label} compact="narrow" />
+            </MotionRail>
         </div>
     );
 }
@@ -300,7 +292,7 @@ export function RailCardScene() {
     return (
         <div className="flex flex-col justify-center h-36 px-1">
             <div
-                className="relative flex w-full items-center overflow-hidden rounded-[16px] border border-dashed border-neutral-300 bg-neutral-50/80 p-2 dark:border-neutral-700 dark:bg-neutral-900/50"
+                className="relative flex w-full items-center overflow-hidden rounded-field border border-dashed border-neutral-300 bg-neutral-50/80 p-2 dark:border-neutral-700 dark:bg-neutral-900/50"
                 style={{ containerType: "inline-size" }}
             >
                 <div
@@ -323,7 +315,7 @@ const KNOB_PX = 16;
 
 export function SliderScene() {
     return (
-        <div className="flex flex-col justify-center gap-2.5 h-36 rounded-lg border border-neutral-200 bg-neutral-50/80 px-3 dark:border-neutral-800 dark:bg-neutral-900/50">
+        <div className="flex flex-col justify-center gap-2.5 h-36 rounded-field border border-neutral-200 bg-neutral-50/80 px-3 dark:border-neutral-800 dark:bg-neutral-900/50">
             <span className="text-[10px] font-medium text-neutral-400 dark:text-neutral-500">
                 Volume
             </span>
@@ -426,7 +418,7 @@ export function ButtonScene({
     // Big enough that a 4% press is a visible 2px, not a rounding error.
     const button = "inline-flex h-10 items-center justify-center whitespace-nowrap rounded-md px-6 text-sm font-semibold";
     return (
-        <div className="flex flex-col items-center justify-center gap-2.5 rounded-lg border border-neutral-200 bg-neutral-50/80 dark:border-neutral-800 dark:bg-neutral-900/50 h-36">
+        <div className="flex flex-col items-center justify-center gap-2.5 rounded-field border border-neutral-200 bg-neutral-50/80 dark:border-neutral-800 dark:bg-neutral-900/50 h-36">
             <p className="text-[10px] font-medium text-neutral-400 dark:text-neutral-500">
                 Form actions
             </p>
@@ -465,39 +457,38 @@ export function ButtonScene({
 }
 
 /** Two contextual icons occupying the same visual slot. Both stay mounted so
- * the showcase can compare a composed cross-fade with an abrupt state swap. */
+ * the showcase can compare a composed cross-fade with an abrupt state swap.
+ * The slot is a real 40px icon button with a 24px glyph, big enough that the
+ * 4px blur reads as a blur at ¼× instead of a smudge. */
+const ICON_PX = 24;
+
 export function IconSwapScene() {
+    const glyph = {
+        "aria-hidden": true,
+        viewBox: "0 0 24 24",
+        className: "absolute inset-0",
+        fill: "none",
+        stroke: "currentColor",
+        strokeLinecap: "round",
+        strokeLinejoin: "round",
+        strokeWidth: 2,
+    } as const;
     return (
-        <div className="flex items-center justify-center rounded-lg border border-neutral-200 bg-neutral-50/80 dark:border-neutral-800 dark:bg-neutral-900/50 h-36">
-            <div className="relative text-blue-600 dark:text-blue-400" style={{ width: 22, height: 22 }}>
-                <svg
-                    data-anim="icon-out"
-                    aria-hidden="true"
-                    viewBox="0 0 24 24"
-                    className="absolute inset-0"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                >
-                    <path d="M12 5v14M5 12h14" />
-                </svg>
-                <svg
-                    data-anim="icon-in"
-                    aria-hidden="true"
-                    viewBox="0 0 24 24"
-                    className="absolute inset-0"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    style={{ opacity: 0, transform: "scale(0.25)", filter: "blur(4px)" }}
-                >
-                    <path d="m5 12 4 4L19 6" />
-                </svg>
-            </div>
+        <div className="flex items-center justify-center rounded-field border border-neutral-200 bg-neutral-50/80 dark:border-neutral-800 dark:bg-neutral-900/50 h-36">
+            <span className="inline-flex size-10 items-center justify-center rounded-[12px] border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+                <span className="relative text-blue-600 dark:text-blue-400" style={{ width: ICON_PX, height: ICON_PX }}>
+                    <svg data-anim="icon-out" {...glyph}>
+                        <path d="M12 5v14M5 12h14" />
+                    </svg>
+                    <svg
+                        data-anim="icon-in"
+                        {...glyph}
+                        style={{ opacity: 0, transform: "scale(0.25)", filter: "blur(4px)" }}
+                    >
+                        <path d="m5 12 4 4L19 6" />
+                    </svg>
+                </span>
+            </span>
         </div>
     );
 }
@@ -505,7 +496,7 @@ export function IconSwapScene() {
 /** Submit button whose label crossfades to a spinner (rest: idle label). */
 export function SubmitScene({ spinner }: { spinner: boolean }) {
     return (
-        <div className="flex flex-col items-center justify-center gap-2.5 rounded-lg border border-neutral-200 bg-neutral-50/80 dark:border-neutral-800 dark:bg-neutral-900/50 h-36">
+        <div className="flex flex-col items-center justify-center gap-2.5 rounded-field border border-neutral-200 bg-neutral-50/80 dark:border-neutral-800 dark:bg-neutral-900/50 h-36">
             <p className="text-[10px] font-medium text-neutral-400 dark:text-neutral-500">
                 Checkout
             </p>
@@ -530,19 +521,31 @@ export function SubmitScene({ spinner }: { spinner: boolean }) {
 
 /** Like button: grey outline heart with a red heart revealed on play.
  *  `data-anim="sync"` is the background-sync receipt (sys-9's do pane fades
- *  it in ~700ms after the optimistic fill). */
+ *  it in ~700ms after the optimistic fill). `data-anim="wait"` is a 14px
+ *  spinner in the heart's slot, which the don't pane shows for the whole
+ *  round trip in place of the `outline` heart. */
+const HEART_PATH =
+    "M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z";
+
 export function LikeScene() {
     return (
-        <div className="relative flex flex-col items-center justify-center gap-2 rounded-lg border border-neutral-200 bg-neutral-50/80 dark:border-neutral-800 dark:bg-neutral-900/50 h-36">
+        <div className="relative flex flex-col items-center justify-center gap-2 rounded-field border border-neutral-200 bg-neutral-50/80 dark:border-neutral-800 dark:bg-neutral-900/50 h-36">
             <p className="text-[10px] font-medium text-neutral-400 dark:text-neutral-500">
                 Post
             </p>
             <div className="relative" style={{ width: 26, height: 26 }}>
-                <svg viewBox="0 0 24 24" className="absolute inset-0 text-neutral-400 dark:text-neutral-600" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z" />
+                <svg data-anim="outline" viewBox="0 0 24 24" className="absolute inset-0 text-neutral-400 dark:text-neutral-600" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d={HEART_PATH} />
                 </svg>
+                <span
+                    data-anim="wait"
+                    className="absolute inset-0 flex items-center justify-center"
+                    style={{ opacity: 0 }}
+                >
+                    <span className="inline-block size-3.5 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-600 dark:border-neutral-700 dark:border-t-neutral-300" />
+                </span>
                 <svg data-anim="panel" viewBox="0 0 24 24" className="absolute inset-0 text-rose-500" fill="currentColor" style={{ opacity: 0 }}>
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z" />
+                    <path d={HEART_PATH} />
                 </svg>
             </div>
             <span
@@ -556,25 +559,52 @@ export function LikeScene() {
     );
 }
 
-/** Loading treatment: skeleton rows or a lone spinner, then content fades in. */
+/** sys-1's row widths. Both layers read them, so the skeleton promises the
+ *  exact line lengths the content resolves to. */
+const ROWS = ["w-full", "w-5/6", "w-2/3"] as const;
+/** Long enough to truncate at every pane width, so each line's ink runs to
+ *  the end of its row the way the skeleton bar does. */
+const ROW_TEXT = [
+    "Q3 planning review: roadmap, hiring, budget and the launch checklist",
+    "Notes from Tuesday's sync with design, engineering and support",
+    "Owners are assigned and due before the Friday release window",
+] as const;
+
+/** Loading treatment: skeleton rows or a lone spinner, then content fades in.
+ *  Every row is a 16px line box: a 10px/16px text line, or an 8px bar with
+ *  4px above and below it, so the swap at 900ms moves nothing. */
 export function LoadingScene({ kind }: { kind: "skeleton" | "spinner" }) {
     return (
-        <div className="relative flex flex-col justify-center gap-1.5 rounded-lg border border-neutral-200 bg-neutral-50/50 dark:border-neutral-800 dark:bg-neutral-900/40 h-36 px-3">
+        <div className="relative flex flex-col justify-center rounded-field border border-neutral-200 bg-neutral-50/50 dark:border-neutral-800 dark:bg-neutral-900/40 h-36 px-3">
             {kind === "skeleton" ? (
-                <div data-anim="placeholder" className="space-y-1.5">
-                    <MiniLine widthClass="w-full" className="animate-pulse" />
-                    <MiniLine widthClass="w-5/6" className="animate-pulse" />
-                    <MiniLine widthClass="w-2/3" className="animate-pulse" />
+                <div data-anim="placeholder" className="flex flex-col">
+                    {ROWS.map((width) => (
+                        <div
+                            key={width}
+                            className={cn("my-1 h-2 animate-pulse rounded bg-neutral-200 dark:bg-neutral-700", width)}
+                        />
+                    ))}
                 </div>
             ) : (
                 <div data-anim="placeholder" className="flex justify-center">
                     <span className="inline-block animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-900 dark:border-neutral-700 dark:border-t-neutral-100 size-7" />
                 </div>
             )}
-            <div data-anim="content" className="absolute inset-x-0 space-y-1.5 px-3" style={{ opacity: 0 }}>
-                <div className="h-2 rounded bg-neutral-400 dark:bg-neutral-500" style={{ width: "90%" }} />
-                <div className="h-2 rounded bg-neutral-400 dark:bg-neutral-500" style={{ width: "70%" }} />
-                <div className="h-2 rounded bg-neutral-400 dark:bg-neutral-500" style={{ width: "50%" }} />
+            <div data-anim="content" className="absolute inset-x-0 px-3" style={{ opacity: 0 }}>
+                {ROWS.map((width, i) => (
+                    <p
+                        key={width}
+                        className={cn(
+                            "truncate text-[10px] leading-4",
+                            i === 0
+                                ? "font-semibold text-neutral-800 dark:text-neutral-100"
+                                : "text-neutral-500 dark:text-neutral-400",
+                            width
+                        )}
+                    >
+                        {ROW_TEXT[i]}
+                    </p>
+                ))}
             </div>
         </div>
     );
@@ -589,7 +619,7 @@ export function GrowBoxScene() {
         <div
             // h-44 matches AppSurface: motion-14's panes must be the same
             // size so the animated property is the only difference.
-            className="flex flex-col justify-center rounded-lg border border-neutral-200 bg-neutral-50/80 px-3 dark:border-neutral-800 dark:bg-neutral-900/50 h-44"
+            className="flex flex-col justify-center rounded-field border border-neutral-200 bg-neutral-50/80 px-3 dark:border-neutral-800 dark:bg-neutral-900/50 h-44"
         >
             <div className="rounded-lg border border-neutral-200 bg-white p-2 dark:border-neutral-800 dark:bg-neutral-900">
                 <div className="mb-1.5 flex items-center justify-between">
@@ -619,28 +649,31 @@ export function GrowBoxScene() {
 export function CardRevealScene({ mode }: { mode: "parts" | "whole" }) {
     const hideParts = mode === "parts" ? { opacity: 0 } : undefined;
     return (
-        <div className="relative flex items-center justify-center rounded-lg border border-neutral-200 bg-neutral-50/50 dark:border-neutral-800 dark:bg-neutral-900/40 h-40 px-3">
-            {/* Static slot: the rest frame reads as "content lands here". */}
-            <div
-                aria-hidden="true"
-                className="absolute inset-x-3 inset-y-4 rounded-lg border border-dashed border-neutral-300 dark:border-neutral-700"
-            />
-            <div
-                data-anim="whole"
-                className="relative w-full max-w-56 rounded-lg border border-blue-500/60 bg-white p-2.5 shadow-sm dark:bg-neutral-900"
-                style={{ opacity: 0 }}
-            >
-                <div data-anim="part" style={hideParts}>
-                    <p className="font-semibold tracking-tight text-neutral-900 dark:text-neutral-100 text-[11px]">
-                        Weekly digest
-                    </p>
-                </div>
-                <div data-anim="part" className="mt-1.5 space-y-1" style={hideParts}>
-                    <div className="h-1.5 w-full rounded bg-neutral-100 dark:bg-neutral-800" />
-                    <div className="h-1.5 w-3/4 rounded bg-neutral-100 dark:bg-neutral-800" />
-                </div>
-                <div data-anim="part" className="mt-2 flex justify-end" style={hideParts}>
-                    <MiniButton label="Read" variant="primary" />
+        <div className="relative flex items-center justify-center rounded-field border border-neutral-200 bg-neutral-50/50 dark:border-neutral-800 dark:bg-neutral-900/40 h-40 px-3">
+            {/* The slot and the card share one box, so the rest frame reads as
+                "content lands here" and the card lands exactly on it. */}
+            <div className="relative w-full max-w-56">
+                <div
+                    aria-hidden="true"
+                    className="absolute inset-0 rounded-lg border border-dashed border-neutral-300 dark:border-neutral-700"
+                />
+                <div
+                    data-anim="whole"
+                    className="relative rounded-lg border border-blue-500/60 bg-white p-2.5 shadow-sm dark:bg-neutral-900"
+                    style={{ opacity: 0 }}
+                >
+                    <div data-anim="part" style={hideParts}>
+                        <p className="font-semibold tracking-tight text-neutral-900 dark:text-neutral-100 text-[11px]">
+                            Weekly digest
+                        </p>
+                    </div>
+                    <div data-anim="part" className="mt-1.5 space-y-1" style={hideParts}>
+                        <div className="h-1.5 w-full rounded bg-neutral-100 dark:bg-neutral-800" />
+                        <div className="h-1.5 w-3/4 rounded bg-neutral-100 dark:bg-neutral-800" />
+                    </div>
+                    <div data-anim="part" className="mt-2 flex justify-end" style={hideParts}>
+                        <MiniButton label="Read" variant="primary" />
+                    </div>
                 </div>
             </div>
         </div>
@@ -655,7 +688,7 @@ export function ToastPairScene() {
         <AppSurface title="Notifications">
             <div
                 data-anim="panel"
-                className="absolute bottom-2.5 left-2.5 flex w-[52%] items-center gap-1.5 rounded-lg border border-blue-500 bg-white px-2 py-1.5 shadow-lg dark:bg-neutral-900"
+                className="absolute bottom-2.5 left-2.5 flex w-[52%] items-center gap-1.5 rounded-md border border-blue-500 bg-white px-2 py-1.5 shadow-lg dark:bg-neutral-900"
                 style={{ transform: "translateY(150%)" }}
             >
                 <CheckCircle2 aria-hidden="true" className="size-3 shrink-0 text-emerald-500" />
@@ -665,7 +698,7 @@ export function ToastPairScene() {
             </div>
             <div
                 data-anim="panel"
-                className="absolute bottom-2.5 right-2.5 w-[38%] rounded-lg border border-blue-500 bg-white px-2 py-1.5 shadow-lg dark:bg-neutral-900"
+                className="absolute bottom-2.5 right-2.5 w-[38%] rounded-md border border-blue-500 bg-white px-2 py-1.5 shadow-lg dark:bg-neutral-900"
                 style={{ transform: "translateY(150%)" }}
             >
                 <p className="mb-1 font-semibold text-neutral-800 dark:text-neutral-100 text-[10px]">

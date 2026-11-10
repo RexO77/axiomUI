@@ -20,7 +20,7 @@ Ask each question of the surface under review. Record a finding only for a concr
 
 ## Purpose before motion (`motion-3`)
 
-- Do: Drawer slides from its edge · Don't: Drawer bounces in
+- Do: Drawer slides from its edge · Don't: Modal bounces in
 - [ ] Can you name the job of every animation on this screen?
 - [ ] Does each panel or view move from the direction it belongs to?
 - [ ] Is any motion present purely for decoration, playing on every load?
@@ -108,7 +108,7 @@ Ask each question of the surface under review. Record a finding only for a concr
 
 ## Animate transform and opacity (`motion-14`)
 
-- Do: translateY + opacity · Don't: height + top
+- Do: translateY + opacity · Don't: height
 - [ ] Does the animation stay smooth even while other work is happening on the page?
 - [ ] Is movement driven by transform and opacity rather than top, left, or size properties?
 - [ ] Does any panel visibly stutter as it grows or shrinks in height?

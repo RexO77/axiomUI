@@ -8,7 +8,7 @@
 Transform and opacity avoid layout work and stay smooth under load. Avoid animating size, position, padding, or margins.
 
 - Do: translateY + opacity
-- Don't: height + top
+- Don't: height
 
 ## Why it works
 

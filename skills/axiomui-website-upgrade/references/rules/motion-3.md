@@ -8,7 +8,7 @@
 Every animation needs a job: orientation (where am I?), feedback (did it work?), explanation, continuity (what changed?), or softening a jarring state change. If you can't name the job, cut the animation.
 
 - Do: Drawer slides from its edge
-- Don't: Drawer bounces in
+- Don't: Modal bounces in
 
 ## Why it works
 
