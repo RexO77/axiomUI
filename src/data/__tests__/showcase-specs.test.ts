@@ -1,12 +1,12 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   hasShowcase,
   showcaseSpecs,
 } from "@/components/features/rules/demos/showcase-specs";
 import { rules } from "@/data/ui-logic";
-import type { Track } from "@/lib/showcase-engine";
+import { finishPane, paneIsLive, playPane, settlePane, type Track } from "@/lib/showcase-engine";
 
 const TRIGGERS = new Set([
   "replay",
@@ -341,5 +341,91 @@ describe("settle and exit", () => {
       }
     }
     expect(off, off.join("\n")).toEqual([]);
+  });
+});
+
+describe("playback interruption", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  class TestEffect {
+    readonly target: HTMLElement;
+
+    constructor(target: HTMLElement) {
+      this.target = target;
+    }
+  }
+
+  function fixture() {
+    const runs: Array<{
+      frames: Keyframe[];
+      duration: number;
+      finish: () => void;
+      cancel: ReturnType<typeof vi.fn>;
+    }> = [];
+    let opacity = "1";
+    let probe: string | undefined;
+
+    vi.stubGlobal("KeyframeEffect", TestEffect);
+    vi.stubGlobal("getComputedStyle", () => ({ opacity: probe ?? opacity }));
+
+    const element = {
+      animate(frames: Keyframe[], options: KeyframeAnimationOptions) {
+        if (options.fill === "both" && options.duration === 1) {
+          probe = String(frames[0].opacity);
+          return { cancel: () => { probe = undefined; } };
+        }
+        const { promise: finished, resolve: finish, reject } = Promise.withResolvers<void>();
+        // The real API exposes cancellation through the finished promise.
+        void finished.catch(() => {});
+        const cancel = vi.fn(() => reject(new Error("cancelled")));
+        runs.push({ frames, duration: Number(options.duration), finish, cancel });
+        return { effect: new TestEffect(element as unknown as HTMLElement), cancel, finished };
+      },
+    };
+    const root = { querySelectorAll: () => [element] } as unknown as HTMLElement;
+    const track = (from: number, to: number): Track[] => [{
+      target: "panel",
+      keyframes: [{ opacity: from }, { opacity: to }],
+      durationMs: 120,
+    }];
+    return { root, runs, track, paint: (value: string) => { opacity = value; } };
+  }
+
+  it("releases from the displayed value and shortens the remaining travel", () => {
+    const { root, runs, track, paint } = fixture();
+    playPane(root, track(1, 0));
+    paint("0.6");
+
+    playPane(root, track(0, 1));
+
+    expect(runs[0].cancel).toHaveBeenCalledOnce();
+    expect(runs[1].frames[0].opacity).toBe("0.6");
+    expect(runs[1].duration).toBeCloseTo(48);
+  });
+
+  it("abandons the previous reset when another replay takes over", async () => {
+    const { root, runs, track } = fixture();
+    const first = finishPane(root, track(1, 0));
+    const second = finishPane(root, track(1, 0));
+
+    expect(await first).toBeNull();
+    expect(runs[1].cancel).not.toHaveBeenCalled();
+    runs[1].finish();
+    expect(await second).toHaveLength(1);
+  });
+
+  it("never clears a newer play between settle completion and cleanup", async () => {
+    const { root, runs, track } = fixture();
+    const settling = settlePane(root, track(0, 1));
+    runs[0].finish();
+    // Let finishPane observe ownership before its caller resumes.
+    await Promise.resolve();
+    await Promise.resolve();
+
+    playPane(root, track(1, 0));
+
+    expect(await settling).toBe(false);
+    expect(runs[1].cancel).not.toHaveBeenCalled();
+    expect(paneIsLive(root)).toBe(true);
   });
 });

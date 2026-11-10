@@ -136,10 +136,11 @@ function startTracks(pane: PaneSpec, durationMs: number): Track[] {
  *  timeline instead of on the longest track's ease. */
 function readoutFor(pane: PaneSpec, phase: "enter" | "exit" = "enter", animations?: Animation[]): Readout {
     const readout = paneReadout(pane, phase);
-    // Retargeting can shorten an interrupted track. Count the actual local
-    // timeline; explicit event readouts (optimistic feedback, waits) keep
-    // measuring their authored event instead of the whole animation.
-    if (animations?.length && !(phase === "enter" && pane.readoutMs !== undefined)) {
+    // An authored readout follows its own event even if another track waits.
+    if (phase === "enter" && pane.readoutMs !== undefined) return readout;
+
+    // Retargeting can shorten an interrupted track. Count the actual timeline.
+    if (animations?.length) {
         readout.ms = Math.round(Math.max(...animations.map((animation) => Number(animation.effect?.getComputedTiming().endTime ?? 0))));
     }
     const tracks = phase === "exit" && pane.exitTracks ? pane.exitTracks : pane.tracks;
