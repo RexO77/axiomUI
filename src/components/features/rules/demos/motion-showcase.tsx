@@ -15,7 +15,10 @@ import { useCanHover, useReducedMotion } from "@/lib/media";
 import { useHaptics } from "@/hooks/use-haptics";
 import {
     cancelPane,
+    finishPane,
+    paneIsLive,
     playPane,
+    settlePane,
     tracksDurationMs,
     DUR,
     EASE,
@@ -41,7 +44,8 @@ import { type Variant } from "@/components/features/rules/preview-primitives";
 /* ─────────────────────────────────────────────────────────
  * SHOWCASE STORYBOARD
  *   rest → trigger → play (easing-aware bars + ms readouts)
- *   settle after hold · rate: 1× / ½× / ¼× · reduced → duration 0
+ *   settle to rest after hold · rate: 1× / ½× / ¼× · reduced → duration 0
+ *   replay while moving or holding → 120ms settle to rest, then play
  *
  *   Layout: panes, then one control row (action left, speed right), then
  *   the hint lines. Every rule gets the same rows in the same order, so the
@@ -58,17 +62,90 @@ type Readout = ReturnType<typeof paneReadout>;
 /** A pinned pane ignores the speed control (motion-25 bakes its review speed in). */
 const paneRate = (pane: PaneSpec, rate: number) => (pane.pinRate ? 1 : rate);
 
-const reverseTracks = (tracks: Track[]): Track[] =>
-    tracks.map((track) => ({
-        target: track.target,
-        keyframes: [...track.keyframes].reverse().map((frame) => {
-            const next: Keyframe = { ...frame };
-            delete next.offset;
-            return next;
-        }),
-        durationMs: DUR.fast,
+/** A replay that finds a pane mid-flight, or holding its end frame, first
+ *  takes it back to its starting frame this fast, so the restart never cuts
+ *  to keyframe 0. */
+const RESET_MS = 120;
+
+/** What an animated node shows when its scene sets nothing inline. */
+const REST_DEFAULTS: Record<string, string> = { opacity: "1", transform: "none", filter: "none" };
+
+/**
+ * Tracks that take every animated node in a pane back to its scene's rest
+ * frame: the value its inline style sets (a hidden menu's opacity 0, a toast's
+ * translateY(150%)), else opacity 1 / transform none. Each is a "go to" from
+ * wherever the node is now, so a settle never replays the motion backwards
+ * (motion-2's key press is symmetric: reversed, it presses again).
+ */
+function restTracks(pane: PaneSpec, root: HTMLElement): Track[] {
+    const keyed = new Map<string, Set<string>>();
+    for (const track of [...pane.tracks, ...(pane.exitTracks ?? [])]) {
+        const props = keyed.get(track.target) ?? new Set<string>();
+        for (const frame of track.keyframes) {
+            for (const prop of Object.keys(frame)) {
+                if (prop !== "offset" && prop !== "easing" && prop !== "composite") props.add(prop);
+            }
+        }
+        keyed.set(track.target, props);
+    }
+    const tracks: Track[] = [];
+    for (const [target, props] of keyed) {
+        const el = root.querySelector<HTMLElement>(`[data-anim="${target}"]`);
+        if (!el) continue;
+        const inline = el.style as unknown as Record<string, string>;
+        const rest: Keyframe = {};
+        for (const prop of props) {
+            const value = inline[prop] || REST_DEFAULTS[prop];
+            if (value) rest[prop] = value;
+        }
+        tracks.push({ target, keyframes: [rest, rest], durationMs: DUR.fast, easing: EASE.inOut });
+    }
+    return tracks;
+}
+
+/**
+ * Tracks that take every animated node back to the frame its next play starts
+ * from: the first keyframe of the earliest track that keys each property. A
+ * replay resets along the path it is about to run (motion-9's menu shrinks as
+ * it fades instead of swelling back to full size), and since the reset ends
+ * exactly on the first keyframe, the replay that follows is continuous.
+ */
+function startTracks(pane: PaneSpec, durationMs: number): Track[] {
+    const starts = new Map<string, { frame: Keyframe; delays: Map<string, number> }>();
+    for (const track of pane.tracks) {
+        const entry = starts.get(track.target) ?? { frame: {}, delays: new Map<string, number>() };
+        const delay = track.delayMs ?? 0;
+        for (const [prop, value] of Object.entries(track.keyframes[0] ?? {})) {
+            if (prop === "offset" || prop === "easing" || prop === "composite") continue;
+            if ((entry.delays.get(prop) ?? Infinity) <= delay) continue;
+            entry.delays.set(prop, delay);
+            entry.frame[prop] = value;
+        }
+        starts.set(track.target, entry);
+    }
+    return [...starts].map(([target, { frame }]) => ({
+        target,
+        keyframes: [frame, frame],
+        durationMs,
         easing: EASE.inOut,
     }));
+}
+
+/** The readout for one phase. A pane whose tracks wait (a delay or a stagger)
+ *  has no single curve to follow, so its bar runs linear across the whole
+ *  timeline instead of on the longest track's ease. */
+function readoutFor(pane: PaneSpec, phase: "enter" | "exit" = "enter", animations?: Animation[]): Readout {
+    const readout = paneReadout(pane, phase);
+    // Retargeting can shorten an interrupted track. Count the actual local
+    // timeline; explicit event readouts (optimistic feedback, waits) keep
+    // measuring their authored event instead of the whole animation.
+    if (animations?.length && !(phase === "enter" && pane.readoutMs !== undefined)) {
+        readout.ms = Math.round(Math.max(...animations.map((animation) => Number(animation.effect?.getComputedTiming().endTime ?? 0))));
+    }
+    const tracks = phase === "exit" && pane.exitTracks ? pane.exitTracks : pane.tracks;
+    const waits = tracks.some((track) => (track.delayMs ?? 0) > 0 || (track.staggerMs ?? 0) > 0);
+    return waits ? { ...readout, easing: EASE.linear } : readout;
+}
 
 export function MotionShowcase({ ruleId }: { ruleId: string }) {
     const spec = showcaseSpecs[ruleId];
@@ -88,6 +165,10 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
     const doMsRef = useRef<HTMLSpanElement | null>(null);
     const dontMsRef = useRef<HTMLSpanElement | null>(null);
     const settleTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    /** Bumped by every enter/exit, so a restart waiting on a settle can tell
+     *  it was overtaken. */
+    const generation = useRef(0);
+    const nextGeneration = useCallback(() => ++generation.current, []);
     const doMsRaf = useRef<number | null>(null);
     const dontMsRaf = useRef<number | null>(null);
     // Default to study speed — full speed is available, but demos are teaching material.
@@ -124,15 +205,28 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
         }
     };
 
-    const clearBars = useCallback(() => {
-        doBarRef.current?.getAnimations().forEach((a) => a.cancel());
-        dontBarRef.current?.getAnimations().forEach((a) => a.cancel());
-        if (doBarRef.current) doBarRef.current.style.transform = "scaleX(0)";
-        if (dontBarRef.current) dontBarRef.current.style.transform = "scaleX(0)";
-        writeMs(doMsRef.current, paneReadout(spec.do).ms);
-        writeMs(dontMsRef.current, paneReadout(spec.dont).ms);
-        stopMsClocks();
-    }, [spec]);
+    /** Bars and counters back to rest. The bars drain over the same time the
+     *  scene settles, so the instrument and the scene land together. */
+    const clearBars = useCallback(
+        (durationMs = 0) => {
+            for (const bar of [doBarRef.current, dontBarRef.current]) {
+                if (!bar) continue;
+                const now = getComputedStyle(bar).transform;
+                bar.getAnimations().forEach((a) => a.cancel());
+                bar.style.transform = "scaleX(0)";
+                if (durationMs > 0 && !reduced && now !== "none") {
+                    bar.animate([{ transform: now }, { transform: "scaleX(0)" }], {
+                        duration: durationMs,
+                        easing: EASE.inOut,
+                    });
+                }
+            }
+            writeMs(doMsRef.current, paneReadout(spec.do).ms);
+            writeMs(dontMsRef.current, paneReadout(spec.dont).ms);
+            stopMsClocks();
+        },
+        [spec, reduced]
+    );
 
     const runBar = useCallback(
         (
@@ -185,17 +279,7 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
         autoplayed.current = true;
         clearTimeout(settleTimer.current);
         stopMsClocks();
-
-        if (doRef.current && !skipDo) {
-            const r = paneRate(spec.do, playbackRate);
-            playPane(doRef.current, spec.do.tracks, { rate: r, reduced });
-            runBar(doBarRef.current, doMsRef.current, paneReadout(spec.do), r, reduced, "do");
-        }
-        if (dontRef.current) {
-            const r = paneRate(spec.dont, playbackRate);
-            playPane(dontRef.current, spec.dont.tracks, { rate: r, reduced });
-            runBar(dontBarRef.current, dontMsRef.current, paneReadout(spec.dont), r, reduced, "dont");
-        }
+        const run = nextGeneration();
         setEngaged(true);
 
         // The tally is evidence of what the user cost themselves — the mount
@@ -204,34 +288,73 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
             setPlays((p) => p + 1);
         }
 
-        const canSettle =
-            !reduced &&
-            spec.settle !== false &&
-            (spec.trigger === "replay" || spec.trigger === "action");
-        if (!canSettle) return;
+        const panes = [
+            { el: doRef.current, pane: spec.do, skip: skipDo },
+            { el: dontRef.current, pane: spec.dont, skip: false },
+        ];
 
-        // Wait for the slower pane, at the rate each one actually plays.
-        const wallMs = (pane: PaneSpec) => tracksDurationMs(pane.tracks) / paneRate(pane, playbackRate);
-        const hold =
-            Math.max(skipDo ? 0 : wallMs(spec.do), wallMs(spec.dont)) + SETTLE_HOLD_MS / holdRate;
-        settleTimer.current = setTimeout(() => {
-            const settle = (el: HTMLDivElement | null, pane: PaneSpec, skip: boolean) => {
-                if (!el || skip) return;
-                playPane(el, pane.exitTracks ?? reverseTracks(pane.tracks), {
-                    rate: paneRate(pane, playbackRate),
-                    reduced,
-                });
-            };
-            settle(doRef.current, spec.do, skipDo);
-            settle(dontRef.current, spec.dont, false);
-            clearBars();
-            setEngaged(false);
-        }, hold);
-    }, [spec, playbackRate, holdRate, reduced, runBar, skipDo, clearBars]);
+        const start = (fromKeyframes = false) => {
+            if (run !== generation.current) return;
+            if (doRef.current && !skipDo) {
+                const r = paneRate(spec.do, playbackRate);
+                const animations = playPane(doRef.current, spec.do.tracks, { rate: r, reduced, fromKeyframes });
+                runBar(doBarRef.current, doMsRef.current, readoutFor(spec.do, "enter", reduced ? undefined : animations), r, reduced, "do");
+            }
+            if (dontRef.current) {
+                const r = paneRate(spec.dont, playbackRate);
+                const animations = playPane(dontRef.current, spec.dont.tracks, { rate: r, reduced, fromKeyframes });
+                runBar(dontBarRef.current, dontMsRef.current, readoutFor(spec.dont, "enter", reduced ? undefined : animations), r, reduced, "dont");
+            }
+
+            const canSettle =
+                !reduced &&
+                spec.settle !== false &&
+                (spec.trigger === "replay" || spec.trigger === "action");
+            if (!canSettle) return;
+
+            // Wait for the slower pane, at the rate each one actually plays.
+            const wallMs = (pane: PaneSpec) => tracksDurationMs(pane.tracks) / paneRate(pane, playbackRate);
+            const hold =
+                Math.max(skipDo ? 0 : wallMs(spec.do), wallMs(spec.dont)) + SETTLE_HOLD_MS / holdRate;
+            settleTimer.current = setTimeout(() => {
+                for (const { el, pane, skip } of panes) {
+                    if (!el || skip) continue;
+                    const r = paneRate(pane, playbackRate);
+                    void settlePane(el, pane.exitTracks ?? restTracks(pane, el), { rate: r, reduced });
+                }
+                clearBars(DUR.fast / holdRate);
+                setEngaged(false);
+            }, hold);
+        };
+
+        // A replay restarts the lesson from its first frame. A pane that is
+        // still moving, or holding its end frame, is taken back to that frame
+        // first — quickly — so the restart never cuts to it. A keystroke is
+        // the exception: it is answered in the same frame (motion-2's whole
+        // lesson), so each pane takes the new press from wherever it is.
+        // Reduced motion has no path to rewind: it lands on the end frame.
+        const restarts =
+            (spec.trigger === "replay" || spec.trigger === "action") && !spec.hotkey && !reduced;
+        const busy = restarts && panes.some(({ el, skip }) => el && !skip && paneIsLive(el));
+        if (!busy) {
+            start();
+            return;
+        }
+        clearBars(RESET_MS);
+        void Promise.all(
+            panes.map(async ({ el, pane, skip }) =>
+                el && !skip ? (await finishPane(el, startTracks(pane, RESET_MS), { reduced })) !== null : true
+            )
+        ).then((reset) => {
+            // A pane cancelled mid-reset (unmount, a newer play) stays put.
+            if (reset.every(Boolean)) start(true);
+        });
+    }, [spec, playbackRate, holdRate, reduced, runBar, skipDo, clearBars, nextGeneration]);
 
     const exit = useCallback(() => {
         clearTimeout(settleTimer.current);
         stopMsClocks();
+        nextGeneration();
         const leave = (
             el: HTMLDivElement | null,
             bar: HTMLDivElement | null,
@@ -242,14 +365,16 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
         ) => {
             if (!el || skip || !pane.exitTracks) return;
             const r = paneRate(pane, playbackRate);
-            playPane(el, pane.exitTracks, { rate: r, reduced });
+            // Interruptible: a release mid-press turns around from where the
+            // pane is, not from the exit's first keyframe.
+            const animations = playPane(el, pane.exitTracks, { rate: r, reduced });
             // The readout follows the exit, so a 160ms dismiss reads 160ms.
-            runBar(bar, msLabel, paneReadout(pane, "exit"), r, reduced, slot);
+            runBar(bar, msLabel, readoutFor(pane, "exit", reduced ? undefined : animations), r, reduced, slot);
         };
         leave(doRef.current, doBarRef.current, doMsRef.current, spec.do, "do", skipDo);
         leave(dontRef.current, dontBarRef.current, dontMsRef.current, spec.dont, "dont", false);
         setEngaged(false);
-    }, [spec, playbackRate, reduced, runBar, skipDo]);
+    }, [spec, playbackRate, reduced, runBar, skipDo, nextGeneration]);
 
     // Hotkey for keyboard-lesson rules (motion-2): plain key only.
     useEffect(() => {
@@ -267,6 +392,12 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
         return () => window.removeEventListener("keydown", onKeyDown);
     }, [spec.hotkey, enter]);
 
+    const [prevReduced, setPrevReduced] = useState(reduced);
+    if (prevReduced !== reduced) {
+        setPrevReduced(reduced);
+        setEngaged(false);
+    }
+
     const [prevSpec, setPrevSpec] = useState(spec);
     if (prevSpec !== spec) {
         setPrevSpec(spec);
@@ -275,13 +406,10 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
         autoplayed.current = false;
     }
 
-    useEffect(() => {
-        // Rest labels show what the next play will count to.
-        writeMs(doMsRef.current, paneReadout(spec.do).ms);
-        writeMs(dontMsRef.current, paneReadout(spec.dont).ms);
-    }, [spec]);
-
     // Autoplay once when a play-style demo mounts — rest shells aren't empty for long.
+    // The guard is set when the play fires, not when it is scheduled: Strict
+    // Mode (and a drawer that mounts, unmounts and remounts) runs this effect
+    // twice, and the first cleanup clears the timer the guard was set for.
     useEffect(() => {
         if (reduced) return;
         if (spec.trigger !== "replay" && spec.trigger !== "action") return;
@@ -298,13 +426,17 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
     useEffect(() => {
         const doEl = doRef.current;
         const dontEl = dontRef.current;
+        const bars = [doBarRef.current, dontBarRef.current];
+        clearBars();
         return () => {
+            nextGeneration();
             clearTimeout(settleTimer.current);
             stopMsClocks();
             if (doEl) cancelPane(doEl);
             if (dontEl) cancelPane(dontEl);
+            for (const bar of bars) bar?.getAnimations().forEach((animation) => animation.cancel());
         };
-    }, [spec]);
+    }, [clearBars, nextGeneration]);
 
     const isPress = spec.trigger === "press";
     const isHover = spec.trigger === "hover";
@@ -320,13 +452,17 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
                 ? (spec.control ?? "Play both")
                 : (spec.control ?? "Run");
 
-    const tallySeconds = spec.tallyDontMs ? ((plays * spec.tallyDontMs) / 1000).toFixed(1) : "0";
-    const tally =
-        spec.tallyDontMs && plays > 0
-            ? reduced
-                ? `opened ×${plays} — would cost ${tallySeconds}s with motion on`
-                : `opened ×${plays} — ${tallySeconds}s spent waiting`
-            : null;
+    // The tally slot is always there for a frequency lesson, so the first
+    // click fills it in place instead of pushing the page down.
+    const tallySeconds = spec.tallyDontMs ? ((plays * spec.tallyDontMs) / 1000).toFixed(1) : "0.0";
+    const tally = spec.tallyDontMs
+        ? {
+              text: reduced
+                  ? `×${plays} · would cost ${tallySeconds}s`
+                  : `×${plays} · ${tallySeconds}s waited`,
+              counting: plays > 0,
+          }
+        : null;
 
     const gestureHint =
         spec.trigger === "press"
@@ -368,7 +504,7 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
                 }
                 onPointerUp={isPress ? exit : undefined}
                 onPointerCancel={isPress ? exit : undefined}
-                onPointerEnter={isHover ? () => enter() : undefined}
+                onPointerEnter={isHover && canHover ? () => enter() : undefined}
                 onPointerLeave={
                     isPress
                         ? () => {
@@ -411,7 +547,7 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
                           }
                         : undefined
                 }
-                onBlur={isHover ? exit : undefined}
+                onBlur={isHover || isPress ? exit : undefined}
                 role={isGesture ? "button" : undefined}
                 tabIndex={isGesture ? 0 : undefined}
                 aria-label={
@@ -514,7 +650,7 @@ function ShowcasePane({
     paneRef: React.RefObject<HTMLDivElement | null>;
     barRef: React.RefObject<HTMLDivElement | null>;
     msRef: React.RefObject<HTMLSpanElement | null>;
-    tally?: string | null;
+    tally?: { text: string; counting: boolean } | null;
 }) {
     return (
         <div className="min-w-0">
@@ -547,7 +683,14 @@ function ShowcasePane({
                 {pane.scene()}
             </PaneChrome>
             {tally ? (
-                <p className="mt-1 text-xs font-medium tabular-nums text-dont-ink">{tally}</p>
+                <p
+                    className={cn(
+                        "mt-1 min-h-4 truncate text-xs font-medium tabular-nums",
+                        tally.counting ? "text-dont-ink" : "text-ink-muted"
+                    )}
+                >
+                    {tally.text}
+                </p>
             ) : null}
         </div>
     );
@@ -581,19 +724,26 @@ function observePreview(el: Element, cb: () => void) {
     };
 }
 
+/** Pointer dwell before a grid preview replays: a sweep across the grid on
+ *  the way to somewhere else passes over cards without setting them off. */
+const REPLAY_DWELL_MS = 150;
+
 export function PanePreview({ ruleId, variant }: { ruleId: string; variant: Variant }) {
     const spec = showcaseSpecs[ruleId];
     const ref = useRef<HTMLDivElement | null>(null);
     const exitTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    const dwellTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    const replayRun = useRef(0);
+    const nextReplay = useCallback(() => ++replayRun.current, []);
     const reduced = useReducedMotion();
     const canHover = useCanHover();
     const pane = spec ? spec[variant] : null;
 
-    const playOnce = useCallback(() => {
+    const playOnce = useCallback((fromKeyframes = false) => {
         const el = ref.current;
         if (!el || !pane) return;
         clearTimeout(exitTimer.current);
-        playPane(el, pane.tracks, { reduced });
+        playPane(el, pane.tracks, { reduced, fromKeyframes });
         if (pane.exitTracks) {
             exitTimer.current = setTimeout(
                 () => {
@@ -604,16 +754,36 @@ export function PanePreview({ ruleId, variant }: { ruleId: string; variant: Vari
         }
     }, [pane, reduced]);
 
+    /** Replays from the first frame. A preview holding its end frame (or still
+     *  moving) is taken back to that frame first, so the replay never cuts to
+     *  an empty stage; one already at rest plays straight away. */
+    const replay = useCallback(() => {
+        const el = ref.current;
+        if (!el || !pane) return;
+        clearTimeout(exitTimer.current);
+        const run = nextReplay();
+        if (reduced || !paneIsLive(el)) {
+            playOnce();
+            return;
+        }
+        void finishPane(el, startTracks(pane, RESET_MS), { reduced }).then((reset) => {
+            if (reset && run === replayRun.current) playOnce(true);
+        });
+    }, [pane, reduced, playOnce, nextReplay]);
+
     useEffect(() => {
         const el = ref.current;
-        if (!el || !pane || reduced) return;
-        if (!canHover && spec?.touchAutoplay === false) return;
-        const unobserve = observePreview(el, playOnce);
+        if (!el || !pane) return;
+        const shouldObserve = !reduced && (canHover || spec?.touchAutoplay !== false);
+        const unobserve = shouldObserve ? observePreview(el, playOnce) : undefined;
         return () => {
-            unobserve();
+            unobserve?.();
+            nextReplay();
             clearTimeout(exitTimer.current);
+            clearTimeout(dwellTimer.current);
+            cancelPane(el);
         };
-    }, [pane, spec, reduced, canHover, playOnce]);
+    }, [pane, spec, reduced, canHover, playOnce, nextReplay]);
 
     if (!pane) return null;
 
@@ -623,7 +793,15 @@ export function PanePreview({ ruleId, variant }: { ruleId: string; variant: Vari
         <div
             ref={ref}
             aria-hidden="true"
-            onPointerEnter={canHover ? playOnce : undefined}
+            onPointerEnter={
+                canHover && !reduced
+                    ? () => {
+                          clearTimeout(dwellTimer.current);
+                          dwellTimer.current = setTimeout(replay, REPLAY_DWELL_MS);
+                      }
+                    : undefined
+            }
+            onPointerLeave={canHover ? () => clearTimeout(dwellTimer.current) : undefined}
             className="motion-showcase cursor-pointer"
         >
             {pane.scene()}

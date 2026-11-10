@@ -215,3 +215,131 @@ describe("showcase copy", () => {
     expect(broken, broken.join("\n")).toEqual([]);
   });
 });
+
+// ── Settle and exit land on the scene's rest frame ──────────────────
+
+/** data-anim target → its first node's inline rest values, camelCased. */
+function restValues(markup: string): Map<string, Record<string, string>> {
+  const out = new Map<string, Record<string, string>>();
+  for (const [tag] of markup.matchAll(/<[a-z][^>]*>/g)) {
+    const target = /data-anim="([^"]+)"/.exec(tag)?.[1];
+    if (!target || out.has(target)) continue;
+    const values: Record<string, string> = {};
+    const style = /style="([^"]*)"/.exec(tag)?.[1] ?? "";
+    for (const declaration of style.split(";")) {
+      const [prop, ...value] = declaration.split(":");
+      if (prop?.trim()) values[camel(prop)] = value.join(":").trim();
+    }
+    out.set(target, values);
+  }
+  return out;
+}
+
+/** What a node shows when its scene sets nothing inline (the engine's own
+ *  rest defaults in motion-showcase.tsx). */
+const REST_DEFAULTS: Record<string, string> = { opacity: "1", transform: "none", filter: "none" };
+
+const IDENTITY_FN =
+  /\b(?:translate[XYZ]?\((?:\s*-?0(?:px|%)?\s*,?)+\)|scale[XYZ]?\((?:\s*1\s*,?)+\)|rotate[XYZ]?\(\s*0(?:deg)?\s*\)|blur\(\s*0(?:px)?\s*\))/gi;
+
+/** "scale(1)", "translateY(0)" and "none" are the same frame. */
+function normalize(prop: string, value: string | number | null | undefined): string {
+  const text = String(value ?? "").trim().toLowerCase();
+  if (prop === "opacity") return String(Number(text));
+  if (prop === "transform" || prop === "filter") {
+    const rest = text.replace(IDENTITY_FN, "").replace(/\s+/g, " ").trim();
+    return rest === "" || rest === "none" ? "none" : rest;
+  }
+  return text;
+}
+
+/** The final value each target's exit leaves on each property: the last
+ *  keyframe of whichever track keys that property last. */
+function endFrames(tracks: Track[]): Map<string, Record<string, string | number>> {
+  const out = new Map<string, Record<string, string | number>>();
+  const endsAt = new Map<string, number>();
+  for (const track of tracks) {
+    const end = (track.delayMs ?? 0) + track.durationMs;
+    const last = track.keyframes.at(-1) ?? {};
+    const frame = out.get(track.target) ?? {};
+    for (const [prop, value] of Object.entries(last)) {
+      if (prop === "offset" || prop === "easing" || prop === "composite" || value == null) continue;
+      const key = `${track.target}:${prop}`;
+      if ((endsAt.get(key) ?? -1) > end) continue;
+      endsAt.set(key, end);
+      frame[prop] = value;
+    }
+    out.set(track.target, frame);
+  }
+  return out;
+}
+
+/** Exits whose end frame is the lesson, so they deliberately stop short of rest. */
+const ENDS_OFF_REST: Record<string, string> = {
+  "motion-15.dont": "the fixed-pixel exit strands the taller toast; that is what the pane shows",
+};
+
+describe("settle and exit", () => {
+  /**
+   * The deep dive used to settle a replay by playing its tracks backwards.
+   * motion-2's key press (scale 1 → 0.88 → 1) reversed is the same press, so
+   * every settle pressed the key a second time. A track that leaves and comes
+   * back needs an exit that says where to go instead. Only replay and action
+   * panes settle; drag, interrupt, load and toolbar rules run their own
+   * prototypes, and their round-trip tracks are grid stand-ins that end where
+   * they start.
+   */
+  it("a settling pane with a leave-and-return track declares exitTracks", () => {
+    const missing: string[] = [];
+    for (const [id, spec] of Object.entries(showcaseSpecs)) {
+      if (spec.trigger !== "replay" && spec.trigger !== "action") continue;
+      for (const variant of ["do", "dont"] as const) {
+        const pane = spec[variant];
+        if (pane.exitTracks) continue;
+        for (const track of pane.tracks) {
+          const frames = track.keyframes.map(({ offset, easing, composite, ...values }) => {
+            void offset;
+            void easing;
+            void composite;
+            return JSON.stringify(values);
+          });
+          const returns = frames[0] === frames.at(-1);
+          const moves = frames.some((frame) => frame !== frames[0]);
+          if (returns && moves) missing.push(`${id}.${variant} → ${track.target}: leaves and returns, but no exitTracks`);
+        }
+      }
+    }
+    expect(missing, missing.join("\n")).toEqual([]);
+  });
+
+  /**
+   * After a settle the engine hands each node back to its rest style, and the
+   * next play starts from the track's first keyframe. An exit that stops
+   * anywhere else (comp-9's fill used to park at scale(0.97)) would snap on
+   * that hand-back. A node that ends invisible has no visible frame to miss,
+   * so only its opacity is held to rest.
+   */
+  it("every exit ends each target at its scene's rest frame", () => {
+    const off: string[] = [];
+    for (const [id, spec] of Object.entries(showcaseSpecs)) {
+      for (const variant of ["do", "dont"] as const) {
+        const pane = spec[variant];
+        if (!pane.exitTracks || ENDS_OFF_REST[`${id}.${variant}`]) continue;
+        const rest = restValues(renderToStaticMarkup(createElement("div", null, pane.scene())));
+        for (const [target, frame] of endFrames(pane.exitTracks)) {
+          const restFrame = rest.get(target) ?? {};
+          const hidden = normalize("opacity", frame.opacity ?? restFrame.opacity ?? "1") === "0";
+          for (const [prop, value] of Object.entries(frame)) {
+            if (hidden && prop !== "opacity") continue;
+            const expected = restFrame[prop] ?? REST_DEFAULTS[prop];
+            if (expected === undefined) continue;
+            if (normalize(prop, value) !== normalize(prop, expected)) {
+              off.push(`${id}.${variant}.exitTracks → ${target}: ends ${prop} ${value}, rests at ${expected}`);
+            }
+          }
+        }
+      }
+    }
+    expect(off, off.join("\n")).toEqual([]);
+  });
+});

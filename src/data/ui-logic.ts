@@ -727,7 +727,7 @@ export const rules: Rule[] = [
     id: "motion-3",
     desc: "Every animation needs a job: orientation (where am I?), feedback (did it work?), explanation, continuity (what changed?), or softening a jarring state change. If you can't name the job, cut the animation.",
     do: "Drawer slides from its edge",
-    dont: "Drawer bounces in",
+    dont: "Modal bounces in",
     tags: ["Intent", "Feedback"],
   },
   // Easing rules define the feel before component-specific tuning begins.
@@ -831,7 +831,7 @@ export const rules: Rule[] = [
     id: "motion-14",
     desc: "Transform and opacity avoid layout work and stay smooth under load. Avoid animating size, position, padding, or margins.",
     do: "translateY + opacity",
-    dont: "height + top",
+    dont: "height",
     tags: ["Transform", "Performance"],
   },
   {

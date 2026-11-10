@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { DUR, EASE, kf, tracksDurationMs, type Track } from "@/lib/showcase-engine";
 import { EasingGraph } from "@/components/features/rules/demos/easing-graph";
+import { MotionRail, ProtagonistChip } from "@/components/features/rules/demos/protagonist";
 import {
     ButtonScene,
     CardRevealScene,
@@ -119,8 +120,9 @@ const SHOWN: Keyframe = { opacity: 1, transform: "scale(1)", filter: "blur(0px)"
 const HIDDEN_IN_PLACE: Keyframe = { opacity: 0, transform: "scale(1)", filter: "blur(0px)" };
 
 /** motion-10: the origin pip shows while the menu grows, then gets out of the
- *  way 300ms after it lands, so it never sits on a menu item at rest. */
-const ORIGIN_PIP_HOLD_MS = 300;
+ *  way 150ms after it lands. The centre origin sits over "Duplicate", so a
+ *  longer hold parks a dot on a menu item. */
+const ORIGIN_PIP_HOLD_MS = 150;
 const menuFromOrigin = (fromScale: number): Track[] => [
     t("panel", kf.popIn(fromScale), DUR.medium),
     t("origin-dot", kf.fadeIn(), 90),
@@ -168,20 +170,9 @@ const easingScene = (
     chipLabel: string
 ) => (
     <div className="flex flex-col gap-2">
-        <div
-            className="relative flex w-full items-center rounded-[16px] border border-dashed border-neutral-300 bg-neutral-50/80 p-2 dark:border-neutral-700 dark:bg-neutral-900/50"
-            style={{ containerType: "inline-size" }}
-        >
-            <div
-                data-anim="panel"
-                className="flex items-center gap-1.5 rounded-[12px] border border-blue-500 bg-blue-500/10 shadow-sm dark:border-blue-400 dark:bg-blue-400/10 h-9 px-2.5"
-            >
-                <span className="shrink-0 rounded-full bg-blue-500 dark:bg-blue-400 size-1.5" />
-                <span className="text-[11px] font-semibold tracking-tight text-blue-700 dark:text-blue-300">
-                    {chipLabel}
-                </span>
-            </div>
-        </div>
+        <MotionRail hug>
+            <ProtagonistChip anim="panel" label={chipLabel} compact="narrow" />
+        </MotionRail>
         <EasingGraph
             x1={x1}
             y1={y1}
@@ -220,21 +211,29 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         trigger: "action",
         control: "Press K",
         hotkey: "k",
+        // The readout counts the panel, which is the lesson; the key press
+        // is the same 90ms on both sides. keyPress ends where it starts, so
+        // settle-back only closes the panel and never presses the key again.
         do: {
             caption: "panel 0ms · keypress 90ms — the result is the feedback",
             scene: () => <PaletteScene />,
+            readoutMs: 0,
+            readoutTag: "key 90ms",
             tracks: [
                 t("panel", kf.fadeIn(), 0),
                 t("key", kf.keyPress(), 90),
             ],
+            exitTracks: [t("panel", kf.crossfade(false), DUR.fast)],
         },
         dont: {
             caption: "panel 240ms · keypress 90ms — your keystroke waits for a cartoon",
             scene: () => <PaletteScene />,
+            readoutMs: 240,
             tracks: [
                 t("panel", kf.riseIn(8), 240),
                 t("key", kf.keyPress(), 90),
             ],
+            exitTracks: [t("panel", kf.crossfade(false), DUR.fast)],
         },
     },
 
@@ -844,7 +843,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         do: {
             caption: "-12px + fade · 150ms — leaves the room quietly",
             scene: () => <ButtonScene label="Dismiss" variant="secondary" />,
-            tracks: [t("panel", kf.dropOut(-12), 150, { easing: EASE.in })],
+            tracks: [t("panel", kf.dropOut(-12), 150)],
         },
         dont: {
             caption: "-100% + scale(0.5) · 400ms — exits are not fireworks",
@@ -970,7 +969,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
     "comp-9": {
         trigger: "action",
         control: "Submit",
-        hint: "Click the right button twice. That's two orders in production",
+        hint: "Compare the busy state with the button that still looks ready to submit.",
         do: {
             caption: "spinner + disabled — the button is honest about working",
             scene: () => <SubmitScene spinner />,
@@ -1000,15 +999,23 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
             readoutMs: 0,
             readoutTag: "synced 700ms",
             tracks: [
+                // The fill replaces the outline in both panes, so the only
+                // difference left between them is when it happens.
+                t("outline", kf.crossfade(false), 120),
                 t("panel", kf.popIn(0.6), 120),
                 t("sync", kf.fadeIn(), 140, { delayMs: 700 }),
             ],
         },
         dont: {
-            caption: "nothing until 560ms — you wait through the round trip",
+            caption: "spinner until 560ms — you wait through the round trip",
             scene: () => <LikeScene />,
             readoutMs: 560,
             tracks: [
+                // A spinner takes the heart's slot for the whole round trip,
+                // then fades as the heart pops in over it.
+                t("outline", kf.crossfade(false), 90),
+                t("wait", kf.fadeIn(), 90),
+                t("wait", kf.crossfade(false), 120, { delayMs: 560 }),
                 t("panel", kf.popIn(0.6), 120, { delayMs: 560 }),
                 // Same receipt, arriving with the fill instead of after it —
                 // the panes differ only in the order of the two events.
