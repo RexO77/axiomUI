@@ -3,12 +3,8 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
 
 import { EASE } from "@/lib/showcase-engine";
-import { prefersReducedMotion, REDUCED_MOTION_QUERY } from "@/lib/media";
-import {
-    ControlButton,
-    Hint,
-    PaneChrome,
-} from "@/components/features/rules/demos/showcase-chrome";
+import { prefersReducedMotion, REDUCED_MOTION_QUERY, useReducedMotion } from "@/lib/media";
+import { PaneChrome, ShowcaseControls } from "@/components/features/rules/demos/showcase-chrome";
 import { showcaseSpecs } from "@/components/features/rules/demos/showcase-specs";
 import { MotionRail, ProtagonistChip } from "@/components/features/rules/demos/protagonist";
 
@@ -23,6 +19,7 @@ export function InterruptShowcase() {
     const doCard = useRef<HTMLDivElement | null>(null);
     const dontCard = useRef<HTMLDivElement | null>(null);
     const dontAnim = useRef<Animation | null>(null);
+    const reducedNow = useReducedMotion();
 
     // Sampling the preference at play time covers the common case, but a user
     // who switches reduced motion on *during* a 420ms run would otherwise be
@@ -72,7 +69,7 @@ export function InterruptShowcase() {
 
     return (
         <div className="motion-showcase @container">
-            <div className="grid grid-cols-1 gap-3 @lg:grid-cols-2">
+            <div className="grid grid-cols-2 gap-3">
                 <PaneChrome variant="do" caption={spec.do.caption}>
                     <InterruptRail cardRef={doCard} label="Transition" />
                 </PaneChrome>
@@ -80,13 +77,15 @@ export function InterruptShowcase() {
                     <InterruptRail cardRef={dontCard} label="Keyframe" />
                 </PaneChrome>
             </div>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-                <ControlButton onClick={toggle}>Toggle</ControlButton>
-                <Hint>
-                    Hit Toggle again mid-flight — the Do card turns from where it is,
-                    the Don’t card snaps to the far end first
-                </Hint>
-            </div>
+            <ShowcaseControls
+                control={{ label: "Toggle", onClick: toggle, icon: false }}
+                hints={[
+                    // Nothing is mid-flight under reduced motion; the note says so.
+                    !reducedNow &&
+                        "Hit Toggle again mid-flight — the Do card turns from where it is, the Don’t card snaps to the far end first",
+                ]}
+                reducedNote="Reduced motion: both cards jump to the end. With motion on, the Do card turns around mid-flight."
+            />
         </div>
     );
 }
@@ -98,11 +97,10 @@ function InterruptRail({
     cardRef: RefObject<HTMLDivElement | null>;
     label: string;
 }) {
-    // The dashed rail is the stage: one frame, like the drag rails. MotionRail
-    // carries rounded-lg and cn() doesn't merge, so the pinned radius has to
-    // win outright or it would track the radius scale once that is reset.
+    // The dashed rail is the stage: one frame, like the drag rails, at
+    // MotionRail's default rounded-field corner.
     return (
-        <MotionRail className="h-36 rounded-[16px]!">
+        <MotionRail className="h-36">
             <div ref={cardRef} className="w-fit" style={{ transform: REST }}>
                 <ProtagonistChip label={label} />
             </div>

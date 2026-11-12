@@ -14,7 +14,6 @@ import {
     LoadingScene,
     MenuScene,
     ModalScene,
-    NestedChipsScene,
     PaletteScene,
     RaceScene,
     RailCardScene,
@@ -143,21 +142,16 @@ const menuFromOriginExit = (fromScale: number): Track[] => [
     t("origin-dot", [{ opacity: 0 }, { opacity: 0 }], 0),
 ];
 
-/** motion-23: the parent moves this far; the child follows on its own clock. */
-const NEST_TRAVEL = "translateY(-40px)";
-const nestMove = (forward: boolean): Keyframe[] =>
-    forward
-        ? [{ transform: "translateY(0)" }, { transform: NEST_TRAVEL }]
-        : [{ transform: NEST_TRAVEL }, { transform: "translateY(0)" }];
-/** One move of the nested pair. In-out on purpose: both chips travel the same
- *  40px, so the duration gap shows up as distance, which ease-out would hide
- *  in the first few frames. */
-const nestTracks = (forward: boolean, parentMs: number, childMs: number): Track[] => [
-    t("parent", nestMove(forward), parentMs, { easing: EASE.inOut }),
-    t("child", nestMove(forward), childMs, { easing: EASE.inOut }),
-    t("parent-was", kf.crossfade(!forward), DUR.fast),
-    t("parent-now", kf.crossfade(forward), DUR.fast),
-];
+/** motion-23's grid stand-in: a card dragged most of the way along its rail.
+ *  The deep dive is a real drag prototype (drag-showcases.tsx). */
+const SWIPE: Keyframe[] = [{ transform: railX(0) }, { transform: railX(0.8) }];
+const SWIPE_BACK: Keyframe[] = [{ transform: railX(0.8) }, { transform: railX(0) }];
+/** The same ease-out path, held between irregular frames: progress only
+ *  updates at 14%, 22%, 41%, 50%, 68% and 84% of the timeline, and sits still
+ *  in between. That is what a drag looks like when style work exceeds the
+ *  frame budget and the browser starts dropping frames. */
+const DROPPED_FRAMES =
+    "linear(0 0%, 0 14%, 0.528 14%, 0.528 22%, 0.723 22%, 0.723 41%, 0.931 41%, 0.931 50%, 0.966 50%, 0.966 68%, 0.994 68%, 0.994 84%, 1 84%, 1 100%)";
 
 /** Easing demo: labeled chip on a rail + curve as one instrument.
  *  The printed curve label is derived from the control points, so a pane can
@@ -664,7 +658,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
     "motion-19": {
         trigger: "drag",
         do: {
-            caption: "overshoot ÷ 3 · spring home in 450ms — the edge pushes back",
+            caption: "rubber-band past the edge · spring home in 450ms — the edge pushes back",
             scene: () => <RailCardScene />,
             tracks: [
                 t(
@@ -727,7 +721,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
     "motion-21": {
         trigger: "load",
         do: {
-            caption: "WAAPI transform — sails through every stall",
+            caption: "CSS transition — sails through every stall",
             scene: () => <RaceScene label="Compositor" />,
             tracks: [t("panel", kf.race(), 420)],
         },
@@ -753,29 +747,24 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         },
     },
 
-    /* motion-23 · Avoid inheritable motion variables — "speed up the parent"
-     * from 220ms to 140ms. The child chip rides its own clock, and the dashed
-     * slot inside the parent marks where it belongs: an explicit 220ms child
-     * trails its slot and catches up; an inherited one is retimed and moves in
-     * lockstep. Restoring the parent puts both back on 220ms. */
+    /* motion-23 · Avoid inheritable motion variables — the deep dive is a real
+     * drag prototype (drag-showcases.tsx) that reads these captions and the
+     * hint. The grid simulates one swipe: the same card on the same path, with
+     * the Don't's frames dropped. */
     "motion-23": {
-        trigger: "toggle",
-        control: "Speed up parent",
-        controlEngaged: "Restore parent",
-        hint: "You changed the parent. Watch what the child does about it",
+        trigger: "drag",
+        hint: "Drag either card. The readout is the style work each frame costs.",
         do: {
-            caption: "explicit child duration — the parent's change can't reach it",
-            scene: () => <NestedChipsScene childLabel="220ms" />,
-            tracks: nestTracks(true, DUR.fast, DUR.medium),
-            exitTracks: nestTracks(false, DUR.medium, DUR.medium),
+            caption: "Write element.style.transform on the card",
+            scene: () => <RailCardScene />,
+            tracks: [t("card", SWIPE, 600)],
+            exitTracks: [t("card", SWIPE_BACK, DUR.slow)],
         },
         dont: {
-            caption: "inherited child duration — the parent's change silently retimes it",
-            scene: () => (
-                <NestedChipsScene childLabel="inherits" childInherits />
-            ),
-            tracks: nestTracks(true, DUR.fast, DUR.fast),
-            exitTracks: nestTracks(false, DUR.medium, DUR.medium),
+            caption: "Update the inherited --swipe-amount on the list",
+            scene: () => <RailCardScene />,
+            tracks: [t("card", SWIPE, 600, { easing: DROPPED_FRAMES })],
+            exitTracks: [t("card", SWIPE_BACK, DUR.slow, { easing: DROPPED_FRAMES })],
         },
     },
 

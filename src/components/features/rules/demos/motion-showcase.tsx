@@ -583,7 +583,10 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
 
             {!isGesture ? (
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                    <ControlButton onClick={spec.trigger === "toggle" && engaged ? exit : () => enter()} pressed={spec.trigger === "toggle" ? engaged : undefined}>
+                    <ControlButton
+                        onClick={spec.trigger === "toggle" && engaged ? exit : () => enter()}
+                        pressed={spec.trigger === "toggle" ? engaged : undefined}
+                    >
                         {spec.trigger === "toggle" ? null : (
                             <Play aria-hidden="true" className="size-3.5" />
                         )}
