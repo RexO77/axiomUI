@@ -819,6 +819,7 @@ function SwipeCost() {
     const dontLabel = useRef<HTMLSpanElement | null>(null);
     const readout = useRef<HTMLSpanElement | null>(null);
     const status = useRef<HTMLSpanElement | null>(null);
+    const dragging = useRef(false);
     const base = useRef(0);
     const travel = useRef(120);
     const lastX = useRef<number | null>(null);
@@ -909,6 +910,7 @@ function SwipeCost() {
     };
 
     const settle = () => {
+        dragging.current = false;
         // The same spring as motion-18's snap-back, on each pane's own
         // property: the card's transform, or the list's variable.
         setCardX(doCard.current, 0, true, { durationMs: 350, easing: SPRING_SOFT });
@@ -921,6 +923,7 @@ function SwipeCost() {
     };
 
     const stepCards = () => {
+        if (dragging.current) return;
         begin();
         const destination = Math.abs(base.current) > 1 ? 0 : travel.current * 0.65;
         sampleFrame(destination - base.current);
@@ -928,7 +931,10 @@ function SwipeCost() {
     };
 
     const surface = useMirroredDrag({
-        onStart: begin,
+        onStart: () => {
+            dragging.current = true;
+            begin();
+        },
         onFrame: sampleFrame,
         onRelease: () => {
             settle();

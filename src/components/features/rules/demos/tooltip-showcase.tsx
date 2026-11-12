@@ -32,6 +32,7 @@ export function TooltipToolbarShowcase() {
     const surfaceRef = useRef<HTMLDivElement | null>(null);
     const [hovered, setHovered] = useState<number | null>(null);
     const [sessionOpen, setSessionOpen] = useState(false);
+    const dismissedTool = useRef<number | null>(null);
     const graceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const markOpened = useCallback(() => setSessionOpen(true), []);
 
@@ -43,6 +44,8 @@ export function TooltipToolbarShowcase() {
     );
 
     const setHoverIndex = useCallback((index: number | null) => {
+        if (index !== null && index === dismissedTool.current) return;
+        dismissedTool.current = null;
         if (graceTimer.current) {
             clearTimeout(graceTimer.current);
             graceTimer.current = null;
@@ -61,12 +64,12 @@ export function TooltipToolbarShowcase() {
     useEffect(() => {
         if (hovered === null) return;
         const dismiss = (event: KeyboardEvent) => {
-            const surface = surfaceRef.current;
-            if (event.key !== "Escape" || !surface?.contains(document.activeElement)) return;
+            if (event.key !== "Escape") return;
             // Dismiss the tooltip before the drawer handles Escape.
             event.preventDefault();
             event.stopPropagation();
             setHoverIndex(null);
+            dismissedTool.current = hovered;
         };
         const dismissOnOutsidePress = (event: PointerEvent) => {
             const surface = surfaceRef.current;

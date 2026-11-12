@@ -150,8 +150,22 @@ const SWIPE_BACK: Keyframe[] = [{ transform: railX(0.8) }, { transform: railX(0)
  *  updates at 14%, 22%, 41%, 50%, 68% and 84% of the timeline, and sits still
  *  in between. That is what a drag looks like when style work exceeds the
  *  frame budget and the browser starts dropping frames. */
-const DROPPED_FRAMES =
-    "linear(0 0%, 0 14%, 0.528 14%, 0.528 22%, 0.723 22%, 0.723 41%, 0.931 41%, 0.931 50%, 0.966 50%, 0.966 68%, 0.994 68%, 0.994 84%, 1 84%, 1 100%)";
+const SWIPE_SAMPLES = [
+    [0, 0],
+    [0.14, 0.528],
+    [0.22, 0.723],
+    [0.41, 0.931],
+    [0.50, 0.966],
+    [0.68, 0.994],
+    [0.84, 1],
+    [1, 1],
+] as const;
+const droppedSwipe = (from: number, to: number): Keyframe[] =>
+    SWIPE_SAMPLES.map(([offset, progress]) => ({
+        offset,
+        transform: railX(from + (to - from) * progress),
+        easing: "steps(1, end)",
+    }));
 
 /** Easing demo: labeled chip on a rail + curve as one instrument.
  *  The printed curve label is derived from the control points, so a pane can
@@ -763,8 +777,8 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         dont: {
             caption: "Update the inherited --swipe-amount on the list",
             scene: () => <RailCardScene />,
-            tracks: [t("card", SWIPE, 600, { easing: DROPPED_FRAMES })],
-            exitTracks: [t("card", SWIPE_BACK, DUR.slow, { easing: DROPPED_FRAMES })],
+            tracks: [t("card", droppedSwipe(0, 0.8), 600, { easing: EASE.linear })],
+            exitTracks: [t("card", droppedSwipe(0.8, 0), DUR.slow, { easing: EASE.linear })],
         },
     },
 
