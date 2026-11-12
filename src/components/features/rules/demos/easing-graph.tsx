@@ -24,7 +24,7 @@ export function EasingGraph({
 
     return (
         <div aria-hidden="true">
-            <div className="relative overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900/60 h-28">
+            <div className="relative overflow-hidden rounded-field border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900/60 h-28">
             {/* Curve and dot share one plot box, inset a fixed 12px: room for
                 the dot (5px radius + 2px ring) at both ends on any pane width.
                 A percentage inset collapsed to 6px in a 390px-wide layout and

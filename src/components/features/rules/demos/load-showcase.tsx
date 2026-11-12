@@ -4,11 +4,7 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 
 import { EASE } from "@/lib/showcase-engine";
 import { useReducedMotion } from "@/lib/media";
-import {
-    ControlButton,
-    Hint,
-    PaneChrome,
-} from "@/components/features/rules/demos/showcase-chrome";
+import { PaneChrome, ShowcaseControls } from "@/components/features/rules/demos/showcase-chrome";
 import { showcaseSpecs } from "@/components/features/rules/demos/showcase-specs";
 import {
     ThreadMeter,
@@ -39,11 +35,10 @@ function RaceRail({
     cardRef: RefObject<HTMLDivElement | null>;
     label: string;
 }) {
-    // The dashed rail is the stage: one frame, like the drag rails. MotionRail
-    // carries rounded-lg and cn() doesn't merge, so the pinned radius has to
-    // win outright or it would track the radius scale once that is reset.
+    // The dashed rail is the stage: one frame, like the drag rails, at
+    // MotionRail's default rounded-field corner.
     return (
-        <MotionRail railRef={railRef} className="h-36 rounded-[16px]!">
+        <MotionRail railRef={railRef} className="h-36">
             <div ref={cardRef} className="w-fit" style={{ transform: REST }}>
                 <ProtagonistChip label={label} />
             </div>
@@ -136,7 +131,8 @@ function scheduleReset(
     );
 }
 
-/* ── motion-21 · Race under load (retimed: 2600ms, 3×240ms stalls) ─── */
+/* ── motion-21 · Race under load (retimed: 2600ms, 3×240ms stalls) ───
+ * Do is the rule's own advice, a CSS transition. Don't writes style from rAF. */
 
 function BlockedThreadRace() {
     const spec = showcaseSpecs["motion-21"];
@@ -147,7 +143,6 @@ function BlockedThreadRace() {
     const dontCard = useRef<HTMLDivElement | null>(null);
     const rail = useRef<HTMLDivElement | null>(null);
     const dontRail = useRef<HTMLDivElement | null>(null);
-    const doAnim = useRef<Animation | null>(null);
     const rafId = useRef<number | null>(null);
     const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
     const sampleBuf = useRef<ThreadSample[]>([]);
@@ -155,7 +150,6 @@ function BlockedThreadRace() {
 
     useEffect(
         () => () => {
-            doAnim.current?.cancel();
             if (rafId.current !== null) cancelAnimationFrame(rafId.current);
             timers.current.forEach(clearTimeout);
         },
@@ -169,7 +163,6 @@ function BlockedThreadRace() {
         sampleBuf.current = [];
         timers.current.forEach(clearTimeout);
         timers.current = [];
-        doAnim.current?.cancel();
         if (rafId.current !== null) cancelAnimationFrame(rafId.current);
 
         const travel = sharedTravel(
@@ -190,9 +183,16 @@ function BlockedThreadRace() {
 
         resetCard(doCard.current);
         resetCard(dontCard.current);
+        // Commit the rest position before the transition is set, or the
+        // browser sees one change and there is nothing to transition from.
         void doCard.current?.offsetHeight;
 
-        if (doCard.current) doAnim.current = slide(doCard.current, far(travel), duration);
+        // Do: a CSS transform transition. Once the browser has it, the
+        // compositor runs every frame, so the stalls below can't touch it.
+        if (doCard.current) {
+            doCard.current.style.transition = `transform ${duration}ms linear`;
+            doCard.current.style.transform = far(travel);
+        }
 
         const start = performance.now();
         lastTick.current = start;
@@ -227,7 +227,7 @@ function BlockedThreadRace() {
 
     return (
         <div className="motion-showcase @container">
-            <div className="grid grid-cols-1 gap-3 @lg:grid-cols-2">
+            <div className="grid grid-cols-2 gap-3">
                 <PaneChrome variant="do" caption={spec.do.caption}>
                     <RaceRail railRef={rail} cardRef={doCard} label="Compositor" />
                 </PaneChrome>
@@ -235,15 +235,14 @@ function BlockedThreadRace() {
                     <RaceRail railRef={dontRail} cardRef={dontCard} label="Main thread" />
                 </PaneChrome>
             </div>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-                <ControlButton onClick={race} disabled={running}>
-                    Race + block main thread
-                </ControlButton>
-                <Hint>
-                    Watch the Don’t card — it freezes three times; the strip below is
-                    the receipt
-                </Hint>
-            </div>
+            <ShowcaseControls
+                control={{ label: "Race + block main thread", onClick: race, disabled: running }}
+                hints={[
+                    !reduced &&
+                        "Watch the Don’t card — it freezes three times; the strip below is the receipt",
+                ]}
+                reducedNote="Reduced motion: both cards jump to the finish and the thread isn’t blocked. With motion on, the Don’t card freezes at every stall and the Do card glides through."
+            />
             <ThreadMeter
                 samples={samples}
                 durationMs={2600}
@@ -354,7 +353,7 @@ function IntervalRace() {
 
     return (
         <div className="motion-showcase @container">
-            <div className="grid grid-cols-1 gap-3 @lg:grid-cols-2">
+            <div className="grid grid-cols-2 gap-3">
                 <PaneChrome variant="do" caption={spec.do.caption}>
                     <RaceRail railRef={rail} cardRef={doCard} label="WAAPI" />
                 </PaneChrome>
@@ -362,14 +361,14 @@ function IntervalRace() {
                     <RaceRail railRef={dontRail} cardRef={dontCard} label="setInterval" />
                 </PaneChrome>
             </div>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-                <ControlButton onClick={play} disabled={running}>
-                    Play both
-                </ControlButton>
-                <Hint>
-                    Same 1400ms, same distance — count the jumps on the Don’t card
-                </Hint>
-            </div>
+            <ShowcaseControls
+                control={{ label: "Play both", onClick: play, disabled: running }}
+                hints={[
+                    !reduced &&
+                        "Same distance. The Don’t card updates every 80ms.",
+                ]}
+                reducedNote="Reduced motion: both cards jump to the finish. With motion on, the Don’t card steps every 80ms and the Do card glides."
+            />
             <ThreadMeter
                 samples={samples}
                 durationMs={1400}
