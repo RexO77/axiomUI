@@ -6,6 +6,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { rules } from "@/data/ui-logic";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { absoluteUrl, siteConfig } from "@/lib/site";
+import { brandIcons } from "@/lib/brand";
 import "./globals.css";
 
 const ruleCount = rules.length;
@@ -79,9 +80,10 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/icon.png", type: "image/png" },
+      { url: brandIcons.svg, type: "image/svg+xml", sizes: "any" },
+      { url: brandIcons.png, type: "image/png", sizes: `${brandIcons.pngSize}x${brandIcons.pngSize}` },
     ],
-    apple: "/apple-touch-icon.png",
+    apple: { url: brandIcons.apple, sizes: "180x180", type: "image/png" },
   },
 };
 
@@ -129,9 +131,9 @@ export default function RootLayout({
         url: siteConfig.origin,
         logo: {
           "@type": "ImageObject",
-          url: absoluteUrl("/icon.png"),
-          width: 1024,
-          height: 1024,
+          url: absoluteUrl(brandIcons.png),
+          width: brandIcons.pngSize,
+          height: brandIcons.pngSize,
         },
       },
       {

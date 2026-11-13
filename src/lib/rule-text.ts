@@ -6,7 +6,7 @@ export const categoryNameById = new Map(categories.map((category) => [category.i
 /** One rule as plain text. `origin` param: client callers pass window.location.origin. */
 export function ruleToText(rule: Rule, origin: string = siteConfig.origin): string {
     const url = `${origin}/rules/${rule.id}`;
-    const categoryName = categoryNameById.get(rule.category) ?? "Axiom";
+    const categoryName = categoryNameById.get(rule.category) ?? "Axiom UI";
 
     return [
         `${rule.title} (${categoryName})`,

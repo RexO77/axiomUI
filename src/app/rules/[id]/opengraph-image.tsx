@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { AxiomLogo } from "@/components/ui/axiom-logo";
 import { categories, rules } from "@/data/ui-logic";
 import { VERDICT_LABEL } from "@/lib/verdict";
 
@@ -85,26 +86,6 @@ const SANS = "Manrope, sans-serif";
 const MONO = "'IBM Plex Mono', monospace";
 
 // ── Shared pieces ───────────────────────────────────────────────────
-
-/** The site's layered-stack mark (AxiomLogo), inlined for satori. */
-function AxiomMark({ width }: { width: number }) {
-  return (
-    <svg
-      width={width}
-      height={width}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke={INK}
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 3L3 8.5L12 14L21 8.5L12 3Z" />
-      <path d="M3 15.5L12 21L21 15.5" />
-      <path d="M3 12L12 17.5L21 12" />
-    </svg>
-  );
-}
 
 /** lucide CheckCircle2 / XCircle, matching the rule cards' label chrome. */
 function VerdictIcon({ kind }: { kind: "do" | "dont" }) {
@@ -273,7 +254,7 @@ export default async function Image({ params }: Props) {
               gap: 26,
             }}
           >
-            <AxiomMark width={64} />
+            <AxiomLogo width={64} color={INK} />
             <div
               style={{
                 display: "flex",
@@ -319,7 +300,7 @@ export default async function Image({ params }: Props) {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <AxiomMark width={34} />
+            <AxiomLogo width={34} color={INK} />
             <div
               style={{
                 display: "flex",
