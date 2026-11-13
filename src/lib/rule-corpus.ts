@@ -27,7 +27,7 @@ export type RuleMarkdownOptions = {
  * rule files (H1, one file per rule), so the two can never drift apart.
  */
 export function ruleToMarkdown(rule: Rule, { headingLevel, includeId = false }: RuleMarkdownOptions): string {
-    const categoryName = categoryNameById.get(rule.category) ?? "Axiom";
+    const categoryName = categoryNameById.get(rule.category) ?? "Axiom UI";
     const url = `${siteConfig.origin}/rules/${rule.id}`;
     const deepDive = buildDeepDive(rule);
     const heading = "#".repeat(headingLevel);
@@ -97,7 +97,7 @@ export function fullCorpusMarkdown(): string {
     // Blocks are separated by the join — no `` spacer entries, or every gap
     // renders as three blank lines.
     return [
-        `# Axiom`,
+        `# Axiom UI`,
         `The decision engine behind sharp, consistent interfaces. ${rules.length} curated UI decisions across ${categories.length} categories. Each rule carries a Do/Don't pair, context tags, a canonical URL, and its full reasoning: why it works, what breaks without it, how to apply it, and what to ask in review.`,
         ...sections,
     ].join("\n\n");

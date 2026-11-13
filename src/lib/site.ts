@@ -1,5 +1,5 @@
 export const siteConfig = {
-  name: "Axiom",
+  name: "Axiom UI",
   origin: "https://axiomui.nischal.fyi",
 };
 

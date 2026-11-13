@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { AxiomLogo } from "@/components/ui/axiom-logo";
 import { categories, rules } from "@/data/ui-logic";
 
 export const size = { width: 1200, height: 630 };
@@ -78,26 +79,6 @@ const SERIF = "'Source Serif 4', Georgia, serif";
 const SANS = "Manrope, sans-serif";
 const MONO = "'IBM Plex Mono', monospace";
 
-/** The site's layered-stack mark (AxiomLogo), inlined for satori. */
-function AxiomMark({ width }: { width: number }) {
-  return (
-    <svg
-      width={width}
-      height={width}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke={INK}
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 3L3 8.5L12 14L21 8.5L12 3Z" />
-      <path d="M3 15.5L12 21L21 15.5" />
-      <path d="M3 12L12 17.5L21 12" />
-    </svg>
-  );
-}
-
 /** "Typography & text" → "Typography": the index needs the noun, not the pair. */
 function shortName(name: string): string {
   return name.split(" & ")[0];
@@ -145,7 +126,7 @@ export default async function Image() {
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              <AxiomMark width={34} />
+              <AxiomLogo width={34} color={INK} />
               <div
                 style={{
                   display: "flex",

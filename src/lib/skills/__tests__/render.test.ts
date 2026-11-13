@@ -200,14 +200,14 @@ describe("renderSkillsTree", () => {
 
   // typo-1 is "Sentence case is king". Skills that teach it must not break it.
   it("writes every heading in sentence case", () => {
-    const properNouns = new Set(["Axiom", "Do", "Don't", "WCAG", "CSS", "Fitts's"]);
+    const properNouns = new Set([..."Axiom UI".split(" "), "Do", "Don't", "WCAG", "CSS", "Fitts's"]);
     const offenders: string[] = [];
     for (const [file, content] of tree) {
       if (!file.endsWith(".md") || file.endsWith("README.md")) {
         continue;
       }
       for (const [, heading] of content.matchAll(/^#{1,6} (.+)$/gm)) {
-        // A colon starts a new phrase ("Axiom: Motion & interaction"), so each part is checked alone.
+        // A colon starts a new phrase ("Axiom UI: Motion & interaction"), so each part is checked alone.
         const capitals = heading
           .replace(/`[^`]*`/g, "")
           .replace(/\([^)]*\)/g, "")
@@ -222,7 +222,7 @@ describe("renderSkillsTree", () => {
     expect([...new Set(offenders)]).toEqual([]);
   });
 
-  it("routes from the axiomui skill to every other Axiom skill", () => {
+  it("routes from the axiomui skill to every other Axiom UI skill", () => {
     const router = tree.get("skills/axiomui/SKILL.md")!;
     expect(router).toContain("## Which Axiom UI skill");
     for (const skill of skillCatalog.filter((candidate) => candidate.name !== "axiomui")) {

@@ -76,7 +76,7 @@ describe("skill catalog", () => {
   });
 
   it("keeps summaries short and in sentence case", () => {
-    const properNouns = new Set(["Axiom"]);
+    const properNouns = new Set("Axiom UI".split(" "));
     for (const skill of skillCatalog) {
       expect(skill.summary.length, skill.name).toBeLessThanOrEqual(100);
       for (const copy of [skill.title, skill.summary, skill.description, skill.lead ?? ""]) {
