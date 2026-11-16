@@ -485,3 +485,52 @@ describe("ink-faint stays decorative", () => {
     expect(enclosingTag(constant, constant.indexOf("text-ink-faint"))).toBeUndefined();
   });
 });
+
+// ── Rail and strip marks ─────────────────────────────────────────────
+
+/*
+ * Every mark in the strip and the rail's mini runs is a link, so its resting
+ * and visited greys are held to WCAG 1.4.11's 3:1 on the backdrop the rail
+ * sits on. They are `color-mix(in oklch, ink N%, backdrop)`; for two greys
+ * that is a straight mix of OKLab lightness, recomputed here.
+ */
+describe("rail and strip marks", () => {
+  const SHELL = readFileSync(path.resolve(__dirname, "../../components/shell/shell.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+  const railTokens = { light: declarations(block(SHELL, /^\.shell-rail\s*\{/m)), dark: declarations(block(SHELL, /^\.dark \.shell-rail\s*\{/m)) };
+
+  const toLinear = (value: number) => {
+    const c = value / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  const fromLinear = (value: number) => 255 * (value <= 0.0031308 ? 12.92 * value : 1.055 * value ** (1 / 2.4) - 0.055);
+  /** OKLab lightness of a grey: the cube root of its linear value (the LMS rows each sum to 1). */
+  const lightnessOf = ([r, g, b]: RGB) => {
+    expect(r === g && g === b, "a grey").toBe(true);
+    return Math.cbrt(toLinear(r));
+  };
+  function mixed(value: string, tokens: Map<string, string>): RGB {
+    const match = value.match(/^color-mix\(in oklch, var\(--ax-ink\) ([\d.]+)%, var\(--ax-backdrop\)\)$/);
+    expect(match, `${value} is an ink-over-backdrop mix`).not.toBeNull();
+    const share = Number(match![1]) / 100;
+    const lightness = lightnessOf(tone(tokens, "ink")) * share + lightnessOf(tone(tokens, "backdrop")) * (1 - share);
+    const channel = fromLinear(lightness ** 3);
+    return [channel, channel, channel];
+  }
+
+  for (const [mode, tokens] of Object.entries(themes)) {
+    const rail = railTokens[mode as keyof typeof railTokens];
+    it(`${mode}: resting and visited marks clear 3:1 on the backdrop, visited a step above resting`, () => {
+      const resting = contrast(mixed(rail.get("--rail-mark")!, tokens), tone(tokens, "backdrop"));
+      const visited = contrast(mixed(rail.get("--rail-visited")!, tokens), tone(tokens, "backdrop"));
+      expect(resting, `resting mark = ${fmt(resting)}`).toBeGreaterThanOrEqual(3);
+      expect(visited, `visited mark = ${fmt(visited)}`).toBeGreaterThan(resting * 1.3);
+    });
+  }
+
+  it("the strip paints its marks with the rail's tokens", () => {
+    const strip = (selector: RegExp) => declarations(block(SHELL, selector).replace(/(^|;)\s*background:/g, "$1--background:")).get("--background");
+    expect(strip(/^\.strip-mark\s*\{/m)).toBe("var(--rail-mark)");
+    expect(strip(/^\.strip-item\[data-visited\] \.strip-mark\s*\{/m)).toBe("var(--rail-visited)");
+    expect(SHELL).not.toMatch(/^\.dark \.strip-(?:mark|item\[data-visited\] \.strip-mark)\s*\{/m);
+  });
+});

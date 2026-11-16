@@ -163,17 +163,19 @@
 
 /* ── Rail and expanded list ────────────────────────────────────────── */
 
+/* The marks are links: resting and visited both clear 3:1 on the backdrop
+   (WCAG 1.4.11), resting only just, so a run still reads as quiet. */
 .shell-rail {
-  --rail-mark: color-mix(in oklch, var(--ax-ink) 24%, var(--ax-backdrop));
-  --rail-visited: color-mix(in oklch, var(--ax-ink) 46%, var(--ax-backdrop));
+  --rail-mark: color-mix(in oklch, var(--ax-ink) 44%, var(--ax-backdrop));
+  --rail-visited: color-mix(in oklch, var(--ax-ink) 58%, var(--ax-backdrop));
   position: absolute;
   inset: 0 auto 0 0;
   width: var(--shell-rail-open);
   user-select: none;
 }
 .dark .shell-rail {
-  --rail-mark: color-mix(in oklch, var(--ax-ink) 26%, var(--ax-backdrop));
-  --rail-visited: color-mix(in oklch, var(--ax-ink) 48%, var(--ax-backdrop));
+  --rail-mark: color-mix(in oklch, var(--ax-ink) 43%, var(--ax-backdrop));
+  --rail-visited: color-mix(in oklch, var(--ax-ink) 58%, var(--ax-backdrop));
 }
 .shell-rail :focus-visible { outline: 2px solid var(--ax-ring); outline-offset: 2px; }
 .shell-rail button { touch-action: manipulation; }
@@ -320,4 +322,154 @@
 @media (forced-colors: active) {
   .rail-rulerow[aria-current="page"] { outline: 1px solid CanvasText; }
   .rail-rowdot, .rail-minidot::before { background: CanvasText; }
+}
+
+/* ── Magnify strip ──────────────────────────────────────── */
+
+/* The collapsed rail's dot column. Items sit at top 0 and magnify-strip.tsx
+   places them with transforms; until its first layout the column is hidden,
+   so the server paint never shows the marks stacked. */
+.strip-col {
+  position: absolute;
+  inset: 0;
+  outline: none;
+  cursor: pointer;
+  touch-action: none;
+}
+.strip-col:not([data-ready]) { visibility: hidden; }
+/* Focus is on one link: a quiet frame says "you are in the strip". A sibling
+   of the column, so a scrolling column does not carry it away; keyed on the
+   column's data-focus, because :has() over this subtree re-runs every paint. */
+.strip-frame {
+  position: absolute;
+  inset: 0 8px;
+  border-radius: var(--radius-frame);
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--ax-ring) 45%, var(--ax-backdrop));
+  pointer-events: none;
+  opacity: 0;
+}
+.strip-col[data-focus] + .strip-frame { opacity: 1; }
+/* Steady pitch (reduced motion, or a rail too short for legible marks): the
+   column scrolls inside the region, and only then. */
+.strip-col[data-steady] {
+  overflow-y: auto;
+  /* No lens to scrub when steady: touch scrolls the column, and a tap still opens. */
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  mask-image: linear-gradient(to bottom, transparent, black 10px, black calc(100% - 16px), transparent);
+}
+.strip-col[data-steady]::-webkit-scrollbar { display: none; }
+.strip-inner { position: relative; width: 100%; }
+.strip-run { list-style: none; margin: 0; padding: 0; }
+.strip-item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 0;
+  will-change: transform;
+}
+/* The link is the item's hit box: an empty 1px box at the slot's centre that
+   magnify-strip.tsx stretches to the slot's height. The mark beside it takes no
+   pointer, so a click lands on the link. The lens ring is its focus
+   indicator, so the link draws no outline. */
+.strip-link { position: absolute; left: 0; right: 0; top: -0.5px; height: 1px; outline: none; }
+.shell-rail .strip-link:focus-visible { outline: none; }
+.strip-mark {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 9999px;
+  background: var(--rail-mark);
+  pointer-events: none;
+  will-change: transform;
+}
+/* Marks: three steps of one grey (the rail list's steps), then ink. Later
+   rules win: hot over visited, the current rule over both. */
+.strip-item[data-visited] .strip-mark { background: var(--rail-visited); }
+.strip-col .strip-item[data-hot] .strip-mark { background: color-mix(in oklch, var(--ax-ink) 72%, var(--ax-backdrop)); }
+.strip-col .strip-item[data-active] .strip-mark {
+  width: 4px;
+  height: 14px;
+  margin: -7px 0 0 -2px;
+  background: var(--ax-ink);
+}
+.strip-cat-mark {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  pointer-events: none;
+  will-change: transform;
+}
+.strip-cat-mark svg { position: relative; display: block; }
+/* The run in play sits on a small piece of the sheet, as selected rail items do. */
+.strip-item[data-current-cat] .strip-cat-mark::before {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: var(--radius-tip);
+  background: var(--ax-raised);
+  box-shadow: var(--ax-shadow-item);
+}
+.strip-item[data-dim] .strip-mark,
+.strip-item[data-dim] .strip-cat-mark { opacity: 0.3; }
+/* Keyboard lens: a ring that follows the focused mark. */
+.strip-lens {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 24px;
+  height: 24px;
+  margin: -12px 0 0 -12px;
+  border-radius: 9999px;
+  box-shadow: 0 0 0 2px var(--ax-ring);
+  pointer-events: none;
+  opacity: 0;
+}
+.strip-col[data-focus] .strip-lens[data-on] { opacity: 1; }
+/* The scrub label beside the magnified mark, until the preview opens. */
+.strip-label {
+  position: fixed;
+  top: 0;
+  left: 64px;
+  z-index: 45;
+  max-width: 260px;
+  height: 24px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-tip);
+  background: var(--ax-inverse);
+  color: var(--ax-on-inverse);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 140ms var(--ease-out-strong), visibility 0s linear 140ms;
+}
+.strip-label > span { overflow: hidden; text-overflow: ellipsis; }
+.strip-label[data-on] { opacity: 1; visibility: visible; transition: opacity 100ms var(--ease-out-strong), visibility 0s; }
+.strip-label[data-cat] { background: var(--ax-overlay); color: var(--ax-ink); box-shadow: var(--ax-shadow-popover); }
+:root[data-input="keyboard"] .strip-label { transition: none; }
+/* Forced colours paint every background as Canvas and drop shadows, so marks
+   draw as borders and rings as outlines, both in the forced text colour
+   (currentColor). The current rule keeps its bar shape; the label names the
+   hot mark. */
+@media (forced-colors: active) {
+  .strip-mark { border: 6px solid; }
+  .strip-col .strip-item[data-active] .strip-mark { border-width: 2px; }
+  .strip-item[data-current-cat] .strip-cat-mark::before { outline: 1px solid; }
+  .strip-lens { outline: 2px solid; }
+  .strip-frame, .strip-label { border: 1px solid; }
 }
