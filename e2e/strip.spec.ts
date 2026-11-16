@@ -50,6 +50,28 @@ const sectionOffset = (page: import("@playwright/test").Page, id: string) =>
     return Math.abs(section.top - layer.top);
   }, id);
 
+test("a relayout keeps the keyboard-focused mark in view", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1400 });
+  await openCatalog(page, ruleUrl(railIds[0]));
+  await page.locator(`${link}[aria-current="page"]`).focus();
+  await page.keyboard.press("End");
+  const last = ruleUrl(railIds.at(-1)!);
+  expect(await page.evaluate(() => document.activeElement?.getAttribute("href"))).toBe(last);
+  // Short enough that the column switches to its scrolling layout.
+  await page.setViewportSize({ width: 1440, height: 420 });
+  await expect(page.locator(column)).toHaveAttribute("data-steady", "");
+  await expect
+    .poll(() =>
+      page.evaluate((selector) => {
+        const box = document.querySelector(selector)!.getBoundingClientRect();
+        const mark = document.activeElement!.getBoundingClientRect();
+        return mark.top >= box.top && mark.bottom <= box.bottom;
+      }, column)
+    )
+    .toBe(true);
+  expect(await page.evaluate(() => document.activeElement?.getAttribute("href"))).toBe(last);
+});
+
 test.describe("the expanded list", () => {
   test("J across a category boundary moves focus to the new current rule, not the document", async ({ page }) => {
     const last = railCategories[0].rules.at(-1)!.id;
