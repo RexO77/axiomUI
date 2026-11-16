@@ -196,7 +196,18 @@ function SkillRow({ skill, announce }: { skill: SkillSpec; announce: (message: s
   );
 }
 
-export function SkillBonus() {
+export type SkillBonusProps = {
+  /**
+   * Opens the dialog from outside, such as the rail's install row. Leave it
+   * unset to render the built-in trigger instead.
+   */
+  open?: boolean;
+  /** Called with `false` when the dialog closes itself: Esc, the scrim or its close button. */
+  onOpenChange?: (open: boolean) => void;
+};
+
+export function SkillBonus({ open, onOpenChange }: SkillBonusProps = {}) {
+  const controlled = open !== undefined;
   const pathname = usePathname();
   const [isMounted, setIsMounted] = useState(false);
   const [modalState, setModalState] = useState<ModalState>("closed");
@@ -216,8 +227,15 @@ export function SkillBonus() {
   const focusViewHeadingRef = useRef(false);
   const isModalVisible = modalState !== "closed";
   const isPreviewing = isModalVisible && modalState !== "closing" && view === "preview";
+  // A ref, so closeModal stays stable: the focus-trap effect depends on it and
+  // must not re-run while the dialog is open.
+  const onOpenChangeRef = useRef(onOpenChange);
+  useEffect(() => {
+    onOpenChangeRef.current = onOpenChange;
+  });
 
   const closeModal = useCallback(() => {
+    onOpenChangeRef.current?.(false);
     viewSwap.cancel();
     focusViewHeadingRef.current = false;
     if (announcementTimerRef.current !== null) {
@@ -480,13 +498,26 @@ export function SkillBonus() {
 
   const previewNodes = useMemo(() => parsePreviewNodes(skillText), [skillText]);
 
-  function openModal(event: MouseEvent<HTMLButtonElement>) {
-    returnFocusRef.current = event.currentTarget;
+  const startOpening = useCallback((returnTo: HTMLElement | null) => {
+    returnFocusRef.current = returnTo;
     setAnnouncement("");
-    if ((loadState === "loading" && !skillText) || loadState === "error") {
-      setLoadState("idle");
-    }
+    setLoadState((current) => (current === "error" || (current === "loading" && !skillText) ? "idle" : current));
+    viewSwap.reset("install");
+    setModalState(prefersReducedMotion() ? "open" : "mounted");
+  }, [skillText, viewSwap]);
 
+  // Controlled: follow `open`. The opener is whatever held focus, and focus
+  // returns there on close.
+  useEffect(() => {
+    if (!controlled) return;
+    if (open && modalState === "closed") {
+      startOpening(document.activeElement instanceof HTMLElement ? document.activeElement : null);
+    } else if (!open && (modalState === "mounted" || modalState === "open")) {
+      closeModal();
+    }
+  }, [controlled, open, modalState, startOpening, closeModal]);
+
+  function openModal(event: MouseEvent<HTMLButtonElement>) {
     // Read the URL at click time rather than through useSearchParams, which
     // would push the whole sidebar behind a Suspense boundary at prerender.
     const nextParams = new URLSearchParams(window.location.search);
@@ -498,8 +529,7 @@ export function SkillBonus() {
       window.history.replaceState(null, "", nextUrl);
     }
 
-    viewSwap.reset("install");
-    setModalState(prefersReducedMotion() ? "open" : "mounted");
+    startOpening(event.currentTarget);
   }
 
   function showView(next: ModalView) {
@@ -717,6 +747,8 @@ export function SkillBonus() {
         document.body
       )
     : null;
+
+  if (controlled) return modal;
 
   return (
     <>
