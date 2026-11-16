@@ -26,7 +26,7 @@
     "@vercel/analytics": "^1.6.1",
     "@vercel/speed-insights": "^2.0.0",
     "lucide-react": "^0.563.0",
-    "next": "16.2.9",
+    "next": "16.4.6",
     "react": "19.2.7",
     "react-dom": "19.2.7",
     "web-haptics": "^0.0.6"
@@ -38,13 +38,13 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.9",
+    "eslint-config-next": "16.4.6",
     "husky": "^9.1.7",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.12"
   },
   "overrides": {
-    "postcss": "^8.5.15"
+    "postcss": "^8.5.33"
   }
 }
