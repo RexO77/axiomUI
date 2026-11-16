@@ -1,0 +1,418 @@
+/* The rule comparison: one canvas for every rule, Do and Don't at 1:1, verdict
+   labels inside the panes, a hairline split, captions under each half, hints
+   under the captions. Stills (peek, rising card, palette) are the pair at rest.
+
+   Rhythm: compare bar → 12 → canvas → 12 → captions → 8 → hints. Pane labels,
+   captions and hints sit on the inner edge, 16px in from the canvas.
+
+   Previews are never CSS-scaled. The one transform is the reader's 2× zoom,
+   under [data-zoom="2"], around a box laid out at 1× (never `zoom:`, which
+   re-wraps text). Captions wrap and balance; nothing here truncates them. */
+
+/* ── Frame and compare bar ──────────────────────────────────────────── */
+
+.cmp { margin-top: 24px; container-type: inline-size; }
+.cmp-bar { display: flex; align-items: center; gap: 8px; min-height: 32px; margin-bottom: 12px; }
+.cmp-spacer { flex: 1; }
+.cmp-ctl {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  min-width: 32px;
+  padding: 0 10px;
+  border-radius: var(--radius-control);
+  box-shadow: inset 0 0 0 1px var(--ax-line-strong);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--ax-ink-secondary);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 140ms var(--ease-out-strong), color 140ms var(--ease-out-strong);
+}
+.cmp-ctl svg { width: 14px; height: 14px; flex: none; }
+.cmp-ctl .cmp-play-glyph { width: 12px; height: 12px; fill: currentColor; stroke: none; }
+@media (hover: hover) and (pointer: fine) {
+  .cmp-ctl:hover { background: var(--ax-hover); color: var(--ax-ink); }
+}
+.cmp-ctl:active { background: var(--ax-press); }
+.cmp-ctl[aria-pressed="true"] { background: var(--ax-hover); color: var(--ax-ink); }
+.cmp-flip { min-width: 112px; }
+/* Keyboard-started changes are 0ms (021): every control in the bar, the zoom
+   switch and a hand-built showcase's control row, Segmented's radios included. */
+:root[data-input="keyboard"] :is(.cmp-bar, .cmp-zoom, .cmp-show > .motion-showcase > .justify-between) :is(button, [role="radio"]) { transition: none; }
+
+/* Static rules: zoom is the bar's sibling, so a phone in Flip can move it to
+   the caption line and the bar never wraps. */
+.cmp[data-kind="static"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "bar zoom" "canvas canvas" "cap cap" "hint hint";
+  align-items: center;
+}
+.cmp[data-kind="static"] > .cmp-bar { grid-area: bar; min-width: 0; }
+.cmp[data-kind="static"] > .cmp-zoom { grid-area: zoom; margin: 0 0 12px 8px; }
+.cmp[data-kind="static"] > .cmp-canvas { grid-area: canvas; }
+.cmp[data-kind="static"] > .cmp-captions { grid-area: cap; align-self: start; }
+.cmp[data-kind="static"] > .rule-hint { grid-area: hint; }
+
+/* ── Canvas ─────────────────────────────────────────────────────────── */
+
+.cmp-canvas {
+  --cmp-pan-x: 0px;
+  --cmp-pan-y: 0px;
+  --cmp-box-h: 0px;
+  --cmp-canvas-h: 280px;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  border-radius: var(--radius-frame);
+  background: var(--ax-stage);
+  overflow: clip;
+  touch-action: manipulation;
+}
+.cmp-canvas::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: var(--radius-frame);
+  box-shadow: inset 0 0 0 1px var(--ax-line);
+  pointer-events: none;
+}
+.cmp-canvas:focus-visible { outline-offset: 2px; }
+.cmp-canvas[data-flip] { grid-template-columns: minmax(0, 1fr); cursor: pointer; }
+.cmp-canvas[data-flip] .cmp-pane { grid-area: 1 / 1; }
+.cmp-canvas[data-flip] .cmp-pane[data-off] { visibility: hidden; }
+.cmp-canvas[data-flip] .cmp-pane + .cmp-pane { box-shadow: none; }
+/* At 2× a touch drag pans the canvas: the browser must not take it as a page pan. */
+.cmp-canvas[data-zoom="2"] { cursor: grab; touch-action: none; }
+.cmp-canvas[data-zoom="2"][data-panning] { cursor: grabbing; }
+.cmp-canvas[data-gesture] { cursor: pointer; user-select: none; }
+
+.cmp-pane {
+  position: relative;
+  min-width: 0;
+  min-height: var(--cmp-canvas-h);
+  padding: 48px 32px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: clip;
+}
+.cmp-pane + .cmp-pane { box-shadow: inset 1px 0 0 var(--ax-line); }
+/* A flex box, so the label's line is its own 16px and its text bottom meets
+   the duration's (.cmp-pane-ms) on the same line. */
+.cmp-pane-label { position: absolute; top: 16px; left: 16px; z-index: 2; display: flex; }
+.cmp-box {
+  width: min(100%, 400px);
+  min-height: var(--cmp-box-h);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  transform-origin: center;
+}
+.cmp-box > * { width: 100%; }
+.cmp-canvas[data-zoom="2"] .cmp-box { transform: translate(var(--cmp-pan-x), var(--cmp-pan-y)) scale(2); }
+.cmp-zoomchip {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: var(--radius-tip);
+  background: var(--ax-surface);
+  box-shadow: inset 0 0 0 1px var(--ax-line);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  color: var(--ax-ink-secondary);
+}
+
+/* Inside a canvas the preview frame's ring, radius, fill and padding go: the
+   canvas is the frame, so nothing nests. */
+:is(.cmp-box, .still) .preview-frame {
+  box-shadow: none;
+  border-radius: 0;
+  background: none;
+  padding: 0;
+  min-height: 0;
+  overflow: visible;
+}
+:is(.cmp-box, .still) .cmp-scene > [class*="bg-neutral-50"] { border-color: var(--ax-stage); background: none; }
+
+/* ── Captions and hints ─────────────────────────────────────────────── */
+
+/* Tested claims in mono, 12/18, wrapped and balanced; Flip's shown side in ink. */
+.cmp-captions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 1px; margin-top: 12px; }
+.cmp-captions p {
+  padding: 0 16px;
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--ax-ink-muted);
+  overflow-wrap: anywhere;
+  /* Captions run one to three lines; balance keeps a two-line caption from
+     ending on one word, which pretty leaves alone. */
+  text-wrap: balance;
+  font-variant-ligatures: no-common-ligatures;
+}
+.cmp-captions p[data-on] { color: var(--ax-ink); }
+.cmp-cap-v { display: none; }
+.cmp-tally { margin-left: 8px; font-family: var(--font-manrope), ui-sans-serif, sans-serif; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cmp-tally[data-on] { color: var(--ax-dont-ink); }
+
+/* Every hint sits in one place: under the captions, on the inner edge, 13/20.
+   In the flow, never fixed, and it stays for as long as the rule is open. */
+.rule-hint {
+  margin-top: 8px;
+  padding: 0 16px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ax-ink-muted);
+  text-wrap: pretty;
+}
+.rule-hint + .rule-hint { margin-top: 4px; }
+.rule-hint-touch { display: none; }
+@media (hover: none) {
+  .rule-hint-key { display: none; }
+  .rule-hint-touch { display: inline; }
+}
+/* Reduced-motion text is in the server HTML and switched here, so hydration never shifts it. */
+.rule-hint-reduced { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .rule-hint-motion { display: none; }
+  .rule-hint-reduced { display: block; }
+  .rule-hint-motion + .rule-hint { margin-top: 8px; }
+  .cmp-tally .rule-hint-reduced { display: inline; }
+}
+
+@container (max-width: 640px) {
+  .cmp-canvas:not([data-flip]) { grid-template-columns: minmax(0, 1fr); }
+  .cmp-canvas:not([data-flip]) .cmp-pane + .cmp-pane { box-shadow: inset 0 1px 0 var(--ax-line); }
+  .cmp-pane { padding: 44px 20px 28px; }
+  .cmp-captions { grid-template-columns: minmax(0, 1fr); row-gap: 6px; }
+  .cmp-cap-v { display: inline; margin-right: 6px; font-family: var(--font-manrope), ui-sans-serif, sans-serif; font-weight: 600; }
+  .cmp-bar { flex-wrap: wrap; }
+}
+
+/* ── Motion rules ───────────────────────────────────────────────────── */
+
+.cmp[data-kind="motion"] .cmp-canvas,
+.cmp[data-kind="motion"] .cmp-pane { min-height: 280px; }
+.cmp[data-kind="motion"] .cmp-box { width: min(100%, 440px); }
+.cmp-pane-ms {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--ax-ink-muted);
+}
+.cmp-track {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 14px;
+  height: 2px;
+  border-radius: var(--radius-track);
+  background: var(--ax-line);
+  overflow: clip;
+}
+.cmp-track > span { display: block; height: 100%; border-radius: var(--radius-track); background: var(--ax-ink-muted); transform-origin: left; }
+
+/* Scenes' own CSS loops hold still at idle; they run only while a pane is live. */
+.cmp-box .cmp-scene * { animation-play-state: paused !important; }
+@media (prefers-reduced-motion: no-preference) {
+  .cmp-canvas[data-live] .cmp-box .cmp-scene * { animation-play-state: running !important; }
+}
+
+/* Motion scenes are narrower than a static preview: two up from 480px. */
+@container (min-width: 480px) and (max-width: 640px) {
+  .cmp[data-kind="motion"] .cmp-canvas { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .cmp[data-kind="motion"] .cmp-canvas .cmp-pane + .cmp-pane { box-shadow: inset 1px 0 0 var(--ax-line); }
+  .cmp[data-kind="motion"] .cmp-captions { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); row-gap: 0; }
+  .cmp[data-kind="motion"] .cmp-cap-v { display: none; }
+}
+
+/* ── Hand-built showcases (drag, interrupt, load, toolbar) ─────────────
+   MotionShowcase renders .motion-showcase > .grid of two PaneChrome (label,
+   scene, optional readout bar, caption), an optional control row and hints.
+   Each PaneChrome becomes `display: contents`, so its parts land in one grid:
+   the scenes on a shared canvas (row 1, drawn by ::before, split by ::after),
+   the captions below it (row 2). The control row takes the compare bar's slot;
+   the hints go under the captions. comparison.test.ts pins the demo markup
+   these selectors read, so a change there fails a test, not the layout. */
+
+.cmp-show > .motion-showcase { display: flex; flex-direction: column; }
+.cmp-show > .motion-showcase > .grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: minmax(280px, auto) auto;
+  gap: 0;
+}
+.cmp-show > .motion-showcase > .grid::before {
+  content: "";
+  grid-row: 1;
+  grid-column: 1 / -1;
+  border-radius: var(--radius-frame);
+  background: var(--ax-stage);
+  box-shadow: inset 0 0 0 1px var(--ax-line);
+}
+.cmp-show > .motion-showcase > .grid::after {
+  content: "";
+  grid-row: 1;
+  grid-column: 2;
+  box-shadow: inset 1px 0 0 var(--ax-line);
+  pointer-events: none;
+}
+.cmp-show > .motion-showcase > .grid > .min-w-0 { display: contents; }
+.cmp-show > .motion-showcase > .grid > .min-w-0 > * { position: relative; z-index: 1; min-width: 0; }
+.cmp-show > .motion-showcase > .grid > .min-w-0:nth-child(1) > * { grid-column: 1; }
+.cmp-show > .motion-showcase > .grid > .min-w-0:nth-child(2) > * { grid-column: 2; }
+.cmp-show > .motion-showcase > .grid > .min-w-0 > .mb-2 {
+  grid-row: 1;
+  align-self: start;
+  justify-self: start;
+  margin: 16px 0 0 16px;
+  z-index: 2;
+}
+.cmp-show > .motion-showcase > .grid > .min-w-0 > div:not([class]) {
+  grid-row: 1;
+  align-self: center;
+  justify-self: center;
+  width: calc(100% - 64px);
+  max-width: 440px;
+  margin: 48px 0 40px;
+}
+.cmp-show > .motion-showcase > .grid > .min-w-0 > .mt-2 { grid-row: 1; align-self: end; margin: 0 16px 12px; }
+.cmp-show > .motion-showcase > .grid > .min-w-0 > p {
+  grid-row: 2;
+  margin: 0;
+  padding: 12px 16px 0;
+  font-size: 12px;
+  line-height: 18px;
+  text-wrap: balance;
+  font-variant-ligatures: no-common-ligatures;
+}
+/* The drag rail keeps its edge (the lesson is about that edge) but loses its
+   fill and the radius that would nest inside the canvas. */
+.cmp-show .border-dashed { border-color: var(--ax-line-strong); border-radius: var(--radius-control); background: none; }
+.cmp-show > .motion-showcase > .justify-between { order: -1; min-height: 32px; margin: 0 0 12px; }
+/* A long label ("Race + block main thread") wraps inside the row at 200% zoom. */
+.cmp-show > .motion-showcase > .justify-between > button {
+  min-height: 32px;
+  height: auto;
+  max-width: 100%;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: var(--radius-control);
+  box-shadow: inset 0 0 0 1px var(--ax-line-strong);
+  font-size: 13px;
+  line-height: 20px;
+  white-space: normal;
+  text-align: left;
+}
+.cmp-show > .motion-showcase > .flex-col {
+  order: 1;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 0 16px;
+  font-size: 13px;
+  line-height: 20px;
+  text-wrap: pretty;
+}
+/* A readout line (drag) and a meter block (load) follow the hints. */
+.cmp-show > .motion-showcase > span,
+.cmp-show > .motion-showcase > .mt-3:not(.justify-between, .flex-col) { order: 2; padding: 0 16px; }
+.cmp-show > .motion-showcase > span { margin-top: 4px; }
+.cmp-show > .motion-showcase > .mt-3:not(.justify-between, .flex-col) { margin-top: 12px; }
+
+@container (max-width: 479px) {
+  .cmp-show > .motion-showcase > .grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(200px, auto) minmax(200px, auto) auto auto;
+  }
+  .cmp-show > .motion-showcase > .grid::before { grid-row: 1 / 3; grid-column: 1; }
+  .cmp-show > .motion-showcase > .grid::after { grid-row: 2; grid-column: 1; box-shadow: inset 0 1px 0 var(--ax-line); }
+  .cmp-show > .motion-showcase > .grid > .min-w-0:nth-child(n) > * { grid-column: 1; }
+  .cmp-show > .motion-showcase > .grid > .min-w-0:nth-child(1) > :not(p) { grid-row: 1; }
+  .cmp-show > .motion-showcase > .grid > .min-w-0:nth-child(2) > :not(p) { grid-row: 2; }
+  .cmp-show > .motion-showcase > .grid > .min-w-0:nth-child(1) > p { grid-row: 3; }
+  .cmp-show > .motion-showcase > .grid > .min-w-0:nth-child(2) > p { grid-row: 4; padding-top: 8px; }
+  .cmp-show > .motion-showcase > .grid > .min-w-0 > div:not([class]) { width: calc(100% - 32px); margin: 40px 0 32px; }
+  .cmp-show > .motion-showcase > .grid > .min-w-0 > p::before { margin-right: 8px; font-family: var(--font-manrope), ui-sans-serif, sans-serif; font-weight: 600; }
+  .cmp-show > .motion-showcase > .grid > .min-w-0:nth-child(1) > p::before { content: "Do"; }
+  .cmp-show > .motion-showcase > .grid > .min-w-0:nth-child(2) > p::before { content: "Don’t"; }
+}
+
+/* ── Stills ─────────────────────────────────────────────────────────── */
+
+/* The host card is the canvas: the pair runs edge to edge, one hairline on top
+   and one between. Hosts set the pane height (peek, rising card, palette). */
+.still-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  background: var(--ax-stage);
+  box-shadow: inset 0 1px 0 var(--ax-line);
+}
+.still-pane { position: relative; height: 220px; overflow: clip; }
+.still-pane + .still-pane { box-shadow: inset 1px 0 0 var(--ax-line); }
+.still-label { position: absolute; top: 10px; left: 12px; z-index: 2; display: flex; }
+.still {
+  position: absolute;
+  inset: 34px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+}
+.still > * { width: 100%; }
+/* A still's scene holds at rest: its own CSS loops never run. */
+.still * { animation-play-state: paused !important; }
+/* A motion scene's fake app window would be a frame inside the card: its
+   border, radius, fill and title bar go; what it frames stays. */
+.still .cmp-scene > .rounded-field { border-color: var(--ax-stage); border-radius: 0; background: none; }
+.still .cmp-scene > .rounded-field > div:has(> span.rounded-full + span.rounded-full + span.rounded-full) { display: none; }
+
+/* ── Phone: 44px targets, 13px floor, panes sized to their content ──── */
+
+@media (max-width: 640px), (pointer: coarse) and (max-height: 500px) {
+  .cmp-bar { min-height: 44px; }
+  .cmp-ctl { height: 44px; padding-inline: 12px; }
+  .cmp-show > .motion-showcase > .justify-between { min-height: 44px; }
+  .cmp-show > .motion-showcase > .justify-between > button { min-height: 44px; padding: 12px 16px; }
+  .cmp[data-kind="static"] .cmp-pane { min-height: max(160px, calc(var(--cmp-box-h) + 72px)); padding: 40px 16px 32px; }
+  .cmp[data-kind="motion"] .cmp-canvas,
+  .cmp[data-kind="motion"] .cmp-pane { min-height: 200px; }
+  .cmp-show > .motion-showcase > .grid { grid-template-rows: minmax(200px, auto) auto; }
+  .cmp-pane-label > *,
+  .cmp-show > .motion-showcase > .grid > .min-w-0 > .mb-2 > *,
+  .cmp-captions p,
+  .cmp-show > .motion-showcase > .grid > .min-w-0 > p,
+  .cmp-pane-ms,
+  .cmp-zoomchip,
+  .rule-hint,
+  .cmp-show .text-xs,
+  .cmp-show > .motion-showcase > .flex-col { font-size: 13px; line-height: 20px; }
+  /* Flip: "Show Don't" keeps the bar to one row; zoom moves to the caption line. */
+  .cmp[data-kind="static"][data-flip] { grid-template-areas: "bar bar" "canvas canvas" "cap zoom" "hint hint"; }
+  .cmp[data-kind="static"][data-flip] > .cmp-zoom { align-self: start; margin: 12px 0 0 12px; }
+  .cmp[data-kind="static"][data-flip] > .cmp-bar { flex-wrap: nowrap; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cmp-ctl { transition: none; }
+}
+@media (forced-colors: active) {
+  .cmp-canvas, .cmp-box, .still-pair, .still { forced-color-adjust: none; }
+  .cmp-show > .motion-showcase > .grid::before { border: 1px solid CanvasText; }
+}
