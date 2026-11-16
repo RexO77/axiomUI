@@ -13,6 +13,9 @@
 # testing
 /coverage
 .playwright-mcp/
+# Browser runner results and reports
+/test-results/
+/playwright-report/
 
 # next.js
 /.next/

@@ -16,6 +16,8 @@
     "skills:check": "node --import ./scripts/lib/register-ts.mjs scripts/build-skills.mjs --check",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
+    "e2e": "AXIOM_STAGING=1 npm run build && AXIOM_STAGING=1 playwright test --config e2e/runner.config.ts",
+    "e2e:guard": "env -u VERCEL_ENV -u AXIOM_STAGING npm run build && env -u VERCEL_ENV -u AXIOM_STAGING E2E_GUARD=1 playwright test --config e2e/runner.config.ts",
     "check:attribution": "scripts/check-attribution.sh",
     "prepare": "husky",
     "parity:save": "node scripts/render-parity.mjs save",
@@ -33,6 +35,7 @@
     "web-haptics": "^0.0.6"
   },
   "devDependencies": {
+    "@playwright/test": "1.61.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
