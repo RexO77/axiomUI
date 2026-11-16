@@ -7,7 +7,7 @@ test.describe("touch search can show the filtered gallery", () => {
   for (const [name, url] of [["gallery", wallUrl()], ["direct rule", ruleUrl("comp-1")]] as const) {
     test(`show all matches from the ${name}, without a keyboard shortcut`, async ({ page }) => {
       await openCatalog(page, url);
-      await page.getByRole("button", { name: /^Search \d+ rules$/ }).click();
+      await page.getByRole("button", { name: /^Search \d+ rules$/ }).tap();
       const dialog = page.getByRole("dialog", { name: "Search rules" });
       const input = dialog.getByRole("combobox");
       const action = dialog.getByRole("button", { name: /^Show all \d+ match/ });
@@ -16,21 +16,42 @@ test.describe("touch search can show the filtered gallery", () => {
       const count = searchRules("contrast").length;
       await expect(action).toHaveText(`Show all ${count} matches`);
       expect((await action.boundingBox())!.height).toBeGreaterThanOrEqual(44);
-      await action.click();
+      await action.tap();
       await expect(dialog).toHaveCount(0);
       await awaitView(page, "gallery");
       await expect.poll(() => new URL(page.url()).searchParams.get("q")).toBe("contrast");
       await expect(page.locator(".shell-sheet")).not.toHaveAttribute("inert", "");
       await expect(page.locator("a[data-rule-link]:visible")).toHaveCount(count);
-      await page.getByRole("button", { name: "Clear search “contrast”", exact: true }).click();
+      await page.getByRole("button", { name: "Clear search “contrast”", exact: true }).tap();
       await expect.poll(() => new URL(page.url()).searchParams.has("q")).toBe(false);
     });
   }
 
+  test("matches stay near the search field in a short phone viewport", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 430 });
+    await openCatalog(page, wallUrl());
+    const opener = page.getByRole("button", { name: /^Search \d+ rules$/ });
+    await opener.tap();
+    const dialog = page.getByRole("dialog", { name: "Search rules" });
+    const input = dialog.getByRole("combobox");
+    await input.fill("contrast");
+    const show = dialog.getByRole("button", { name: `Show all ${searchRules("contrast").length} matches`, exact: true });
+    await expect(show).toBeInViewport({ ratio: 1 });
+    await show.tap();
+    await awaitView(page, "gallery");
+    await page.getByRole("button", { name: "Clear search “contrast”", exact: true }).tap();
+    await expect.poll(() => new URL(page.url()).searchParams.has("q")).toBe(false);
+
+    await opener.tap();
+    await expect(dialog.getByRole("combobox")).toHaveValue("");
+    await dialog.getByRole("button", { name: "Cancel", exact: true }).tap();
+    await expect(opener).toBeFocused();
+  });
+
   test("an empty or unmatched query has no unusable show-matches action", async ({ page }) => {
     await openCatalog(page, wallUrl());
     const opener = page.getByRole("button", { name: /^Search \d+ rules$/ });
-    await opener.click();
+    await opener.tap();
     const dialog = page.getByRole("dialog", { name: "Search rules" });
     const input = dialog.getByRole("combobox");
     const action = dialog.getByRole("button", { name: /^Show all \d+ match/ });
@@ -40,7 +61,7 @@ test.describe("touch search can show the filtered gallery", () => {
     }
     await input.fill("Action hierarchy");
     await expect(action).toHaveText("Show all 1 match");
-    await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
+    await dialog.getByRole("button", { name: "Cancel", exact: true }).tap();
     await expect(opener).toBeFocused();
     await expect.poll(() => new URL(page.url()).searchParams.has("q")).toBe(false);
   });
