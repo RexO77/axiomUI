@@ -1,0 +1,568 @@
+/*
+ * The gallery wall: a sticky toolbar over the rule tiles in seven sections.
+ * Everything is scoped under .gw. Colours come from var(--ax-*) only, radii
+ * from var(--radius-*), and the one phone cut-over is PHONE_QUERY
+ * (feature-css.test.ts holds all three).
+ *
+ * The wall scrolls in the shell's wall layer, so the toolbar sticks to the
+ * layer's top and, on phones, the Do/Don't capsule to its bottom.
+ */
+
+.gw {
+  --gw-pad: 24px;
+  --gw-gap: 20px;
+  --gw-row-gap: 28px;
+  --gw-bar-h: 52px;
+  --gw-section-gap: 48px;
+  --gw-frame-h: 224px;
+
+  position: relative;
+  min-height: 100%;
+  background: var(--ax-surface);
+  color: var(--ax-ink);
+  font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.gw ::selection { background: color-mix(in oklch, var(--ax-ring) 22%, var(--ax-surface)); }
+.gw :focus-visible { outline: 2px solid var(--ax-ring); outline-offset: 2px; }
+.gw button { touch-action: manipulation; }
+
+/* ── Toolbar ───────────────────────────────────────────────────────── */
+
+/* 52px, the sheet header's height: its 32px controls centre on the same y
+   as the rail's logo tile and the rule view's header. */
+.gw-bar {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--gw-bar-h);
+  padding: 0 12px 0 var(--gw-pad);
+  background: var(--ax-surface);
+  --gw-bar-line: var(--ax-surface);
+  box-shadow: inset 0 -1px 0 var(--gw-bar-line);
+  transition: box-shadow 140ms var(--ease-out-strong);
+}
+.gw-bar[data-scrolled] { --gw-bar-line: var(--ax-line); }
+
+.gw-h1 {
+  font-family: var(--font-source-serif), ui-serif, Georgia, serif;
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.gw-count {
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ax-ink-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.gw-spacer { flex: 1; min-width: 8px; }
+.gw-chips { display: none; }
+
+/* Continue and the collection pill: quiet outlined controls beside the count. */
+.gw-continue,
+.gw-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: var(--radius-control);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--ax-ink-secondary);
+  box-shadow: inset 0 0 0 1px var(--ax-line);
+  white-space: nowrap;
+  transition: background-color 140ms var(--ease-out-strong), color 140ms var(--ease-out-strong);
+}
+.gw-continue { max-width: 280px; margin-left: 4px; }
+.gw-continue span { overflow: hidden; text-overflow: ellipsis; }
+.gw-continue svg,
+.gw-pill svg { width: 14px; height: 14px; flex-shrink: 0; color: var(--ax-ink-muted); }
+.gw-pill { padding-right: 8px; margin-left: 4px; }
+.gw-pill .gw-pill-icon { width: 16px; height: 16px; }
+
+.gw-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 240px;
+  min-width: 140px;
+  height: 32px;
+  flex-shrink: 1;
+}
+.gw-search > svg {
+  position: absolute;
+  left: 10px;
+  width: 16px;
+  height: 16px;
+  color: var(--ax-ink-muted);
+  pointer-events: none;
+}
+.gw-search input {
+  width: 100%;
+  height: 100%;
+  padding: 0 32px;
+  border-radius: var(--radius-control);
+  background: var(--ax-fill);
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ax-ink);
+  outline: none;
+  transition: box-shadow 140ms var(--ease-out-strong), background-color 140ms var(--ease-out-strong);
+}
+.gw-search input::placeholder { color: var(--ax-ink-muted); }
+.gw-search input::-webkit-search-cancel-button { display: none; }
+.gw-search input:focus-visible {
+  background: var(--ax-surface);
+  box-shadow: inset 0 0 0 1px var(--ax-line-strong), 0 0 0 2px var(--ax-ring);
+}
+.gw-search-key,
+.gw-search-clear { position: absolute; right: 7px; }
+.gw-search-clear {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-item);
+  color: var(--ax-ink-muted);
+}
+.gw-search-clear svg { width: 14px; height: 14px; }
+
+/* The Do/Don't switch: only the selected segment's icon takes the verdict colour. */
+.gw-side { display: inline-flex; flex-shrink: 0; }
+.gw-side [aria-checked="true"] .gw-side-do { color: var(--ax-do); }
+.gw-side [aria-checked="true"] .gw-side-dont { color: var(--ax-dont); }
+/* Before hydration the switch can only say Do. On a ?show=dont load it waits
+   for the store rather than contradict the wall. */
+:root[data-side="dont"] .gw-side[data-pending] { visibility: hidden; }
+
+@media (hover: hover) and (pointer: fine) {
+  .gw-continue:hover,
+  .gw-pill:hover,
+  .gw-search-clear:hover,
+  .gw-empty-clear:hover { background: var(--ax-hover); color: var(--ax-ink); }
+  .gw-collection a:hover { text-decoration-color: currentColor; }
+}
+.gw-continue:active,
+.gw-pill:active,
+.gw-search-clear:active,
+.gw-empty-clear:active { background: var(--ax-press); }
+
+/* ── Wall ──────────────────────────────────────────────────────────── */
+
+.gw-wall {
+  max-width: 2280px;
+  margin: 0 auto;
+  padding: 0 var(--gw-pad) 96px;
+}
+
+/* A filtered URL loads every tile; the wall and its count wait, unseen, for
+   the app to apply the filter (boot-script.ts). If the app never gets there,
+   they show anyway after a few seconds. */
+:root[data-filter-pending] :is(.gw-wall, .gw-count) {
+  visibility: hidden;
+  animation: gw-pending 0s linear 4s forwards;
+}
+@keyframes gw-pending { to { visibility: visible; } }
+
+/* Every section renders in full: content-visibility on a section drops it
+   out of the accessibility tree's headings and links. The tile frames skip
+   their own painting offscreen instead (below). */
+/* A hash or a chip lands the heading 16px under the toolbar. The first
+   section shown sits 16px under it; the rest keep a gap twice the row gap,
+   so a section break never reads as one more row. */
+.gw-section {
+  padding-top: 16px;
+  scroll-margin-top: var(--gw-bar-h);
+}
+.gw-section:not([hidden]) ~ .gw-section {
+  padding-top: var(--gw-section-gap);
+  scroll-margin-top: calc(var(--gw-bar-h) + 16px - var(--gw-section-gap));
+}
+
+.gw-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 8px;
+  margin-bottom: 16px;
+}
+/* 16/24 600: a clear step above the 14/500 tile titles it heads. */
+.gw-section-head h2 {
+  font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--ax-ink);
+  text-wrap: balance;
+}
+/* The category's own coloured icon, as on the rail. Inline, so the head
+   keeps its baseline; -2px centres it on the x-height. */
+.gw-section-head .gw-section-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  vertical-align: -2px;
+}
+.gw-section-count {
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ax-ink-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.gw-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(256px, 100%), 1fr));
+  column-gap: var(--gw-gap);
+  row-gap: var(--gw-row-gap);
+}
+.gw-gate { min-width: 0; }
+
+@container sheet (min-width: 1280px) {
+  .gw { --gw-pad: 32px; --gw-gap: 24px; --gw-row-gap: 32px; --gw-section-gap: 64px; }
+}
+@container sheet (max-width: 760px) {
+  .gw-continue { display: none; }
+}
+
+/* ── Tile ──────────────────────────────────────────────────────────── */
+
+.gw-tile {
+  display: block;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+  scroll-margin-top: calc(var(--gw-bar-h) + 12px);
+  scroll-margin-bottom: 24px;
+}
+.gw .gw-tile:focus-visible { outline: none; }
+
+/* The preview window: a fixed 224px, previews at 1:1 and never scaled.
+   Offscreen frames skip painting their previews; the height is fixed, so
+   nothing moves when they come back. */
+.gw-frame {
+  position: relative;
+  display: block;
+  height: var(--gw-frame-h);
+  border-radius: var(--radius-frame);
+  background: var(--ax-stage);
+  overflow: clip;
+  --gw-ring: var(--ax-line);
+  content-visibility: auto;
+  contain-intrinsic-size: auto var(--gw-frame-h);
+  transition: scale 140ms var(--ease-out-strong);
+}
+.gw-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: var(--radius-frame);
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px var(--gw-ring);
+  transition: box-shadow 220ms var(--ease-out-strong);
+}
+/* Don't: every ring takes the Don't colour, and every frame a "Don't" badge,
+   so the side never rests on colour alone. */
+:root[data-side="dont"] .gw-frame { --gw-ring: color-mix(in oklch, var(--ax-dont) 32%, var(--ax-stage)); }
+@media (hover: hover) and (pointer: fine) {
+  .gw-tile:hover .gw-frame { --gw-ring: var(--ax-line-strong); }
+  :root[data-side="dont"] .gw-tile:hover .gw-frame { --gw-ring: color-mix(in oklch, var(--ax-dont) 56%, var(--ax-stage)); }
+  .gw-tile:hover .gw-frame::after { transition-duration: 140ms; }
+}
+.gw-frame:active { scale: 0.985; }
+.gw-tile:focus-visible .gw-frame { outline: 2px solid var(--ax-ring); outline-offset: 2px; }
+
+.gw-fit {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: safe center;
+  align-items: center;
+  padding: 16px 16px 20px;
+  -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 24px), transparent);
+  mask-image: linear-gradient(to bottom, black calc(100% - 24px), transparent);
+}
+.gw-fit > * { width: 100%; flex-shrink: 0; }
+.gw-fit[data-v="dont"],
+:root[data-side="dont"] .gw-fit[data-v="do"] { display: none; }
+:root[data-side="dont"] .gw-fit[data-v="dont"] { display: flex; }
+
+/* A scene shows once MotionTile has set its rest frame. The boot script
+   always sets data-side, so without script (no data-side) scenes show their
+   own markup instead of an empty frame. */
+:root[data-side] .gw-scene:not([data-ready]) { visibility: hidden; }
+
+/* A scene's own CSS loops (a spinner, a pulse) exist only while its one
+   playback runs, so nothing runs at idle. */
+.gw-frame:not([data-playing]) .gw-fit * { animation-name: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .gw-fit * { animation-name: none !important; }
+}
+
+/* No card in a card: the tile is the frame, so a preview's own ring, radius,
+   fill and padding go… */
+.gw-fit .preview-frame {
+  min-height: 0;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  overflow: visible;
+}
+/* …a scene's tinted stage panel goes flat… */
+.gw-scene > [class*="bg-neutral-50"] { border-color: var(--ax-stage); background: none; }
+/* …and a scene drawn as a small app window loses the window: its edge and
+   the title bar with the three dots. The tile is the app. */
+.gw-scene > .rounded-field { border-color: var(--ax-stage); border-radius: 0; background: none; }
+.gw-scene > .rounded-field > div:has(> span.rounded-full + span.rounded-full + span.rounded-full) { display: none; }
+
+/* Evidence labels (measurements, narration, axis labels) belong to the rule
+   view; a tile shows its difference without them. The few a pane cannot
+   make its point without carry data-keep. */
+.gw-tile [data-annotation]:not([data-keep]) { display: none; }
+
+/* Easing tiles show only the curve; the rail, the bezier numbers and the
+   axis label stay in the rule view. */
+.gw-tile[data-easing] .gw-scene > * > :not(:last-child),
+.gw-tile[data-easing] .gw-scene > * > :last-child > p,
+.gw-tile[data-easing] .gw-scene > * > :last-child > div > span { display: none; }
+
+/* The motion marker: bottom right, inside the frame; it fades while the
+   scene plays, and never shows to a reader who asked for less motion. */
+.gw-marker {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  color: var(--ax-ink-secondary);
+  background: var(--ax-overlay);
+  box-shadow: 0 0 0 1px var(--ax-line);
+  transition: opacity 120ms var(--ease-out-strong);
+}
+.gw-marker svg { width: 10px; height: 10px; margin-left: 1px; fill: currentColor; stroke: none; }
+.gw-frame[data-playing] .gw-marker { opacity: 0; }
+
+/* The Don't badge: top left, on the Don't side only, on an opaque chip so
+   it reads over any preview in both themes. */
+.gw-verdict {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 4;
+  display: none;
+  align-items: center;
+  height: 22px;
+  padding: 0 7px 0 5px;
+  border-radius: var(--radius-tip);
+  background: var(--ax-overlay);
+  box-shadow: 0 0 0 1px var(--ax-line);
+  line-height: 16px;
+}
+:root[data-side="dont"] .gw-verdict { display: inline-flex; }
+
+.gw-title {
+  display: block;
+  margin-top: 10px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--ax-ink);
+}
+
+/* ── The collection entry, the empty state ─────────────────────────── */
+
+.gw-collection {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin-top: 56px;
+  padding-top: 20px;
+  box-shadow: inset 0 1px 0 var(--ax-line);
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ax-ink-muted);
+  text-wrap: pretty;
+  scroll-margin-top: calc(var(--gw-bar-h) + 16px);
+}
+.gw-collection a {
+  font-weight: 500;
+  color: var(--ax-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--ax-line-strong);
+  text-underline-offset: 3px;
+}
+.gw[data-filtered] .gw-collection { display: none; }
+
+.gw-empty {
+  max-width: 420px;
+  margin: 0 auto;
+  padding-top: 18vh;
+  text-align: center;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ax-ink-muted);
+}
+.gw-empty p + p { max-width: 44ch; margin: 4px auto 0; text-wrap: balance; }
+.gw-empty .gw-empty-title { font-size: 15px; line-height: 24px; color: var(--ax-ink); }
+.gw-empty-clear {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  margin-top: 16px;
+  padding: 0 12px;
+  border-radius: var(--radius-control);
+  font-weight: 500;
+  color: var(--ax-ink-secondary);
+  box-shadow: inset 0 0 0 1px var(--ax-line-strong);
+  transition: background-color 140ms var(--ease-out-strong), color 140ms var(--ease-out-strong);
+}
+
+/* The phone's Do/Don't capsule. Sticky at the end of the wall, so it rides
+   the bottom of the layer while there is wall below. */
+.gw-float { display: none; }
+
+/* ── Phone ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 640px), (pointer: coarse) and (max-height: 500px) {
+  .gw { --gw-pad: 16px; --gw-bar-h: 56px; --gw-row-gap: 24px; }
+
+  .gw-bar { gap: 0; padding: 0; }
+  .gw-desk { display: none; }
+  /* The title stays the page's h1 for screen readers; the chips are the toolbar. */
+  .gw-h1 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .gw-chips {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 16px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    scroll-padding-inline: 16px;
+    -webkit-mask-image: linear-gradient(to right, black calc(100% - 16px), transparent);
+    mask-image: linear-gradient(to right, black calc(100% - 16px), transparent);
+  }
+  .gw-chips::-webkit-scrollbar { display: none; }
+  .gw-chip {
+    position: relative;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 9999px;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 500;
+    color: var(--ax-ink-secondary);
+    box-shadow: inset 0 0 0 1px var(--ax-line-strong);
+    transition: box-shadow 140ms var(--ease-out-strong), color 140ms var(--ease-out-strong);
+  }
+  /* 44px targets from 36px chips: 4px over and under, and 4px each side,
+     which meets the next chip's across the 8px gap without overlapping. */
+  .gw-chip::before { content: ""; position: absolute; inset: -4px; border-radius: 9999px; }
+  .gw-chip .gw-chip-icon { width: 16px; height: 16px; flex-shrink: 0; }
+  .gw-chip-count { color: var(--ax-ink-muted); font-variant-numeric: tabular-nums; }
+  /* The active chip: an ink ring and ink text, no fill, so the category
+     icon keeps its colour in both themes. */
+  .gw-chip[aria-current] { color: var(--ax-ink); box-shadow: inset 0 0 0 1.5px var(--ax-ink); }
+  .gw-chip-clear { gap: 4px; padding-right: 8px; color: var(--ax-ink); background: var(--ax-fill); box-shadow: none; }
+  .gw-chip-clear span { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gw-chip-clear svg { width: 16px; height: 16px; color: var(--ax-ink-muted); }
+  .gw-chip:active { background: var(--ax-press); }
+
+  .gw-section-head { margin-bottom: 12px; }
+  .gw-title { font-size: 15px; }
+  .gw-tile { scroll-margin-bottom: 92px; }
+  .gw-wall { padding-bottom: 24px; }
+  .gw-collection { margin-top: 40px; }
+
+  /* The switch floats in the thumb zone: an opaque track (tiles never show
+     through it) with the raised thumb, the desktop recipe at thumb size. */
+  .gw-float {
+    position: sticky;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    z-index: 3;
+    display: flex;
+    justify-content: center;
+    padding: 16px 0 calc(16px + env(safe-area-inset-bottom));
+    pointer-events: none;
+  }
+  .gw-float > * { pointer-events: auto; }
+  .gw[data-empty] .gw-float { display: none; }
+  .gw-capsule {
+    padding: 4px;
+    gap: 0;
+    box-shadow: var(--ax-shadow-popover);
+  }
+  /* 96px each, or half the screen less the capsule's edge at 200% zoom. */
+  .gw-capsule [role="radio"] {
+    min-width: min(96px, calc(50vw - 12px));
+    min-height: 44px;
+    padding: 0 clamp(8px, calc((100vw - 200px) / 8), 16px);
+    font-size: 15px;
+  }
+  .gw-capsule [role="radio"] svg { width: 16px; height: 16px; }
+}
+
+/* ── Forced colours, reduced motion, keyboard ──────────────────────── */
+
+@media (forced-colors: active) {
+  .gw-frame { forced-color-adjust: none; outline: 1px solid CanvasText; }
+  .gw-chip[aria-current] { outline: 2px solid Highlight; outline-offset: -2px; }
+  .gw-capsule { border: 1px solid CanvasText; }
+  /* The frame keeps the previews' own colours; the badge opts back in and
+     takes a CanvasText edge, so it stays legible. */
+  .gw-verdict { forced-color-adjust: auto; border: 1px solid CanvasText; box-shadow: none; }
+  .gw-verdict svg { color: CanvasText; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gw-frame { transition: none; }
+  .gw-frame:active { scale: none; }
+  .gw-marker { display: none; }
+}
+
+/* Anything the keyboard starts lands at once: D re-rings every tile, J/K
+   move the focus ring. */
+:root[data-input="keyboard"] :is(.gw-bar, .gw-frame, .gw-chip, .gw-continue, .gw-pill, .gw-search input, .gw-search-clear, .gw-empty-clear),
+:root[data-input="keyboard"] .gw-frame::after {
+  transition: none;
+}
