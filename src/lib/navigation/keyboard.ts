@@ -66,8 +66,6 @@ export type KeyboardOptions = {
   /** WCAG 2.1.4: disables every unmodified character shortcut, including punctuation. */
   singleKeys?: boolean;
   ownerModal?: unknown;
-  /** An owned field may route Esc through its clear/blur handler. */
-  allowEscapeInField?: boolean;
 };
 
 function closest(target: unknown, selector: string): unknown {
@@ -95,7 +93,7 @@ export function shouldHandle(event: KeyEvent, options: KeyboardOptions = {}): bo
   if (!command && event.key.length === 1 && options.singleKeys === false) return false;
   if (event.repeat && binding?.toggle) return false;
   if (closest(event.target, KEYBOARD_TARGET_SELECTOR)) {
-    return Boolean(binding?.command || (event.key === "Escape" && options.allowEscapeInField));
+    return Boolean(binding?.command);
   }
   return true;
 }

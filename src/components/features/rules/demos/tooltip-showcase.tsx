@@ -103,7 +103,6 @@ export function TooltipToolbarShowcase() {
         <div className="motion-showcase @container">
             <div
                 ref={surfaceRef}
-                data-vaul-no-drag
                 onPointerMove={(e) => setHoverIndex(toolIndex(e.target))}
                 onPointerDown={(e) => setHoverIndex(toolIndex(e.target))}
                 onPointerLeave={(e) => {

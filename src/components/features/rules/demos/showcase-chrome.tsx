@@ -1,13 +1,20 @@
 // design-system: strict
 "use client";
 
-import { Fragment, type ReactNode, type RefObject } from "react";
+import { createContext, Fragment, useContext, type ReactNode, type RefObject } from "react";
 import { Play } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "@/lib/media";
 import type { Variant } from "@/components/features/rules/preview-primitives";
 import { VerdictLabel } from "@/components/ui/verdict-label";
+
+/**
+ * A statement to open each pane's caption with, per side. The rule view
+ * provides the rule's own Do and Don't, so the claim the showcase acts out is
+ * in the text beside it; without a provider the caption is the spec's alone.
+ */
+export const CaptionLeadContext = createContext<Readonly<Record<Variant, string>> | null>(null);
 
 /**
  * Shared chrome for showcase panes: Do/Don't header, framed stage, optional
@@ -32,6 +39,7 @@ export function PaneChrome({
     bar?: ReactNode;
     children: ReactNode;
 }) {
+    const lead = useContext(CaptionLeadContext)?.[variant];
     return (
         <div className="min-w-0">
             <div className="mb-2 flex">
@@ -49,6 +57,12 @@ export function PaneChrome({
             </div>
             {bar ? <div className="mt-2">{bar}</div> : null}
             <p className="mt-1.5 font-mono text-xs leading-5 wrap-break-word text-ink-muted">
+                {lead ? (
+                    <>
+                        <span className="text-ink">{withPathBreaks(lead)}</span>
+                        <br />
+                    </>
+                ) : null}
                 {withPathBreaks(caption)}
             </p>
         </div>
@@ -133,8 +147,8 @@ export function ShowcaseControls({
     );
 }
 
-/** The radius every showcase control shares: 12px, what `rounded-md` drew
- *  before plan 015 W3-A returns that utility to Tailwind's 6px. */
+/** The radius every showcase control shares: 12px, written out because
+ *  `rounded-md` is Tailwind's 6px. */
 export const CONTROL_RADIUS = "rounded-[12px]";
 
 export function ControlButton({

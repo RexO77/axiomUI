@@ -2,13 +2,16 @@
 "use client";
 
 /*
- * Shared shell state and actions for opening, paging and leaving a rule.
- * The rail, strip, phone shell, rule view and overlays read it through
+ * What a sheet's content, and the shell's own parts, can ask of the shell:
+ * open a rule, page, leave for the wall, and a few facts. The rail, the
+ * strip, the phone shell, the rule view and the overlays all read it through
  * `useShell()`.
  *
- * `PeekHandle` is defined here so consumers do not depend on the preview
- * component. The handle stays null until a preview mounts. `openPalette`
- * and `openShortcuts` do nothing until their overlays are connected.
+ * - `PeekHandle` lives here rather than in `./peek`, so the rail and the strip
+ *   can hold the handle without importing the card. `peek.current` is null
+ *   until the overlays mount the peek.
+ * - `openPalette` and `openShortcuts` open the ⌘K palette and the shortcuts
+ *   sheet through the shell's modal session, as their keys do.
  *
  * Anything the keyboard starts is 0ms: `inputOrigin()` says how the last
  * input arrived, and `exit` takes its origin explicitly, so a pointer close

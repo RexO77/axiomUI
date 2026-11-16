@@ -38,7 +38,6 @@ function deferOn(
  *           .motion-showcase reduced-motion CSS, so cards snap home
  * ─────────────────────────────────────────────────────────
  * Edge cases carried over from the gesture-demo exploration:
- * - data-vaul-no-drag on the surface, or vaul drags the whole drawer.
  * - touch-action: pan-y so vertical scroll still works on mobile;
  *   never `none` (it would trap the page).
  * - setPointerCapture in pointerdown — motion-20's lesson, dogfooded.
@@ -181,7 +180,6 @@ function DragSurface({
             <div
                 ref={surfaceRef}
                 {...pointerProps}
-                data-vaul-no-drag
                 className="grid cursor-grab select-none grid-cols-2 gap-3 active:cursor-grabbing"
                 style={{ touchAction: "pan-y" }}
             >

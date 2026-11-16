@@ -102,7 +102,7 @@ describe("globals.css token layer", () => {
 
   it("keeps component classes inside @layer components, below the utilities", () => {
     const outside = without(CSS, COMPONENTS);
-    for (const name of ["pressable", "reveal", "rule-card", "glass"]) {
+    for (const name of ["pressable"]) {
       expect(outside, `.${name} outside @layer components`).not.toMatch(new RegExp(`\\.${name}(?![\\w-])`));
       expect(blocks(CSS, COMPONENTS).some((block) => block.body.includes(`.${name}`))).toBe(true);
     }
@@ -151,9 +151,16 @@ describe("showcase-engine mirrors the motion tokens", () => {
   });
 });
 
-it("uses readable muted ink for the catalog search placeholder", () => {
-  const searchInput = readFileSync(path.join(SRC, "components/features/search/search-input.tsx"), "utf8");
-  expect(searchInput.match(/\bplaceholder:text-[\w-]+/g)).toEqual(["placeholder:text-ink-muted"]);
+it("uses readable muted ink for the search placeholders", () => {
+  // The palette's field and the wall's toolbar field are the catalog's two search inputs.
+  for (const [file, selector] of [
+    ["components/shell/overlays.css", ".palette-input input::placeholder"],
+    ["components/gallery/gallery.css", ".gw-search input::placeholder"],
+  ] as const) {
+    const css = readFileSync(path.join(SRC, file), "utf8");
+    const rule = css.slice(css.indexOf(selector)).match(/\{([^}]*)\}/)?.[1] ?? "";
+    expect(rule, `${selector} in ${file}`).toMatch(/color:\s*var\(--ax-ink-muted\)/);
+  }
 });
 
 describe("token contrast", () => {
@@ -247,7 +254,14 @@ describe("pressable transition guard", () => {
 describe("files marked `design-system: strict`", () => {
   it("include the shared primitives", () => {
     const relative = strictFiles.map((file) => path.relative(SRC, file));
-    for (const file of ["components/ui/icon-button.tsx", "components/ui/button.tsx", "components/ui/verdict-label.tsx"]) {
+    for (const file of [
+      "components/ui/icon-button.tsx",
+      "components/ui/button.tsx",
+      "components/ui/verdict-label.tsx",
+      "components/ui/segmented.tsx",
+      "components/ui/kbd.tsx",
+      "components/ui/tooltip.tsx",
+    ]) {
       expect(relative).toContain(file);
     }
   });

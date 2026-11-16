@@ -6,7 +6,9 @@ import { describe, expect, it } from "vitest";
 
 import { MotionShowcase } from "@/components/features/rules/demos/motion-showcase";
 import { paneReadout, showcaseSpecs } from "@/components/features/rules/demos/showcase-specs";
+import { Comparison } from "@/components/rule/comparison";
 import { isNativeMotion, MotionCompare, readoutLabel } from "@/components/rule/motion-compare";
+import { rules as allRules } from "@/data/ui-logic";
 import {
   clampPan,
   compareKeyPatch,
@@ -244,6 +246,25 @@ describe("reduced-motion text renders on the server and CSS switches it", () => 
     const media = CSS.slice(CSS.indexOf("@media (prefers-reduced-motion: reduce) {\n  .rule-hint-motion"));
     expect(media).toMatch(/^[^}]*\.rule-hint-motion \{ display: none; \}\s*\.rule-hint-reduced \{ display: block; \}/);
     expect(media).toMatch(/\.cmp-tally \.rule-hint-reduced \{ display: inline; \}/);
+  });
+});
+
+// A motion rule's captions narrate what plays; the rule's own claim must still be on the page.
+describe("every motion caption opens with the rule's own Do and Don't", () => {
+  const text = (html: string) =>
+    html
+      .replace(/<[^>]+>/g, "")
+      .replace(/&#x27;/g, "'")
+      .replace(/&quot;/g, '"')
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&amp;/g, "&");
+
+  it.each(allRules.filter((rule) => showcaseSpecs[rule.id]).map((rule) => [rule.id, rule] as const))("%s", (_, rule) => {
+    const shown = text(renderToStaticMarkup(createElement(Comparison, { rule })));
+    for (const claim of [rule.do, rule.dont, showcaseSpecs[rule.id].do.caption, showcaseSpecs[rule.id].dont.caption]) {
+      expect(shown).toContain(claim);
+    }
   });
 });
 

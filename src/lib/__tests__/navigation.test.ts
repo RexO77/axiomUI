@@ -37,18 +37,18 @@ import { searchRules } from "@/lib/rule-search";
 const ids = (deck: { rules: readonly { id: string }[] }) => deck.rules.map((rule) => rule.id);
 
 describe("catalog routes", () => {
-  it("builds the same URLs on the canonical and the staging base, never with an empty path", () => {
+  it("builds the same URLs at the site root and under a base path, never with an empty path", () => {
     expect(routes.galleryHref()).toBe("/");
     expect(routes.ruleHref("motion-7")).toBe("/rules/motion-7");
     expect(routes.galleryHref({ show: "do", q: "" })).toBe("/");
     expect(routes.galleryHref({ hash: "rule-a11y-1" })).toBe("/#rule-a11y-1");
-    for (const base of ["/staging", "/staging/", "staging"]) {
-      const staging = createRoutes(base);
-      expect(staging.base).toBe("/staging");
-      expect(staging.galleryHref()).toBe("/staging");
-      expect(staging.galleryHref({ q: "focus & labels", show: "dont", collection: "accessibility", hash: "rule-a11y-1" }))
-        .toBe("/staging?q=focus+%26+labels&show=dont&collection=accessibility#rule-a11y-1");
-      expect(staging.ruleHref("a/b", { q: "focus" })).toBe("/staging/rules/a%2Fb?q=focus");
+    for (const base of ["/docs", "/docs/", "docs"]) {
+      const nested = createRoutes(base);
+      expect(nested.base).toBe("/docs");
+      expect(nested.galleryHref()).toBe("/docs");
+      expect(nested.galleryHref({ q: "focus & labels", show: "dont", collection: "accessibility", hash: "rule-a11y-1" }))
+        .toBe("/docs?q=focus+%26+labels&show=dont&collection=accessibility#rule-a11y-1");
+      expect(nested.ruleHref("a/b", { q: "focus" })).toBe("/docs/rules/a%2Fb?q=focus");
     }
     expect(createRoutes("/").base).toBe("");
   });
@@ -57,12 +57,12 @@ describe("catalog routes", () => {
     const expected = { view: "rule", ruleId: "a11y-1", q: "focus", show: "dont", collection: "accessibility" };
     const search = "?q=focus&show=dont&collection=accessibility";
     expect(routes.parseLocation("/rules/a11y-1", search)).toEqual(expected);
-    expect(createRoutes("/staging").parseLocation("/staging/rules/a11y-1/", search)).toEqual(expected);
+    expect(createRoutes("/docs").parseLocation("/docs/rules/a11y-1/", search)).toEqual(expected);
     expect(routes.parseLocation("/", "?show=invalid")).toEqual({ view: "gallery", ruleId: null, q: "", show: "do", collection: null });
     expect(routes.parseLocation("/", "?collection=accessibility").collection).toBe("accessibility");
     expect(routes.parseLocation("/rules/%E0%A4%A").ruleId).toBeNull();
-    expect(createRoutes("/staging").parseLocation("/staging-other/rules/motion-7").ruleId).toBeNull();
-    expect(createRoutes("/staging").parseLocation("/staging").view).toBe("gallery");
+    expect(createRoutes("/docs").parseLocation("/docs-other/rules/motion-7").ruleId).toBeNull();
+    expect(createRoutes("/docs").parseLocation("/docs").view).toBe("gallery");
   });
 
   it("reads the last ?rule= at the wall, resolves aliases, and ignores ?rule= anywhere else", () => {
@@ -70,7 +70,7 @@ describe("catalog routes", () => {
     expect(routes.parseLocation("/", "?rule=color-1&rule=motion-7").ruleId).toBe("motion-7");
     expect(routes.parseLocation("/", "?rule=sys-12").ruleId).toBe("motion-3");
     expect(routes.parseLocation("/rules/sys-12").ruleId).toBe("motion-3");
-    expect(createRoutes("/staging").parseLocation("/staging", "?rule=color-1").ruleId).toBe("color-1");
+    expect(createRoutes("/docs").parseLocation("/docs", "?rule=color-1").ruleId).toBe("color-1");
     expect(routes.parseLocation("/rules/color-1", "?rule=motion-7").ruleId).toBe("color-1");
     for (const search of ["?rule=", "?rule=valueOf", "?rule=MOTION-7", "?rule=motion-7&rule=", "?rule=../x"]) {
       expect(routes.parseLocation("/", search), search).toMatchObject({ view: "gallery", ruleId: null });
@@ -282,8 +282,8 @@ describe("history recipe", () => {
   it("replaces to the wall, anchored on the tile, when nothing is below or the wall's deck lacks the rule", () => {
     const below = historyEntry({ view: "rule", depth: 1, scroll: null });
     expect(exitAction(below, "typo-3", searchDeck("zzqx"))).toEqual({ type: "replace", href: "/#rule-typo-3", axiom: galleryState });
-    expect(exitAction(null, "typo-3", catalogDeck, { q: "toast", show: "dont" }, createRoutes("/staging")))
-      .toEqual({ type: "replace", href: "/staging?q=toast&show=dont#rule-typo-3", axiom: galleryState });
+    expect(exitAction(null, "typo-3", catalogDeck, { q: "toast", show: "dont" }, createRoutes("/docs")))
+      .toEqual({ type: "replace", href: "/docs?q=toast&show=dont#rule-typo-3", axiom: galleryState });
     expect(exitAction({ axiom: { view: "rule", depth: "2" } }, "typo-3", catalogDeck).type).toBe("replace");
   });
 

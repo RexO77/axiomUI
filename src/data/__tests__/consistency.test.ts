@@ -7,7 +7,7 @@ import { hasShowcase } from "@/components/features/rules/demos/registry";
 import { showcaseSpecs } from "@/components/features/rules/demos/showcase-specs";
 import { getStaticRulePreview } from "@/components/features/rules/rule-preview";
 import { tracksDurationMs } from "@/lib/showcase-engine";
-import { filterRules } from "@/lib/rule-search";
+import { searchRules } from "@/lib/rule-search";
 
 /**
  * Guardrails against words drifting away from pixels.
@@ -274,7 +274,7 @@ describe("every rule's do and dont form a comparable pair", () => {
 });
 
 it("keeps the sentence-case rule discoverable by the alternative it explains", () => {
-  expect(filterRules("title case")).toContainEqual(expect.objectContaining({ id: "typo-1" }));
+  expect(searchRules("title case").map((hit) => hit.rule.id)).toContain("typo-1");
 });
 
 // ── Arithmetic in captions ──────────────────────────────────────────

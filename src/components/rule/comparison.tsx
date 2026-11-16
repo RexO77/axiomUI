@@ -8,6 +8,10 @@
 // load, toolbar) render MotionShowcase, laid into the same canvas, caption row
 // and compare bar by compare.css, so paging into one never moves the layout.
 //
+// Every caption carries the rule's own Do and Don't: a static rule's caption is
+// that text, and a motion rule's caption opens with it before narrating what
+// plays.
+//
 // Each rule gets its own instance (keyed by id), so Flip and any hold reset on
 // a page turn. Mode and zoom are stored preferences (use-compare.ts).
 
@@ -17,6 +21,7 @@ import { Columns2, SquareStack } from "lucide-react";
 import type { Rule } from "@/data/ui-logic";
 import { RulePreview } from "@/components/features/rules/rule-preview";
 import { MotionShowcase } from "@/components/features/rules/demos/motion-showcase";
+import { CaptionLeadContext } from "@/components/features/rules/demos/showcase-chrome";
 import { hasShowcase } from "@/components/features/rules/demos/showcase-specs";
 import { Kbd } from "@/components/ui/kbd";
 import { Segmented } from "@/components/ui/segmented";
@@ -42,7 +47,9 @@ export function Comparison({ rule }: { rule: Rule }) {
   if (hasShowcase(rule.id)) {
     return (
       <div key={rule.id} className="cmp cmp-show" data-kind="showcase">
-        <MotionShowcase ruleId={rule.id} />
+        <CaptionLeadContext value={{ do: rule.do, dont: rule.dont }}>
+          <MotionShowcase ruleId={rule.id} />
+        </CaptionLeadContext>
       </div>
     );
   }

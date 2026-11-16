@@ -42,12 +42,14 @@ test("arrow keys reach the category icons, and Enter on one lands on its section
   await awaitUrl(page, wallUrl({ hash: second.id }));
 });
 
-/** How far a wall section's top sits from the top of the wall's scroll box. */
+/** How far a wall section sits from where scrolling to it should leave it: its scroll margin under the top of the wall's scroll box. */
 const sectionOffset = (page: import("@playwright/test").Page, id: string) =>
   page.evaluate((id) => {
     const layer = document.querySelector(".shell-wall")!.getBoundingClientRect();
-    const section = document.getElementById(id)!.getBoundingClientRect();
-    return Math.abs(section.top - layer.top);
+    const element = document.getElementById(id)!;
+    // The section's scroll margin keeps its heading clear of the wall's sticky toolbar.
+    const margin = parseFloat(getComputedStyle(element).scrollMarginTop) || 0;
+    return Math.abs(element.getBoundingClientRect().top - margin - layer.top);
   }, id);
 
 test("a relayout keeps the keyboard-focused mark in view", async ({ page }) => {

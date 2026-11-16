@@ -28,9 +28,9 @@
  * keeping the current rule in view. The first layout reads the boot script's
  * `data-reduced`, so a reduced-motion reader never sees the lens first.
  *
- * At rest every mark sits on a device pixel. The peek card hangs
- * off `peek`; until it exists the handle is null and the scrub label alone
- * names the mark.
+ * At rest every mark sits on a device pixel. The peek card hangs off
+ * `peek`: it opens beside a rule's mark after a rest, and the scrub label
+ * names the mark until it does.
  */
 
 import { Fragment, memo, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef, type KeyboardEvent, type RefObject } from "react";

@@ -202,11 +202,26 @@ const PREFERENCE = /^(?:hover|any-hover|prefers-reduced-motion|prefers-color-sch
 /** Narrower cases inside the phone layout: small phones, short landscape screens and coarse pointers. */
 const REFINEMENTS = new Set(["max-width: 640px", "max-width: 351px", "max-width: 351.98px", "max-height: 500px", "max-height: 420px", "orientation: landscape", "pointer: coarse"]);
 
-/** Which @media preludes are allowed: PHONE_QUERY itself, preferences, and refinements that only apply on phones. */
-function mediaProblems({ media }: Sheet): string[] {
+/** Touch at any size, outside the phone layout. It may only grow targets, never switch a layout. */
+const TOUCH = "(pointer: coarse)";
+/** A row grown to 44px, or a pseudo-element that reaches past its control (and the control that anchors it). */
+const growsHitArea = ({ property, value, selector }: Declaration) =>
+  (/^(?:min-)?(?:height|width)$/.test(property) && px(value) >= 44) ||
+  (/::(?:before|after)$/.test(selector) && /^(?:content|position|inset)$/.test(property)) ||
+  (property === "position" && value === "relative");
+
+/**
+ * Which @media preludes are allowed: PHONE_QUERY itself, preferences, refinements that only apply
+ * on phones, and a bare touch query that only grows hit areas.
+ */
+function mediaProblems({ media, declarations }: Sheet): string[] {
   const phone = squash(PHONE_QUERY);
   return media.flatMap(({ prelude, at }) => {
     if (prelude === phone) return [];
+    if (prelude === TOUCH && !at.length) {
+      const inside = declarations.filter((declaration) => declaration.at.some((outer) => squash(outer.slice(6)) === TOUCH));
+      return inside.every(growsHitArea) ? [] : [`@media ${prelude}`];
+    }
     const nested = at.some((outer) => squash(outer.slice(6)) === phone);
     const bad = prelude.split(/,(?![^(]*\))/).some((clause) => {
       const list = features(clause);
@@ -299,6 +314,10 @@ describe("feature CSS rules (fixtures)", () => {
     expect(check(`@media (max-width: 768px) { .a { top: 0; } }`)).toHaveLength(1);
     expect(check(`@media (min-width: 641px) { .a { top: 0; } }`)).toHaveLength(1);
     expect(check(`@media (pointer: coarse) { .a { top: 0; } }`)).toHaveLength(1);
+    // Touch at any size may grow hit areas, and nothing else.
+    expect(check(`@media (pointer: coarse) { .a { height: 44px; } .b { position: relative; } .b::before { content: ""; position: absolute; inset: -6px; } }`)).toEqual([]);
+    expect(check(`@media (pointer: coarse) { .a { height: 40px; } }`)).toHaveLength(1);
+    expect(check(`@media (pointer: coarse) { .a::before { content: ""; position: absolute; inset: -6px; } .a { display: none; } }`)).toHaveLength(1);
     expect(check(`@media (max-height: 500px) { .a { top: 0; } }`)).toHaveLength(1);
   });
 

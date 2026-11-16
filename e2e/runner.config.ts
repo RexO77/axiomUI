@@ -3,35 +3,23 @@ import { defineConfig, devices } from "@playwright/test";
 import { E2E_PORT, ORIGIN } from "./helpers";
 
 /*
- * The browser suite's one config. Both scripts pass it explicitly
+ * The browser suite's one config. `npm run e2e` passes it explicitly
  * (`--config e2e/runner.config.ts`), so there is no config file at the root.
+ * The script makes the production build, serves it on :3100 and runs every spec
+ * against it.
  *
- *   npm run e2e        builds with AXIOM_STAGING=1, serves it on :3100, runs the specs
- *   npm run e2e:guard  builds with VERCEL_ENV and AXIOM_STAGING cleared, runs only the guard spec
- *
- * `E2E_PORT` moves the server off 3100, so test runs can share a host. The
- * guard spec runs in both builds: it checks staging is off in the guard build
- * and, with the same requests, that the e2e build serves it.
- *
- * The staging gallery page decides at request time, so AXIOM_STAGING has to
- * be set for `next build` and for `next start`. The web server inherits this
- * process's environment, which is how the script's value reaches it.
+ * The catalog is at the site root; every spec builds its URLs from the app's
+ * CATALOG_BASE (helpers.ts), which `E2E_BASE` overrides. `E2E_PORT` moves the
+ * server off 3100, so several runs can share a machine.
  *
  * The browser binary is never installed by `npm ci` (the runner has no
  * install script). Fetch it once with `npx playwright install chromium`.
  * Runner artifacts are git-ignored.
  */
 
-const guard = process.env.E2E_GUARD === "1";
-
-if (guard && (process.env.AXIOM_STAGING || process.env.VERCEL_ENV)) {
-  // A guard run against a build that opted in would prove nothing.
-  throw new Error("The guard build must be made with VERCEL_ENV and AXIOM_STAGING cleared (npm run e2e:guard).");
-}
-
 export default defineConfig({
   testDir: ".",
-  testMatch: guard ? "staging-guard.spec.ts" : "*.spec.ts",
+  testMatch: "*.spec.ts",
   // On a Mac, keeps the host from idle sleep for the run (a sleeping host stalls the browser).
   globalSetup: "./global-setup.ts",
   outputDir: "../output/e2e/results",
