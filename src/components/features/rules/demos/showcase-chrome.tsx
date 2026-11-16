@@ -156,7 +156,7 @@ export function ControlButton({
             aria-pressed={pressed}
             className={cn(
                 // Matches the speed segments: 44px on touch, dense for a mouse.
-                "inline-flex min-h-9 shrink-0 items-center gap-1.5 whitespace-nowrap border border-line-strong px-3 text-xs font-medium text-ink-secondary transition-colors hover:bg-fill hover:text-ink pointer-coarse:min-h-11 pointer-coarse:px-4",
+                "inline-flex min-h-9 max-w-full shrink-0 items-center gap-1.5 border border-line-strong px-3 text-xs font-medium text-ink-secondary transition-colors hover:bg-fill hover:text-ink pointer-coarse:min-h-11 pointer-coarse:px-4",
                 CONTROL_RADIUS,
                 disabled && "pointer-events-none opacity-50"
             )}

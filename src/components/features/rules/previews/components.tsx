@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Archive, ArrowDown, FileText, Share2, Trash2, X } from "lucide-react";
 
 import {
+    Annotation,
     ANNOTATION_INK,
     PreviewFrame,
     PRODUCT_MUTED,
@@ -27,6 +28,10 @@ const ANNOT_MUTED = ANNOTATION_INK;
 const ANNOT = `${ANNOT_BASE} ${ANNOT_MUTED}`;
 const FINE_BASE = "font-mono text-[9px] tabular-nums";
 const FINE = `${FINE_BASE} ${ANNOT_MUTED}`;
+// The product's own small meta (a timestamp, a role, a file size) set in the
+// same face. Same ink, but it is the scene, not evidence, so it is never an
+// <Annotation> and a tile keeps it.
+const PRODUCT_FINE = `${FINE_BASE} ${PRODUCT_MUTED}`;
 const ACCENT_TEXT = "text-blue-600 dark:text-blue-400";
 
 // The button recipes carry shape and tone only. Size is passed per call site
@@ -115,7 +120,7 @@ function actionHierarchy(variant: Variant) {
                     </>
                 )}
             </div>
-            <span className={ANNOT}>{isDo ? "1 primary, 2 quiet" : "3 primaries, 0 hierarchy"}</span>
+            <Annotation className={ANNOT}>{isDo ? "1 primary, 2 quiet" : "3 primaries, 0 hierarchy"}</Annotation>
         </PreviewFrame>
     );
 }
@@ -138,7 +143,7 @@ function destructiveActions(variant: Variant) {
                         <span className="block truncate text-[10px] font-semibold text-neutral-800 dark:text-neutral-100">
                             atlas-api
                         </span>
-                        <span className={FINE}>updated 2h ago</span>
+                        <span className={PRODUCT_FINE}>updated 2h ago</span>
                     </div>
                     <span className={cn(isDo ? BTN_SECONDARY : BTN_DANGER, BTN_SM, "shrink-0")}>
                         {isDo ? "Delete project…" : "Delete"}
@@ -151,7 +156,7 @@ function destructiveActions(variant: Variant) {
                         strokeWidth={2}
                         className="shrink-0 text-neutral-300 dark:text-neutral-600"
                     />
-                    <span className={ANNOT}>{isDo ? "click → confirm" : "click → gone"}</span>
+                    <Annotation className={ANNOT}>{isDo ? "click → confirm" : "click → gone"}</Annotation>
                 </div>
                 {isDo ? (
                     <div className="min-h-[46px] rounded-[12px] border border-neutral-200 bg-white p-1.5 dark:border-neutral-700 dark:bg-neutral-900">
@@ -164,13 +169,13 @@ function destructiveActions(variant: Variant) {
                                 <span className={cn(BTN_DANGER, BTN_XS)}>Delete</span>
                             </div>
                         </div>
-                        <span className={cn("mt-0.5 block pl-1", FINE)}>this can’t be undone</span>
+                        <span className={cn("mt-0.5 block pl-1", PRODUCT_FINE)}>this can’t be undone</span>
                     </div>
                 ) : (
                     <div className="flex min-h-[46px] items-center justify-center rounded-[12px] border border-dashed border-rose-400/70 dark:border-rose-500/50">
-                        <span className={cn(ANNOT_BASE, "text-rose-600 dark:text-rose-400")}>
+                        <Annotation className={cn(ANNOT_BASE, "text-rose-600 dark:text-rose-400")}>
                             no confirm step
-                        </span>
+                        </Annotation>
                     </div>
                 )}
             </div>
@@ -214,19 +219,19 @@ function nestedRadius(variant: Variant) {
             >
                 {/* Sits on the 1px border, so the arc replaces that stretch of it. */}
                 <CornerArc radius={outer} className="-right-px -top-px" />
-                <span className={cn("absolute -top-4 right-0 leading-none", FINE_BASE, ACCENT_TEXT)}>
+                <Annotation className={cn("absolute -top-4 right-0 leading-none", FINE_BASE, ACCENT_TEXT)}>
                     r·{outer}
-                </span>
+                </Annotation>
                 <div
                     className="relative flex h-7 w-44 items-center bg-neutral-100 px-2 text-[10px] text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
                     style={{ borderRadius: inner }}
                 >
                     Search projects…
                     <CornerArc radius={inner} className="right-0 top-0" />
-                    <span className={cn("ml-auto pr-1.5", FINE_BASE, ACCENT_TEXT)}>r·{inner}</span>
+                    <Annotation className={cn("ml-auto pr-1.5", FINE_BASE, ACCENT_TEXT)}>r·{inner}</Annotation>
                 </div>
             </div>
-            <span className={ANNOT}>
+            <Annotation className={ANNOT}>
                 {isDo ? (
                     <>
                         <span className={ACCENT_TEXT}>12</span> = 4 + 8 padding
@@ -236,7 +241,7 @@ function nestedRadius(variant: Variant) {
                         <span className={ACCENT_TEXT}>4</span> ≠ 4 + 8 — corners pinch
                     </>
                 )}
-            </span>
+            </Annotation>
         </PreviewFrame>
     );
 }
@@ -263,7 +268,7 @@ function avatarShapes(variant: Variant) {
                         <span className="block text-[10px] font-medium text-neutral-800 dark:text-neutral-100">
                             Maya Chen
                         </span>
-                        <span className={FINE}>owner</span>
+                        <span className={PRODUCT_FINE}>owner</span>
                     </div>
                 </div>
                 <div className="flex items-center gap-2 rounded-[13px] bg-neutral-50 p-2 dark:bg-neutral-900">
@@ -279,13 +284,13 @@ function avatarShapes(variant: Variant) {
                         <span className="block text-[10px] font-medium text-neutral-800 dark:text-neutral-100">
                             Q3-report.pdf
                         </span>
-                        <span className={FINE}>2.4 MB</span>
+                        <span className={PRODUCT_FINE}>2.4 MB</span>
                     </div>
                 </div>
             </div>
-            <span className={ANNOT}>
+            <Annotation className={ANNOT}>
                 {isDo ? "person → circle · file → rect" : "person → rect · file → rect"}
-            </span>
+            </Annotation>
         </PreviewFrame>
     );
 }
@@ -355,9 +360,9 @@ function modalVsDrawer(variant: Variant) {
                     </>
                 )}
             </div>
-            <span className={ANNOT}>
+            <Annotation className={ANNOT}>
                 {isDo ? "drawer · 6 of 6 fields · page stays legible" : "modal · 1 of 6 fields · page blacked out"}
-            </span>
+            </Annotation>
         </PreviewFrame>
     );
 }
@@ -381,9 +386,9 @@ function toastVsInline(variant: Variant) {
                     {isDo ? "Enter a valid email address" : null}
                 </span>
             </div>
-            <span className={ANNOT}>
+            <Annotation className={ANNOT}>
                 {isDo ? "fix sits under the field" : "fix sits in the far corner ↗"}
-            </span>
+            </Annotation>
             {!isDo ? (
                 <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-md border border-neutral-200 bg-white px-2 py-1.5 shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
                     <span className="size-1.5 rounded-full bg-rose-500" />
@@ -423,7 +428,7 @@ function iconPlusLabel(variant: Variant) {
                     </span>
                 ))}
             </div>
-            <span className={ANNOT}>{isDo ? "0 guesses" : "3 guesses"}</span>
+            <Annotation className={ANNOT}>{isDo ? "0 guesses" : "3 guesses"}</Annotation>
         </PreviewFrame>
     );
 }
@@ -442,7 +447,7 @@ function disabledReason(variant: Variant) {
                     <span className="text-[10px] font-semibold text-neutral-800 dark:text-neutral-100">
                         Usage report
                     </span>
-                    <span className={FINE}>Aug 1–31</span>
+                    <span className={PRODUCT_FINE}>Aug 1–31</span>
                 </div>
                 <TextLine widthClass="w-full" className="mt-1.5" />
                 <TextLine widthClass="w-3/4" className="mt-1" />
@@ -460,9 +465,9 @@ function disabledReason(variant: Variant) {
                     {isDo ? "Available on the Pro plan" : null}
                 </span>
             </div>
-            <span className={ANNOT}>
+            <Annotation className={ANNOT}>
                 {isDo ? "reason shown — reads as “not yet”" : "no reason — reads as broken"}
-            </span>
+            </Annotation>
         </PreviewFrame>
     );
 }
@@ -491,7 +496,7 @@ function iconSizes(variant: Variant) {
                     />
                 ))}
             </div>
-            <span className={ANNOT}>{sizes.join(" · ")}</span>
+            <Annotation className={ANNOT}>{sizes.join(" · ")}</Annotation>
         </PreviewFrame>
     );
 }
@@ -524,7 +529,7 @@ function cardClickArea(variant: Variant) {
                 <TextLine widthClass="w-full" className="mt-1.5" />
                 <TextLine widthClass="w-2/3" className="mt-1" />
             </div>
-            <span className={ANNOT}>{isDo ? "hit area · 100%" : "hit area · 16%"}</span>
+            <Annotation className={ANNOT}>{isDo ? "hit area · 100%" : "hit area · 16%"}</Annotation>
         </PreviewFrame>
     );
 }
@@ -564,12 +569,12 @@ function closeAffordance(variant: Variant) {
                 </div>
             </div>
             {isDo ? (
-                <span className={cn("flex items-center gap-1.5", FINE)}>
+                <Annotation className={cn("flex items-center gap-1.5", FINE)}>
                     3 exits: <X aria-hidden="true" size={9} strokeWidth={2} /> · <Kbd label="Esc" /> ·
                     backdrop
-                </span>
+                </Annotation>
             ) : (
-                <span className={FINE}>1 exit: backdrop only — nothing visible</span>
+                <Annotation className={FINE}>1 exit: backdrop only — nothing visible</Annotation>
             )}
         </PreviewFrame>
     );

@@ -24,6 +24,37 @@ export const ANNOTATION_INK = "text-neutral-500 dark:text-neutral-400";
 // fills over #0a0a0a.
 export const ANNOTATION_INK_ON_FILL = "text-neutral-600 dark:text-neutral-400";
 
+// Every evidence label in a static preview renders through <Annotation>, so
+// its context can choose whether to show it: the rule page reads the label
+// beside the scene, a gallery tile hides `[data-annotation]:not([data-keep])`
+// and lets the scene carry the difference alone. The caller passes the whole
+// class string (size, tone and layout), because cn() is plain concatenation
+// and a default ink here would stack against an accent one.
+//
+// Only evidence goes here: measurements, narration, axis labels. Text the
+// depicted product would show (a file size, a price, a field value, a kbd
+// key, a code chip) stays a plain element, since a tile without it would be
+// a different product. rule-previews.test.ts holds every mono label to one
+// side of that line.
+//
+// `keep` marks the label a pane cannot make its point without: with it gone,
+// Do and Don't render alike, so a tile keeps it until the scene is redrawn.
+export function Annotation({
+    children,
+    className,
+    keep = false,
+}: {
+    children: ReactNode;
+    className?: string;
+    keep?: boolean;
+}) {
+    return (
+        <span data-annotation="" data-keep={keep ? "" : undefined} className={className}>
+            {children}
+        </span>
+    );
+}
+
 // Secondary text inside the depicted product (subtitles, helper lines, meta
 // like "2m ago"). These Tailwind steps clear 4.5:1 on white and neutral-900/950
 // surfaces. Tinted fills need ANNOTATION_INK_ON_FILL instead: neutral-500 falls

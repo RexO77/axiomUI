@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 
 import {
+    Annotation,
     ANNOTATION_INK,
     PreviewFrame,
     PRODUCT_MUTED,
@@ -37,6 +38,11 @@ import { cn } from "@/lib/utils";
 const ANNOT = `font-mono text-[10px] tabular-nums ${ANNOTATION_INK}`;
 // Fine annotation (axis labels, kbd meanings) — 8–9px is reserved for these.
 const FINE = `font-mono text-[8px] tabular-nums ${ANNOTATION_INK}`;
+// The product's own copy in the same faces (a file size, a step counter, an
+// article's meta). Same ink, but it is the scene, not evidence, so it is never
+// an <Annotation> and a tile keeps it.
+const PRODUCT_MONO = `font-mono text-[10px] tabular-nums ${PRODUCT_MUTED}`;
+const PRODUCT_FINE = `font-mono text-[8px] tabular-nums ${PRODUCT_MUTED}`;
 
 function Kbd({ label }: { label: string }) {
     return (
@@ -97,7 +103,7 @@ function tapTargets(variant: Variant) {
                     <span className="block truncate text-[10px] font-medium text-neutral-700 dark:text-neutral-200">
                         invoice-0248.pdf
                     </span>
-                    <span className={FINE}>1.2 MB</span>
+                    <span className={PRODUCT_FINE}>1.2 MB</span>
                 </div>
                 {variant === "do" ? (
                     <div className="flex shrink-0 items-center gap-2">
@@ -107,7 +113,7 @@ function tapTargets(variant: Variant) {
                         <span className="flex size-11 items-center justify-center rounded-md border border-dashed border-blue-500/60 dark:border-blue-400/60">
                             <Trash2 aria-hidden className="size-3.5 stroke-[1.5] text-neutral-500 dark:text-neutral-400" />
                         </span>
-                        <span className={ANNOT}>44×44</span>
+                        <Annotation className={ANNOT}>44×44</Annotation>
                     </div>
                 ) : (
                     <div className="flex shrink-0 items-center gap-2">
@@ -119,7 +125,7 @@ function tapTargets(variant: Variant) {
                                 <Trash2 aria-hidden className="size-3 stroke-[1.5] text-neutral-500 dark:text-neutral-400" />
                             </span>
                         </span>
-                        <span className={ANNOT}>16×16</span>
+                        <Annotation className={ANNOT}>16×16</Annotation>
                     </div>
                 )}
             </div>
@@ -239,13 +245,13 @@ function tokenNaming(variant: Variant) {
                     <TokenChip label="warning" />
                     <Arrow />
                     <WarningChip tone="amber" />
-                    <span className={FINE}>palette</span>
+                    <Annotation className={FINE}>palette</Annotation>
                     <span />
-                    <span className={FINE}>alias</span>
+                    <Annotation className={FINE}>alias</Annotation>
                     <span />
-                    <span className={FINE}>component</span>
+                    <Annotation className={FINE}>component</Annotation>
                 </div>
-                <span className={ANNOT}>each role owns its alias</span>
+                <Annotation className={ANNOT}>each role owns its alias</Annotation>
             </PreviewFrame>
         );
     }
@@ -264,7 +270,7 @@ function tokenNaming(variant: Variant) {
                     </span>
                 </div>
             </div>
-            <span className={ANNOT}>warning inherits button blue</span>
+            <Annotation className={ANNOT}>warning inherits button blue</Annotation>
         </PreviewFrame>
     );
 }
@@ -284,7 +290,7 @@ function FileRow({ name, meta, ghost }: { name: string; meta: string; ghost?: bo
             >
                 {name}
             </span>
-            <span className={FINE}>{meta}</span>
+            <span className={PRODUCT_FINE}>{meta}</span>
         </div>
     );
 }
@@ -328,7 +334,7 @@ function multiStepProgress(variant: Variant) {
             <div className="space-y-2 rounded-md border border-neutral-200 p-2.5 dark:border-neutral-800">
                 <div className="flex items-baseline justify-between">
                     <span className="text-[11px] font-semibold text-neutral-700 dark:text-neutral-200">Shipping</span>
-                    {variant === "do" ? <span className={ANNOT}>Step 2 of 4</span> : null}
+                    {variant === "do" ? <span className={PRODUCT_MONO}>Step 2 of 4</span> : null}
                 </div>
                 {variant === "do" ? (
                     <div className="flex gap-1">
@@ -391,14 +397,14 @@ function keyboardNav(variant: Variant) {
             {variant === "do" ? (
                 <div className="flex items-center gap-1.5">
                     <Kbd label="Tab" />
-                    <span className={FINE}>move</span>
+                    <Annotation className={FINE}>move</Annotation>
                     <Kbd label="Enter" />
-                    <span className={FINE}>activate</span>
+                    <Annotation className={FINE}>activate</Annotation>
                     <Kbd label="Esc" />
-                    <span className={FINE}>dismiss</span>
+                    <Annotation className={FINE}>dismiss</Annotation>
                 </div>
             ) : (
-                <span className={ANNOT}>tabindex=&quot;-1&quot; · no Esc handler</span>
+                <Annotation className={ANNOT}>tabindex=&quot;-1&quot; · no Esc handler</Annotation>
             )}
         </PreviewFrame>
     );
@@ -432,9 +438,9 @@ function gracefulDegradation(variant: Variant) {
                     Field notes from the launch
                 </span>
                 <div className="flex items-center gap-1.5">
-                    <span className={FINE}>4 min read</span>
+                    <span className={PRODUCT_FINE}>4 min read</span>
                     <span aria-hidden className="size-0.5 rounded-full bg-neutral-300 dark:bg-neutral-600" />
-                    <span className={FINE}>Aug 10</span>
+                    <span className={PRODUCT_FINE}>Aug 10</span>
                 </div>
             </div>
         </PreviewFrame>
@@ -482,7 +488,7 @@ function breakpoints(variant: Variant) {
                             style={{ left: `${tick.at}%` }}
                         >
                             <span aria-hidden className="absolute inset-y-0 w-px bg-blue-500/70 dark:bg-blue-400/70" />
-                            <span
+                            <Annotation
                                 className={cn(
                                     FINE,
                                     "absolute -translate-x-1/2 leading-none",
@@ -490,14 +496,14 @@ function breakpoints(variant: Variant) {
                                 )}
                             >
                                 {tick.value}
-                            </span>
+                            </Annotation>
                         </span>
                     );
                 })}
             </div>
             <div className="flex justify-between">
-                <span className={FINE}>0</span>
-                <span className={FINE}>1280px</span>
+                <Annotation className={FINE}>0</Annotation>
+                <Annotation className={FINE}>1280px</Annotation>
             </div>
         </PreviewFrame>
     );
@@ -544,7 +550,7 @@ function transitionScope(variant: Variant) {
                     Save changes
                 </span>
             </div>
-            <span className={ANNOT}>{variant === "do" ? "width: instant" : "width: drifts for 150ms"}</span>
+            <Annotation className={ANNOT}>{variant === "do" ? "width: instant" : "width: drifts for 150ms"}</Annotation>
         </PreviewFrame>
     );
 }
@@ -596,9 +602,9 @@ function willChange(variant: Variant) {
                     </>
                 )}
             </div>
-            <span className={ANNOT}>
+            <Annotation className={ANNOT}>
                 {variant === "do" ? "1 measured target" : "blanket hint on every card"}
-            </span>
+            </Annotation>
         </PreviewFrame>
     );
 }

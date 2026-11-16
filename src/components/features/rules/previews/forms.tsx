@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import {
+    Annotation,
     ANNOTATION_INK,
     MiniButton,
     PRODUCT_MUTED,
@@ -117,6 +118,8 @@ function Label({
     );
 }
 
+const ANN_BASE = "font-mono text-[9px] tabular-nums";
+
 // `tone` is a prop for the same reason as Label's `strong`: a caller's accent
 // colour lost to the muted default by stylesheet order, so three accent
 // annotations in this file rendered grey.
@@ -130,9 +133,9 @@ function Ann({
     tone?: "muted" | "accent";
 }) {
     return (
-        <span
+        <Annotation
             className={cn(
-                "font-mono text-[9px] tabular-nums",
+                ANN_BASE,
                 // Accent ink is text: blue-600 is 5.2:1 on the white frame,
                 // where blue-500 was 3.7:1. Brackets and rules keep blue-500.
                 tone === "accent"
@@ -142,8 +145,14 @@ function Ann({
             )}
         >
             {children}
-        </span>
+        </Annotation>
     );
+}
+
+// A plan's price is the product's own copy in the annotation face, so it is a
+// plain element, never an <Annotation>, and a tile keeps it.
+function Price({ children }: { children: ReactNode }) {
+    return <span className={cn(ANN_BASE, PRODUCT_MUTED)}>{children}</span>;
 }
 
 function ErrorNote({ children }: { children: ReactNode }) {
@@ -416,12 +425,12 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
                         </Label>
                         <Ann>{isDo ? "1 selected" : "2 selected"}</Ann>
                     </div>
-                    <ChoiceRow control={<Control />} label="Starter" trail={<Ann>$0/mo</Ann>} />
-                    <ChoiceRow control={<Control on />} label="Pro" trail={<Ann>$12/mo</Ann>} />
+                    <ChoiceRow control={<Control />} label="Starter" trail={<Price>$0/mo</Price>} />
+                    <ChoiceRow control={<Control on />} label="Pro" trail={<Price>$12/mo</Price>} />
                     <ChoiceRow
                         control={<Control on={!isDo} />}
                         label="Business"
-                        trail={<Ann>$24/mo</Ann>}
+                        trail={<Price>$24/mo</Price>}
                     />
                 </PreviewFrame>
             );
@@ -528,14 +537,19 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
                         <Value>maya@</Value>
                         <Caret />
                     </Shell>
-                    <div className="flex h-3.5 items-center gap-2">
-                        <span className="min-w-0 flex-1">{isDo ? null : error}</span>
+                    {/* The rows grow rather than clip: on a narrow pane the
+                        error wraps to a second line, and a fixed h-3.5 row
+                        let it spill over the field below. The do pane holds
+                        the same error invisibly, so both panes keep one
+                        height and their fields stay level side by side. */}
+                    <div className="flex min-h-3.5 items-center gap-2">
+                        <span className={cn("min-w-0 flex-1", isDo && "invisible")}>{error}</span>
                         <Ann>while typing · 5 chars</Ann>
                     </div>
                     <Shell tone="error">
                         <Value>maya@</Value>
                     </Shell>
-                    <div className="flex h-3.5 items-center gap-2">
+                    <div className="flex min-h-3.5 items-center gap-2">
                         <span className="min-w-0 flex-1">{error}</span>
                         <Ann>after blur</Ann>
                     </div>
