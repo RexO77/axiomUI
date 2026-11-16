@@ -1,3 +1,4 @@
+import { railCategories } from "../src/data/taxonomy";
 import {
   awaitInteractive,
   awaitUrl,
@@ -61,6 +62,78 @@ test.describe("direct load", () => {
     for (const request of traffic.router()) expect(request).toContain(`${routes().galleryHref()}?_rsc=`);
   });
 
+  /*
+   * A slow router replace after a direct load can leave the sheet blank
+   * until @wall arrives. The rule view stays until the wall has committed;
+   * then the exit runs, 0 ms from the keyboard.
+   */
+  test("a slow first exit keeps the rule view in place until the wall has committed", async ({ page }) => {
+    const id = "typo-1";
+    const delay = 1500;
+    // Both the idle prefetch and the replace's own request for the wall are held back.
+    await page.route(
+      (url) => url.pathname === routes().galleryHref() && url.searchParams.has("_rsc"),
+      async (route) => {
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        await route.continue();
+      },
+    );
+    await openCatalog(page, ruleUrl(id));
+    const before = await readCatalog(page);
+
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(delay / 3);
+    const waiting = await readCatalog(page);
+    expect(waiting).toMatchObject({ view: "rule", title: titleOf(id), wallMounted: false });
+    await expect(page.locator(".shell-rule")).toBeVisible();
+    await expect(page.locator(sel.ruleTitle)).toBeVisible();
+
+    await expect(page.locator(sel.wall)).toBeVisible({ timeout: delay * 4 });
+    await awaitView(page, "gallery");
+    expect(await readCatalog(page)).toMatchObject({ view: "gallery", wallHidden: false, doc: before.doc, url: wallUrl({ hash: tileId(id) }) });
+    await expect(tile(page, id)).toBeFocused();
+  });
+
+  /*
+   * Any history write while that replace is in flight (a scroll save, a page
+   * turn, a jump) makes Next discard it, and the wall never arrives. Nothing
+   * may write until it lands, and the exit still completes.
+   */
+  test("writes during a slow first exit cannot strand it: scroll, J and a jump wait, the wall arrives", async ({ page }) => {
+    const id = "typo-1";
+    const delay = 1500;
+    await page.route(
+      (url) => url.pathname === routes().galleryHref() && url.searchParams.has("_rsc"),
+      async (route) => {
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        await route.continue();
+      },
+    );
+    await openCatalog(page, ruleUrl(id));
+    const before = await readCatalog(page);
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(150);
+    // The reading position's save fires after the sheet settles; then a page turn and a jump.
+    await page.locator(sel.sheet).evaluate((el) => {
+      el.scrollTop = 400;
+    });
+    await page.waitForTimeout(400);
+    await page.keyboard.press("j");
+    await page.locator(".rv-related a").first().click();
+
+    await expect(page.locator(sel.wall)).toBeVisible({ timeout: delay * 4 });
+    await awaitView(page, "gallery");
+    expect(await settledUrl(page)).toBe(wallUrl({ hash: tileId(id) }));
+    expect(await readCatalog(page)).toMatchObject({ view: "gallery", wallHidden: false, doc: before.doc });
+
+    // The wall stays: an open and a Back return to it, filled.
+    await tile(page, "typo-2").click();
+    await awaitView(page, "rule");
+    await page.goBack();
+    await awaitView(page, "gallery");
+    expect(await readCatalog(page)).toMatchObject({ view: "gallery", wallMounted: true, doc: before.doc });
+  });
+
   test("once filled, the wall is never unmounted by later opens and exits", async ({ page }) => {
     await openCatalog(page, ruleUrl("typo-1"));
     await page.keyboard.press("Escape");
@@ -82,6 +155,44 @@ test.describe("direct load", () => {
     const kept = await page.evaluate((selector) => (document.querySelector(selector) as unknown as { __kept?: boolean })?.__kept, sel.wall);
     expect(kept).toBe(true);
     expect((await readCatalog(page)).doc).toBe(start.doc);
+  });
+});
+
+/** How far a wall section's top sits from the top of the wall's scroll box. */
+const sectionOffset = (page: import("@playwright/test").Page, id: string) =>
+  page.evaluate((id) => {
+    const layer = document.querySelector(".shell-wall")!.getBoundingClientRect();
+    const section = document.getElementById(id)!.getBoundingClientRect();
+    return Math.abs(section.top - layer.top);
+  }, id);
+
+/** A pointer click on a category's icon in the strip. */
+async function clickCategory(page: import("@playwright/test").Page, id: string) {
+  const box = (await page.locator(`.strip-link[href="${wallUrl({ hash: id })}"]`).boundingBox())!;
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+}
+
+test.describe("a category icon while a rule is open", () => {
+  const target = railCategories[3];
+
+  test("after an open from the wall, lands on that category's section, not the rule's tile", async ({ page }) => {
+    await openCatalog(page, wallUrl());
+    await tile(page, "typo-1").click();
+    await awaitView(page, "rule");
+    await clickCategory(page, target.id);
+    await awaitView(page, "gallery");
+    await expect.poll(() => sectionOffset(page, target.id)).toBeLessThan(4);
+    await expect(tile(page, "typo-1")).not.toBeFocused();
+    expect(await settledUrl(page)).toBe(wallUrl());
+  });
+
+  test("after a direct load, the wall arrives at that category's section", async ({ page }) => {
+    await openCatalog(page, ruleUrl("typo-1"));
+    await clickCategory(page, target.id);
+    await expect(page.locator(sel.wall)).toBeVisible();
+    await awaitView(page, "gallery");
+    await expect.poll(() => sectionOffset(page, target.id)).toBeLessThan(4);
+    expect(await settledUrl(page)).toBe(wallUrl({ hash: target.id }));
   });
 });
 
@@ -175,7 +286,8 @@ test.describe("Back and Forward", () => {
     expect((await readCatalog(page)).doc).toBe(start.doc);
 
     expect(traffic.documents(), "no document request").toEqual([]);
-    expect(traffic.router(), "no router request").toEqual([]);
+    // The rule view fetches each rule's deep dive as static JSON; that is not the router.
+    expect(traffic.router().filter((url) => !url.includes(" /deep-dives/")), "no router request").toEqual([]);
   });
 
   test("a restore is only for the rule it was saved for", async ({ page }) => {
@@ -368,6 +480,43 @@ test.describe("reload", () => {
   });
 });
 
+test.describe("a push from a rule loaded directly", () => {
+  /*
+   * Direct load (depth 0), a Related jump (a push, still
+   * depth 0), Esc (the router replace that fills the wall), then Back to the
+   * entry whose router tree is the rule's. The view and the address agree at
+   * every step, and the document never reloads.
+   */
+  test("Related at depth 0, Esc, Back and Forward keep the address and the view in step", async ({ page }) => {
+    await openCatalog(page, ruleUrl("typo-1"));
+    const start = await readCatalog(page);
+    const related = page.locator(".rv-related a").first();
+    const href = await related.getAttribute("href");
+    const target = routes().parseLocation(href ?? "").ruleId!;
+
+    await related.click();
+    await awaitView(page, "rule");
+    expect(await settledUrl(page)).toBe(ruleUrl(target));
+    expect(await readCatalog(page)).toMatchObject({ view: "rule", title: titleOf(target), axiom: { depth: 0 } });
+
+    await page.keyboard.press("Escape");
+    await expect(page.locator(sel.wall)).toBeVisible();
+    await awaitView(page, "gallery");
+    expect(await settledUrl(page)).toBe(wallUrl({ hash: tileId(target) }));
+
+    await page.goBack();
+    expect(await settledUrl(page)).toBe(ruleUrl("typo-1"));
+    await awaitView(page, "rule");
+    expect(await readCatalog(page)).toMatchObject({ view: "rule", url: ruleUrl("typo-1"), title: titleOf("typo-1"), doc: start.doc });
+
+    await page.goForward();
+    expect(await settledUrl(page)).toBe(wallUrl({ hash: tileId(target) }));
+    await awaitView(page, "gallery");
+    await expect(page.locator(sel.wall)).toBeVisible();
+    expect((await readCatalog(page)).doc, "the document never reloaded").toBe(start.doc);
+  });
+});
+
 test.describe("exit keeps the wall's filter", () => {
   const filters = [
     { name: "a search", id: "typo-1", options: { q: "sentence" } },
@@ -505,15 +654,14 @@ test.describe("a slow router commit", () => {
    * The shell's own traversal waits for Next's commit, but the reader's
    * Back does not.
    * Next's late commit must not write the rule's address onto the wall entry
-   * that Back reached. It fails today (the address ends on the rule while the
-   * wall shows), so it stays a fixme until the rule view's history guard lands.
+   * that Back reached.
    */
   for (const [delay, back] of [
     [1200, 100],
     [600, 20],
     [600, 300],
   ] as const) {
-    test.fixme(`Back ${back} ms into an Esc waiting for a commit ${delay} ms late keeps the address and the view in step`, async ({ page }) => {
+    test(`Back ${back} ms into an Esc waiting for a commit ${delay} ms late keeps the address and the view in step`, async ({ page }) => {
       test.setTimeout(delay + 20_000);
       const id = "typo-5";
       const start = await prepare(page);

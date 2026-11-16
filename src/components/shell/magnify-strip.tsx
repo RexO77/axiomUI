@@ -325,9 +325,10 @@ const Column = memo(function Column({ initialId, initialCat, routes, peek, api, 
     if (inner.current && inner.current.style.height !== height) inner.current.style.height = height;
     if (c) {
       c.toggleAttribute("data-steady", steady);
-      // A scrolling column keeps the current rule in view.
-      if (steady && s.active >= 0 && s.mode === "idle") {
-        const at = s.starts[s.active];
+      // A scrolling column keeps the focused mark in view, or else the current rule.
+      const keep = s.mode === "keyboard" && s.kb >= 0 ? s.kb : s.mode === "idle" ? s.active : -1;
+      if (steady && keep >= 0) {
+        const at = s.starts[keep];
         if (at < s.scroll + 24 || at > s.scroll + s.L - 24) c.scrollTop = at - s.L / 2;
       }
       s.scroll = steady ? c.scrollTop : 0;

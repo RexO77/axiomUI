@@ -22,7 +22,7 @@ test("every mark is a link under the base, in rail order: each category icon to 
   expect(await icon.evaluate((el) => Boolean(el.closest('[aria-hidden="true"]')))).toBe(false);
 });
 
-test("arrow keys reach the category icons", async ({ page }) => {
+test("arrow keys reach the category icons, and Enter on one lands on its section", async ({ page }) => {
   await openCatalog(page, ruleUrl(railIds[0]));
   const focused = () => page.evaluate(() => document.activeElement?.getAttribute("href") ?? null);
   await page.locator(`${link}[aria-current="page"]`).focus();
@@ -35,6 +35,41 @@ test("arrow keys reach the category icons", async ({ page }) => {
   await page.locator(`${link}[href="${ruleUrl(railCategories[0].rules.at(-1)!.id)}"]`).focus();
   await page.keyboard.press("ArrowDown");
   expect(await focused()).toBe(wallUrl({ hash: second.id }));
+  await page.keyboard.press("Enter");
+  await awaitView(page, "gallery");
+  await expect(page.locator(".shell-wall [data-wall]")).toBeVisible();
+  await expect.poll(() => sectionOffset(page, second.id)).toBeLessThan(4);
+  await awaitUrl(page, wallUrl({ hash: second.id }));
+});
+
+/** How far a wall section's top sits from the top of the wall's scroll box. */
+const sectionOffset = (page: import("@playwright/test").Page, id: string) =>
+  page.evaluate((id) => {
+    const layer = document.querySelector(".shell-wall")!.getBoundingClientRect();
+    const section = document.getElementById(id)!.getBoundingClientRect();
+    return Math.abs(section.top - layer.top);
+  }, id);
+
+test("a relayout keeps the keyboard-focused mark in view", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1400 });
+  await openCatalog(page, ruleUrl(railIds[0]));
+  await page.locator(`${link}[aria-current="page"]`).focus();
+  await page.keyboard.press("End");
+  const last = ruleUrl(railIds.at(-1)!);
+  expect(await page.evaluate(() => document.activeElement?.getAttribute("href"))).toBe(last);
+  // Short enough that the column switches to its scrolling layout.
+  await page.setViewportSize({ width: 1440, height: 420 });
+  await expect(page.locator(column)).toHaveAttribute("data-steady", "");
+  await expect
+    .poll(() =>
+      page.evaluate((selector) => {
+        const box = document.querySelector(selector)!.getBoundingClientRect();
+        const mark = document.activeElement!.getBoundingClientRect();
+        return mark.top >= box.top && mark.bottom <= box.bottom;
+      }, column)
+    )
+    .toBe(true);
+  expect(await page.evaluate(() => document.activeElement?.getAttribute("href"))).toBe(last);
 });
 
 test.describe("the expanded list", () => {

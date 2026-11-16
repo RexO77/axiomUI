@@ -1,0 +1,487 @@
+/* The rule view's frame: the header row, Copy rule ▾, the title and summary,
+   the deep dive, Before you ship, Related and Next. The comparison between
+   them is compare.css; nothing here reaches into it.
+
+   Spacing comes only from 4 · 8 · 12 · 16 · 24 · 32 · 40 · 48 · 64.
+   Vertical rhythm: header 48 → 12 → title → 12 → summary → 24 (the
+   comparison's own margin) → comparison → 40 → Before you ship → 40 →
+   (Related → 40 below 1160) → Next → 48.
+
+   Two left edges: the outer x (--rv-x: title, comparison, review block,
+   Related, Next) and the inner x, outer + 16 (the text inside the review
+   block and the Next card, and the deep dive when it sits below). --rv-x is
+   the gallery's gutter (24, 32 from a 1280px sheet, 16 on phones), so the
+   cross-fade between the two views keeps one content edge. The header row
+   lines up with the same block.
+
+   Rule prose turns common ligatures off: Manrope joins "--" into a dash, and
+   the copy quotes CSS ("--swipe-amount"). Code-like tokens are
+   <code class="rv-code"> in Plex Mono (prose-code.ts). */
+
+.rv { --rv-x: 24px; --rv-deep-w: 360px; }
+@container sheet (min-width: 1280px) { .rv { --rv-x: 32px; } }
+@container sheet (min-width: 1360px) { .rv { --rv-deep-w: 400px; } }
+@container sheet (min-width: 1800px) { .rv { --rv-deep-w: 440px; } }
+
+/* ── Header: one 48px row on one 32px control height ───────────────────
+   The crumb's icon sits on the title's x (--rv-x less its 8px padding); the
+   last control's edge on the block's right text edge. --rv-head-max mirrors
+   the stage's caps, and the deep dive's width joins it when it is shown. */
+
+.rv-head {
+  --rv-head-max: 1040px;
+  --rv-head-end: var(--rv-x);
+  --rv-head-off: max(0px, (100cqw - var(--rv-head-max)) / 2);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 48px;
+  padding: 0 calc(var(--rv-head-off) + var(--rv-head-end)) 0 calc(var(--rv-head-off) + var(--rv-x) - 8px);
+  background: var(--ax-surface);
+}
+@container sheet (min-width: 1160px) {
+  /* data-deep comes from React; the html flag is right before hydration. */
+  html:not([data-deep="hidden"]) .rv-head[data-deep] { --rv-head-max: calc(1040px + var(--rv-deep-w)); --rv-head-end: 32px; }
+}
+.rv-head[data-scrolled] { box-shadow: 0 1px 0 var(--ax-line); }
+.rv-spacer { flex: 1; }
+
+/* The header's controls look like the shell's (.shell-ctl); only the crumb is
+   one, so it stays the rule view's one exit hook. */
+.rv-ctl {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  min-width: 32px;
+  padding: 0 10px;
+  border-radius: var(--radius-control);
+  color: var(--ax-ink-secondary);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 140ms var(--ease-out-strong), color 140ms var(--ease-out-strong);
+}
+.rv-ctl svg { width: 16px; height: 16px; flex: none; stroke-width: 1.75; }
+.rv-ctl[data-sq] { width: 32px; padding: 0; }
+.rv-ctl:disabled { color: var(--ax-ink-muted); opacity: 0.5; cursor: default; }
+@media (hover: hover) and (pointer: fine) {
+  .rv-ctl:not(:disabled):hover { background: var(--ax-hover); color: var(--ax-ink); }
+}
+.rv-ctl:not(:disabled):active { background: var(--ax-press); }
+.rv-ctl-search kbd { margin-left: 2px; }
+:root[data-input="keyboard"] .rv-ctl { transition: none; }
+
+.rv-crumb { min-width: 0; padding: 0 8px; gap: 8px; font-weight: 400; }
+.rv-crumb span { overflow: hidden; text-overflow: ellipsis; }
+.rv-pager { display: flex; align-items: center; gap: 2px; }
+/* Wide enough for "10 of 29", and "match 105 of 105" in a deck, so Next never moves. */
+.rv-pager-count {
+  min-width: 7ch;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ax-ink-muted);
+  text-align: center;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.rv-pager[data-deck] .rv-pager-count { min-width: 15ch; }
+/* Paging a search or a collection: its name, and a way back to the whole catalog. */
+.rv-deckq {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 24ch;
+  height: 28px;
+  padding: 0 6px 0 10px;
+  border-radius: 9999px;
+  background: var(--ax-fill);
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ax-ink-secondary);
+  cursor: pointer;
+}
+.rv-deckq span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rv-deckq svg { width: 14px; height: 14px; flex: none; color: var(--ax-ink-muted); }
+@media (hover: hover) and (pointer: fine) {
+  .rv-deckq:hover, .rv-deckq:hover svg { color: var(--ax-ink); }
+}
+
+/* ── Copy rule ▾ (in the header; on phones under the comparison) ──── */
+
+.rv-split { position: relative; display: inline-flex; align-items: center; }
+.rv-split-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  min-width: 112px;
+  padding: 0 10px 0 12px;
+  border-radius: var(--radius-control) 0 0 var(--radius-control);
+  /* Three sides: the menu half draws the seam, so it is one line, not two. */
+  box-shadow: inset 1px 0 0 var(--ax-line-strong), inset 0 1px 0 var(--ax-line-strong), inset 0 -1px 0 var(--ax-line-strong);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--ax-ink-secondary);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 140ms var(--ease-out-strong), color 140ms var(--ease-out-strong);
+}
+.rv-split-main svg { width: 14px; height: 14px; }
+.rv-split-main[data-state="copied"] svg { color: var(--ax-do); }
+.rv-split-main[data-state="error"] svg { color: var(--ax-dont); }
+.rv-split-menu-btn {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 32px;
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+  box-shadow: inset 0 0 0 1px var(--ax-line-strong);
+  color: var(--ax-ink-muted);
+  cursor: pointer;
+}
+.rv-split-menu-btn svg { width: 14px; height: 14px; }
+@media (hover: hover) and (pointer: fine) {
+  .rv-split-main:hover, .rv-split-menu-btn:hover { background: var(--ax-hover); color: var(--ax-ink); }
+}
+.rv-split-main:active, .rv-split-menu-btn:active { background: var(--ax-press); }
+.rv-split-menu-btn[aria-expanded="true"] { background: var(--ax-hover); color: var(--ax-ink); }
+/* Each half's ring sits inside it and above its neighbour, so neither is cut off at the seam. */
+.rv-split-main:focus-visible, .rv-split-menu-btn:focus-visible { position: relative; z-index: 1; outline-offset: -2px; }
+:root[data-input="keyboard"] .rv-split-main { transition: none; }
+.rv-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  min-width: 188px;
+  padding: 4px;
+  border-radius: var(--radius-frame);
+  background: var(--ax-overlay);
+  box-shadow: var(--ax-shadow-popover);
+}
+.rv-menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: var(--radius-tip);
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ax-ink-secondary);
+  text-align: left;
+  cursor: pointer;
+}
+.rv-menu button svg { width: 16px; height: 16px; color: var(--ax-ink-muted); }
+.rv-menu button:hover,
+.rv-menu button:focus-visible { background: var(--ax-hover); color: var(--ax-ink); outline: none; }
+.rv-mcopy { display: none; }
+
+/* ── Title, summary, prose code ─────────────────────────────────────── */
+
+.rv-title {
+  font-family: var(--font-source-serif), ui-serif, Georgia, serif;
+  font-size: 36px;
+  line-height: 40px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ax-ink);
+  text-wrap: balance;
+}
+/* It takes focus when the view is entered so screen readers land on it; a heading, not a control. */
+.rv-title:focus-visible { outline: none; }
+.rv-summary {
+  max-width: 31rem;
+  margin-top: 12px;
+  font-size: 16px;
+  line-height: 26px;
+  color: var(--ax-ink-secondary);
+  text-wrap: pretty;
+  font-variant-ligatures: no-common-ligatures;
+}
+.rv-code {
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-size: 0.92em;
+  /* Plex Mono's taller ascent would otherwise push its line 1px open. */
+  line-height: 1;
+  font-variant-ligatures: none;
+}
+
+/* ── Layout ──────────────────────────────────────────────────────────
+   Below 1160 (and with the deep dive hidden) .rv-side is a pass-through:
+   its deep dive and Related are the stage's own grid items, ordered main,
+   deep dive, Before you ship, Related, Next. Order only moves Before you
+   ship (nothing to focus) ahead of Related, so focus still follows the page. */
+
+.rv-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  width: 100%;
+  max-width: 1040px;
+  margin-inline: auto;
+}
+.rv-main { min-width: 0; padding: 12px var(--rv-x) 0; }
+.rv-mcopy { margin-top: 24px; }
+.rv-stage > .rv-side { display: contents; }
+.rv-stage > .rv-ship { order: 1; }
+.rv-stage .rv-related { order: 2; }
+.rv-stage > .rv-next { order: 3; }
+
+/* ── Deep dive ───────────────────────────────────────────────────────
+   Below 1160: two columns under the comparison, on the inner edge. */
+
+.rv-dd {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 32px;
+  align-items: start;
+  margin-top: 40px;
+  padding-inline: calc(var(--rv-x) + 16px);
+}
+.rv-dd[hidden] { margin: 0; padding: 0; }
+.rv-dd-sec + .rv-dd-sec { margin-top: 40px; }
+/* Section heads are UI type: Manrope, never the serif the base styles give headings (021: serif is for titles). */
+.rv-dd-h, .rv-ship h2, .rv-next h2, .rv-related h2 {
+  font-family: var(--font-manrope), ui-sans-serif, sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--ax-ink);
+}
+.rv-dd-label, .rv-dd-toggle { display: flex; align-items: center; gap: 8px; }
+/* Colour is for categories and verdicts only: the warning glyph is ink-muted. */
+.rv-dd-h svg { width: 14px; height: 14px; flex: none; color: var(--ax-ink-muted); }
+.rv-dd-body { margin-top: 12px; font-variant-ligatures: no-common-ligatures; }
+.rv-dd-steps { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; counter-reset: step; }
+.rv-dd-steps li {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--ax-ink-secondary);
+  text-wrap: pretty;
+}
+.rv-dd-steps li::before {
+  counter-increment: step;
+  content: counter(step);
+  font-size: 12px;
+  line-height: 22px;
+  color: var(--ax-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+.rv-dd p { font-size: 14px; line-height: 22px; color: var(--ax-ink-secondary); text-wrap: pretty; }
+/* Loading, or a failed load with its retry button: one line where the prose goes. */
+.rv-dd-state { display: flex; align-items: center; gap: 12px; grid-column: 1 / -1; min-height: 32px; }
+.rv-dd-state p { color: var(--ax-ink-muted); }
+.rv-dd-state .rv-ctl { box-shadow: inset 0 0 0 1px var(--ax-line-strong); }
+
+@container sheet (max-width: 720px) {
+  .rv-dd { grid-template-columns: minmax(0, 1fr); }
+  .rv-dd-col + .rv-dd-col { margin-top: 40px; }
+}
+
+/* ── Before you ship: an outlined panel the main column's full width ── */
+
+.rv-ship {
+  margin: 40px var(--rv-x) 0;
+  padding: 16px;
+  border-radius: var(--radius-frame);
+  box-shadow: inset 0 0 0 1px var(--ax-line);
+  font-variant-ligatures: no-common-ligatures;
+}
+.rv-ship ul { display: grid; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; }
+.rv-ship li {
+  position: relative;
+  max-width: 72ch;
+  padding-left: 16px;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--ax-ink-secondary);
+  text-wrap: pretty;
+}
+/* A ring, not a checkbox: it marks the item; there is nothing to tick. */
+.rv-ship li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--ax-ink-muted);
+}
+
+/* ── Next: an h2 like Related's, then one 64px row ──────────────────── */
+
+.rv-next { min-width: 0; margin-top: 40px; padding: 0 var(--rv-x) 48px; }
+.rv-nextcard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+  min-height: 64px;
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-frame);
+  box-shadow: inset 0 0 0 1px var(--ax-line);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 140ms var(--ease-out-strong), box-shadow 140ms var(--ease-out-strong);
+}
+@media (hover: hover) and (pointer: fine) {
+  .rv-nextcard:hover { background: var(--ax-hover); box-shadow: inset 0 0 0 1px var(--ax-line-strong); }
+  .rv-nextcard:hover .rv-nc-arrow { translate: 2px 0; }
+}
+.rv-nextcard:active { background: var(--ax-press); }
+.rv-nc-body { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.rv-nc-go { display: inline-flex; align-items: center; gap: 8px; flex: none; color: var(--ax-ink-muted); }
+.rv-nc-arrow { width: 16px; height: 16px; flex: none; color: var(--ax-ink-muted); transition: translate 140ms var(--ease-out-strong); }
+.rv-nc-title { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 14px; line-height: 20px; font-weight: 600; color: var(--ax-ink); }
+.rv-nc-title > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rv-nc-title svg { width: 16px; height: 16px; flex: none; }
+.rv-nc-meta { font-size: 12px; line-height: 16px; color: var(--ax-ink-muted); font-variant-numeric: tabular-nums; }
+@media (hover: none) {
+  .rv-nc-go kbd { display: none; }
+}
+
+/* ── Related: title rows; the peek shows the rest ───────────────────── */
+
+.rv-related { min-width: 0; margin: 40px var(--rv-x) 0; }
+.rv-related ul { margin: 4px 0 0; padding: 0; list-style: none; }
+.rv-related li + li { box-shadow: inset 0 1px 0 var(--ax-line); }
+.rv-rrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  margin-inline: -8px;
+  padding-inline: 8px;
+  border-radius: var(--radius-control);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--ax-ink-secondary);
+  transition: background-color 140ms var(--ease-out-strong), color 140ms var(--ease-out-strong);
+}
+.rv-rrow > svg:first-child { width: 16px; height: 16px; flex: none; }
+.rv-rrow-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rv-rrow-chev { width: 16px; height: 16px; flex: none; margin-left: auto; color: var(--ax-ink-muted); }
+@media (hover: hover) and (pointer: fine) {
+  .rv-rrow:hover { background: var(--ax-hover); color: var(--ax-ink); }
+}
+.rv-rrow:active { background: var(--ax-press); }
+
+/* ── Wide sheet (≥ 1160): main column + side column, one centred block ─
+   Left: main, Before you ship, Next. Right: the deep dive with Related at
+   its foot. The side column spans every row, so its inset hairline runs the
+   stage's full height whichever column is taller; the stage fills the sheet
+   below the header.
+
+   Hidden deep dive: the side column stays a pass-through and the main
+   column centres at 1040, exactly the layout below 1160. Hidden is either
+   the aside's [hidden] (inspector.tsx) or html[data-deep="hidden"], which the
+   boot script sets before first paint from the stored choice, so a reload
+   with it hidden does not shift. */
+
+@container sheet (min-width: 1160px) {
+  html:not([data-deep="hidden"]) .rv-stage:not(:has(.rv-dd[hidden])) {
+    max-width: calc(1040px + var(--rv-deep-w));
+    min-height: calc(100dvh - 2 * var(--shell-inset) - 48px);
+    grid-template-columns: minmax(0, 1fr) var(--rv-deep-w);
+    grid-template-rows: auto auto 1fr;
+  }
+  html:not([data-deep="hidden"]) .rv-stage:not(:has(.rv-dd[hidden])) > * { order: 0; }
+  html:not([data-deep="hidden"]) .rv-stage:not(:has(.rv-dd[hidden])) > .rv-main { grid-column: 1; grid-row: 1; }
+  html:not([data-deep="hidden"]) .rv-stage:not(:has(.rv-dd[hidden])) > .rv-ship { grid-column: 1; grid-row: 2; align-self: start; }
+  html:not([data-deep="hidden"]) .rv-stage:not(:has(.rv-dd[hidden])) > .rv-next { grid-column: 1; grid-row: 3; align-self: start; }
+  html:not([data-deep="hidden"]) .rv-stage:not(:has(.rv-dd[hidden])) > .rv-side {
+    display: block;
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    min-width: 0;
+    padding: 16px 32px 48px 24px;
+    box-shadow: inset 1px 0 0 var(--ax-line);
+  }
+  html:not([data-deep="hidden"]) .rv-stage:not(:has(.rv-dd[hidden])) > .rv-side > .rv-dd { display: block; margin: 0; padding: 0; }
+  html:not([data-deep="hidden"]) .rv-stage:not(:has(.rv-dd[hidden])) .rv-dd-col + .rv-dd-col { margin-top: 40px; }
+  html:not([data-deep="hidden"]) .rv-stage:not(:has(.rv-dd[hidden])) > .rv-side > .rv-related { margin: 40px 0 0; }
+}
+
+/* Before hydration, a stored "hidden" keeps the dive out of the layout; phones never hide it. */
+html[data-deep="hidden"] .rv-dd { content-visibility: hidden; margin: 0; padding: 0; }
+
+/* ── Phone (PHONE_QUERY) ─────────────────────────────────────────────
+   The top bar and the bottom strip carry the header. The deep
+   dive is always shown, in hairline sections that collapse; How to apply it
+   starts open. The server renders every section open; a closed body is
+   hidden only after hydration, and only on a section that has its button
+   (inspector.tsx), so no script means no unreachable prose. */
+
+@media (max-width: 640px), (pointer: coarse) and (max-height: 500px) {
+  .rv { --rv-x: 16px; }
+  .rv-head { display: none; }
+  .rv-title { font-size: 28px; line-height: 34px; }
+  .rv-main { padding-top: 24px; }
+  .rv-mcopy { display: block; }
+  .rv-mcopy .rv-split-main { height: 44px; padding: 0 16px; font-size: 14px; }
+  .rv-mcopy .rv-split-menu-btn { width: 44px; height: 44px; }
+
+  html[data-deep="hidden"] .rv-dd { content-visibility: visible; }
+  .rv-dd, html[data-deep="hidden"] .rv-dd { display: block; margin-top: 40px; padding-inline: var(--rv-x); }
+  .rv-dd-col { display: contents; }
+  .rv-dd-sec { box-shadow: inset 0 1px 0 var(--ax-line); }
+  .rv-dd-col:last-child > .rv-dd-sec:last-child { box-shadow: inset 0 1px 0 var(--ax-line), inset 0 -1px 0 var(--ax-line); }
+  .rv-dd-sec + .rv-dd-sec { margin-top: 0; }
+  .rv-dd-h { position: relative; font-size: 16px; line-height: 24px; }
+  .rv-dd-label, .rv-dd-toggle { width: 100%; min-height: 48px; padding-right: 32px; text-align: left; }
+  .rv-dd-toggle { cursor: pointer; }
+  .rv-dd-body { margin-top: 0; padding-bottom: 24px; }
+  .rv-dd-steps li, .rv-dd p { font-size: 16px; line-height: 26px; }
+  .rv-dd-steps li { grid-template-columns: 24px minmax(0, 1fr); }
+  .rv-dd-steps li::before { font-size: 13px; line-height: 26px; }
+  html[data-hydrated] .rv-dd-sec[data-collapsible] .rv-dd-h::after {
+    content: "";
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    margin-top: -6px;
+    border-right: 1.5px solid var(--ax-ink-muted);
+    border-bottom: 1.5px solid var(--ax-ink-muted);
+    rotate: 45deg;
+    pointer-events: none;
+    transition: rotate 140ms var(--ease-out-strong), margin-top 140ms var(--ease-out-strong);
+  }
+  html[data-hydrated] .rv-dd-sec[data-collapsible][data-open] .rv-dd-h::after { rotate: -135deg; margin-top: -2px; }
+  html[data-hydrated] .rv-dd-sec[data-collapsible]:not([data-open]) .rv-dd-body { display: none; }
+
+  .rv-ship h2, .rv-next h2, .rv-related h2, .rv-nc-title { font-size: 16px; line-height: 24px; }
+  .rv-ship li { font-size: 16px; line-height: 26px; }
+  .rv-ship li::before { top: 10px; }
+  .rv-nc-meta { font-size: 13px; line-height: 20px; }
+  .rv-rrow { height: 48px; font-size: 16px; line-height: 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rv-dd-h::after, .rv-nc-arrow { transition: none; }
+}
+/* Forced colours drop every box-shadow: the edges, the column hairline and the review rings come back as borders. */
+@media (forced-colors: active) {
+  .rv-menu, .rv-nextcard, .rv-ship, .rv-ship li::before { border: 1px solid CanvasText; }
+  .rv-split-main, .rv-split-menu-btn { border: 1px solid ButtonText; }
+  .rv-side { border-inline-start: 1px solid CanvasText; }
+  .rv-related li + li { border-top: 1px solid CanvasText; }
+}

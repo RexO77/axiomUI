@@ -1,0 +1,373 @@
+import type { Browser, Page, Route } from "@playwright/test";
+
+import { rules } from "../src/data/ui-logic";
+import { ruleProse } from "../src/lib/rule-prose-build";
+import { PROSE_HEADINGS } from "../src/lib/rule-prose-types";
+import {
+  ORIGIN,
+  awaitView,
+  expect,
+  openCatalog,
+  proseUrl,
+  railNeighbour,
+  readCatalog,
+  ruleUrl,
+  sel,
+  settledUrl,
+  test,
+  titleOf,
+  wallUrl,
+} from "./helpers";
+
+/*
+ * The rule view: the prose a reader without script still
+ * gets, the phone disclosures, 0 ms paging, the pointer exit's timing, prose
+ * that arrives out of order, the copy menu's keys, the 2× zoom transform, and
+ * motion readouts that follow the phase playing.
+ */
+
+const byId = new Map(rules.map((rule) => [rule.id, rule]));
+/** Backtick-quoted code loses its marks on screen (prose-code.ts). */
+const shown = (text: string) => text.replace(/`/g, "");
+const prose = (id: string) => ruleProse(id)!;
+
+const why = (page: Page) => page.locator('.rv-dd-sec[data-section="why"] .rv-dd-body');
+const breaks = (page: Page) => page.locator('.rv-dd-sec[data-section="breaks"] .rv-dd-body');
+
+async function noScript(browser: Browser, width: number) {
+  const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width, height: 844 }, baseURL: ORIGIN });
+  return { context, page: await context.newPage() };
+}
+
+test.describe("prose without script", () => {
+  test("the rule document carries the title, both captions and the four deep-dive sections", async ({ request }) => {
+    const id = "typo-1";
+    const rule = byId.get(id)!;
+    const html = await (await request.get(ruleUrl(id))).text();
+    const text = html
+      .replace(/<script[\s\S]*?<\/script>/g, "")
+      .replace(/<[^>]+>/g, "")
+      .replace(/&#x27;/g, "'")
+      .replace(/&quot;/g, '"')
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&amp;/g, "&");
+    expect(html).toMatch(new RegExp(`<h1[^>]*>${rule.title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}</h1>`));
+    for (const caption of [rule.do, rule.dont]) expect(text).toContain(caption);
+    for (const heading of Object.values(PROSE_HEADINGS)) expect(text).toContain(heading);
+    const { how, why, breaks, review } = prose(id);
+    for (const passage of [...how, why, breaks, ...review]) expect(text).toContain(shown(passage));
+    // Nothing of another rule's own prose rides along.
+    expect(text).not.toContain(shown(prose(railNeighbour(id, 1)).why));
+  });
+
+  test("at 390 with script off, Why it works and What breaks are readable with no interaction", async ({ browser }) => {
+    const { context, page } = await noScript(browser, 390);
+    await page.goto(ruleUrl("typo-1"));
+    await expect(why(page)).toBeVisible();
+    await expect(why(page)).toHaveText(shown(prose("typo-1").why));
+    await expect(breaks(page)).toBeVisible();
+    await expect(breaks(page)).toHaveText(shown(prose("typo-1").breaks));
+    await expect(page.locator(".rv-dd-toggle")).toHaveCount(0);
+    await context.close();
+  });
+});
+
+test.describe("phone disclosures", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test("after hydration, Why it works and What breaks start collapsed and their buttons toggle them", async ({ page }) => {
+    await openCatalog(page, ruleUrl("typo-1"));
+    const toggle = (name: string) => page.getByRole("button", { name, exact: true });
+    await expect(toggle(PROSE_HEADINGS.how)).toHaveAttribute("aria-expanded", "true");
+    for (const [name, body] of [
+      [PROSE_HEADINGS.why, why(page)],
+      [PROSE_HEADINGS.breaks, breaks(page)],
+    ] as const) {
+      await expect(toggle(name)).toHaveAttribute("aria-expanded", "false");
+      await expect(body).toBeHidden();
+      await toggle(name).click();
+      await expect(toggle(name)).toHaveAttribute("aria-expanded", "true");
+      await expect(body).toBeVisible();
+      await toggle(name).click();
+      await expect(body).toBeHidden();
+    }
+  });
+});
+
+test.describe("paging", () => {
+  test("J and K take 0 ms and focus stays where it was", async ({ page }) => {
+    const id = "typo-1";
+    await openCatalog(page, ruleUrl(id));
+    await page.locator(sel.ruleTitle).focus();
+    const step = (key: string) =>
+      page.evaluate((key) => {
+        const before = document.activeElement;
+        document.activeElement?.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }));
+        // Read in the same task: a 0 ms page turn has already committed.
+        return {
+          title: document.querySelector("[data-rule-title]")?.textContent ?? null,
+          morphing: document.documentElement.hasAttribute("data-vt"),
+          focusKept: document.activeElement === before,
+        };
+      }, key);
+    expect(await step("j")).toEqual({ title: titleOf(railNeighbour(id, 1)), morphing: false, focusKept: true });
+    expect(await step("k")).toEqual({ title: titleOf(id), morphing: false, focusKept: true });
+  });
+
+  test("the neighbours' prose is prefetched, so J needs no request of its own", async ({ page }) => {
+    const id = "typo-1";
+    const next = railNeighbour(id, 1);
+    const requested: string[] = [];
+    page.on("request", (request) => {
+      const { pathname } = new URL(request.url());
+      if (pathname.startsWith("/deep-dives/")) requested.push(decodeURIComponent(pathname.slice("/deep-dives/".length)));
+    });
+    await openCatalog(page, ruleUrl(id));
+    // The landing rule came with its document; its neighbours are fetched ahead of time.
+    await expect.poll(() => requested).toContain(next);
+    expect(requested).not.toContain(id);
+
+    await page.keyboard.press("j");
+    await expect(page.locator(sel.ruleTitle)).toHaveText(titleOf(next));
+    await expect(why(page)).toHaveText(shown(prose(next).why));
+    expect(requested.filter((entry) => entry === next)).toHaveLength(1);
+  });
+
+  test("prose that arrives out of order shows the rule on screen", async ({ page }) => {
+    const id = "typo-1";
+    const a = railNeighbour(id, 1);
+    const b = railNeighbour(id, 2);
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route(`**${proseUrl(a)}`, async (route: Route) => {
+      await held;
+      await route.fulfill({ response: await route.fetch() });
+    });
+    await openCatalog(page, ruleUrl(id));
+
+    await page.keyboard.press("j");
+    await expect(page.locator(sel.ruleTitle)).toHaveText(titleOf(a));
+    await expect(page.locator(".rv-dd")).toHaveAttribute("data-state", "loading");
+    await page.keyboard.press("j");
+    await expect(page.locator(sel.ruleTitle)).toHaveText(titleOf(b));
+    await expect(why(page)).toHaveText(shown(prose(b).why));
+
+    release();
+    await page.waitForResponse((response) => response.url().endsWith(proseUrl(a)));
+    await page.waitForTimeout(300);
+    await expect(page.locator(sel.ruleTitle)).toHaveText(titleOf(b));
+    await expect(why(page)).toHaveText(shown(prose(b).why));
+  });
+
+  test("a failed load shows a retry, and the retry loads the prose", async ({ page }) => {
+    const id = "typo-1";
+    const a = railNeighbour(id, 1);
+    let fail = true;
+    // A reply that is not this rule's prose is a failure; an aborted request would also log a console error.
+    await page.route(`**${proseUrl(a)}`, (route: Route) => (fail ? route.fulfill({ json: { id: a } }) : route.continue()));
+    await openCatalog(page, ruleUrl(id));
+    await page.keyboard.press("j");
+    await expect(page.locator(".rv-dd")).toHaveAttribute("data-state", "error");
+    fail = false;
+    await page.getByRole("button", { name: "Try again" }).click();
+    await expect(why(page)).toHaveText(shown(prose(a).why));
+  });
+});
+
+test.describe("exits and the copy menu", () => {
+  test("a pointer exit morphs the canvas out in 220 ms", async ({ page }) => {
+    const id = "typo-5";
+    await openCatalog(page, wallUrl());
+    await page.locator(sel.tile(id)).click();
+    await awaitView(page, "rule");
+    const timing = page.evaluate(
+      () =>
+        new Promise<{ mode: string | null; durations: number[] }>((resolve) => {
+          const root = document.documentElement;
+          const observer = new MutationObserver(() => {
+            if (root.getAttribute("data-vt") !== "out") return;
+            observer.disconnect();
+            requestAnimationFrame(() =>
+              requestAnimationFrame(() =>
+                resolve({
+                  mode: root.getAttribute("data-vt"),
+                  durations: document
+                    .getAnimations()
+                    .filter((animation) => (animation.effect as KeyframeEffect | null)?.pseudoElement === "::view-transition-group(rule-canvas)")
+                    .map((animation) => Number(animation.effect?.getTiming().duration)),
+                }),
+              ),
+            );
+          });
+          observer.observe(root, { attributes: true, attributeFilter: ["data-vt"] });
+        }),
+    );
+    await page.locator(sel.exit).click();
+    const { mode, durations } = await timing;
+    expect(mode).toBe("out");
+    expect(durations.length).toBeGreaterThan(0);
+    expect(new Set(durations)).toEqual(new Set([220]));
+    await awaitView(page, "gallery");
+  });
+
+  test("Tab out of the copy menu closes it; Esc in it closes only the menu, and J never pages from it", async ({ page }) => {
+    const id = "typo-1";
+    await openCatalog(page, ruleUrl(id));
+    const trigger = page.locator(".rv-head .rv-split-menu-btn");
+    const menu = page.locator('.rv-head [role="menu"]');
+
+    await trigger.click();
+    await expect(menu).toBeVisible();
+    await expect(menu.getByRole("menuitem").first()).toBeFocused();
+    await page.keyboard.press("j");
+    await expect(page.locator(sel.ruleTitle)).toHaveText(titleOf(id));
+    await page.keyboard.press("End");
+    await expect(menu.getByRole("menuitem").last()).toBeFocused();
+    await page.keyboard.press("Tab");
+    await expect(menu).toBeHidden();
+    await expect(trigger).not.toBeFocused();
+
+    await trigger.click();
+    await expect(menu).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(menu).toBeHidden();
+    await expect(trigger).toBeFocused();
+    await page.waitForTimeout(300);
+    expect(await settledUrl(page)).toBe(ruleUrl(id));
+    expect((await readCatalog(page)).view).toBe("rule");
+  });
+});
+
+test.describe("comparison zoom", () => {
+  test("1× is untransformed and 2× is a 2× transform around the 1× box", async ({ page }) => {
+    await openCatalog(page, ruleUrl("typo-1"));
+    const box = page.locator(".cmp-canvas .cmp-box").first();
+    expect(await box.evaluate((el) => getComputedStyle(el).transform)).toBe("none");
+    await page.getByRole("radio", { name: "2×, 200%", exact: true }).click();
+    await expect.poll(() => box.evaluate((el) => getComputedStyle(el).transform)).toMatch(/^matrix\(2, 0, 0, 2, /);
+    await page.getByRole("radio", { name: "1×, 100%", exact: true }).click();
+  });
+});
+
+test.describe("comparison zoom, by hand", () => {
+  test("at 2× a drag moves the content as far as the pointer, and touch pans belong to the canvas", async ({ page }) => {
+    await openCatalog(page, ruleUrl("typo-1"));
+    const canvas = page.locator(".cmp-canvas").first();
+    expect(await canvas.evaluate((el) => getComputedStyle(el).touchAction)).toBe("manipulation");
+    await page.getByRole("radio", { name: "2×, 200%", exact: true }).click();
+    // A pan the browser could claim would end the drag with pointercancel.
+    await expect.poll(() => canvas.evaluate((el) => getComputedStyle(el).touchAction)).toBe("none");
+
+    const box = (await canvas.boundingBox())!;
+    const from = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    await page.mouse.move(from.x, from.y);
+    await page.mouse.down();
+    await page.mouse.move(from.x + 40, from.y + 20, { steps: 4 });
+    await page.mouse.up();
+    expect(await canvas.evaluate((el) => [el.style.getPropertyValue("--cmp-pan-x"), el.style.getPropertyValue("--cmp-pan-y")])).toEqual(["40px", "20px"]);
+    await page.getByRole("radio", { name: "1×, 100%", exact: true }).click();
+  });
+});
+
+test.describe("motion gestures", () => {
+  const canvas = (page: Page) => page.locator(".cmp-canvas[data-gesture]");
+  /** Every animation running in the canvas's scenes, by its playback rate. */
+  const rates = (page: Page) =>
+    canvas(page).evaluate((el) => [...el.querySelectorAll(".cmp-scene")].flatMap((scene) => scene.getAnimations({ subtree: true }).map((a) => a.playbackRate)));
+
+  test("a press demo plays at full speed, and a held Space never scrolls the page", async ({ page }) => {
+    await openCatalog(page, ruleUrl("motion-8"));
+    await canvas(page).focus();
+    await page.evaluate(() => {
+      const w = window as unknown as { __spaces: boolean[] };
+      w.__spaces = [];
+      window.addEventListener("keydown", (event) => {
+        if (event.key === " ") w.__spaces.push(event.defaultPrevented);
+      });
+    });
+    await page.keyboard.down(" ");
+    await page.keyboard.down(" ");
+    await page.keyboard.down(" ");
+    const playing = await rates(page);
+    expect(playing.length).toBeGreaterThan(0);
+    expect(new Set(playing)).toEqual(new Set([1]));
+    await page.keyboard.up(" ");
+    const spaces = await page.evaluate(() => (window as unknown as { __spaces: boolean[] }).__spaces);
+    expect(spaces, "every Space, repeats included, is consumed").toEqual([true, true, true]);
+  });
+
+  test("a hover demo answers Enter, Space and a click with no pointer behind it", async ({ page }) => {
+    await openCatalog(page, ruleUrl("motion-16"));
+    const el = canvas(page);
+    await expect(el).toHaveAttribute("role", "button");
+    // An assistive click (detail 0) after a mouse press elsewhere: toggles on, then off.
+    await page.locator(sel.ruleTitle).click();
+    await el.evaluate((node) => (node as HTMLElement).click());
+    await expect(el).toHaveAttribute("data-live", "true");
+    await el.evaluate((node) => (node as HTMLElement).click());
+    await expect(el).not.toHaveAttribute("data-live", /.*/);
+
+    await el.evaluate((node) => (node as HTMLElement).focus());
+    for (const key of ["Enter", " "]) {
+      const before = await el.getAttribute("data-live");
+      await page.keyboard.press(key);
+      if (before === null) await expect(el, `${key} turns it on`).toHaveAttribute("data-live", "true");
+      else await expect(el, `${key} turns it off`).not.toHaveAttribute("data-live", /.*/);
+    }
+  });
+
+  test("motion-2's K plays the demo while it has focus, and never pages", async ({ page }) => {
+    await openCatalog(page, ruleUrl("motion-2"));
+    const play = page.locator(".cmp-bar .cmp-ctl");
+    await expect(play).toHaveText(/Press K/);
+    await play.focus();
+    await page.keyboard.press("k");
+    await expect(page.locator(".cmp-canvas")).toHaveAttribute("data-live", "true");
+    await page.waitForTimeout(200);
+    expect(await readCatalog(page)).toMatchObject({ view: "rule", url: ruleUrl("motion-2"), title: titleOf("motion-2") });
+  });
+});
+
+test.describe("motion readouts", () => {
+  test("motion-7's Do readout counts the 160 ms dismiss while it plays, then 220 ms again on the next show", async ({ page }) => {
+    await openCatalog(page, ruleUrl("motion-7"));
+    const toggle = page.locator(".cmp-bar .cmp-ctl");
+    const doMs = page.locator(".cmp-pane-ms").first();
+    await expect(doMs).toHaveText("220ms");
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-pressed", "true");
+    await expect(doMs).toHaveText("220ms");
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-pressed", "false");
+    await expect(doMs).toHaveText("160ms");
+    await toggle.click();
+    await expect(doMs).toHaveText("220ms");
+  });
+});
+
+test.describe("copy menu focus", () => {
+  test("a slow clipboard never pulls focus back after the reader has moved on", async ({ page }) => {
+    const WRITE_MS = 1500;
+    await openCatalog(page, ruleUrl("typo-1"));
+    await page.evaluate((ms) => {
+      Object.defineProperty(navigator, "clipboard", {
+        configurable: true,
+        value: { writeText: () => new Promise<void>((resolve) => setTimeout(resolve, ms)) },
+      });
+    }, WRITE_MS);
+    const trigger = page.locator(".rv-head .rv-split-menu-btn");
+    await trigger.click();
+    await page.locator('.rv-head [role="menu"]').getByRole("menuitem", { name: "Copy link" }).click();
+    // Back on the trigger as the menu closes, long before the write lands.
+    await expect(trigger).toBeFocused({ timeout: WRITE_MS / 2 });
+    await page.keyboard.press("Tab");
+    await expect(trigger).not.toBeFocused();
+    const moved = await page.evaluate(() => document.activeElement?.outerHTML.slice(0, 80));
+    await page.waitForTimeout(WRITE_MS + 300);
+    await expect(trigger, "the write landing later leaves focus alone").not.toBeFocused();
+    expect(await page.evaluate(() => document.activeElement?.outerHTML.slice(0, 80))).toBe(moved);
+  });
+});
