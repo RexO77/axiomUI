@@ -1,6 +1,5 @@
 // design-system: strict
-import { categories, resolveRuleId, rules, type Rule } from "@/data/ui-logic";
-import { railCategoryIds, railCategoryOf } from "@/data/taxonomy";
+import { resolveRuleId, rules, type Rule } from "@/data/ui-logic";
 import { synonyms, type Synonym } from "@/data/synonyms";
 
 /**
@@ -229,60 +228,4 @@ export function searchRules(rawQuery: string): SearchHit[] {
     }
     hits.sort((a, b) => b.hit.score - a.hit.score || a.order - b.order);
     return hits.map(({ hit }) => hit);
-}
-
-/** Why one rule matches a query, or [] if it doesn't. */
-export function matchReasons(rule: Rule, rawQuery: string): MatchReason[] {
-    const entry = index.find((candidate) => candidate.rule.id === rule.id);
-    if (!entry) return [];
-    return hitFor(entry, parse(rawQuery))?.reasons ?? [];
-}
-
-/**
- * Today's catalog matcher: one contiguous, folded substring in any field.
- * The current homepage and sidebar keep it until the new shell replaces them,
- * so the live search never changes behaviour half-way. New surfaces call
- * searchRules (word starts, every term, synonyms) instead.
- */
-function substringMatch(rule: Rule, needle: string): boolean {
-    return (
-        fold(rule.title).includes(needle) ||
-        fold(rule.desc).includes(needle) ||
-        fold(rule.do).includes(needle) ||
-        fold(rule.dont).includes(needle) ||
-        rule.id === needle ||
-        rule.tags.some((tag) => fold(tag).includes(needle))
-    );
-}
-
-/** The rules a search query keeps, in catalog order. A blank query keeps every rule. */
-export function filterRules(query: string): Rule[] {
-    const needle = fold(query.trim());
-    if (!needle) {
-        return rules;
-    }
-    return rules.filter((rule) => substringMatch(rule, needle));
-}
-
-/** Matching rules per category id. Every category is present, so an empty one reads as 0. */
-export function countByCategory(query: string): Map<string, number> {
-    const counts = new Map(categories.map((category) => [category.id, 0]));
-    for (const rule of filterRules(query)) {
-        counts.set(rule.category, (counts.get(rule.category) ?? 0) + 1);
-    }
-    return counts;
-}
-
-/**
- * Matching rules per rail category (seven; the accessibility rules count under
- * the category they are re-homed to). Every rail category is present.
- */
-export function countByRailCategory(query: string): Map<string, number> {
-    const counts = new Map<string, number>(railCategoryIds.map((id) => [id, 0]));
-    const matched = query.trim() ? searchRules(query).map((hit) => hit.rule) : rules;
-    for (const rule of matched) {
-        const id = railCategoryOf(rule);
-        counts.set(id, (counts.get(id) ?? 0) + 1);
-    }
-    return counts;
 }

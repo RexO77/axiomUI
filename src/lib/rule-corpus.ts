@@ -7,11 +7,11 @@ import { siteConfig } from "@/lib/site";
 /**
  * Server-only corpus builder for /llms-full.txt and the generated agent skills.
  *
- * Deliberately NOT in `rule-text.ts`: that module is imported by
- * `copy-rule-button.tsx`, a client component, so anything it imports lands in
- * the client bundle. The authored prose in `deep-dives.ts` is ~60KB and is
- * loaded as an async chunk everywhere else (see the drawer's dynamic import) —
- * pulling it through `rule-text.ts` would ship it on first paint of every page.
+ * Deliberately NOT in `rule-text.ts`: that module is imported by the rule
+ * view's copy menu, a client component, so anything it imports lands in the
+ * client bundle. The authored prose in `deep-dives.ts` is ~60KB and reaches the
+ * client one rule at a time, from /deep-dives/<id> — pulling it through
+ * `rule-text.ts` would ship all of it on first paint of every page.
  */
 
 export type RuleMarkdownOptions = {
