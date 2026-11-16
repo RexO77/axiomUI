@@ -40,6 +40,7 @@ import { memoryStore, useRuleMemory } from "@/lib/navigation/memory";
 import type { ShellView } from "@/lib/navigation/routes";
 
 import { SCROLL_SAVE_MS, shellVars } from "./geometry";
+import { Rail } from "./rail";
 import { ShellContext, type InputOrigin, type PeekHandle, type ShellApi } from "./shell-context";
 import "./shell.css";
 
@@ -290,6 +291,7 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
   return (
     <ShellContext.Provider value={api}>
       <div className="shell" data-view={view} style={shellVars() as CSSProperties}>
+        <Rail />
         <main ref={sheet} id="main-content" className="shell-sheet" data-view={view} tabIndex={-1} onScroll={onScroll}>
           {children}
         </main>

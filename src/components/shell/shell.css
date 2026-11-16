@@ -160,3 +160,164 @@
 @media (forced-colors: active) {
   .shell-sheet { border: 1px solid CanvasText; }
 }
+
+/* ── Rail and expanded list ────────────────────────────────────────── */
+
+.shell-rail {
+  --rail-mark: color-mix(in oklch, var(--ax-ink) 24%, var(--ax-backdrop));
+  --rail-visited: color-mix(in oklch, var(--ax-ink) 46%, var(--ax-backdrop));
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--shell-rail-open);
+  user-select: none;
+}
+.dark .shell-rail {
+  --rail-mark: color-mix(in oklch, var(--ax-ink) 26%, var(--ax-backdrop));
+  --rail-visited: color-mix(in oklch, var(--ax-ink) 48%, var(--ax-backdrop));
+}
+.shell-rail :focus-visible { outline: 2px solid var(--ax-ring); outline-offset: 2px; }
+.shell-rail button { touch-action: manipulation; }
+.shell-rail a { text-decoration: none; }
+.rail-brand-row {
+  position: absolute;
+  top: var(--shell-inset);
+  left: 8px;
+  right: 8px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+}
+.rail-home {
+  display: grid;
+  grid-template-columns: 40px auto;
+  align-items: center;
+  height: 40px;
+  min-width: 40px;
+  border-radius: var(--radius-control);
+  color: var(--ax-ink);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: background-color 140ms var(--ease-out-strong);
+}
+.rail-logo-tile {
+  width: 28px;
+  height: 28px;
+  justify-self: center;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-control);
+  background: var(--ax-inverse);
+  color: var(--ax-on-inverse);
+}
+/* The name and the toggle label always render; the open state, or the boot
+   attribute before the rail adopts the stored choice, reveals them. */
+.rail-brand-name, .rail-button-label, .rail-icon-collapse { display: none; }
+:is(.shell[data-open], :root[data-rail="open"] .shell:not([data-rail-ready])) :is(.rail-brand-name, .rail-button-label) { display: inline; }
+:is(.shell[data-open], :root[data-rail="open"] .shell:not([data-rail-ready])) .rail-icon-collapse { display: block; }
+:is(.shell[data-open], :root[data-rail="open"] .shell:not([data-rail-ready])) .rail-icon-expand { display: none; }
+.rail-brand-name { margin-left: 4px; }
+.rail-region { position: absolute; top: 60px; bottom: 128px; left: 0; width: var(--shell-rail); }
+.shell[data-open] .rail-region { visibility: hidden; }
+.rail-list {
+  position: absolute;
+  top: 60px;
+  bottom: 128px;
+  left: 0;
+  width: var(--shell-rail-open);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  padding: 0 8px 16px;
+  visibility: hidden;
+  mask-image: linear-gradient(to bottom, black calc(100% - 24px), transparent);
+}
+.rail-list[data-scrolled] { mask-image: linear-gradient(to bottom, transparent, black 12px, black calc(100% - 24px), transparent); }
+.shell[data-open] .rail-list { visibility: visible; }
+.rail-list ul { list-style: none; margin: 0; padding: 0; }
+/* Icon and text columns are frozen coordinates: 8 + 11 = 19; 8 + 39 = 47. */
+.rail-catrow {
+  position: relative;
+  width: 100%;
+  height: 36px;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px 0 39px;
+  border-radius: var(--radius-control);
+  color: var(--ax-ink-secondary);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+.rail-catrow > svg { position: absolute; left: 11px; width: 18px; height: 18px; flex: none; }
+.rail-catrow[data-active] { color: var(--ax-ink); }
+.rail-count { margin-left: auto; font-size: 12px; line-height: 16px; color: var(--ax-ink-muted); font-variant-numeric: tabular-nums; }
+.rail-minirun { display: flex; align-items: center; height: 24px; margin: -4px 0 4px 37px; max-width: calc(100% - 44px); overflow: hidden; }
+.rail-minidot { flex: none; width: 6px; height: 6px; display: grid; place-items: center; }
+.rail-minidot::before { content: ""; width: 4px; height: 4px; border-radius: 9999px; background: var(--rail-mark); }
+.rail-minidot[data-visited]::before { background: var(--rail-visited); }
+.rail-minidot[data-hot]::before { width: 6px; height: 6px; background: var(--ax-ink); }
+.rail-minidot[data-current]::before { width: 2px; height: 10px; border-radius: var(--radius-kbd); background: var(--ax-ink); }
+.rail-sublabel { padding: 12px 8px 4px 39px; font-size: 12px; line-height: 16px; font-weight: 500; color: var(--ax-ink-muted); }
+.rail-rulerow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 4px 8px 4px 39px;
+  border-radius: var(--radius-control);
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ax-ink-secondary);
+}
+.rail-rowdot { position: absolute; left: 18px; top: 50%; width: 4px; height: 4px; margin-top: -2px; border-radius: 9999px; background: var(--rail-mark); }
+.rail-rulerow[data-visited] .rail-rowdot { background: var(--rail-visited); }
+.rail-rulerow[aria-current="page"] { color: var(--ax-ink); background: var(--ax-raised); box-shadow: var(--ax-shadow-item); }
+.rail-rulerow[aria-current="page"] .rail-rowdot { width: 4px; height: 14px; margin-top: -7px; border-radius: var(--radius-kbd); background: var(--ax-ink); }
+.rail-list [data-dim] { opacity: 0.35; }
+.rail-collection { margin-top: 16px; }
+.rail-bottom { position: absolute; left: 8px; right: 8px; bottom: 8px; display: flex; flex-direction: column; gap: 4px; }
+.shell:not([data-open]):not([data-wide]) .rail-bottom { right: auto; width: 40px; }
+.rail-button {
+  position: relative;
+  width: 100%;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  border-radius: var(--radius-control);
+  color: var(--ax-ink-muted);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.rail-button > svg { position: absolute; left: 11px; width: 18px; height: 18px; flex: none; }
+/* Collapsed, the button is a 40px icon square: its hover fill and ring stay clear of the sheet. */
+:is(.shell[data-open], :root[data-rail="open"] .shell:not([data-rail-ready])) .rail-button { padding: 0 8px 0 39px; }
+@media (hover: hover) and (pointer: fine) {
+  .rail-home:hover, .rail-catrow:hover, .rail-rulerow:hover, .rail-button:hover { background: var(--ax-hover); color: var(--ax-ink); }
+}
+.rail-home:active, .rail-catrow:active, .rail-rulerow:active, .rail-button:active { background: var(--ax-press); }
+
+/* The boot attribute governs first paint, before the rail adopts the stored choice. */
+:root[data-rail="open"] .shell:not([data-rail-ready]) .shell-sheet { left: var(--shell-rail-open); }
+:root[data-rail="open"] .shell:not([data-rail-ready]) .rail-list { visibility: visible; }
+:root[data-rail="open"] .shell:not([data-rail-ready]) .rail-region { visibility: hidden; }
+:root[data-rail="open"] .shell:not([data-rail-ready]) .rail-bottom { right: 8px; width: auto; }
+:root[data-input="keyboard"] .rail-home { transition: none; }
+@media (prefers-reduced-motion: reduce) { .rail-home { transition: none; } }
+@media (max-width: 640px), (pointer: coarse) and (max-height: 500px) {
+  .shell-rail { display: none; }
+  :root[data-rail="open"] .shell:not([data-rail-ready]) .shell-sheet { left: 0; }
+}
+@media (forced-colors: active) {
+  .rail-rulerow[aria-current="page"] { outline: 1px solid CanvasText; }
+  .rail-rowdot, .rail-minidot::before { background: CanvasText; }
+}
