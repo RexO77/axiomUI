@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Bell, Play } from "lucide-react";
 
 import {
+    Annotation,
     ANNOTATION_INK,
     ANNOTATION_INK_ON_FILL,
     PRODUCT_MUTED,
@@ -78,7 +79,7 @@ function MeasuredGap({ px, className }: { px: number; className?: string }) {
                     <span className={cn("absolute -left-0.5 top-0 h-px w-1.5", TICK)} />
                     <span className={cn("absolute -left-0.5 bottom-0 h-px w-1.5", TICK)} />
                 </span>
-                <span className={cn(FINE, TICK_TEXT)}>{px}</span>
+                <Annotation className={cn(FINE, TICK_TEXT)}>{px}</Annotation>
             </span>
         </div>
     );
@@ -107,11 +108,11 @@ function fourPtGrid(variant: Variant) {
                     <TextLine widthClass="w-3/4" />
                 </div>
                 <div className="flex flex-col gap-1">
-                    <span className={cn(FINE, TICK_TEXT)}>p·{pad}</span>
-                    <span className={cn(FINE, TICK_TEXT)}>gap·{gap}</span>
-                    <span className={ANNOT}>
+                    <Annotation className={cn(FINE, TICK_TEXT)}>p·{pad}</Annotation>
+                    <Annotation className={cn(FINE, TICK_TEXT)}>gap·{gap}</Annotation>
+                    <Annotation className={ANNOT}>
                         {isDo ? "16, 8 ÷ 4 = 4, 2" : "13, 5 ÷ 4 = 3.25, 1.25"}
-                    </span>
+                    </Annotation>
                 </div>
             </div>
         </PreviewFrame>
@@ -129,9 +130,9 @@ function textWidth(variant: Variant) {
                 <span className="text-[11px] font-semibold text-neutral-800 dark:text-neutral-100">
                     Introducing workspaces
                 </span>
-                <span className={cn("shrink-0", FINE, TICK_TEXT)}>
+                <Annotation className={cn("shrink-0", FINE, TICK_TEXT)}>
                     {isDo ? "45ch" : "95ch"}
-                </span>
+                </Annotation>
             </div>
             {/* Keep the aria-hidden illustration out of the scroll-container tab order. */}
             <div tabIndex={-1} className="w-full min-w-0 overflow-x-auto overscroll-x-contain">
@@ -157,9 +158,9 @@ function textWidth(variant: Variant) {
                     </div>
                 </div>
             </div>
-            <span className={ANNOT}>
+            <Annotation className={ANNOT}>
                 {isDo ? "45ch cap · 95ch page" : "100% width · 95ch page"}
-            </span>
+            </Annotation>
         </PreviewFrame>
     );
 }
@@ -179,9 +180,9 @@ function proximity(variant: Variant) {
                 {label}
             </span>
             <div style={{ height: inner }} className="relative">
-                <span className={cn("absolute right-[-26px] top-1/2 -translate-y-1/2", FINE, TICK_TEXT)}>
+                <Annotation className={cn("absolute right-[-26px] top-1/2 -translate-y-1/2", FINE, TICK_TEXT)}>
                     {inner}
-                </span>
+                </Annotation>
             </div>
             <div className="h-6 w-44 rounded-md border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900" />
         </>
@@ -191,9 +192,9 @@ function proximity(variant: Variant) {
             <div>
                 {field("Full name")}
                 <div style={{ height: outer }} className="relative">
-                    <span className={cn("absolute right-[-26px] top-1/2 -translate-y-1/2", FINE, TICK_TEXT)}>
+                    <Annotation className={cn("absolute right-[-26px] top-1/2 -translate-y-1/2", FINE, TICK_TEXT)}>
                         {outer}
-                    </span>
+                    </Annotation>
                 </div>
                 {field("Work email")}
             </div>
@@ -223,7 +224,10 @@ function opticalCenter(variant: Variant) {
                     )}
                 />
             </div>
-            <span className={ANNOT}>{isDo ? "nudged +2px right" : "geometric center"}</span>
+            {/* A 2px nudge is invisible at tile size, so a tile keeps the verdict. */}
+            <Annotation className={ANNOT} keep>
+                {isDo ? "nudged +2px right" : "geometric center"}
+            </Annotation>
         </PreviewFrame>
     );
 }
@@ -244,9 +248,9 @@ function buttonPadding(variant: Variant) {
                 Get started
             </span>
             <div className="flex items-center gap-3">
-                <span className={cn(FINE, TICK_TEXT)}>x·{px}</span>
-                <span className={cn(FINE, TICK_TEXT)}>y·{py}</span>
-                <span className={ANNOT}>{isDo ? "ratio 2:1" : "ratio 1:1"}</span>
+                <Annotation className={cn(FINE, TICK_TEXT)}>x·{px}</Annotation>
+                <Annotation className={cn(FINE, TICK_TEXT)}>y·{py}</Annotation>
+                <Annotation className={ANNOT}>{isDo ? "ratio 2:1" : "ratio 1:1"}</Annotation>
             </div>
         </PreviewFrame>
     );
@@ -282,9 +286,9 @@ function iconAlignment(variant: Variant) {
                     </span>
                 </div>
             </div>
-            <span className={ANNOT}>
+            <Annotation className={ANNOT}>
                 {isDo ? "items-start — icon on the cap height" : "items-center — icon on the block"}
-            </span>
+            </Annotation>
         </PreviewFrame>
     );
 }
@@ -354,9 +358,9 @@ function containerFallacy(variant: Variant) {
                     </div>
                 </div>
                 {/* Match the annotation ink to each pane’s surface. */}
-                <span className={cn("mt-2 block", isDo ? ANNOT_ON_FILL : ANNOT)}>
+                <Annotation className={cn("mt-2 block", isDo ? ANNOT_ON_FILL : ANNOT)}>
                     {isDo ? "0 borders — surface + space" : "4 borders, 1 idea"}
-                </span>
+                </Annotation>
             </div>
         </PreviewFrame>
     );
@@ -380,11 +384,11 @@ function gutters(variant: Variant) {
                     <div className={cell} />
                 </div>
                 <div className="flex flex-col gap-1">
-                    <span className={cn(FINE, TICK_TEXT)}>x·8</span>
-                    <span className={cn(FINE, TICK_TEXT)}>y·{rowGap}</span>
+                    <Annotation className={cn(FINE, TICK_TEXT)}>x·8</Annotation>
+                    <Annotation className={cn(FINE, TICK_TEXT)}>y·{rowGap}</Annotation>
                 </div>
             </div>
-            <span className={ANNOT}>{isDo ? "8 / 8 — one gutter" : "8 / 24 — two gutters"}</span>
+            <Annotation className={ANNOT}>{isDo ? "8 / 8 — one gutter" : "8 / 24 — two gutters"}</Annotation>
         </PreviewFrame>
     );
 }
@@ -407,7 +411,7 @@ function responsiveSpacing(variant: Variant) {
                 <TextLine widthClass="w-full" />
                 <TextLine widthClass="w-2/3" className="mt-1.5" />
             </div>
-            <span className={cn(FINE, underTest ? TICK_TEXT : FINE_MUTED)}>{label}</span>
+            <Annotation className={cn(FINE, underTest ? TICK_TEXT : FINE_MUTED)}>{label}</Annotation>
         </div>
     );
     return (
@@ -416,9 +420,9 @@ function responsiveSpacing(variant: Variant) {
                 {frame(72, mobilePad, `sm · p·${mobilePad}`, true)}
                 {frame(128, 24, "lg · p·24")}
             </div>
-            <span className={ANNOT}>
+            <Annotation className={ANNOT}>
                 {isDo ? "12 → 24 scales with the screen" : "24 → 24 at every breakpoint"}
-            </span>
+            </Annotation>
         </PreviewFrame>
     );
 }
@@ -441,9 +445,9 @@ function verticalRhythm(variant: Variant) {
                 <MeasuredGap px={gaps[2]} className="-mr-8" />
                 <TextLine widthClass="w-5/6" />
             </div>
-            <span className={ANNOT}>
+            <Annotation className={ANNOT}>
                 {isDo ? "8, 16, 32 — 1x, 2x, 4x of 8" : "8, 13, 18 — off the 8px base"}
-            </span>
+            </Annotation>
         </PreviewFrame>
     );
 }
@@ -484,14 +488,15 @@ function zIndexScale(variant: Variant) {
                             <span className="text-[9px] font-medium text-neutral-500 dark:text-neutral-400">
                                 {name}
                             </span>
-                            <span className={cn(FINE, isTop ? TICK_TEXT : FINE_MUTED)}>z·{values[index]}</span>
+                            <Annotation className={cn(FINE, isTop ? TICK_TEXT : FINE_MUTED)}>z·{values[index]}</Annotation>
                         </div>
                     );
                 })}
             </div>
-            <span className={ANNOT}>
+            {/* Both stacks paint the same; only the values differ, so a tile keeps them. */}
+            <Annotation className={ANNOT} keep>
                 {isDo ? "0 · 100 · 300 — steps of 100" : "1 · 999 · 9999 — no room above"}
-            </span>
+            </Annotation>
         </PreviewFrame>
     );
 }

@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { CreditCard, FileText, History, Settings, ShieldAlert, Users } from "lucide-react";
 
 import {
+    Annotation,
     ANNOTATION_INK,
     PRODUCT_MUTED,
     PreviewFrame,
@@ -22,19 +23,11 @@ import { cn } from "@/lib/utils";
 const ACCENT_TEXT = "text-blue-600 dark:text-blue-400";
 const ACCENT_BG = "bg-blue-500 dark:bg-blue-400";
 
+const SPEC = "font-mono text-[10px] tabular-nums";
+
 /** Mono measurement annotation — the evidence artifact of the static previews. */
 function Spec({ children, className }: { children: ReactNode; className?: string }) {
-    return (
-        <span
-            className={cn(
-                "font-mono text-[10px] tabular-nums",
-                ANNOTATION_INK,
-                className
-            )}
-        >
-            {children}
-        </span>
-    );
+    return <Annotation className={cn(SPEC, ANNOTATION_INK, className)}>{children}</Annotation>;
 }
 
 // The two states are alternatives, never stacked: cn() is plain concatenation,
@@ -73,7 +66,8 @@ function FileRow({ name, meta, overflow }: { name: string; meta: string; overflo
             >
                 {name}
             </span>
-            <Spec className="ml-auto shrink-0">{meta}</Spec>
+            {/* The file's size is the product's own meta, set in the spec face, not evidence. */}
+            <span className={cn(SPEC, PRODUCT_MUTED, "ml-auto shrink-0")}>{meta}</span>
         </div>
     );
 }

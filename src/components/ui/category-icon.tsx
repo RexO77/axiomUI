@@ -27,11 +27,11 @@ const categoryIcons: Record<string, LucideIcon> = {
 
 const categoryIconColors: Record<string, string> = {
   typography: "text-blue-600 dark:text-blue-400",
-  layout: "text-amber-600 dark:text-amber-400",
-  color: "text-rose-600 dark:text-rose-400",
+  layout: "text-yellow-700 dark:text-yellow-400",
+  color: "text-pink-600 dark:text-pink-400",
   components: "text-violet-600 dark:text-violet-400",
   forms: "text-cyan-600 dark:text-cyan-400",
-  system: "text-emerald-600 dark:text-emerald-400",
+  system: "text-lime-700 dark:text-lime-400",
   motion: "text-fuchsia-600 dark:text-fuchsia-400",
   accessibility: "text-orange-600 dark:text-orange-400",
 };

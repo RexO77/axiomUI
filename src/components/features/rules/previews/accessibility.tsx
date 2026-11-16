@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { CircleAlert } from "lucide-react";
 
 import type { DemoProps, PreviewRenderer } from "@/components/features/rules/preview-primitives";
-import { ANNOTATION_INK, PreviewFrame } from "@/components/features/rules/preview-primitives";
+import { Annotation, ANNOTATION_INK, PreviewFrame } from "@/components/features/rules/preview-primitives";
 import { cn } from "@/lib/utils";
 
 // Authored previews for a11y-1..a11y-3:
@@ -37,19 +37,7 @@ function Kbd({ children }: { children: ReactNode }) {
 }
 
 // Evidence annotation: mono, tabular, muted. Numbers only earn ink here.
-function Annotation({ children, className }: { children: ReactNode; className?: string }) {
-    return (
-        <span
-            className={cn(
-                "font-mono text-[10px] tabular-nums",
-                ANNOTATION_INK,
-                className
-            )}
-        >
-            {children}
-        </span>
-    );
-}
+const ANNOT = `font-mono text-[10px] tabular-nums ${ANNOTATION_INK}`;
 
 // Fine annotation (lens badges, narration) — 8–9px is reserved for these.
 const FINE = `font-mono text-[9px] tabular-nums ${ANNOTATION_INK}`;
@@ -93,9 +81,9 @@ function FocusScene({ variant }: DemoProps) {
                     <div className="flex items-center gap-1.5">
                         <Kbd>Tab</Kbd>
                         <Kbd>Tab</Kbd>
-                        <span className={FINE}>focus is on &ldquo;Save changes&rdquo;</span>
+                        <Annotation className={FINE}>focus is on &ldquo;Save changes&rdquo;</Annotation>
                     </div>
-                    <Annotation className="block">
+                    <Annotation className={cn(ANNOT, "block")}>
                         {isDo
                             ? "focus-visible:ring-2 ring-offset-2"
                             : "outline: none — nothing replaces it"}
@@ -125,9 +113,9 @@ function CardField({ isDo, lens }: { isDo: boolean; lens: "color" | "gray" }) {
                         Card number
                     </span>
                 ) : null}
-                <span className={cn(FINE, "ml-auto")}>
+                <Annotation className={cn(FINE, "ml-auto")}>
                     {lens === "color" ? "full color" : "grayscale(1)"}
-                </span>
+                </Annotation>
             </div>
             <div className={cn("space-y-1", lens === "gray" && "grayscale")}>
                 <div className="flex h-7 w-full items-center justify-between gap-2 rounded-md border border-rose-500 bg-white px-2 dark:border-rose-400 dark:bg-neutral-900">
@@ -163,7 +151,7 @@ function ErrorSignalScene({ variant }: DemoProps) {
         <PreviewFrame className="flex flex-col justify-center gap-2">
             <CardField isDo={isDo} lens="color" />
             <CardField isDo={isDo} lens="gray" />
-            <Annotation>
+            <Annotation className={ANNOT}>
                 {isDo
                     ? "3 signals — icon and text survive"
                     : "1 signal — gray border, no meaning"}
@@ -195,7 +183,7 @@ function TargetSpacingScene({ variant }: DemoProps) {
             <span className="text-[10px] font-medium text-neutral-500 dark:text-neutral-400">
                 Delete &ldquo;Q3 report.pdf&rdquo;?
             </span>
-            <span className={FINE}>stray tap · 3px past Cancel</span>
+            <Annotation className={FINE}>stray tap · 3px past Cancel</Annotation>
             <div className="relative">
                 <div className={cn("flex items-center", isDo ? "gap-2" : "gap-0")}>
                     <span className={cn(BUTTON_SECONDARY, "h-11 w-[84px]")}>Cancel</span>
@@ -221,7 +209,7 @@ function TargetSpacingScene({ variant }: DemoProps) {
                 >
                     <span className="h-px w-full bg-blue-500 dark:bg-blue-400" />
                 </span>
-                <Annotation>
+                <Annotation className={ANNOT}>
                     {isDo ? "8px gutter · centroid → gutter" : "0px gutter · centroid → Delete"}
                 </Annotation>
             </div>

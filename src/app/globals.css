@@ -9,6 +9,15 @@
 /* Enable class-based dark mode toggling (Tailwind v4) */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Phone-only styles, decided by CSS at first paint: a narrow screen, or a
+   touch screen held in landscape. media.ts holds the same query for scripts
+   (PHONE_QUERY), and a test keeps the two strings equal. */
+@custom-variant phone {
+  @media (max-width: 640px), (pointer: coarse) and (max-height: 500px) {
+    @slot;
+  }
+}
+
 /* ==========================================================================
    DESIGN TOKENS
 
@@ -23,25 +32,44 @@
    ========================================================================== */
 
 :root {
-  /* Surfaces, back to front */
+  /* Surfaces, back to front. The shell is two layers: the rail sits on
+     the backdrop and the sheet (surface) floats over it; previews paint on
+     the stage. canvas stays for the pages that are not inside the shell. */
+  --ax-backdrop: #f4f4f4;
   --ax-canvas: #fafafa;
   --ax-surface: #ffffff;
+  --ax-stage: #ffffff;
   --ax-sunken: #fafafa;
+  --ax-raised: #ffffff;
+  --ax-overlay: #ffffff;
   --ax-fill: #f5f5f5;
   --ax-fill-strong: #e5e5e5;
   --ax-inverse: #171717;
   --ax-on-inverse: #ffffff;
 
+  /* Hover and press fills. Translucent, so one value shows on every tone
+     behind it: the backdrop, the sheet and the stage (an opaque fill equal
+     to the backdrop vanished on the rail). Press is always the deeper step. */
+  --ax-hover: rgb(0 0 0 / 0.04);
+  --ax-press: rgb(0 0 0 / 0.09);
+
   /* Text. ink-muted is the floor for any text a reader is meant to read
-     (≥4.5:1 on canvas and surface); ink-faint is for glyphs and placeholders. */
+     (≥4.5:1 on backdrop, canvas, surface, sunken, stage, raised and overlay),
+     and for any glyph that means something on its own, placeholders included.
+     #737373 was 4.31:1 on the backdrop, hence #666666. ink-faint is decorative
+     only: a separator, or an icon beside a label that already says the same
+     thing, hidden from assistive tech. In light mode it is under 3:1 on every
+     surface, so nothing a reader needs may depend on it. */
   --ax-ink: #171717;
   --ax-ink-secondary: #525252;
-  --ax-ink-muted: #737373;
+  --ax-ink-muted: #666666;
   --ax-ink-faint: #a3a3a3;
 
-  /* Hairlines */
-  --ax-line: rgb(0 0 0 / 0.1);
-  --ax-line-strong: rgb(0 0 0 / 0.16);
+  /* Hairlines. Decorative: they separate regions that are already told
+     apart by layout or tone, so they owe no 3:1 (WCAG 1.4.11). A control
+     whose edge is its only cue gets line-strong or a fill as well. */
+  --ax-line: rgb(0 0 0 / 0.08);
+  --ax-line-strong: rgb(0 0 0 / 0.14);
 
   /* The one focus ring */
   --ax-ring: #2563eb;
@@ -64,6 +92,26 @@
   /* A control floating free over content, like the sidebar's expand button. */
   --ax-shadow-overlay: 0 12px 34px rgba(0, 0, 0, 0.1);
   --ax-shadow-inset: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+  /* A keycap's edge: line-strong when the shortcut is live, line when it is
+     off. Inset, so the key keeps its size either way. */
+  --ax-shadow-keycap: inset 0 0 0 1px var(--ax-line-strong);
+  --ax-shadow-keycap-off: inset 0 0 0 1px var(--ax-line);
+  /* The sheet over the backdrop. The tone step alone is ~1.1:1, so the ring
+     carries the edge, and forced colors swap in a real border (below). */
+  --ax-shadow-sheet:
+    0 0 0 1px rgb(0 0 0 / 0.06),
+    0 1px 2px rgb(0 0 0 / 0.04),
+    0 4px 16px -4px rgb(0 0 0 / 0.06);
+  /* The active rail item: a small piece of the sheet, same ring. */
+  --ax-shadow-item:
+    0 0 0 1px rgb(0 0 0 / 0.06),
+    0 1px 2px rgb(0 0 0 / 0.05);
+  /* A card that floats over the shell: the rule peek, the palette, the
+     category label on the rail. */
+  --ax-shadow-popover:
+    0 0 0 1px rgb(0 0 0 / 0.06),
+    0 2px 4px rgb(0 0 0 / 0.04),
+    0 12px 32px -8px rgb(0 0 0 / 0.16);
 
   /* Motion durations. showcase-engine.ts mirrors these as DUR, and
      design-system.test.ts holds the two in step. */
@@ -73,21 +121,28 @@
 }
 
 .dark {
+  --ax-backdrop: #0a0a0a;
   --ax-canvas: #0a0a0a;
-  --ax-surface: #171717;
+  --ax-surface: #161616;
+  --ax-stage: #111111;
   --ax-sunken: #111111;
+  --ax-raised: #333333;
+  --ax-overlay: #1f1f1f;
   --ax-fill: #262626;
   --ax-fill-strong: #404040;
   --ax-inverse: #fafafa;
   --ax-on-inverse: #0a0a0a;
 
-  --ax-ink: #f5f5f5;
-  --ax-ink-secondary: #d4d4d4;
+  --ax-hover: rgb(255 255 255 / 0.05);
+  --ax-press: rgb(255 255 255 / 0.08);
+
+  --ax-ink: #ededed;
+  --ax-ink-secondary: #b4b4b4;
   --ax-ink-muted: #a3a3a3;
   --ax-ink-faint: #737373;
 
-  --ax-line: rgb(255 255 255 / 0.1);
-  --ax-line-strong: rgb(255 255 255 / 0.16);
+  --ax-line: rgb(255 255 255 / 0.08);
+  --ax-line-strong: rgb(255 255 255 / 0.14);
 
   --ax-ring: #60a5fa;
 
@@ -105,19 +160,34 @@
   --ax-scrim: rgb(0 0 0 / 0.5);
   --ax-shadow-overlay: 0 14px 42px rgba(0, 0, 0, 0.35);
   --ax-shadow-inset: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  --ax-shadow-keycap: inset 0 0 0 1px var(--ax-line-strong);
+  --ax-shadow-keycap-off: inset 0 0 0 1px var(--ax-line);
+  /* Dark surfaces separate by tone and ring; a drop shadow on near-black
+     does not read. */
+  --ax-shadow-sheet: 0 0 0 1px rgb(255 255 255 / 0.07);
+  --ax-shadow-item: 0 0 0 1px rgb(255 255 255 / 0.07);
+  --ax-shadow-popover:
+    0 0 0 1px rgb(255 255 255 / 0.09),
+    0 16px 40px -12px rgb(0 0 0 / 0.7);
 }
 
 /* `inline` makes each utility emit the raw `var(--ax-*)` (and the font
    stacks' `var(--font-*)` from next/font, which is set on <body>), so the value
    resolves on the element itself rather than once at :root. */
 @theme inline {
+  --color-backdrop: var(--ax-backdrop);
   --color-canvas: var(--ax-canvas);
   --color-surface: var(--ax-surface);
+  --color-stage: var(--ax-stage);
   --color-sunken: var(--ax-sunken);
+  --color-raised: var(--ax-raised);
+  --color-overlay: var(--ax-overlay);
   --color-fill: var(--ax-fill);
   --color-fill-strong: var(--ax-fill-strong);
   --color-inverse: var(--ax-inverse);
   --color-on-inverse: var(--ax-on-inverse);
+  --color-hover: var(--ax-hover);
+  --color-press: var(--ax-press);
   --color-ink: var(--ax-ink);
   --color-ink-secondary: var(--ax-ink-secondary);
   --color-ink-muted: var(--ax-ink-muted);
@@ -135,6 +205,11 @@
   --shadow-panel: var(--ax-shadow-panel);
   --shadow-card: var(--ax-shadow-card);
   --shadow-overlay: var(--ax-shadow-overlay);
+  --shadow-sheet: var(--ax-shadow-sheet);
+  --shadow-item: var(--ax-shadow-item);
+  --shadow-popover: var(--ax-shadow-popover);
+  --shadow-keycap: var(--ax-shadow-keycap);
+  --shadow-keycap-off: var(--ax-shadow-keycap-off);
 
   --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-source-serif), ui-serif, Georgia, serif;
@@ -145,7 +220,18 @@
    utility uses it, because inline styles (sidebar.tsx, the drag showcases)
    read `var(--ease-*)` directly and Tailwind cannot see those uses. */
 @theme static {
-  /* Concentric radii: card 28 = well 20 + 8 padding; well 20 = frame 10 + 10. */
+  /* Concentric radii: card 28 = well 20 + 8 padding; well 20 = frame 10 + 10.
+     The shell's sheet is 12, over a 10 preview frame. Its controls are 8,
+     tooltips 6, kbd keys 4, and a showcase progress track 2. Named so each
+     consumer says which shape it means: they equal Tailwind's lg/md/sm by
+     value, not by reference, and the numeric scale stays Tailwind's. */
+  --radius-sheet: 12px;
+  --radius-control: 8px;
+  --radius-tip: 6px;
+  /* A segment or item inside a control: 8 track − 3 padding. */
+  --radius-item: 5px;
+  --radius-kbd: 4px;
+  --radius-track: 2px;
   --radius-frame: 10px;
   --radius-field: 16px;
   --radius-well: 20px;
@@ -172,11 +258,6 @@
 @utility duration-medium {
   --tw-duration: var(--motion-medium);
   transition-duration: var(--motion-medium);
-}
-
-@utility duration-slow {
-  --tw-duration: var(--motion-slow);
-  transition-duration: var(--motion-slow);
 }
 
 /* ==========================================================================
@@ -281,15 +362,6 @@
   .glass {
     background: var(--ax-surface);
     border: 1px solid var(--ax-line);
-  }
-
-  /*
-   * Shared elevation for the floating sidebar and the right-side rule drawer.
-   * A soft two-layer ambient + key shadow rather than one heavy drop, so the
-   * panels read as gently lifted instead of casting a hard cloud.
-   */
-  .panel-shadow {
-    box-shadow: var(--ax-shadow-panel);
   }
 
   .rule-card {
@@ -505,6 +577,24 @@
 
   .skip-link:focus {
     transform: translateY(0);
+  }
+
+  /* Forced colors drop every box-shadow, and with them the only edge the
+     sheet, the active rail item and a popover have against the backdrop.
+     Keyed to the utilities themselves (any variant, `md:shadow-sheet`
+     included) so nothing that takes the elevation can forget the fallback.
+     :where() keeps it at zero specificity. The item gets an inset outline,
+     not a border, so selecting it never shifts the row; this layer outranks
+     base, so it stands aside while the focus ring is showing. */
+  @media (forced-colors: active) {
+    :where([class~="shadow-sheet"], [class*=":shadow-sheet"], [class~="shadow-popover"], [class*=":shadow-popover"]) {
+      border: 1px solid CanvasText;
+    }
+
+    :where([class~="shadow-item"], [class*=":shadow-item"]):not(:focus-visible) {
+      outline: 2px solid Highlight;
+      outline-offset: -2px;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {

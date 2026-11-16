@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import {
+    Annotation,
     ANNOTATION_INK,
     ANNOTATION_INK_ON_FILL,
     PreviewFrame,
@@ -38,18 +39,30 @@ function Note({
     children,
     className,
     ink = ANNOTATION_INK,
+    keep = false,
 }: {
     children: ReactNode;
     className?: string;
     ink?: string;
+    keep?: boolean;
 }) {
-    return <span className={cn(NOTE, ink, className)}>{children}</span>;
+    return (
+        <Annotation className={cn(NOTE, ink, className)} keep={keep}>
+            {children}
+        </Annotation>
+    );
+}
+
+// Product text in the evidence face: a timestamp, a setting's value, a card's
+// expiry. It belongs to the scene, so it never becomes an <Annotation>.
+function Meta({ children }: { children: ReactNode }) {
+    return <span className={cn(NOTE, PRODUCT_MUTED)}>{children}</span>;
 }
 
 // Evidence annotation pinned to a white card that stays white in dark mode
 // (contrast math only holds against the surface it quotes).
 function CardNote({ children, className }: { children: ReactNode; className?: string }) {
-    return <span className={cn(NOTE, "text-neutral-500", className)}>{children}</span>;
+    return <Annotation className={cn(NOTE, "text-neutral-500", className)}>{children}</Annotation>;
 }
 
 // A label that names a palette step has to name the step actually painted,
@@ -243,7 +256,7 @@ function SemanticColors({ variant }: { variant: Variant }) {
                     <span className="text-[11px] font-semibold text-neutral-800 dark:text-neutral-100">
                         Priya Raman
                     </span>
-                    <Note>2h</Note>
+                    <Meta>2h</Meta>
                 </div>
                 <p className="mt-1.5 text-[10px] text-neutral-500 dark:text-neutral-400">
                     Shipped the new onboarding flow to every workspace
@@ -318,7 +331,7 @@ function BorderColors({ variant }: { variant: Variant }) {
                         <span className="text-[11px] font-medium text-neutral-800 dark:text-neutral-100">
                             {label}
                         </span>
-                        <Note>{value}</Note>
+                        <Meta>{value}</Meta>
                     </div>
                 ))}
             </div>
@@ -456,15 +469,15 @@ function DarkModeNotInverted({ variant }: { variant: Variant }) {
                             >
                                 team-offsite.jpg
                             </span>
-                            <span className={cn(NOTE, inverted ? "text-neutral-500" : "text-neutral-400")}>
+                            <Annotation className={cn(NOTE, inverted ? "text-neutral-500" : "text-neutral-400")}>
                                 {inverted ? "photo renders as a negative" : "photo untouched"}
-                            </span>
+                            </Annotation>
                         </div>
                     </div>
                 </div>
-                <span className={cn(NOTE, "text-neutral-400")}>
+                <Annotation className={cn(NOTE, "text-neutral-400")}>
                     {inverted ? "invert(1) · brand #3b82f6 → #c47d09" : "card 800 on 900 · brand sat 91% → 55%"}
-                </span>
+                </Annotation>
             </div>
         </div>
     );
@@ -488,7 +501,7 @@ function AccessibleContrast({ variant }: { variant: Variant }) {
                 <span className={cn("mt-1 block text-[10px]", guessed ? "text-[#aaaaaa]" : "text-[#737373]")}>
                     Used for receipts only
                 </span>
-                <span
+                <Annotation
                     className={cn(
                         "mt-1 flex items-center gap-1 leading-3",
                         NOTE,
@@ -501,7 +514,7 @@ function AccessibleContrast({ variant }: { variant: Variant }) {
                         <Check aria-hidden className="size-3 shrink-0 stroke-[2]" />
                     )}
                     {guessed ? "#aaaaaa · 2.3:1 fails AA" : "#737373 · 4.7:1 passes AA"}
-                </span>
+                </Annotation>
             </div>
         </div>
     );
@@ -552,7 +565,9 @@ function OpacityOverNewColors({ variant }: { variant: Variant }) {
                     {handPicked ? "#dcebf5 + #1967d2" : "blue-500/15"}
                 </Note>
             </div>
-            <Note className="mt-1">
+            {/* In light mode the alpha fills and the hand-picked hexes paint
+                near alike, so a tile keeps the verdict. */}
+            <Note className="mt-1" keep>
                 {handPicked ? "3 unrelated hexes · rebrand = 3 edits" : "blue-500 / alpha · rebrand = 1 edit"}
             </Note>
         </div>
@@ -586,7 +601,7 @@ function NeutralImageOutlines({ variant }: { variant: Variant }) {
                         onLight
                     )}
                 />
-                <span className={cn(NOTE, "shrink-0 text-neutral-500")}>on #ffffff</span>
+                <Annotation className={cn(NOTE, "shrink-0 text-neutral-500")}>on #ffffff</Annotation>
             </div>
             <div className="flex items-center gap-2 rounded-lg bg-[#0a0a0a] p-1">
                 <div
@@ -597,9 +612,10 @@ function NeutralImageOutlines({ variant }: { variant: Variant }) {
                     )}
                 />
                 {/* Pinned dark surface, so pinned light ink: neutral-500 here is 4.2:1. */}
-                <span className={cn(NOTE, "shrink-0 text-neutral-400")}>on #0a0a0a</span>
+                <Annotation className={cn(NOTE, "shrink-0 text-neutral-400")}>on #0a0a0a</Annotation>
             </div>
-            <Note>
+            {/* On a light page the two outlines paint alike, so a tile keeps the verdict. */}
+            <Note keep>
                 {tinted
                     ? "slate-900/10 pinned — dark edge dissolves"
                     : "black/10 → white/10 — edge holds on both"}
@@ -633,7 +649,7 @@ function ShadowsReplaceBorders({ variant }: { variant: Variant }) {
                         <span className="text-[11px] font-medium text-neutral-800 dark:text-neutral-100">
                             {name}
                         </span>
-                        <Note>{expiry}</Note>
+                        <Meta>{expiry}</Meta>
                     </div>
                 </div>
             ))}
