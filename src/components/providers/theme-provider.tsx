@@ -1,15 +1,13 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-
-type ThemeMode = "light" | "dark" | "system";
+import { readThemeMode, writeThemeMode, type ThemeMode } from "@/lib/theme-storage";
 
 type ThemeContextValue = {
   mode: ThemeMode;
   toggleTheme: () => void;
 };
 
-const storageKey = "axiom-theme:v1";
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 function getStoredMode(): ThemeMode {
@@ -17,8 +15,7 @@ function getStoredMode(): ThemeMode {
     return "system";
   }
 
-  const stored = window.localStorage.getItem(storageKey);
-  return stored === "light" || stored === "dark" || stored === "system" ? stored : "system";
+  return readThemeMode(() => window.localStorage);
 }
 
 function getSystemDark() {
@@ -73,7 +70,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const toggleTheme = useCallback(() => {
     const nextMode: ThemeMode = document.documentElement.classList.contains("dark") ? "light" : "dark";
-    window.localStorage.setItem(storageKey, nextMode);
+    writeThemeMode(() => window.localStorage, nextMode);
     setMode(nextMode);
     applyTheme(nextMode, true);
   }, []);
