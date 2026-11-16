@@ -1,0 +1,475 @@
+/*
+ * The catalog shell: a 56px rail is the back layer and one rounded
+ * sheet floats over it. The sheet hosts two layers: the gallery wall, which
+ * stays mounted under a rule (hidden and inert, so it keeps its own scroll),
+ * and the rule view, which scrolls the sheet itself.
+ *
+ * Colours come from var(--ax-*) only, radii from var(--radius-*), and the
+ * geometry from the --shell-* properties shell.tsx sets from geometry.ts.
+ * feature-css.test.ts holds every stylesheet under components/{shell,rule,
+ * gallery} to those rules, and to PHONE_QUERY as the one phone cut-over.
+ */
+
+/* ── Frame ─────────────────────────────────────────────────────────── */
+
+.shell {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--ax-backdrop);
+  color: var(--ax-ink);
+  font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Sheet ─────────────────────────────────────────────────────────── */
+
+/* Expanding the rail moves the sheet by translate, never by
+   width: it is laid out at the collapsed rail, translated by --shell-shift
+   while [data-moving], then reflows once at [data-wide]. */
+.shell-sheet {
+  position: absolute;
+  top: var(--shell-inset);
+  right: var(--shell-inset);
+  bottom: var(--shell-inset);
+  left: var(--shell-rail);
+  border-radius: var(--radius-sheet);
+  background: var(--ax-surface);
+  box-shadow: var(--ax-shadow-sheet);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  container: sheet / inline-size;
+  isolation: isolate;
+  outline: none;
+}
+.shell[data-wide] .shell-sheet { left: var(--shell-rail-open); }
+.shell-sheet[data-moving] { transition: transform var(--shell-open-ms) var(--ease-drawer); }
+.shell-sheet[data-moving="close"] {
+  transition-duration: var(--shell-close-ms);
+  transition-timing-function: var(--ease-out-strong);
+}
+
+/* ── Layers ────────────────────────────────────────────────────────── */
+
+/* The wall is its own scroller, so its position survives a rule above it.
+   visibility keeps its layout and scrollTop; display: none would drop both.
+   CatalogApp adds `inert` alongside [data-hidden]. */
+.shell-wall {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.shell-wall[data-hidden] { visibility: hidden; }
+.shell-rule {
+  position: relative;
+  z-index: 1;
+  min-height: 100%;
+  background: var(--ax-surface);
+}
+
+/* ── Shared controls ───────────────────────────────────────────────── */
+
+/* One 32px control height across headers, centred on the header row. */
+.shell-ctl {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  min-width: 32px;
+  padding: 0 10px;
+  border-radius: var(--radius-control);
+  color: var(--ax-ink-secondary);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 140ms var(--ease-out-strong),
+    color 140ms var(--ease-out-strong);
+}
+.shell-ctl svg { width: 16px; height: 16px; flex: none; stroke-width: 1.75; }
+@media (hover: hover) and (pointer: fine) {
+  .shell-ctl:hover { background: var(--ax-hover); color: var(--ax-ink); }
+}
+.shell-ctl:active { background: var(--ax-press); }
+
+/* Anything the keyboard starts is 0ms. Keyed on <html>, not on .shell, so
+   content portalled to <body> (tooltips, overlays) follows it too. */
+:root[data-input="keyboard"] .shell-ctl { transition: none; }
+
+/* ── Rule ↔ wall morph ─────────────────────────────────────────────── */
+
+/* runViewTransition (view-transition.ts) names the pair, sets data-vt and
+   owns the durations. These refine the snapshots: the leaving one keeps its
+   own size, centred, and is gone in 90ms (stretched, it read as a ghost),
+   and a title is text, never a scaled bitmap. */
+:root[data-vt="in"]::view-transition-old(rule-canvas),
+:root[data-vt="in"]::view-transition-old(rule-title),
+:root[data-vt="out"]::view-transition-old(rule-canvas),
+:root[data-vt="out"]::view-transition-old(rule-title) { animation-duration: 90ms; }
+:root[data-vt="in"]::view-transition-old(rule-canvas),
+:root[data-vt="out"]::view-transition-old(rule-canvas) { object-fit: none; object-position: center; }
+:root[data-vt="in"]::view-transition-old(rule-title),
+:root[data-vt="in"]::view-transition-new(rule-title),
+:root[data-vt="out"]::view-transition-old(rule-title),
+:root[data-vt="out"]::view-transition-new(rule-title) {
+  height: 100%;
+  object-fit: none;
+  object-position: left top;
+}
+
+/* ── Phone ─────────────────────────────────────────────────────────── */
+
+/* PHONE_QUERY: the sheet runs full width under the top bar and,
+   on a rule, leaves room for the bottom strip. */
+@media (max-width: 640px), (pointer: coarse) and (max-height: 500px) {
+  .shell .shell-sheet,
+  .shell[data-wide] .shell-sheet {
+    top: calc(var(--shell-phone-top) + env(safe-area-inset-top));
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+    transform: none;
+  }
+  .shell[data-view="rule"] .shell-sheet {
+    padding-bottom: calc(var(--shell-phone-foot) + env(safe-area-inset-bottom));
+  }
+}
+/* A phone held sideways: a 40px bar and only the run, so the rule keeps the height. */
+@media (pointer: coarse) and (max-height: 500px) {
+  .shell .shell-sheet,
+  .shell[data-wide] .shell-sheet { top: calc(var(--shell-phone-top-short) + env(safe-area-inset-top)); }
+  .shell[data-view="rule"] .shell-sheet {
+    padding-bottom: calc(var(--shell-phone-foot-short) + env(safe-area-inset-bottom));
+  }
+}
+
+/* ── Reduced motion and forced colours ─────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .shell-sheet[data-moving] { transition: none; }
+}
+
+/* Forced colours drop every box-shadow, and with it the sheet's only edge. */
+@media (forced-colors: active) {
+  .shell-sheet { border: 1px solid CanvasText; }
+}
+
+/* ── Rail and expanded list ────────────────────────────────────────── */
+
+/* The marks are links: resting and visited both clear 3:1 on the backdrop
+   (WCAG 1.4.11), resting only just, so a run still reads as quiet. */
+.shell-rail {
+  --rail-mark: color-mix(in oklch, var(--ax-ink) 44%, var(--ax-backdrop));
+  --rail-visited: color-mix(in oklch, var(--ax-ink) 58%, var(--ax-backdrop));
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--shell-rail-open);
+  user-select: none;
+}
+.dark .shell-rail {
+  --rail-mark: color-mix(in oklch, var(--ax-ink) 43%, var(--ax-backdrop));
+  --rail-visited: color-mix(in oklch, var(--ax-ink) 58%, var(--ax-backdrop));
+}
+.shell-rail :focus-visible { outline: 2px solid var(--ax-ring); outline-offset: 2px; }
+.shell-rail button { touch-action: manipulation; }
+.shell-rail a { text-decoration: none; }
+.rail-brand-row {
+  position: absolute;
+  top: var(--shell-inset);
+  left: 8px;
+  right: 8px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+}
+.rail-home {
+  display: grid;
+  grid-template-columns: 40px auto;
+  align-items: center;
+  height: 40px;
+  min-width: 40px;
+  border-radius: var(--radius-control);
+  color: var(--ax-ink);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: background-color 140ms var(--ease-out-strong);
+}
+.rail-logo-tile {
+  width: 28px;
+  height: 28px;
+  justify-self: center;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-control);
+  background: var(--ax-inverse);
+  color: var(--ax-on-inverse);
+}
+/* The name and the toggle label always render; the open state, or the boot
+   attribute before the rail adopts the stored choice, reveals them. */
+.rail-brand-name, .rail-button-label, .rail-icon-collapse { display: none; }
+:is(.shell[data-open], :root[data-rail="open"] .shell:not([data-rail-ready])) :is(.rail-brand-name, .rail-button-label) { display: inline; }
+:is(.shell[data-open], :root[data-rail="open"] .shell:not([data-rail-ready])) .rail-icon-collapse { display: block; }
+:is(.shell[data-open], :root[data-rail="open"] .shell:not([data-rail-ready])) .rail-icon-expand { display: none; }
+.rail-brand-name { margin-left: 4px; }
+.rail-region { position: absolute; top: 60px; bottom: 128px; left: 0; width: var(--shell-rail); }
+.shell[data-open] .rail-region { visibility: hidden; }
+.rail-list {
+  position: absolute;
+  top: 60px;
+  bottom: 128px;
+  left: 0;
+  width: var(--shell-rail-open);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  padding: 0 8px 16px;
+  visibility: hidden;
+  mask-image: linear-gradient(to bottom, black calc(100% - 24px), transparent);
+}
+.rail-list[data-scrolled] { mask-image: linear-gradient(to bottom, transparent, black 12px, black calc(100% - 24px), transparent); }
+.shell[data-open] .rail-list { visibility: visible; }
+.rail-list ul { list-style: none; margin: 0; padding: 0; }
+/* Icon and text columns are frozen coordinates: 8 + 11 = 19; 8 + 39 = 47. */
+.rail-catrow {
+  position: relative;
+  width: 100%;
+  height: 36px;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px 0 39px;
+  border-radius: var(--radius-control);
+  color: var(--ax-ink-secondary);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+.rail-catrow > svg { position: absolute; left: 11px; width: 18px; height: 18px; flex: none; }
+.rail-catrow[data-active] { color: var(--ax-ink); }
+.rail-count { margin-left: auto; font-size: 12px; line-height: 16px; color: var(--ax-ink-muted); font-variant-numeric: tabular-nums; }
+.rail-minirun { display: flex; align-items: center; height: 24px; margin: -4px 0 4px 37px; max-width: calc(100% - 44px); overflow: hidden; }
+.rail-minidot { flex: none; width: 6px; height: 6px; display: grid; place-items: center; }
+.rail-minidot::before { content: ""; width: 4px; height: 4px; border-radius: 9999px; background: var(--rail-mark); }
+.rail-minidot[data-visited]::before { background: var(--rail-visited); }
+.rail-minidot[data-hot]::before { width: 6px; height: 6px; background: var(--ax-ink); }
+.rail-minidot[data-current]::before { width: 2px; height: 10px; border-radius: var(--radius-kbd); background: var(--ax-ink); }
+.rail-sublabel { padding: 12px 8px 4px 39px; font-size: 12px; line-height: 16px; font-weight: 500; color: var(--ax-ink-muted); }
+.rail-rulerow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 4px 8px 4px 39px;
+  border-radius: var(--radius-control);
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--ax-ink-secondary);
+}
+.rail-rowdot { position: absolute; left: 18px; top: 50%; width: 4px; height: 4px; margin-top: -2px; border-radius: 9999px; background: var(--rail-mark); }
+.rail-rulerow[data-visited] .rail-rowdot { background: var(--rail-visited); }
+.rail-rulerow[aria-current="page"] { color: var(--ax-ink); background: var(--ax-raised); box-shadow: var(--ax-shadow-item); }
+.rail-rulerow[aria-current="page"] .rail-rowdot { width: 4px; height: 14px; margin-top: -7px; border-radius: var(--radius-kbd); background: var(--ax-ink); }
+.rail-list [data-dim] { opacity: 0.35; }
+.rail-collection { margin-top: 16px; }
+.rail-bottom { position: absolute; left: 8px; right: 8px; bottom: 8px; display: flex; flex-direction: column; gap: 4px; }
+.shell:not([data-open]):not([data-wide]) .rail-bottom { right: auto; width: 40px; }
+.rail-button {
+  position: relative;
+  width: 100%;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  border-radius: var(--radius-control);
+  color: var(--ax-ink-muted);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.rail-button > svg { position: absolute; left: 11px; width: 18px; height: 18px; flex: none; }
+/* Collapsed, the button is a 40px icon square: its hover fill and ring stay clear of the sheet. */
+:is(.shell[data-open], :root[data-rail="open"] .shell:not([data-rail-ready])) .rail-button { padding: 0 8px 0 39px; }
+@media (hover: hover) and (pointer: fine) {
+  .rail-home:hover, .rail-catrow:hover, .rail-rulerow:hover, .rail-button:hover { background: var(--ax-hover); color: var(--ax-ink); }
+}
+.rail-home:active, .rail-catrow:active, .rail-rulerow:active, .rail-button:active { background: var(--ax-press); }
+
+/* The boot attribute governs first paint, before the rail adopts the stored choice. */
+:root[data-rail="open"] .shell:not([data-rail-ready]) .shell-sheet { left: var(--shell-rail-open); }
+:root[data-rail="open"] .shell:not([data-rail-ready]) .rail-list { visibility: visible; }
+:root[data-rail="open"] .shell:not([data-rail-ready]) .rail-region { visibility: hidden; }
+:root[data-rail="open"] .shell:not([data-rail-ready]) .rail-bottom { right: 8px; width: auto; }
+:root[data-input="keyboard"] .rail-home { transition: none; }
+@media (prefers-reduced-motion: reduce) { .rail-home { transition: none; } }
+@media (max-width: 640px), (pointer: coarse) and (max-height: 500px) {
+  .shell-rail { display: none; }
+  :root[data-rail="open"] .shell:not([data-rail-ready]) .shell-sheet { left: 0; }
+}
+@media (forced-colors: active) {
+  .rail-rulerow[aria-current="page"] { outline: 1px solid CanvasText; }
+  .rail-rowdot, .rail-minidot::before { background: CanvasText; }
+}
+
+/* ── Magnify strip ──────────────────────────────────────── */
+
+/* The collapsed rail's dot column. Items sit at top 0 and magnify-strip.tsx
+   places them with transforms; until its first layout the column is hidden,
+   so the server paint never shows the marks stacked. */
+.strip-col {
+  position: absolute;
+  inset: 0;
+  outline: none;
+  cursor: pointer;
+  touch-action: none;
+}
+.strip-col:not([data-ready]) { visibility: hidden; }
+/* Focus is on one link: a quiet frame says "you are in the strip". A sibling
+   of the column, so a scrolling column does not carry it away; keyed on the
+   column's data-focus, because :has() over this subtree re-runs every paint. */
+.strip-frame {
+  position: absolute;
+  inset: 0 8px;
+  border-radius: var(--radius-frame);
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--ax-ring) 45%, var(--ax-backdrop));
+  pointer-events: none;
+  opacity: 0;
+}
+.strip-col[data-focus] + .strip-frame { opacity: 1; }
+/* Steady pitch (reduced motion, or a rail too short for legible marks): the
+   column scrolls inside the region, and only then. */
+.strip-col[data-steady] {
+  overflow-y: auto;
+  /* No lens to scrub when steady: touch scrolls the column, and a tap still opens. */
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  mask-image: linear-gradient(to bottom, transparent, black 10px, black calc(100% - 16px), transparent);
+}
+.strip-col[data-steady]::-webkit-scrollbar { display: none; }
+.strip-inner { position: relative; width: 100%; }
+.strip-run { list-style: none; margin: 0; padding: 0; }
+.strip-item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 0;
+  will-change: transform;
+}
+/* The link is the item's hit box: an empty 1px box at the slot's centre that
+   magnify-strip.tsx stretches to the slot's height. The mark beside it takes no
+   pointer, so a click lands on the link. The lens ring is its focus
+   indicator, so the link draws no outline. */
+.strip-link { position: absolute; left: 0; right: 0; top: -0.5px; height: 1px; outline: none; }
+.shell-rail .strip-link:focus-visible { outline: none; }
+.strip-mark {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 9999px;
+  background: var(--rail-mark);
+  pointer-events: none;
+  will-change: transform;
+}
+/* Marks: three steps of one grey (the rail list's steps), then ink. Later
+   rules win: hot over visited, the current rule over both. */
+.strip-item[data-visited] .strip-mark { background: var(--rail-visited); }
+.strip-col .strip-item[data-hot] .strip-mark { background: color-mix(in oklch, var(--ax-ink) 72%, var(--ax-backdrop)); }
+.strip-col .strip-item[data-active] .strip-mark {
+  width: 4px;
+  height: 14px;
+  margin: -7px 0 0 -2px;
+  background: var(--ax-ink);
+}
+.strip-cat-mark {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  pointer-events: none;
+  will-change: transform;
+}
+.strip-cat-mark svg { position: relative; display: block; }
+/* The run in play sits on a small piece of the sheet, as selected rail items do. */
+.strip-item[data-current-cat] .strip-cat-mark::before {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: var(--radius-tip);
+  background: var(--ax-raised);
+  box-shadow: var(--ax-shadow-item);
+}
+.strip-item[data-dim] .strip-mark,
+.strip-item[data-dim] .strip-cat-mark { opacity: 0.3; }
+/* Keyboard lens: a ring that follows the focused mark. */
+.strip-lens {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 24px;
+  height: 24px;
+  margin: -12px 0 0 -12px;
+  border-radius: 9999px;
+  box-shadow: 0 0 0 2px var(--ax-ring);
+  pointer-events: none;
+  opacity: 0;
+}
+.strip-col[data-focus] .strip-lens[data-on] { opacity: 1; }
+/* The scrub label beside the magnified mark, until the preview opens. */
+.strip-label {
+  position: fixed;
+  top: 0;
+  left: 64px;
+  z-index: 45;
+  max-width: 260px;
+  height: 24px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-tip);
+  background: var(--ax-inverse);
+  color: var(--ax-on-inverse);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 140ms var(--ease-out-strong), visibility 0s linear 140ms;
+}
+.strip-label > span { overflow: hidden; text-overflow: ellipsis; }
+.strip-label[data-on] { opacity: 1; visibility: visible; transition: opacity 100ms var(--ease-out-strong), visibility 0s; }
+.strip-label[data-cat] { background: var(--ax-overlay); color: var(--ax-ink); box-shadow: var(--ax-shadow-popover); }
+:root[data-input="keyboard"] .strip-label { transition: none; }
+/* Forced colours paint every background as Canvas and drop shadows, so marks
+   draw as borders and rings as outlines, both in the forced text colour
+   (currentColor). The current rule keeps its bar shape; the label names the
+   hot mark. */
+@media (forced-colors: active) {
+  .strip-mark { border: 6px solid; }
+  .strip-col .strip-item[data-active] .strip-mark { border-width: 2px; }
+  .strip-item[data-current-cat] .strip-cat-mark::before { outline: 1px solid; }
+  .strip-lens { outline: 2px solid; }
+  .strip-frame, .strip-label { border: 1px solid; }
+}
