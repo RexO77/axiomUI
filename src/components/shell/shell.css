@@ -123,10 +123,13 @@
   object-position: left top;
 }
 
-/* ── Phone ─────────────────────────────────────────────────────────── */
+/* ── Phone frame ───────────────────────────────────────────────────── */
 
-/* PHONE_QUERY: the sheet runs full width under the top bar and,
-   on a rule, leaves room for the bottom strip. */
+/* PHONE_QUERY decides at first paint, so hydration never flips the layout:
+   the sheet runs full width under the top bar and, on a rule, leaves room
+   for the bottom strip. The bar and the strip are in the server HTML on
+   every screen; wider screens never show them. */
+.phone-bar, .bstrip, .bstrip-solo { display: none; }
 @media (max-width: 640px), (pointer: coarse) and (max-height: 500px) {
   .shell .shell-sheet,
   .shell[data-wide] .shell-sheet {
@@ -140,16 +143,11 @@
   .shell[data-view="rule"] .shell-sheet {
     padding-bottom: calc(var(--shell-phone-foot) + env(safe-area-inset-bottom));
   }
+  /* The menu is open: the page behind it does not scroll. */
+  .shell[data-modal="menu"] .shell-sheet { overflow: hidden; }
+  .phone-bar { display: flex; }
+  .bstrip { display: block; }
 }
-/* A phone held sideways: a 40px bar and only the run, so the rule keeps the height. */
-@media (pointer: coarse) and (max-height: 500px) {
-  .shell .shell-sheet,
-  .shell[data-wide] .shell-sheet { top: calc(var(--shell-phone-top-short) + env(safe-area-inset-top)); }
-  .shell[data-view="rule"] .shell-sheet {
-    padding-bottom: calc(var(--shell-phone-foot-short) + env(safe-area-inset-bottom));
-  }
-}
-
 /* ── Reduced motion and forced colours ─────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
@@ -238,7 +236,7 @@
 .rail-list[data-scrolled] { mask-image: linear-gradient(to bottom, transparent, black 12px, black calc(100% - 24px), transparent); }
 .shell[data-open] .rail-list { visibility: visible; }
 .rail-list ul { list-style: none; margin: 0; padding: 0; }
-/* Icon and text columns are frozen coordinates: 8 + 11 = 19; 8 + 39 = 47. */
+/* Icon and text columns sit on fixed coordinates: 8 + 11 = 19; 8 + 39 = 47. */
 .rail-catrow {
   position: relative;
   width: 100%;
@@ -324,7 +322,7 @@
   .rail-rowdot, .rail-minidot::before { background: CanvasText; }
 }
 
-/* ── Magnify strip ──────────────────────────────────────── */
+/* ── Magnify strip ─────────────────────────────────────────────────── */
 
 /* The collapsed rail's dot column. Items sit at top 0 and magnify-strip.tsx
    places them with transforms; until its first layout the column is hidden,
@@ -434,7 +432,7 @@
   opacity: 0;
 }
 .strip-col[data-focus] .strip-lens[data-on] { opacity: 1; }
-/* The scrub label beside the magnified mark, until the preview opens. */
+/* The scrub label beside the magnified mark, when no peek card names it. */
 .strip-label {
   position: fixed;
   top: 0;
@@ -472,4 +470,455 @@
   .strip-item[data-current-cat] .strip-cat-mark::before { outline: 1px solid; }
   .strip-lens { outline: 2px solid; }
   .strip-frame, .strip-label { border: 1px solid; }
+}
+
+/* ── Phone top bar ─────────────────────────────────────────────────── */
+
+.phone-bar {
+  position: absolute;
+  top: env(safe-area-inset-top);
+  left: 0;
+  right: 0;
+  height: var(--shell-phone-top);
+  align-items: center;
+  gap: 4px;
+  padding: 0 max(2px, env(safe-area-inset-right)) 0 max(2px, env(safe-area-inset-left));
+  user-select: none;
+}
+/* Every phone control is a 44px target. */
+.phone-ctl { flex: none; width: 44px; min-width: 44px; height: 44px; padding: 0; color: var(--ax-ink); }
+.phone-ctl svg { width: 20px; height: 20px; }
+.phone-ctl:disabled { cursor: default; background: none; color: var(--ax-ink-muted); opacity: 0.5; }
+/* The location: the name truncates; the count never shrinks (200% zoom, long queries). */
+.phone-loc {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  color: var(--ax-ink);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.phone-loc-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.phone-loc-count { flex: none; color: var(--ax-ink-muted); font-weight: 500; font-variant-numeric: tabular-nums; }
+/* On a rule the location is Up: back to the wall at this rule's tile. */
+.phone-up {
+  flex: 0 1 auto;
+  height: 44px;
+  margin: 0 auto;
+  padding: 0 12px 0 6px;
+  gap: 2px;
+  border-radius: var(--radius-control);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 140ms var(--ease-out-strong);
+}
+.phone-up svg { flex: none; width: 20px; height: 20px; color: var(--ax-ink-muted); stroke-width: 1.75; }
+.phone-up .phone-loc-count { margin-left: 2px; }
+@media (hover: hover) and (pointer: fine) {
+  .phone-up:hover { background: var(--ax-hover); }
+}
+.phone-up:active { background: var(--ax-press); }
+:is(.phone-bar, .bstrip, .phone-menu) :focus-visible { outline: 2px solid var(--ax-ring); outline-offset: -2px; }
+:is(.phone-bar, .bstrip, .phone-menu) :is(a, button) { touch-action: manipulation; }
+
+/* ── Phone bottom strip ────────────────────────────────────────────── */
+
+/* Two levels in the thumb zone: the run of one category, and the category
+   icons (4 + 48 + 44 + 4, inside the 104px foot). The marks are links, so
+   resting and visited clear 3:1 on the surface, as the rail's do. */
+.bstrip {
+  --bstrip-rest: color-mix(in oklch, var(--ax-ink) 44%, var(--ax-surface));
+  --bstrip-seen: color-mix(in oklch, var(--ax-ink) 58%, var(--ax-surface));
+  --bstrip-hot: color-mix(in oklch, var(--ax-ink) 72%, var(--ax-surface));
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  padding: 4px max(4px, env(safe-area-inset-right)) calc(4px + env(safe-area-inset-bottom)) max(4px, env(safe-area-inset-left));
+  background: var(--ax-surface);
+  box-shadow: 0 -1px 0 var(--ax-line);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  /* The icon row returns at --motion-medium. Transform only. */
+  transition: transform 220ms var(--ease-out-strong);
+}
+.bstrip-row { display: flex; align-items: center; gap: 2px; height: 48px; }
+/* Up or down scrolls the rule; sideways scrubs (bottom-strip.tsx decides on the first 6px). */
+.bstrip-run {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 48px;
+  touch-action: pan-y;
+  cursor: pointer;
+  /* Marks never spill onto the buttons beside the run. */
+  overflow: clip;
+  overflow-clip-margin: 2px;
+}
+.bstrip-marks { margin: 0; padding: 0; list-style: none; }
+/* Items sit at the run's left edge; the paint places them with transforms. */
+.bstrip-item { position: absolute; top: 0; bottom: 0; left: 0; width: 0; will-change: transform; }
+/* The link is the mark's hit box: an empty 1px box the paint stretches to its slot. */
+.bstrip-link { position: absolute; top: 0; bottom: 0; left: -0.5px; width: 1px; outline: none; }
+.bstrip .bstrip-link:focus-visible { outline: none; }
+.bstrip-mark {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 9999px;
+  background: var(--bstrip-rest);
+  pointer-events: none;
+  will-change: transform;
+}
+.bstrip-item[data-visited] .bstrip-mark { background: var(--bstrip-seen); }
+.bstrip-item[data-hot] .bstrip-mark { background: var(--bstrip-hot); }
+.bstrip-item[data-active] .bstrip-mark {
+  width: 4px;
+  height: 20px;
+  margin: -10px 0 0 -2px;
+  border-radius: var(--radius-track);
+  background: var(--ax-ink);
+}
+/* Before the first paint, or with no script, the marks sit evenly at rest size and still link. */
+.bstrip-run:not([data-live]) .bstrip-item {
+  left: calc(10px + (100% - 20px) * var(--bstrip-i) / var(--bstrip-n));
+  width: calc((100% - 20px) / var(--bstrip-n));
+}
+.bstrip-run:not([data-live]) .bstrip-link { left: 0; width: 100%; }
+.bstrip-run:not([data-live]) .bstrip-mark { left: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; }
+.bstrip-run:not([data-live]) .bstrip-item[data-active] .bstrip-mark { width: 4px; height: 20px; margin: -10px 0 0 -2px; }
+/* Focus is on one mark: a ring round the run, and the lens on the mark. */
+.bstrip-run[data-focus]::before {
+  content: "";
+  position: absolute;
+  inset: 4px 0;
+  border-radius: var(--radius-frame);
+  box-shadow: inset 0 0 0 2px var(--ax-ring);
+  pointer-events: none;
+}
+
+/* The category row: the rail's icons, in colour, as 44px targets. The run
+   on show is a raised piece; the current rule's category carries a dot. */
+.bstrip-cats {
+  display: grid;
+  grid-template-columns: repeat(var(--rail-count), minmax(0, 1fr));
+  height: 44px;
+  touch-action: none;
+  transition: visibility 0s;
+}
+.bstrip-cat {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 44px;
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+.bstrip-cat svg { position: relative; width: 20px; height: 20px; }
+.bstrip-cat[data-shown]::before {
+  content: "";
+  position: absolute;
+  inset: 6px 4px;
+  border-radius: var(--radius-control);
+  background: var(--ax-raised);
+  box-shadow: var(--ax-shadow-item);
+}
+.bstrip-cat[data-current]::after {
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  border-radius: 9999px;
+  background: var(--ax-ink);
+}
+/* Reading down a rule, the icon row slides away at --motion-fast, leaving the run. */
+.shell[data-chrome-min] .bstrip { transform: translateY(44px); transition-duration: 140ms; }
+.shell[data-chrome-min] .bstrip-cats { visibility: hidden; transition: visibility 0s linear 140ms; }
+@media (pointer: coarse) and (max-height: 500px), (max-width: 351.98px), (max-width: 640px) and (max-height: 420px) {
+  .shell[data-chrome-min] .bstrip { transform: none; }
+}
+/* Under 352px: the one category button, which opens the menu as the contents. */
+.bstrip-solo {
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: var(--radius-control);
+  background: var(--ax-raised);
+  box-shadow: var(--ax-shadow-item);
+  color: var(--ax-ink-muted);
+  cursor: pointer;
+}
+.bstrip-solo svg { width: 20px; height: 20px; }
+.bstrip-solo svg + svg { width: 12px; height: 12px; margin-right: -4px; }
+/* A category icon pressed: "Color · 12, tap a dot", just above the strip. */
+.bstrip-told {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  margin: 0;
+  padding: 0 12px;
+  border-radius: var(--radius-control);
+  background: var(--ax-overlay);
+  box-shadow: var(--ax-shadow-popover);
+  color: var(--ax-ink);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: phone-fade-in 140ms var(--ease-out-strong);
+}
+.bstrip-told svg { flex: none; width: 16px; height: 16px; }
+.bstrip-told span { color: var(--ax-ink-muted); font-weight: 500; }
+
+/* The card that rises above the thumb while scrubbing. It always fits
+   between the bar and the strip: two panes, one when the screen is short,
+   the title alone when it is very short. */
+.bstrip-rise {
+  --rise-x: 8px;
+  position: fixed;
+  left: 0;
+  bottom: calc(var(--shell-phone-foot) + env(safe-area-inset-bottom));
+  z-index: 35;
+  width: min(380px, calc(100vw - 16px));
+  max-height: calc(100dvh - var(--shell-phone-top) - var(--shell-phone-foot) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 16px);
+  border-radius: var(--radius-sheet);
+  background: var(--ax-overlay);
+  box-shadow: var(--ax-shadow-popover);
+  overflow: clip;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  translate: var(--rise-x) 12px;
+  transition:
+    opacity 140ms var(--ease-out-strong),
+    translate 140ms var(--ease-out-strong),
+    visibility 0s linear 140ms;
+}
+.bstrip-rise[data-kind="cat"] { width: auto; max-width: calc(100vw - 16px); }
+.bstrip-rise[data-open] {
+  opacity: 1;
+  visibility: visible;
+  translate: var(--rise-x) 0;
+  transition:
+    opacity 220ms var(--ease-out-strong),
+    translate 140ms var(--ease-out-strong),
+    visibility 0s;
+}
+.bstrip-rise-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  margin: 0;
+  padding: 0 14px;
+  color: var(--ax-ink);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.bstrip-rise-title svg { flex: none; width: 16px; height: 16px; }
+.bstrip-rise-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.bstrip-rise-count { flex: none; margin-left: auto; padding-left: 8px; color: var(--ax-ink-muted); font-weight: 500; font-variant-numeric: tabular-nums; }
+.bstrip-rise[data-kind="cat"] .bstrip-rise-count { margin-left: 0; padding-left: 0; }
+.bstrip-rise .still-pair { grid-template-columns: minmax(0, 1fr); }
+.bstrip-rise .still-pane { height: clamp(120px, calc((100dvh - 300px) / 2), 200px); }
+.bstrip-rise .still-pane + .still-pane { box-shadow: inset 0 1px 0 var(--ax-line); }
+.bstrip-rise .still { inset: 34px 12px 6px; }
+/* Scrub cancel: the finger went well above the run. The card dims and says so. */
+.bstrip-rise-cancel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 3;
+  translate: -50% -50%;
+  display: none;
+  align-items: center;
+  height: 36px;
+  margin: 0;
+  padding: 0 16px;
+  border-radius: 9999px;
+  background: var(--ax-overlay);
+  box-shadow: var(--ax-shadow-popover);
+  color: var(--ax-ink);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.bstrip-rise[data-cancel] .bstrip-rise-cancel { display: flex; }
+.bstrip-rise[data-cancel] .bstrip-rise-body { opacity: 0.5; }
+@media (max-width: 640px), (pointer: coarse) and (max-height: 500px) {
+  @media (max-height: 500px) {
+    .bstrip-rise .still-pane + .still-pane { display: none; }
+  }
+  /* Title only: the pill would cover it, so it takes the title's place. */
+  @media (max-height: 420px) {
+    .bstrip-rise .still-pair { display: none; }
+    .bstrip-rise-cancel { inset: 0; translate: none; height: auto; justify-content: center; border-radius: 0; box-shadow: none; }
+  }
+}
+
+/* ── Phone menu ────────────────────────────────────────────────────── */
+
+/* The expanded sidebar as a full-height sheet from the left. */
+.phone-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: var(--ax-scrim);
+  touch-action: none;
+  animation: phone-fade-in 220ms var(--ease-drawer);
+}
+/* The list's mini runs are links: the rail's 3:1 marks, mixed on the overlay. */
+.phone-menu {
+  --rail-mark: color-mix(in oklch, var(--ax-ink) 44%, var(--ax-overlay));
+  --rail-visited: color-mix(in oklch, var(--ax-ink) 58%, var(--ax-overlay));
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 61;
+  width: min(320px, 86vw);
+  display: flex;
+  flex-direction: column;
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) env(safe-area-inset-left);
+  background: var(--ax-overlay);
+  box-shadow: var(--ax-shadow-popover);
+  color: var(--ax-ink);
+  font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  outline: none;
+  touch-action: pan-y;
+  user-select: none;
+  animation: phone-menu-in 220ms var(--ease-drawer);
+}
+@keyframes phone-menu-in { from { transform: translateX(calc(-100% - 16px)); } }
+@keyframes phone-fade-in { from { opacity: 0; } }
+.phone-menu-head { flex: none; display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 4px 0 8px; }
+.phone-menu-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  padding: 0 10px 0 6px;
+  border-radius: var(--radius-control);
+  color: var(--ax-ink);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+.phone-menu-home:active { background: var(--ax-press); }
+/* The list is a scroll container, which resets touch-action: pan-y again, so
+   a sideways drag reaches the dismiss gesture instead of the browser. */
+.phone-menu .rail-list { position: static; flex: 1; width: auto; visibility: visible; touch-action: pan-y; }
+.phone-menu .rail-catrow { height: 44px; }
+.phone-menu .rail-rulerow { min-height: 44px; }
+.phone-menu-foot { flex: none; padding: 8px; }
+/* The theme row, always expanded here: its label shows and the row is a full touch target. */
+.phone-menu .rail-row { height: 44px; padding: 0 8px 0 39px; }
+.phone-menu .rail-row-label { position: static; width: auto; height: auto; min-width: 0; clip-path: none; text-overflow: ellipsis; }
+
+/* ── Phone refinements ───────────────────────────────────────────── */
+
+/* Narrower cases inside the phone layout. Last in the file, so they win over
+   the parts' own rules at the same specificity. */
+/* Very short screens (400% zoom on a laptop): one 40px bar, and the strip
+   keeps only its 48px row. Before the sideways case, which refines it. */
+@media (max-width: 640px) and (max-height: 420px), (pointer: coarse) and (max-height: 420px) {
+  .shell .shell-sheet,
+  .shell[data-wide] .shell-sheet { top: calc(var(--shell-phone-top-short) + env(safe-area-inset-top)); }
+  .shell[data-view="rule"] .shell-sheet {
+    padding-bottom: calc(var(--shell-phone-foot-short) + env(safe-area-inset-bottom));
+  }
+  .phone-bar { height: var(--shell-phone-top-short); }
+  .bstrip-cats { display: none; }
+  .bstrip-rise {
+    bottom: calc(var(--shell-phone-foot-short) + env(safe-area-inset-bottom));
+    max-height: calc(100dvh - var(--shell-phone-top-short) - var(--shell-phone-foot-short) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 16px);
+  }
+}
+/* A phone held sideways: a 40px bar and only the run, so the rule keeps the
+   height. Reading down, the bar slides away and the sheet rises into its
+   place; scrolling up, or reaching the end, brings both back. The sheet runs
+   one bar's height past the bottom edge, under the strip, so its foot never
+   shows a gap when it rises; its padding pays that back. */
+@media (pointer: coarse) and (max-height: 500px) {
+  .shell .shell-sheet,
+  .shell[data-wide] .shell-sheet { top: calc(var(--shell-phone-top-short) + env(safe-area-inset-top)); }
+  .shell[data-view="rule"] .shell-sheet {
+    bottom: calc(-1 * var(--shell-phone-top-short));
+    padding-bottom: calc(var(--shell-phone-foot-short) + var(--shell-phone-top-short) + env(safe-area-inset-bottom));
+  }
+  .phone-bar { height: var(--shell-phone-top-short); }
+  .bstrip-cats { display: none; }
+  .bstrip-rise {
+    bottom: calc(var(--shell-phone-foot-short) + env(safe-area-inset-bottom));
+    max-height: calc(100dvh - var(--shell-phone-top-short) - var(--shell-phone-foot-short) - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 16px);
+  }
+  .phone-bar,
+  .shell[data-view="rule"] .shell-sheet { transition: translate 220ms var(--ease-out-strong); }
+  .shell[data-chrome-min] .phone-bar {
+    translate: 0 calc(-100% - env(safe-area-inset-top));
+    transition-duration: 140ms;
+  }
+  .shell[data-chrome-min][data-view="rule"] .shell-sheet {
+    translate: 0 calc(-1 * var(--shell-phone-top-short));
+    transition-duration: 140ms;
+  }
+}
+/* Very narrow (200% zoom): the run gets the full width on a row of its own,
+   and under it ‹, one category button instead of the icon row, and ›. The
+   same foot. */
+@media (max-width: 351.98px) {
+  .bstrip-cats { display: none; }
+  .bstrip-solo { display: inline-flex; }
+  .bstrip-row { flex-wrap: wrap; justify-content: space-between; height: auto; }
+  .bstrip-row .bstrip-run { order: -1; flex: 1 0 100%; }
+}
+/* Narrow and very short: ‹, the category button and › only (the run is also in the menu). */
+@media (max-width: 351.98px) and (max-height: 420px) {
+  .bstrip-row { flex-wrap: nowrap; height: 48px; }
+  .bstrip-row .bstrip-run { display: none; }
+  .bstrip-row .bstrip-solo { margin: 0 auto; }
+}
+
+/* ── Phone: keyboard, reduced motion, forced colours ─────────────── */
+
+/* Anything the keyboard starts is 0ms, and so is everything under reduced motion. */
+:root[data-input="keyboard"] :is(.phone-menu, .phone-scrim, .bstrip-told) { animation: none; }
+:root[data-input="keyboard"] :is(.phone-up, .bstrip-rise) { transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  .phone-menu, .phone-scrim, .bstrip-told { animation: none; }
+  .phone-bar, .phone-up, .bstrip, .bstrip-rise, .shell[data-view="rule"] .shell-sheet { transition: none; }
+}
+@media (forced-colors: active) {
+  .phone-menu, .bstrip-rise, .bstrip-told { border: 1px solid; }
+  .bstrip { border-top: 1px solid; }
+  .bstrip-mark { border: 6px solid; }
+  .bstrip-item[data-active] .bstrip-mark { border-width: 2px; }
+  .bstrip-cat[data-shown]::before, .bstrip-solo { outline: 1px solid; }
+  .bstrip-run[data-focus]::before { outline: 2px solid; }
 }

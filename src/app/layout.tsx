@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { rules } from "@/data/ui-logic";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { bootScript } from "@/components/shell/boot-script";
 import { absoluteUrl, siteConfig } from "@/lib/site";
 import { brandIcons } from "@/lib/brand";
 import "./globals.css";
@@ -23,6 +24,23 @@ const manrope = Manrope({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
+
+/*
+ * Runs before first paint, from <head>: the theme (a stored choice, else the
+ * system's, even when storage is blocked) and the catalog shell's first-paint
+ * attributes. It is part of the document React hydrates and never renders
+ * again, so it never shows up as a script in a client render.
+ */
+const themeScript =
+  "(function(){var d=document.documentElement,mode='system',dark=false;" +
+  "try{var stored=window.localStorage.getItem('axiom-theme:v1');" +
+  "if(stored==='light'||stored==='dark'||stored==='system')mode=stored}catch(e){}" +
+  "try{dark=mode==='dark'||(mode==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches)}catch(e){dark=mode==='dark'}" +
+  "d.classList.toggle('dark',dark);d.dataset.theme=dark?'dark':'light';d.style.colorScheme=dark?'dark':'light'})();";
+const firstPaintScript = themeScript + bootScript();
+
+/** Vercel's analytics endpoints exist only on a Vercel deployment; anywhere else they 404 on every load. */
+const onVercel = Boolean(process.env.VERCEL);
 
 const plexMono = IBM_Plex_Mono({
   variable: "--font-plex-mono",
@@ -92,22 +110,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const themeScript = `
-    (function() {
-      try {
-        var storageKey = 'axiom-theme:v1';
-        var stored = localStorage.getItem(storageKey);
-        var mode = stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
-        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        var isDark = mode === 'dark' || (mode === 'system' && prefersDark);
-        var root = document.documentElement;
-        root.classList.toggle('dark', isDark);
-        root.dataset.theme = isDark ? 'dark' : 'light';
-        root.style.colorScheme = isDark ? 'dark' : 'light';
-      } catch (e) {}
-    })();
-  `;
-
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
@@ -167,10 +169,12 @@ export default function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: firstPaintScript }} />
+      </head>
       <body
         className={`${sourceSerif.variable} ${manrope.variable} ${plexMono.variable} antialiased`}
       >
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -179,8 +183,8 @@ export default function RootLayout({
           Skip to content
         </a>
         <ThemeProvider>{children}</ThemeProvider>
-        <Analytics />
-        <SpeedInsights />
+        {onVercel ? <Analytics /> : null}
+        {onVercel ? <SpeedInsights /> : null}
       </body>
     </html>
   );

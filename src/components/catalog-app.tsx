@@ -20,8 +20,8 @@
  * The wall arrives as the @wall slot: the gallery URL renders it on the
  * server, every other URL renders its default (null). A rule loaded directly,
  * or reloaded, therefore has no wall in this document, and its first exit is
- * one real router.replace to the gallery URL, which fills the slot in place.
- * An idle prefetch warms it.
+ * one real router.replace to the gallery URL, which fills the slot in place
+ * (an in-document replace, never a new document). An idle prefetch warms it.
  *
  * Interrupted morphs are discarded, never replayed: runViewTransition drops
  * an update whose capture was skipped. Every path that
@@ -44,6 +44,8 @@ import {
   type ReactNode,
 } from "react";
 
+import { writeSide } from "@/components/gallery/side-switch";
+import { WallContext, type WallApi, type WallFilter } from "@/components/gallery/wall-context";
 import { Shell } from "@/components/shell/shell";
 import type { InputOrigin } from "@/components/shell/shell-context";
 import { rules } from "@/data/ui-logic";
@@ -62,6 +64,7 @@ import {
   writeHistory,
   type AxiomState,
 } from "@/lib/navigation/history";
+import { resolveHash } from "@/lib/navigation/hash";
 import { createRoutes, type CatalogLocation } from "@/lib/navigation/routes";
 import { runViewTransition, type TransitionHandle, type ViewTransitionElements } from "@/lib/navigation/view-transition";
 
@@ -84,14 +87,6 @@ const wallOf = (from: CatalogLocation): CatalogLocation => ({ ...from, view: "ga
 function ruleOf(id: string, from: CatalogLocation): CatalogLocation {
   const keep = deckHas(deckFor(from), id);
   return { view: "rule", ruleId: id, q: keep ? from.q : "", collection: keep ? from.collection : null, show: from.show };
-}
-
-function readHash(): string {
-  try {
-    return decodeURIComponent(window.location.hash.slice(1));
-  } catch {
-    return "";
-  }
 }
 
 /* The morph pair: a tile's frame and title, and the rule view's canvas and title. */
@@ -130,7 +125,7 @@ const COMMIT_WAIT_MS = 3000;
 const POP_GUARD_MS = 10_000;
 
 export type CatalogAppProps = {
-  /** The catalog mount point. Every URL comes from `createRoutes(basePath)`. */
+  /** The catalog's base path (`""` at the site root). Every URL comes from `createRoutes(basePath)`. */
   basePath: string;
   /** The @wall slot: the wall at the gallery URL, null (its default) everywhere else. */
   wall: ReactNode;
@@ -146,6 +141,8 @@ export function CatalogApp({ basePath, wall, children }: CatalogAppProps) {
   const locRef = useRef(loc);
   /** The wall below the rule view: its filter is what Esc returns to. */
   const wallLoc = useRef(wallOf(loc));
+  /** The same, as state: the wall keeps showing its own filter while a rule is open above it. */
+  const [wallShown, setWallShown] = useState<CatalogLocation>(wallLoc.current);
   const wallLayer = useRef<HTMLDivElement>(null);
   const morph = useRef<TransitionHandle | null>(null);
   const pendingOpen = useRef<{ ruleId: string; cancelled: boolean } | null>(null);
@@ -162,11 +159,18 @@ export function CatalogApp({ basePath, wall, children }: CatalogAppProps) {
     () => routes.parseLocation(window.location.pathname, window.location.search),
     [routes],
   );
-  const commit = useCallback((next: CatalogLocation) => {
-    locRef.current = next;
-    if (next.view === "gallery") wallLoc.current = next;
-    setLoc(next);
+  const setWall = useCallback((next: CatalogLocation) => {
+    wallLoc.current = next;
+    setWallShown(next);
   }, []);
+  const commit = useCallback(
+    (next: CatalogLocation) => {
+      locRef.current = next;
+      if (next.view === "gallery") setWall(next);
+      setLoc(next);
+    },
+    [setWall],
+  );
   /** Commit at 0ms, discarding any morph still waiting for its capture. */
   const commitNow = useCallback(
     (next: CatalogLocation) => {
@@ -209,6 +213,8 @@ export function CatalogApp({ basePath, wall, children }: CatalogAppProps) {
       found.scrollIntoView({ block: "start" });
       return;
     }
+    // A tile the wall's filter hides is not there to return to.
+    if (found.closest("[hidden]")) return;
     found.scrollIntoView({ block: "nearest" });
     found.focus({ preventScroll: true });
   }, []);
@@ -443,16 +449,70 @@ export function CatalogApp({ basePath, wall, children }: CatalogAppProps) {
     };
   }, []);
 
+  /*
+   * The wall's search, collection and side: replace the gallery entry and
+   * commit, with no morph. The wall reads the result through WallContext.
+   * A rule on screen, or one opening, owns the location: the change waits.
+   */
+  const setFilter = useCallback(
+    (patch: WallFilter) => {
+      const cur = locRef.current;
+      if (cur.view !== "gallery" || pendingOpen.current) return;
+      const next: CatalogLocation = { ...cur, ...patch, collection: patch.collection === undefined ? cur.collection : patch.collection };
+      if (same(next, cur)) return;
+      writeHistory("replace", galleryState, galleryUrl(next));
+      commit(next);
+    },
+    [commit, galleryUrl],
+  );
+  const visible = useMemo(() => {
+    const deck = deckFor(wallShown);
+    return deck.kind === "catalog" ? null : new Set(deck.rules.map((rule) => rule.id));
+  }, [wallShown]);
+  const wallApi = useMemo<WallApi>(
+    () => ({ q: wallShown.q, collection: wallShown.collection, show: wallShown.show, visible, setFilter }),
+    [wallShown.q, wallShown.collection, wallShown.show, visible, setFilter],
+  );
+
+  /*
+   * A fragment on the wall (hash.ts): a category section scrolls into view,
+   * a tile is revealed and focused, and #accessibility opens the collection.
+   * Runs once the location is real, and again on every hashchange.
+   */
+  const applyHash = useCallback(
+    (hash: string) => {
+      const target = resolveHash(hash);
+      if (!target || locRef.current.view !== "gallery") return;
+      if (target.kind === "tile") {
+        pendingReveal.current = { ruleId: target.id, section: null };
+        reveal();
+      } else if (target.kind === "section") {
+        wallLayer.current?.querySelector<HTMLElement>(`section[id="${CSS.escape(target.id)}"]`)?.scrollIntoView({ block: "start" });
+      } else {
+        setFilter({ q: "", collection: target.id });
+      }
+    },
+    [reveal, setFilter],
+  );
+  useEffect(() => {
+    const onHash = () => applyHash(window.location.hash);
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, [applyHash]);
+
   /* After hydration: the real location, which the prerendered HTML could not know. */
   const onReady = useCallback(() => {
     const actual = readLocation();
     // The wall to return to, from the entry's own query, once: paging keeps it.
-    wallLoc.current = wallOf(actual);
+    setWall(wallOf(actual));
+    // The boot script painted this side already; this only covers a page where it could not run.
+    writeSide(actual.show);
     if (actual.view === "rule") catalogStores.continueRule.suppress();
-    else if (readHash().startsWith("rule-")) pendingReveal.current = { ruleId: readHash().slice(5), section: null };
     if (!same(actual, locRef.current)) commit(actual);
-    else reveal();
-  }, [commit, readLocation, reveal]);
+    // The filter is applied in this same commit, before paint: the wall may show (boot-script.ts).
+    delete document.documentElement.dataset.filterPending;
+    applyHash(window.location.hash);
+  }, [applyHash, commit, readLocation, setWall]);
 
   /*
    * Stamp the load's entry, one task after mount: the entry Next writes first
@@ -496,15 +556,19 @@ export function CatalogApp({ basePath, wall, children }: CatalogAppProps) {
       pendingOpen.current = null;
       const cur = locRef.current;
       if (next.view === "gallery") {
+        // The entry's own side: Back to a Don't link shows Don't again.
+        writeSide(next.show);
         const target = exiting?.reveal ?? (cur.ruleId ? { ruleId: cur.ruleId, section: null } : null);
         showGallery(next, target, exiting?.origin ?? "keyboard");
+        // A move between two wall entries (a fragment link) lands on its fragment.
+        if (cur.view === "gallery") applyHash(window.location.hash);
         return;
       }
       commitNow(next);
     };
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
-  }, [commitNow, readLocation, showGallery, supersede]);
+  }, [applyHash, commitNow, readLocation, showGallery, supersede]);
 
   /* Until a pointer open's capture commits, the shell still sees the wall: Esc in that gap closes it. */
   useEffect(() => {
@@ -542,8 +606,12 @@ export function CatalogApp({ basePath, wall, children }: CatalogAppProps) {
   const onWall = loc.view === "gallery";
   const hrefFor = useCallback((id: string) => routes.ruleHref(id), [routes]);
 
+  /*
+   * The wall's context sits above the shell, not only around the wall: the
+   * palette's "show all matches" filters the wall in place through it.
+   */
   return (
-    <>
+    <WallContext.Provider value={wallApi}>
       <Shell
         view={loc.view}
         ruleId={ruleId}
@@ -575,6 +643,6 @@ export function CatalogApp({ basePath, wall, children }: CatalogAppProps) {
       <Suspense fallback={null}>
         <RouterSearch onReady={onReady} onCommit={onRouterSearch} />
       </Suspense>
-    </>
+    </WallContext.Provider>
   );
 }

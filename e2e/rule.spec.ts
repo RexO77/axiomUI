@@ -242,6 +242,15 @@ test.describe("exits and the copy menu", () => {
 });
 
 test.describe("comparison zoom", () => {
+  test("Esc from the zoom control leaves the rule", async ({ page }) => {
+    await openCatalog(page, ruleUrl("typo-1"));
+    const zoom = page.getByRole("radio", { name: "1×, 100%", exact: true });
+    await zoom.focus();
+    await expect(zoom).toBeFocused();
+    await page.keyboard.press("Escape");
+    await awaitView(page, "gallery");
+  });
+
   test("1× is untransformed and 2× is a 2× transform around the 1× box", async ({ page }) => {
     await openCatalog(page, ruleUrl("typo-1"));
     const box = page.locator(".cmp-canvas .cmp-box").first();

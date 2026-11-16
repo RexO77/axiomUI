@@ -3,13 +3,17 @@ import { execFileSync } from "node:child_process";
 import { expect, test as playwrightTest, type Page } from "@playwright/test";
 
 import { railOrder } from "../src/data/taxonomy";
-import { createRoutes, type RouteOptions } from "../src/lib/navigation/routes";
+import { CATALOG_BASE, createRoutes, type RouteOptions } from "../src/lib/navigation/routes";
 
 /*
- * Shared URL builders and DOM hooks for every spec.
- * URLs use `E2E_BASE`, so changing the catalog's mount point needs only a
- * config change. Selectors live in `sel` and `readCatalog`, so markup changes
- * can be handled here without updating every spec.
+ * Shared by every spec. Two rules keep the suite independent of where the
+ * catalog is mounted and of its markup:
+ *
+ *  1. URLs come only from the builders below, both the ones a spec visits and
+ *     the ones it expects. The catalog's base is the app's own `CATALOG_BASE`;
+ *     `E2E_BASE` overrides it, for a build that mounts the catalog elsewhere.
+ *  2. DOM hooks come only from `sel` and `readCatalog`. When the wall or the
+ *     rule view changes its markup, this file is the one place that learns it.
  */
 
 /** The production server's port. Concurrent runs each need their own `E2E_PORT`. */
@@ -25,9 +29,9 @@ function readPort(value: string | undefined): number {
 }
 export const ORIGIN = `http://localhost:${E2E_PORT}`;
 
-/** The catalog's base path. Set `E2E_BASE=""` for the catalog at `/`. */
+/** The catalog's base path: the app's, unless `E2E_BASE` names another. */
 export function base(): string {
-  return process.env.E2E_BASE ?? "/staging";
+  return process.env.E2E_BASE ?? CATALOG_BASE;
 }
 
 export const routes = () => createRoutes(base());

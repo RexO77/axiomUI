@@ -3,9 +3,11 @@
 // How the shell groups and orders the catalog.
 //
 // This is a VIEW over `ui-logic.ts`. Rule ids and their `category` field never
-// change here: the skills, `llms.txt` and the OG images keep reading the
-// original eight categories. Only the rail, the gallery sections, the sidebar
-// and the palette read this module.
+// change here: the skills, `llms.txt` and a rule page's metadata keywords keep
+// reading the original eight categories. The rail, the gallery sections, the
+// sidebar, the palette and the rule view read this module, and so do a rule
+// page's breadcrumb and structured data and its social card's eyebrow, so
+// what a crawler and a share read matches what the page shows.
 
 import { categories, rules, type Rule } from "@/data/ui-logic";
 

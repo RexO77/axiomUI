@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 import { AxiomLogo } from "@/components/ui/axiom-logo";
-import { categories, rules } from "@/data/ui-logic";
+import { railCategory, railCategoryOf } from "@/data/taxonomy";
+import { rules } from "@/data/ui-logic";
 import { VERDICT_LABEL } from "@/lib/verdict";
 
 export const size = { width: 1200, height: 630 };
@@ -10,6 +11,17 @@ export const alt = "Axiom UI design rule — Do and Don’t comparison";
 type Props = {
   params: Promise<{ id: string }>;
 };
+
+/*
+ * The rule pages live in the catalog's route group, so this card no longer
+ * shares their segment's params. It names its own: every rule's card is
+ * rendered at build time, and an unknown id is a 404.
+ */
+export const dynamicParams = false;
+
+export function generateStaticParams() {
+  return rules.map((rule) => ({ id: rule.id }));
+}
 
 // ── Palette (mirrors the site's dark theme) ─────────────────────────
 const CANVAS = "#0a0a0a"; // neutral-950 page ground
@@ -234,7 +246,10 @@ function titleSize(title: string): number {
 export default async function Image({ params }: Props) {
   const { id } = await params;
   const rule = rules.find((candidate) => candidate.id === id);
-  const category = categories.find((candidate) => candidate.id === rule?.category);
+  // The eyebrow names the category the catalog files the rule under, as the
+  // rule header, the breadcrumb and the structured data do, so the card and
+  // the page agree.
+  const category = rule ? railCategory(railCategoryOf(rule)) : null;
   const fonts = await loadBrandFonts();
   const options = fonts.length > 0 ? { ...size, fonts } : size;
 

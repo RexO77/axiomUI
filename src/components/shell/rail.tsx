@@ -2,32 +2,44 @@
 "use client";
 
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 import { AxiomLogo } from "@/components/ui/axiom-logo";
 import { Kbd } from "@/components/ui/kbd";
 import { Tooltip, closeAllTooltips } from "@/components/ui/tooltip";
 import { railCategoryOf, railOrder } from "@/data/taxonomy";
+import { catalogStores } from "@/lib/catalog/stores";
 import { PHONE_QUERY, REDUCED_MOTION_QUERY } from "@/lib/media";
 import { shortcutAction } from "@/lib/navigation/keyboard";
 import { memoryStore } from "@/lib/navigation/memory";
 import { createRoutes } from "@/lib/navigation/routes";
 import { siteConfig } from "@/lib/site";
 import { CLOSE_MS, OPEN_MS, OPEN_SHIFT } from "./geometry";
+import { InstallRow } from "./install-row";
 import { MagnifyStrip } from "./magnify-strip";
 import { useShell } from "./shell-context";
 import { SidebarList } from "./sidebar-list";
+import { StripHint } from "./strip-hint";
+import { ThemeRow } from "./theme-row";
+import "./overlays.css";
 
 const sidebarSnapshot = () => memoryStore.getSnapshot().prefs.sidebarOpen;
 
-/** The bottom rows are supplied through a slot. */
-export function Rail({ bottomCluster }: { bottomCluster?: ReactNode }) {
+/**
+ * The rail: the home row, the strip (collapsed) or the list (expanded), and the bottom rows.
+ * `covered`: one of the shell's modals is open. The rail stays inert under it even when the
+ * layout changes underneath (a phone widened past the breakpoint), where `phone` alone would
+ * lift `inert` behind the open dialog.
+ */
+export function Rail({ covered = false }: { covered?: boolean }) {
   const { view, ruleId, deck, hrefFor, home, openRule, peek, sheet, phone, singleKeys, inputOrigin } = useShell();
   // hrefFor is already bound to the shell's route base.
   const routes = useMemo(() => createRoutes(hrefFor(railOrder[0].id).split("/rules/")[0]), [hrefFor]);
   const matches = useMemo(() => view === "gallery" && deck.kind !== "catalog" ? new Set(deck.rules.map((rule) => rule.id)) : null, [view, deck]);
   const currentCat = ruleId ? railCategoryOf(ruleId) : null;
   const toCategory = useCallback((id: string) => home(id, "pointer"), [home]);
+  const keyboardOrigin = useCallback(() => inputOrigin() === "keyboard", [inputOrigin]);
+  const dismissHint = useCallback(() => catalogStores.dismissStripHint(), []);
   const preference = useSyncExternalStore(memoryStore.subscribe, sidebarSnapshot, () => null);
   const [open, setOpen] = useState(false);
   const nav = useRef<HTMLElement>(null);
@@ -145,7 +157,7 @@ export function Rail({ bottomCluster }: { bottomCluster?: ReactNode }) {
   }, [sheet]);
 
   return (
-    <nav ref={nav} className="shell-rail" aria-label="Rules navigation" inert={phone}
+    <nav ref={nav} className="shell-rail" aria-label="Rules navigation" inert={phone || covered}
       onFocusCapture={() => { railFocused.current = true; }}
       onBlurCapture={() => { if (!window.matchMedia(PHONE_QUERY).matches) railFocused.current = false; }}>
       <div className="rail-brand-row">
@@ -162,9 +174,11 @@ export function Rail({ bottomCluster }: { bottomCluster?: ReactNode }) {
           </a>
         </Tooltip>
       </div>
-      <div className="rail-region" inert={open}>
+      {/* The first hover or focus on the strip is the hint's "seen". */}
+      <div className="rail-region" inert={open} onPointerEnter={dismissHint} onFocus={dismissHint}>
         <MagnifyStrip ruleId={ruleId} currentCat={currentCat} matches={matches} routes={routes} peek={peek}
           onOpen={openRule} onCategory={toCategory} />
+        <StripHint ruleId={ruleId} hidden={open} />
       </div>
       <SidebarList ruleId={ruleId} currentCat={currentCat} matches={matches} peek={peek}
         hidden={!open} routes={routes} onOpen={openRule} />
@@ -177,7 +191,8 @@ export function Rail({ bottomCluster }: { bottomCluster?: ReactNode }) {
             <span className="rail-button-label">Collapse <Kbd className="ml-2">[</Kbd></span>
           </button>
         </Tooltip>
-        {bottomCluster}
+        <InstallRow expanded={open} fallback={sheet} />
+        <ThemeRow expanded={open} keyboard={keyboardOrigin} />
       </div>
     </nav>
   );

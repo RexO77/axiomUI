@@ -45,8 +45,8 @@ describe("shell keyboard ownership", () => {
     const closest = vi.fn((selector: string) => selector === KEYBOARD_TARGET_SELECTOR ? {} : null);
     expect(shouldHandle(event({ target: { closest } }))).toBe(false);
     expect(closest).toHaveBeenCalledWith(KEYBOARD_TARGET_SELECTOR);
+    // A field keeps Esc, to leave the field first.
     expect(shouldHandle(event({ key: "Escape", target: target(KEYBOARD_TARGET_SELECTOR) }))).toBe(false);
-    expect(shouldHandle(event({ key: "Escape", target: target(KEYBOARD_TARGET_SELECTOR) }), { allowEscapeInField: true })).toBe(true);
   });
 
   it("lets single keys through from a focused radio group, which consumes only the keys it moves by", () => {
@@ -55,6 +55,8 @@ describe("shell keyboard ownership", () => {
     expect(shortcutAction(event({ key: "j", target: radio }), { view: "rule" })).toBe("next");
     expect(shortcutAction(event({ key: "i", target: radio }), { view: "rule" })).toBe("inspector");
     expect(shortcutAction(event({ key: "ArrowRight", target: radio, defaultPrevented: true }), { view: "rule" })).toBeNull();
+    // Esc from a segmented control leaves the rule, with no special case in the shell.
+    expect(shortcutAction(event({ key: "Escape", target: radio }), { view: "rule" })).toBe("escape");
   });
 
   it("allows command-K in a field, but does not steal it from a foreign modal", () => {

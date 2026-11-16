@@ -163,6 +163,8 @@
   font-variant-ligatures: no-common-ligatures;
 }
 .cmp-captions p[data-on] { color: var(--ax-ink); }
+/* A motion caption opens with the rule's own claim, in ink, over the narration of what plays. */
+.cmp-cap-rule { display: block; color: var(--ax-ink); }
 .cmp-cap-v { display: none; }
 .cmp-tally { margin-left: 8px; font-family: var(--font-manrope), ui-sans-serif, sans-serif; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .cmp-tally[data-on] { color: var(--ax-dont-ink); }

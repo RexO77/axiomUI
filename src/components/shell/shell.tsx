@@ -2,18 +2,24 @@
 "use client";
 
 /*
- * The shell frame: the backdrop behind the rail, one sheet over it,
- * the keyboard, the live region and the reading position. It owns no location: CatalogApp does, and the shell asks
- * it to move through `onOpenRule`, `onExit` and `onHome`.
+ * The shell frame: the rail (the back layer), one sheet over it, the phone's
+ * top bar and bottom strip, the modal session, the keyboard, the live region
+ * and the reading position. It owns no location: CatalogApp does, and the
+ * shell asks it to move through `onOpenRule`, `onExit` and `onHome`.
  *
  * - Paging replaces, opening pushes (CatalogApp writes history).
  * - The sheet's reading position rides in the rule's history entry as
  *   `{ id, top }`, saved after scrolling settles, and is restored only on
- *   popstate, and only for that rule. Any other rule change
- *   starts at the top.
+ *   popstate, and only for that rule. Any other rule change starts at the top.
  * - Focus moves to the rule title only when the rule view is entered from the
  *   wall. Paging leaves focus where it is and speaks through the live region
  *   instead, so nothing is announced twice.
+ * - The phone layout is CSS's call (PHONE_QUERY), so the first paint is
+ *   already right; `phone` only drives behaviour. Both layouts' controls are
+ *   in the server HTML, and the bottom strip leaves a wide screen once
+ *   hydration shows it is not needed.
+ * - One modal at a time (modal.ts): the phone menu here; the palette and the
+ *   shortcuts sheet mount beside it.
  */
 
 import {
@@ -29,7 +35,7 @@ import {
   type UIEvent,
 } from "react";
 
-import { collections, railCategory } from "@/data/taxonomy";
+import { collections, railCategory, railCategoryOf, railOrder } from "@/data/taxonomy";
 import { rules } from "@/data/ui-logic";
 import { catalogStores } from "@/lib/catalog/stores";
 import { PHONE_QUERY, useMediaQuery } from "@/lib/media";
@@ -37,16 +43,27 @@ import { deckPosition, sectionJump, stepRule, type Deck, type Direction } from "
 import { currentUrl, saveScroll, scrollToRestore, writeHistory } from "@/lib/navigation/history";
 import { shortcutAction } from "@/lib/navigation/keyboard";
 import { memoryStore, useRuleMemory } from "@/lib/navigation/memory";
-import type { ShellView } from "@/lib/navigation/routes";
+import { createRoutes, type ShellView } from "@/lib/navigation/routes";
 
+import { BottomStrip } from "./bottom-strip";
 import { SCROLL_SAVE_MS, shellVars } from "./geometry";
+import { InstallMenuRow, useSkillsDialog } from "./install-row";
+import { useModalSession, type ModalKind } from "./modal";
+import { Overlays } from "./overlays";
+import { PhoneBar, usePhoneChrome } from "./phone-bar";
+import { PhoneMenu } from "./phone-menu";
 import { Rail } from "./rail";
 import { ShellContext, type InputOrigin, type PeekHandle, type ShellApi } from "./shell-context";
+import { SidebarList } from "./sidebar-list";
+import { ThemeRow } from "./theme-row";
 import "./shell.css";
 
 const ruleById = new Map(rules.map((rule) => [rule.id, rule]));
-const noop = () => {};
 const never = () => () => {};
+const hydratedSnapshot = () => true;
+const serverSnapshot = () => false;
+/** Controls that exist only in the phone layout: focus there has to move when the layout ends. */
+const PHONE_ONLY = ".phone-bar, .bstrip";
 
 const singleKeysSnapshot = () => memoryStore.getSnapshot().prefs.singleKeys;
 const modKeySnapshot = () => (/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl ");
@@ -84,11 +101,66 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
   const { deepDive } = catalogStores;
   const inspectorOpen = useSyncExternalStore(deepDive.subscribe, deepDive.get, deepDive.server);
 
+  const root = useRef<HTMLDivElement>(null);
   const sheet = useRef<HTMLElement>(null);
   const peek = useRef<PeekHandle>(null);
   const origin = useRef<InputOrigin>("pointer");
   const [scrolled, setScrolled] = useState(false);
   const [message, setMessage] = useState("");
+  const hydrated = useSyncExternalStore(never, hydratedSnapshot, serverSnapshot);
+  // hrefFor is bound to the catalog's base; the phone's links need the same routes.
+  const routes = useMemo(() => createRoutes(hrefFor(railOrder[0].id).split("/rules/")[0]), [hrefFor]);
+
+  /* The modal session: one modal at a time, focus back to whatever opened it. */
+  const modal = useModalSession(sheet);
+  const { open: openModal, close: closeModal, isOpen: modalOpen, returnInstead } = modal;
+  const modalKind = useRef<ModalKind | null>(null);
+  useLayoutEffect(() => {
+    modalKind.current = modal.kind;
+  }, [modal.kind]);
+  const openMenu = useCallback(() => {
+    peek.current?.close();
+    openModal("menu");
+  }, [openModal]);
+  const openPalette = useCallback(() => openModal("palette"), [openModal]);
+  const openShortcuts = useCallback(() => openModal("shortcuts"), [openModal]);
+
+  /* Phones on a rule: reading down tucks the strip's category row (and, held sideways, the top bar) away. */
+  const onChrome = usePhoneChrome(root, phone, currentId);
+
+  /*
+   * Leaving the phone layout: the menu closes, so nothing stays inert behind a
+   * hidden dialog, and its focus goes to the sheet, not the hidden Menu button.
+   * Focus on a phone-only control moves to the sheet. CSS may have hidden that
+   * control, or the media store's re-render removed it, before this runs, so
+   * the last focus inside one is remembered.
+   */
+  useLayoutEffect(() => {
+    const query = window.matchMedia(PHONE_QUERY);
+    let phoneFocus = false;
+    const onFocusIn = (event: FocusEvent) => {
+      phoneFocus = event.target instanceof Element && Boolean(event.target.closest(PHONE_ONLY));
+    };
+    const onChange = () => {
+      if (query.matches) return;
+      if (modalKind.current === "menu") {
+        returnInstead(sheet.current);
+        closeModal();
+        return;
+      }
+      const active = document.activeElement;
+      const inPhone = active instanceof Element && Boolean(active.closest(PHONE_ONLY));
+      // CSS may already have blurred the hidden control to <body>.
+      if (inPhone || (phoneFocus && (!active || active === document.body))) sheet.current?.focus({ preventScroll: true });
+      phoneFocus = false;
+    };
+    document.addEventListener("focusin", onFocusIn);
+    query.addEventListener("change", onChange);
+    return () => {
+      document.removeEventListener("focusin", onFocusIn);
+      query.removeEventListener("change", onChange);
+    };
+  }, [closeModal, returnInstead]);
 
   /* Last, Recent and visited (after a dwell, so skimming with J marks nothing). */
   useRuleMemory(currentId);
@@ -119,6 +191,7 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
     };
   }, []);
   const inputOrigin = useCallback(() => origin.current, []);
+  const keyboardOrigin = useCallback(() => origin.current === "keyboard", []);
 
   /* The deep dive's hidden state on <html>: the boot script sets it before paint, this keeps it in step. */
   useEffect(() => {
@@ -187,6 +260,7 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
 
   const onScroll = (event: UIEvent<HTMLElement>) => {
     setScrolled(event.currentTarget.scrollTop > 0);
+    onChrome(event.currentTarget);
     if (!currentId) return;
     const id = currentId;
     window.clearTimeout(saveTimer.current);
@@ -233,6 +307,10 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
   /* Keyboard, from the shared table: bubble phase, so fields, widgets and dialogs go first. */
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
+      // A dialog owns the keyboard while it is open: nothing pages or exits behind it.
+      if (modalOpen()) return;
+      // Esc from a segmented control leaves the rule: a radio group owns no keys
+      // beyond the ones it moves by (keyboard.ts). A field keeps it, to leave the field first.
       const action = shortcutAction(event, { view, singleKeys });
       const inRule = view === "rule";
       switch (action) {
@@ -260,7 +338,7 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [view, singleKeys, page, toggleInspector, exit]);
+  }, [view, singleKeys, page, toggleInspector, exit, modalOpen]);
 
   const api = useMemo<ShellApi>(
     () => ({
@@ -282,19 +360,75 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
       toggleInspector,
       singleKeys,
       inputOrigin,
-      openPalette: noop,
-      openShortcuts: noop,
+      openPalette,
+      openShortcuts,
     }),
-    [view, currentId, deck, openRule, page, exit, home, onClearDeck, hrefFor, phone, scrolled, modKey, inspectorOpen, toggleInspector, singleKeys, inputOrigin],
+    [view, currentId, deck, openRule, page, exit, home, onClearDeck, hrefFor, phone, scrolled, modKey, inspectorOpen, toggleInspector, singleKeys, inputOrigin, openPalette, openShortcuts],
+  );
+
+  /* The phone menu's list: the rail's sidebar, with the gallery's search dimming what it leaves out. */
+  const menuMatches = useMemo(() => (view === "gallery" && deck.kind !== "catalog" ? new Set(deck.rules.map((item) => item.id)) : null), [view, deck]);
+  const openFromMenu = useCallback(
+    (id: string) => {
+      returnInstead(sheet.current);
+      closeModal();
+      openRule(id);
+    },
+    [returnInstead, closeModal, openRule],
+  );
+  /*
+   * The skills dialog, from the phone menu. The menu closes at once and its
+   * final close puts focus back on the menu's opener (a microtask after the
+   * commit); the dialog opens a task later, from there, so that is where it
+   * returns focus when it closes.
+   */
+  const [skillsDialog, openSkills] = useSkillsDialog();
+  const installFromMenu = useCallback(() => {
+    closeModal();
+    window.setTimeout(openSkills, 0);
+  }, [closeModal, openSkills]);
+  const homeFromMenu = useCallback(
+    (from: InputOrigin) => {
+      returnInstead(sheet.current);
+      closeModal();
+      home(null, from);
+    },
+    [returnInstead, closeModal, home],
   );
 
   return (
     <ShellContext.Provider value={api}>
-      <div className="shell" data-view={view} style={shellVars() as CSSProperties}>
-        <Rail />
+      <div ref={root} className="shell" data-view={view} data-modal={modal.kind ?? undefined} style={shellVars() as CSSProperties}>
+        <Rail covered={modal.kind !== null} />
+        {/* Phones: the top bar. CSS shows it only in the phone layout. */}
+        <PhoneBar routes={routes} menuOpen={modal.kind === "menu"} onMenu={openMenu} />
         <main ref={sheet} id="main-content" className="shell-sheet" data-view={view} tabIndex={-1} onScroll={onScroll}>
           {children}
         </main>
+        {/* Phones, on a rule: the strip in the thumb zone. In the server HTML everywhere (CSS hides it on wide screens), then only where it shows. */}
+        {rule && (phone || !hydrated) ? <BottomStrip ruleId={rule.id} routes={routes} onContents={openMenu} /> : null}
+
+        {/* Modals: one at a time, through the session. */}
+        {modal.kind === "menu" ? (
+          <PhoneMenu
+            session={modal}
+            routes={routes}
+            atHome={view === "gallery"}
+            onHome={homeFromMenu}
+            onClose={closeModal}
+            foot={
+              <>
+                <InstallMenuRow onOpen={installFromMenu} />
+                <ThemeRow expanded keyboard={keyboardOrigin} />
+              </>
+            }
+          >
+            <SidebarList ruleId={currentId} currentCat={currentId ? railCategoryOf(currentId) : null} matches={menuMatches} touch routes={routes} onOpen={openFromMenu} />
+          </PhoneMenu>
+        ) : null}
+        <Overlays session={modal} />
+        {skillsDialog}
+
         <p aria-live="polite" className="sr-only">
           {message}
         </p>

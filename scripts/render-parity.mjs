@@ -11,14 +11,11 @@
  *   node scripts/render-parity.mjs save     # after `npm run build`
  *   node scripts/render-parity.mjs check    # after `npm run build` again
  *
- * KNOWN BLIND SPOT — read before trusting a pass:
- * `src/app/page.tsx` is a client component that calls `useSearchParams()`, so
- * Next serves its Suspense fallback as the static artefact and builds the real
- * tree in the browser. The homepage's markup therefore appears in NO build
- * output — not the HTML, not the RSC payload — and a change to the header, the
- * rule cards, or any preview they render will pass this check untouched.
- * This tool covers the 105 rule pages, not-found, global-error, and the CSS.
- * Homepage changes still need eyes on a browser.
+ * Covered: every prerendered page, the homepage's gallery wall and the 105
+ * rule pages included, plus not-found, global-error and the CSS. The wall is
+ * server-rendered into `index.html`, so a change to a tile or a preview it
+ * shows moves the homepage's digest. A digest without the homepage fails
+ * rather than passing on less than it claims.
  */
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from "node:fs";
@@ -31,18 +28,18 @@ const APP = ".next/server/app";
 const BUILD_ID = existsSync(".next/BUILD_ID")
   ? readFileSync(".next/BUILD_ID", "utf8").trim()
   : null;
-/** Turbopack emits stylesheets alongside the JS chunks, not in static/css. */
-const CSS_DIR = ".next/static/chunks";
+/** Webpack writes stylesheets to static/css; Turbopack puts them beside the JS chunks. */
+const CSS_DIRS = [".next/static/css", ".next/static/chunks"];
 const SNAP = "scripts/.render-parity.json";
 
 /**
  * Strip only what legitimately differs between two honest builds.
  *
- * Deliberately does NOT strip script contents: on this site the homepage is a
- * client component that bails out of prerendering, so its markup lives in the
- * RSC flight payload inside <script> tags. An earlier version blanket-replaced
- * every script and consequently could not detect a changed headline — it passed
- * a mutation test it should have failed.
+ * Deliberately does NOT strip script contents: the RSC flight payload inside
+ * <script> tags carries rendered markup too (a rule page's deep dive, the
+ * client components' props). An earlier version blanket-replaced every script
+ * and consequently could not detect a changed headline — it passed a mutation
+ * test it should have failed.
  */
 function normalise(text) {
   const withoutBuildId = BUILD_ID ? text.split(BUILD_ID).join("BUILD") : text;
@@ -69,6 +66,9 @@ function digest() {
   const pages = walk(APP)
     .filter((f) => f.endsWith(".html") || f.endsWith(".rsc"))
     .sort();
+  if (!pages.includes(join(APP, "index.html"))) {
+    throw new Error(`no prerendered homepage at ${join(APP, "index.html")}: build first, and keep / static`);
+  }
   const out = {};
   for (const file of pages) {
     const key = relative(APP, file);
@@ -78,8 +78,8 @@ function digest() {
       .slice(0, 16);
   }
   // Stylesheets are content-hashed, so hash their bytes, not their names.
-  const css = walk(CSS_DIR).filter((f) => f.endsWith(".css")).sort();
-  if (css.length === 0) throw new Error(`no stylesheets found under ${CSS_DIR}`);
+  const css = CSS_DIRS.flatMap(walk).filter((f) => f.endsWith(".css")).sort();
+  if (css.length === 0) throw new Error(`no stylesheets found under ${CSS_DIRS.join(" or ")}`);
   out["__css__"] = createHash("sha256")
     .update(css.map((f) => readFileSync(f, "utf8")).join(""))
     .digest("hex")

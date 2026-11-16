@@ -19,6 +19,7 @@ import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
 import { Play, RotateCcw } from "lucide-react";
 
 import { paneReadout, showcaseSpecs, type PaneSpec, type ShowcaseSpec } from "@/components/features/rules/demos/showcase-specs";
+import { rules, type Rule } from "@/data/ui-logic";
 import { Segmented } from "@/components/ui/segmented";
 import { Tooltip } from "@/components/ui/tooltip";
 import { VerdictLabel } from "@/components/ui/verdict-label";
@@ -105,14 +106,17 @@ function startTracks(pane: PaneSpec, durationMs: number): Track[] {
   return [...starts].map(([target, { frame }]) => ({ target, keyframes: [frame, frame], durationMs, easing: EASE.inOut }));
 }
 
+const ruleById = new Map(rules.map((rule) => [rule.id, rule]));
+
 export function MotionCompare({ ruleId }: { ruleId: string }) {
   const spec = showcaseSpecs[ruleId];
-  if (!spec) return null;
+  const rule = ruleById.get(ruleId);
+  if (!spec || !rule) return null;
   // Remount per rule, so a page turn never carries a half-played pane over.
-  return <Body key={ruleId} spec={spec} />;
+  return <Body key={ruleId} spec={spec} rule={rule} />;
 }
 
-function Body({ spec }: { spec: ShowcaseSpec }) {
+function Body({ spec, rule }: { spec: ShowcaseSpec; rule: Rule }) {
   const uid = useId();
   const doRef = useRef<HTMLDivElement>(null);
   const dontRef = useRef<HTMLDivElement>(null);
@@ -460,7 +464,10 @@ function Body({ spec }: { spec: ShowcaseSpec }) {
       <div className="cmp-captions">
         {(["do", "dont"] as const).map((side) => (
           <p key={side} id={`${uid}-${side}-c`}>
-            <span className="cmp-cap-v">{side === "do" ? "Do" : "Don’t"}</span>
+            <span className="cmp-cap-rule">
+              <span className="cmp-cap-v">{side === "do" ? "Do" : "Don’t"}</span>
+              {side === "do" ? rule.do : rule.dont}
+            </span>{" "}
             {(side === "do" ? spec.do : spec.dont).caption}
             {side === "dont" && tally !== null ? (
               <span className="cmp-tally" data-on={plays > 0 || undefined}>

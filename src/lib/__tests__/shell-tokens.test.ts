@@ -450,39 +450,51 @@ function enclosingTag(source: string, index: number): string | undefined {
   return undefined;
 }
 
-describe("ink-faint stays decorative", () => {
-  it("marks every ink-faint glyph aria-hidden, and no placeholder uses it", () => {
-    // Light ink-faint is under 3:1 (above), so a glyph that means something
-    // uses ink-muted. Where ink-faint is written, the element is hidden from
-    // assistive tech: a separator, or an icon beside a label that says it.
-    const offenders: string[] = [];
-    let checked = 0;
-    for (const file of tsxFiles(SRC)) {
-      const source = readFileSync(file, "utf8");
-      for (const match of source.matchAll(/(?<![\w-])((?:[\w-]+:)*)(?:text|fill|stroke)-ink-faint(?![\w-])/g)) {
-        checked++;
-        const where = `${path.relative(SRC, file)}:${source.slice(0, match.index).split("\n").length}`;
-        if (match[1].includes("placeholder:")) {
-          offenders.push(`${where}: a placeholder uses ink-faint; use ink-muted`);
-          continue;
-        }
-        const tag = enclosingTag(source, match.index!);
-        if (!tag || !/\saria-hidden(?:="true"|=\{true\})?(?=[\s/>])/.test(tag)) {
-          offenders.push(`${where}: ink-faint on an element that is not aria-hidden; use ink-muted if it means something`);
-        }
+/**
+ * Every ink-faint class in a component, with the problem if it carries meaning.
+ * Light ink-faint is under 3:1 (above), so a glyph that means something uses
+ * ink-muted. Where ink-faint is written, the element is hidden from assistive
+ * tech: a separator, or an icon beside a label that says it.
+ */
+function inkFaintProblems(files: readonly (readonly [string, string])[]): { offenders: string[]; checked: number } {
+  const offenders: string[] = [];
+  let checked = 0;
+  for (const [name, source] of files) {
+    for (const match of source.matchAll(/(?<![\w-])((?:[\w-]+:)*)(?:text|fill|stroke)-ink-faint(?![\w-])/g)) {
+      checked++;
+      const where = `${name}:${source.slice(0, match.index).split("\n").length}`;
+      if (match[1].includes("placeholder:")) {
+        offenders.push(`${where}: a placeholder uses ink-faint; use ink-muted`);
+        continue;
+      }
+      const tag = enclosingTag(source, match.index!);
+      if (!tag || !/\saria-hidden(?:="true"|=\{true\})?(?=[\s/>])/.test(tag)) {
+        offenders.push(`${where}: ink-faint on an element that is not aria-hidden; use ink-muted if it means something`);
       }
     }
-    expect(offenders, offenders.join("\n")).toEqual([]);
-    // Today: the empty-state icon, the breadcrumb separator, the tag icon and
-    // the search magnifier. Zero would mean the scan stopped finding them.
-    expect(checked).toBeGreaterThan(0);
+  }
+  return { offenders, checked };
+}
+
+describe("ink-faint stays decorative", () => {
+  it("finds ink-faint glyphs that mean something, and passes decorative ones", () => {
+    const { offenders, checked } = inkFaintProblems([
+      ["a.tsx", `<span aria-hidden="true" className="text-ink-faint">/</span>`],
+      ["b.tsx", `<Search aria-hidden className="size-4 text-ink-faint" />`],
+      ["c.tsx", `<p className="text-ink-faint">3 results</p>`],
+      ["d.tsx", `<input className="placeholder:text-ink-faint" />`],
+    ]);
+    expect(checked).toBe(4);
+    expect(offenders).toEqual([
+      "c.tsx:1: ink-faint on an element that is not aria-hidden; use ink-muted if it means something",
+      "d.tsx:1: a placeholder uses ink-faint; use ink-muted",
+    ]);
   });
 
-  it("finds the tag around a class, and none for a class kept in a constant", () => {
-    const jsx = `<Icon aria-hidden="true" onClick={() => a > b} className="size-4 text-ink-faint" />`;
-    expect(enclosingTag(jsx, jsx.indexOf("text-ink-faint"))).toBe(jsx);
-    const constant = `<p>x</p>; const ICON = "text-ink-faint";`;
-    expect(enclosingTag(constant, constant.indexOf("text-ink-faint"))).toBeUndefined();
+  it("marks every ink-faint glyph aria-hidden, and no placeholder uses it", () => {
+    const files = tsxFiles(SRC).map((file) => [path.relative(SRC, file), readFileSync(file, "utf8")] as const);
+    const { offenders } = inkFaintProblems(files);
+    expect(offenders, offenders.join("\n")).toEqual([]);
   });
 });
 
@@ -508,11 +520,12 @@ describe("rail and strip marks", () => {
     expect(r === g && g === b, "a grey").toBe(true);
     return Math.cbrt(toLinear(r));
   };
-  function mixed(value: string, tokens: Map<string, string>): RGB {
-    const match = value.match(/^color-mix\(in oklch, var\(--ax-ink\) ([\d.]+)%, var\(--ax-backdrop\)\)$/);
-    expect(match, `${value} is an ink-over-backdrop mix`).not.toBeNull();
+  function mixed(value: string, tokens: Map<string, string>, ground = "backdrop"): RGB {
+    const match = value.match(/^color-mix\(in oklch, var\(--ax-ink\) ([\d.]+)%, var\(--ax-([\w-]+)\)\)$/);
+    expect(match, `${value} is an ink mix`).not.toBeNull();
+    expect(match![2], `${value} mixes on ${ground}`).toBe(ground);
     const share = Number(match![1]) / 100;
-    const lightness = lightnessOf(tone(tokens, "ink")) * share + lightnessOf(tone(tokens, "backdrop")) * (1 - share);
+    const lightness = lightnessOf(tone(tokens, "ink")) * share + lightnessOf(tone(tokens, ground)) * (1 - share);
     const channel = fromLinear(lightness ** 3);
     return [channel, channel, channel];
   }
@@ -525,6 +538,23 @@ describe("rail and strip marks", () => {
       expect(resting, `resting mark = ${fmt(resting)}`).toBeGreaterThanOrEqual(3);
       expect(visited, `visited mark = ${fmt(visited)}`).toBeGreaterThan(resting * 1.3);
     });
+  }
+
+  // The phone's link marks: the menu's mini runs on the overlay, the bottom strip's run on the surface.
+  const phoneMarks = [
+    { selector: /^\.phone-menu\s*\{/m, ground: "overlay", resting: "--rail-mark", visited: "--rail-visited" },
+    { selector: /^\.bstrip\s*\{/m, ground: "surface", resting: "--bstrip-rest", visited: "--bstrip-seen" },
+  ] as const;
+  for (const [mode, tokens] of Object.entries(themes)) {
+    for (const { selector, ground, resting, visited } of phoneMarks) {
+      it(`${mode}: ${String(selector)} marks clear 3:1 on the ${ground}, visited a step above resting`, () => {
+        const own = declarations(block(SHELL, selector));
+        const rest = contrast(mixed(own.get(resting)!, tokens, ground), tone(tokens, ground));
+        const seen = contrast(mixed(own.get(visited)!, tokens, ground), tone(tokens, ground));
+        expect(rest, `resting mark = ${fmt(rest)}`).toBeGreaterThanOrEqual(3);
+        expect(seen, `visited mark = ${fmt(seen)}`).toBeGreaterThan(rest * 1.3);
+      });
+    }
   }
 
   it("the strip paints its marks with the rail's tokens", () => {

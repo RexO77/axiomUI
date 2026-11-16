@@ -18,9 +18,9 @@ export type CatalogLocation = {
 };
 
 /** The shape `?rule=` must have. The server redirect matches the same pattern. */
-const RULE_PARAM = /^[a-z]+-\d+$/;
+const RULE_PARAM = /^[a-z][a-z0-9]*-\d+$/;
 
-/** "", "/", "staging", "/staging/" → "" or "/staging". Never a trailing slash. */
+/** "", "/", "docs", "/docs/" → "" or "/docs". Never a trailing slash. */
 function normaliseBase(base: string): string {
   const parts = base.split("/").filter(Boolean);
   return parts.length ? `/${parts.join("/")}` : "";
@@ -45,14 +45,14 @@ function decode(segment: string): string | null {
 
 /**
  * The one place the catalog's base path lives. Bind it once in CatalogApp:
- * `createRoutes("")` for the catalog at `/`, `createRoutes("/staging")` before
- * the swap. The base is joined, never string-replaced, so an empty base still
- * gives a URL that starts with `/`.
+ * `createRoutes(CATALOG_BASE)`. The base is joined, never string-replaced, so
+ * an empty base still gives a URL that starts with `/`, and a base such as
+ * `/docs` prefixes every path.
  */
 export function createRoutes(base = "") {
   const root = normaliseBase(base);
 
-  /** The wall. Always a non-empty, same-origin path: `/`, `/staging`, `/?q=x#rule-a-1`. */
+  /** The wall. Always a non-empty, same-origin path: `/`, `/docs`, `/?q=x#rule-a-1`. */
   function galleryHref(options: RouteOptions & { hash?: string } = {}): string {
     const hash = options.hash ? `#${encodeURIComponent(options.hash.replace(/^#/, ""))}` : "";
     return `${root || "/"}${queryString(options)}${hash}`;
@@ -95,5 +95,12 @@ export function createRoutes(base = "") {
 
 export type CatalogRoutes = ReturnType<typeof createRoutes>;
 
-/** The canonical catalog at `/`. Staging code binds its own with `createRoutes("/staging")`. */
-export const routes: CatalogRoutes = createRoutes("");
+/**
+ * Where the live catalog is mounted: `""` is the site root. Every catalog
+ * route, link and test URL is built from it, so moving the catalog is this
+ * one line.
+ */
+export const CATALOG_BASE = "";
+
+/** The live catalog's routes. */
+export const routes: CatalogRoutes = createRoutes(CATALOG_BASE);

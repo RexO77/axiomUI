@@ -142,8 +142,11 @@ describe("client import graph", () => {
   });
 
   it("follows a chain through ordinary modules to the corpus", () => {
-    const found = violations([path.join(SRC, "components/features/rules/rule-drawer.tsx")]);
-    expect(found.some((line) => line.startsWith("src/components/features/rules/rule-drawer.tsx → ") && line.endsWith(")"))).toBe(true);
+    // The llms-full.txt route reaches the corpus through rule-corpus.ts, as a server route may.
+    const found = violations([path.join(SRC, "app/llms-full.txt/route.ts")]);
+    expect(found).toContain(
+      "src/app/llms-full.txt/route.ts → src/lib/rule-corpus.ts → src/data/deep-dive-builder.ts (@/data/deep-dive-builder)",
+    );
   });
 
   const roots = ROOTS.flatMap(sourceFiles);
