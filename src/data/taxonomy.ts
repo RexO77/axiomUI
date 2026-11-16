@@ -1,0 +1,295 @@
+// design-system: strict
+//
+// How the shell groups and orders the catalog.
+//
+// This is a VIEW over `ui-logic.ts`. Rule ids and their `category` field never
+// change here: the skills, `llms.txt` and the OG images keep reading the
+// original eight categories. Only the rail, the gallery sections, the sidebar
+// and the palette read this module.
+
+import { categories, rules, type Rule } from "@/data/ui-logic";
+
+/** Rail, sidebar and palette label for every source category. Full names stay as sheet titles. */
+export const categoryShort: Readonly<Record<string, string>> = {
+  typography: "Typography",
+  layout: "Layout",
+  color: "Color",
+  components: "Components",
+  forms: "Forms",
+  system: "System",
+  motion: "Motion",
+  accessibility: "Accessibility",
+};
+
+/**
+ * Accessibility is a collection, not a rail category: its rules are drawn from
+ * every category, so the three that only it owned are re-homed for the rail. Their ids, URLs and
+ * `rule.category` are unchanged.
+ */
+export const railHome: Readonly<Record<string, string>> = {
+  "a11y-1": "system",
+  "a11y-3": "system",
+  "a11y-2": "color",
+};
+
+/** The seven rail categories, in rail order. */
+export const railCategoryIds = [
+  "typography",
+  "layout",
+  "color",
+  "components",
+  "forms",
+  "system",
+  "motion",
+] as const;
+
+export type RailCategoryId = (typeof railCategoryIds)[number];
+
+export type RuleGroup = {
+  /** Section header inside the category; null when the category has no sub-groups. */
+  label: string | null;
+  ruleIds: readonly string[];
+};
+
+/**
+ * Sub-groups (section headers only, never routes) and learning order per rail
+ * category. Each sequence doubles as the order the category is read in: the
+ * foundations a later rule builds on come first.
+ *
+ * The re-homed a11y rules sit beside the rule they extend: a11y-3 after
+ * sys-3, a11y-1 after sys-8, a11y-2 after color-4.
+ */
+const groupsByCategory: Record<RailCategoryId, RuleGroup[]> = {
+  typography: [
+    { label: "Type foundations", ruleIds: ids("typo", 5, 9, 11, 6, 1, 2) },
+    { label: "Reading and wrapping", ruleIds: ids("typo", 3, 4, 8, 7, 10, 12, 13) },
+  ],
+  layout: [{ label: null, ruleIds: ids("layout", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) }],
+  color: [
+    {
+      label: null,
+      ruleIds: [
+        ...ids("color", 1, 2, 3, 4),
+        "a11y-2",
+        ...ids("color", 5, 6, 7, 8, 9, 10, 11, 12),
+      ],
+    },
+  ],
+  components: [{ label: null, ruleIds: ids("comp", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12) }],
+  forms: [{ label: null, ruleIds: ids("form", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12) }],
+  system: [
+    { label: "State, progress and recovery", ruleIds: ids("sys", 2, 1, 7, 4, 9, 10, 6) },
+    {
+      label: "Interaction infrastructure",
+      ruleIds: ["sys-5", "sys-11", "sys-3", "a11y-3", "sys-8", "a11y-1", "sys-13", "sys-14"],
+    },
+  ],
+  motion: [
+    { label: "Intent and input preferences", ruleIds: ids("motion", 3, 1, 2, 17, 16) },
+    { label: "Timing and feedback", ruleIds: ids("motion", 6, 5, 4, 8, 11, 25) },
+    {
+      label: "Entrances, exits and continuity",
+      ruleIds: ids("motion", 29, 9, 10, 7, 27, 24, 26, 28),
+    },
+    { label: "Animation implementation", ruleIds: ids("motion", 14, 12, 13, 15, 21, 22) },
+    { label: "Direct manipulation", ruleIds: ids("motion", 18, 19, 20, 23) },
+  ],
+};
+
+function ids(prefix: string, ...numbers: number[]): string[] {
+  return numbers.map((n) => `${prefix}-${n}`);
+}
+
+const ruleById = new Map(rules.map((rule) => [rule.id, rule]));
+const categoryName = new Map(categories.map((category) => [category.id, category.name]));
+
+function lookup(id: string): Rule {
+  const rule = ruleById.get(id);
+  if (!rule) {
+    throw new Error(`taxonomy: unknown rule id "${id}"`);
+  }
+  return rule;
+}
+
+export type RailCategory = {
+  id: RailCategoryId;
+  /** Full name, for sheet titles ("Typography & text"). */
+  name: string;
+  /** Rail, sidebar and palette label ("Typography"). */
+  short: string;
+  groups: readonly { label: string | null; rules: readonly Rule[] }[];
+  /** Every rule in the category, in learning order. */
+  rules: readonly Rule[];
+};
+
+/** The rail's seven categories, each with its rules in learning order. */
+export const railCategories: readonly RailCategory[] = railCategoryIds.map((id) => {
+  const groups = groupsByCategory[id].map((group) => ({
+    label: group.label,
+    rules: group.ruleIds.map(lookup),
+  }));
+  return {
+    id,
+    name: categoryName.get(id) ?? id,
+    short: categoryShort[id],
+    groups,
+    rules: groups.flatMap((group) => group.rules),
+  };
+});
+
+/** All 105 rules in rail order: categories in rail order, each in learning order. */
+export const railOrder: readonly Rule[] = railCategories.flatMap((category) => category.rules);
+
+const railIndex = new Map(railOrder.map((rule, index) => [rule.id, index]));
+const railCategoryByRule = new Map(
+  railCategories.flatMap((category) => category.rules.map((rule) => [rule.id, category] as const)),
+);
+
+/** The rail category a rule is shown under (its own category, unless re-homed). */
+export function railCategoryOf(ruleOrId: Rule | string): RailCategoryId {
+  const id = typeof ruleOrId === "string" ? ruleOrId : ruleOrId.id;
+  const category = railCategoryByRule.get(id);
+  if (!category) {
+    throw new Error(`taxonomy: unknown rule id "${id}"`);
+  }
+  return category.id;
+}
+
+/** The rail category's data, by id. */
+export function railCategory(id: RailCategoryId): RailCategory {
+  return railCategories.find((category) => category.id === id)!;
+}
+
+/** Position in rail order (0-based), for stable sorting. -1 for an unknown id. */
+export function railRank(id: string): number {
+  return railIndex.get(id) ?? -1;
+}
+
+/**
+ * Where a rule sits inside its rail category: 1-based `index` of `total`, and
+ * its neighbours within that category, null at either end. This is position
+ * inside one category only; paging across categories (J/K, the pager) reads
+ * the deck in src/lib/navigation/deck.ts.
+ */
+export function railPosition(id: string): {
+  category: RailCategoryId;
+  index: number;
+  total: number;
+  prev: Rule | null;
+  next: Rule | null;
+} {
+  const category = railCategoryByRule.get(id);
+  if (!category) {
+    throw new Error(`taxonomy: unknown rule id "${id}"`);
+  }
+  const at = category.rules.findIndex((rule) => rule.id === id);
+  return {
+    category: category.id,
+    index: at + 1,
+    total: category.rules.length,
+    prev: category.rules[at - 1] ?? null,
+    next: category.rules[at + 1] ?? null,
+  };
+}
+
+// ── Collections ──────────────────────────────────────────────────────
+
+export type Collection = {
+  id: string;
+  name: string;
+  groups: readonly RuleGroup[];
+  ruleIds: readonly string[];
+};
+
+function collection(id: string, name: string, groups: RuleGroup[]): Collection {
+  for (const group of groups) {
+    group.ruleIds.forEach(lookup);
+  }
+  return { id, name, groups, ruleIds: groups.flatMap((group) => group.ruleIds) };
+}
+
+/**
+ * The 14 rules an accessibility review needs, drawn from every category and
+ * grouped by what the review checks.
+ */
+export const accessibilityCollection = collection("accessibility", "Accessibility", [
+  { label: "Keyboard and focus", ruleIds: ["a11y-1", "sys-8", "comp-12"] },
+  {
+    label: "Contrast and legibility",
+    ruleIds: ["color-9", "color-6", "typo-6", "typo-11", "a11y-2"],
+  },
+  { label: "Names and labels", ruleIds: ["form-2", "comp-7", "comp-8"] },
+  { label: "Targets and motion", ruleIds: ["sys-3", "a11y-3", "motion-17"] },
+]);
+
+/**
+ * The 33 rules whose comparison is a live demo (a showcase spec exists).
+ * A test holds this list to `showcaseSpecs`, so it cannot drift from the demos.
+ */
+export const liveDemoCollection = collection("live", "Live demos", [
+  {
+    label: null,
+    ruleIds: [...ids("motion", ...Array.from({ length: 29 }, (_, i) => i + 1)), "color-7", "comp-9", "sys-1", "sys-9"],
+  },
+]);
+
+export const collections: readonly Collection[] = [accessibilityCollection, liveDemoCollection];
+
+const liveDemoIds = new Set(liveDemoCollection.ruleIds);
+
+/** True when the rule's comparison is a live motion demo rather than two static panes. */
+export function hasLiveDemo(id: string): boolean {
+  return liveDemoIds.has(id);
+}
+
+// ── Compare ──────────────────────────────────────────────────────────
+
+export type CompareKind = "aligned" | "structural";
+
+/**
+ * Each rule's comparison, classified by reading its previews and demos. "aligned": Do and Don't
+ * are the same vignette with one property changed, so the elements sit in the
+ * same place and Flip works as a blink comparator. "structural": the panes
+ * differ in composition (a different component, elements added or removed),
+ * so Flip would only jump between two layouts.
+ *
+ * Live-demo rules are classified by their showcase scenes; Stage never offers
+ * Flip on them (see `suggestsFlip`).
+ */
+export const structuralRuleIds: ReadonlySet<string> = new Set([
+  // components
+  "comp-2", // a confirm dialog vs an empty "no confirm step" box
+  "comp-5", // side drawer vs centred modal
+  "comp-6", // inline error under the field vs a toast in the corner
+  "comp-7", // labels widen the toolbar, so the icons move
+  // forms
+  "form-1", // labels above vs labels beside the inputs
+  "form-6", // a list of radios vs one dropdown
+  "form-10", // one column vs a two-column grid
+  // system
+  "sys-1", // skeleton bars vs a centred spinner
+  "sys-2", // an empty state with a next step vs a blank panel
+  "sys-5", // palette → alias → component vs one token branching straight to components
+  "sys-6", // an extra row and a different toast
+  "sys-7", // a step label and progress bar push the form down
+  "sys-10", // a fallback block with Retry vs an inline broken glyph
+  "sys-11", // two ticks and device zones vs eight ticks
+  // motion (showcase scenes)
+  "motion-1", // modal vs command palette
+  "motion-3", // edge panel vs centred modal
+  "motion-14", // toast vs a growing box
+]);
+
+/** Every rule's compare kind. A test holds that all 105 are classified exactly once. */
+export const compareKind: Readonly<Record<string, CompareKind>> = Object.fromEntries(
+  rules.map((rule) => [rule.id, structuralRuleIds.has(rule.id) ? "structural" : "aligned"]),
+);
+
+export const alignedRuleIds: ReadonlySet<string> = new Set(
+  rules.filter((rule) => compareKind[rule.id] === "aligned").map((rule) => rule.id),
+);
+
+/** Whether Stage shows "Hold Space to flip": aligned, and static (live demos have no Flip). */
+export function suggestsFlip(id: string): boolean {
+  return compareKind[id] === "aligned" && !hasLiveDemo(id);
+}
