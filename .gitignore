@@ -41,7 +41,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Local Claude Code preview/dev config
+# Local preview and development config
 .claude/
 
 # Local verification screenshots

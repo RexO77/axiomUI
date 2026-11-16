@@ -1,0 +1,162 @@
+/*
+ * The catalog shell: a 56px rail is the back layer and one rounded
+ * sheet floats over it. The sheet hosts two layers: the gallery wall, which
+ * stays mounted under a rule (hidden and inert, so it keeps its own scroll),
+ * and the rule view, which scrolls the sheet itself.
+ *
+ * Colours come from var(--ax-*) only, radii from var(--radius-*), and the
+ * geometry from the --shell-* properties shell.tsx sets from geometry.ts.
+ * feature-css.test.ts holds every stylesheet under components/{shell,rule,
+ * gallery} to those rules, and to PHONE_QUERY as the one phone cut-over.
+ */
+
+/* ── Frame ─────────────────────────────────────────────────────────── */
+
+.shell {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--ax-backdrop);
+  color: var(--ax-ink);
+  font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Sheet ─────────────────────────────────────────────────────────── */
+
+/* Expanding the rail moves the sheet by translate, never by
+   width: it is laid out at the collapsed rail, translated by --shell-shift
+   while [data-moving], then reflows once at [data-wide]. */
+.shell-sheet {
+  position: absolute;
+  top: var(--shell-inset);
+  right: var(--shell-inset);
+  bottom: var(--shell-inset);
+  left: var(--shell-rail);
+  border-radius: var(--radius-sheet);
+  background: var(--ax-surface);
+  box-shadow: var(--ax-shadow-sheet);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  container: sheet / inline-size;
+  isolation: isolate;
+  outline: none;
+}
+.shell[data-wide] .shell-sheet { left: var(--shell-rail-open); }
+.shell-sheet[data-moving] { transition: transform var(--shell-open-ms) var(--ease-drawer); }
+.shell-sheet[data-moving="close"] {
+  transition-duration: var(--shell-close-ms);
+  transition-timing-function: var(--ease-out-strong);
+}
+
+/* ── Layers ────────────────────────────────────────────────────────── */
+
+/* The wall is its own scroller, so its position survives a rule above it.
+   visibility keeps its layout and scrollTop; display: none would drop both.
+   CatalogApp adds `inert` alongside [data-hidden]. */
+.shell-wall {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.shell-wall[data-hidden] { visibility: hidden; }
+.shell-rule {
+  position: relative;
+  z-index: 1;
+  min-height: 100%;
+  background: var(--ax-surface);
+}
+
+/* ── Shared controls ───────────────────────────────────────────────── */
+
+/* One 32px control height across headers, centred on the header row. */
+.shell-ctl {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  min-width: 32px;
+  padding: 0 10px;
+  border-radius: var(--radius-control);
+  color: var(--ax-ink-secondary);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 140ms var(--ease-out-strong),
+    color 140ms var(--ease-out-strong);
+}
+.shell-ctl svg { width: 16px; height: 16px; flex: none; stroke-width: 1.75; }
+@media (hover: hover) and (pointer: fine) {
+  .shell-ctl:hover { background: var(--ax-hover); color: var(--ax-ink); }
+}
+.shell-ctl:active { background: var(--ax-press); }
+
+/* Anything the keyboard starts is 0ms. Keyed on <html>, not on .shell, so
+   content portalled to <body> (tooltips, overlays) follows it too. */
+:root[data-input="keyboard"] .shell-ctl { transition: none; }
+
+/* ── Rule ↔ wall morph ─────────────────────────────────────────────── */
+
+/* runViewTransition (view-transition.ts) names the pair, sets data-vt and
+   owns the durations. These refine the snapshots: the leaving one keeps its
+   own size, centred, and is gone in 90ms (stretched, it read as a ghost),
+   and a title is text, never a scaled bitmap. */
+:root[data-vt="in"]::view-transition-old(rule-canvas),
+:root[data-vt="in"]::view-transition-old(rule-title),
+:root[data-vt="out"]::view-transition-old(rule-canvas),
+:root[data-vt="out"]::view-transition-old(rule-title) { animation-duration: 90ms; }
+:root[data-vt="in"]::view-transition-old(rule-canvas),
+:root[data-vt="out"]::view-transition-old(rule-canvas) { object-fit: none; object-position: center; }
+:root[data-vt="in"]::view-transition-old(rule-title),
+:root[data-vt="in"]::view-transition-new(rule-title),
+:root[data-vt="out"]::view-transition-old(rule-title),
+:root[data-vt="out"]::view-transition-new(rule-title) {
+  height: 100%;
+  object-fit: none;
+  object-position: left top;
+}
+
+/* ── Phone ─────────────────────────────────────────────────────────── */
+
+/* PHONE_QUERY: the sheet runs full width under the top bar and,
+   on a rule, leaves room for the bottom strip. */
+@media (max-width: 640px), (pointer: coarse) and (max-height: 500px) {
+  .shell .shell-sheet,
+  .shell[data-wide] .shell-sheet {
+    top: calc(var(--shell-phone-top) + env(safe-area-inset-top));
+    right: 0;
+    bottom: 0;
+    left: 0;
+    border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+    transform: none;
+  }
+  .shell[data-view="rule"] .shell-sheet {
+    padding-bottom: calc(var(--shell-phone-foot) + env(safe-area-inset-bottom));
+  }
+}
+/* A phone held sideways: a 40px bar and only the run, so the rule keeps the height. */
+@media (pointer: coarse) and (max-height: 500px) {
+  .shell .shell-sheet,
+  .shell[data-wide] .shell-sheet { top: calc(var(--shell-phone-top-short) + env(safe-area-inset-top)); }
+  .shell[data-view="rule"] .shell-sheet {
+    padding-bottom: calc(var(--shell-phone-foot-short) + env(safe-area-inset-bottom));
+  }
+}
+
+/* ── Reduced motion and forced colours ─────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .shell-sheet[data-moving] { transition: none; }
+}
+
+/* Forced colours drop every box-shadow, and with it the sheet's only edge. */
+@media (forced-colors: active) {
+  .shell-sheet { border: 1px solid CanvasText; }
+}
