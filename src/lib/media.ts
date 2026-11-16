@@ -40,6 +40,7 @@ function useMediaFlag(query: string): boolean {
 
 export const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 export const HOVER_QUERY = "(hover: hover) and (pointer: fine)";
+export const PHONE_QUERY = "(max-width: 640px), (pointer: coarse) and (max-height: 500px)";
 
 export function useReducedMotion() {
     return useMediaFlag(REDUCED_MOTION_QUERY);
@@ -47,6 +48,11 @@ export function useReducedMotion() {
 
 export function useCanHover() {
     return useMediaFlag(HOVER_QUERY);
+}
+
+/** Shared subscription for shell behaviour; responsive layout stays in CSS. */
+export function useMediaQuery(query: string): boolean {
+    return useMediaFlag(query);
 }
 
 /** Non-hook read for event handlers / the engine (client only). */
