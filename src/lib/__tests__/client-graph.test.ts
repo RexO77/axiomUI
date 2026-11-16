@@ -4,11 +4,10 @@ import ts from "typescript";
 import { describe, expect, it } from "vitest";
 
 /**
- * The catalog's client code must never reach the deep-dive corpus or the
- * prototype. This walks every import
- * from the client roots (static, type-only, re-export and dynamic) through
- * the source tree, and fails on a forbidden module with the chain that
- * reached it. Roots that do not exist are skipped; new files are covered
+ * The catalog's client code must never reach the deep-dive corpus. This
+ * walks every import from the client roots (static, type-only, re-export
+ * and dynamic) through the source tree, and fails on a forbidden module with
+ * the chain that reached it. Roots that do not exist are skipped; new files are covered
  * as they are added.
  */
 
@@ -21,9 +20,13 @@ const ROOTS = [
   "src/components/gallery",
   "src/lib/navigation",
 ];
-/** Server-only prose modules. */
-const FORBIDDEN = ["@/data/deep-dive-builder", "@/data/deep-dives", "@/lib/rule-prose"];
-const PROTOTYPE = "src/app/proto/";
+/** Server-only prose: the corpus, its builders, and the server-only module and its pure builder. */
+const FORBIDDEN = [
+  "@/data/deep-dive-builder",
+  "@/data/deep-dives",
+  "@/lib/rule-prose",
+  "@/lib/rule-prose-build",
+];
 
 const toSpecifier = (file: string) => `@/${path.relative(SRC, file).replace(/\.(?:tsx?|mts)$/, "").replace(/\/index$/, "")}`;
 
@@ -77,8 +80,6 @@ function resolve(from: string, specifier: string): string | null {
 }
 
 function isForbidden(file: string): string | null {
-  const relative = path.relative(ROOT, file);
-  if (relative.startsWith(PROTOTYPE)) return "the prototype";
   const specifier = toSpecifier(file);
   return FORBIDDEN.find((name) => specifier === name || specifier.startsWith(`${name}/`)) ?? null;
 }
@@ -125,10 +126,19 @@ describe("client import graph", () => {
     expect(specifiers("fixture.ts", source)).toEqual(["@/x/a", "./b", "../c", "@/d", "@/e", "@/f", "@/g"]);
   });
 
-  it("names the forbidden modules and the prototype", () => {
+  it("names the forbidden modules", () => {
     expect(isForbidden(path.join(SRC, "data/deep-dives.ts"))).toBe("@/data/deep-dives");
-    expect(isForbidden(path.join(SRC, "app/proto/v2-strip/harness.tsx"))).toBe("the prototype");
     expect(isForbidden(path.join(SRC, "lib/catalog/stores.ts"))).toBeNull();
+    expect(isForbidden(path.join(SRC, "lib/rule-prose.ts"))).toBe("@/lib/rule-prose");
+    expect(isForbidden(path.join(SRC, "lib/rule-prose-build.ts"))).toBe("@/lib/rule-prose-build");
+    // The type and the loader are what client code is meant to use.
+    expect(isForbidden(path.join(SRC, "lib/rule-prose-types.ts"))).toBeNull();
+    expect(isForbidden(path.join(SRC, "lib/prose-loader.ts"))).toBeNull();
+  });
+
+  it("stops at the server-only prose module before the builder behind it", () => {
+    const found = violations([path.join(SRC, "app/deep-dives/[id]/route.ts")]);
+    expect(found).toContain("src/app/deep-dives/[id]/route.ts → src/lib/rule-prose.ts (@/lib/rule-prose)");
   });
 
   it("follows a chain through ordinary modules to the corpus", () => {
@@ -140,10 +150,18 @@ describe("client import graph", () => {
 
   it("starts from the shell and navigation code that exists", () => {
     const relative = roots.map((file) => path.relative(ROOT, file));
-    expect(relative).toEqual(expect.arrayContaining(["src/components/catalog-app.tsx", "src/components/shell/shell.tsx", "src/lib/navigation/history.ts"]));
+    expect(relative).toEqual(
+      expect.arrayContaining([
+        "src/components/catalog-app.tsx",
+        "src/components/shell/shell.tsx",
+        "src/lib/navigation/history.ts",
+        "src/components/rule/stage.tsx",
+        "src/components/rule/inspector.tsx",
+      ]),
+    );
   });
 
-  it("never reaches the deep-dive corpus, server-only prose or the prototype", () => {
+  it("never reaches the deep-dive corpus or server-only prose", () => {
     expect(violations(roots)).toEqual([]);
   });
 });

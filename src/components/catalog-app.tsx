@@ -29,10 +29,11 @@
  * a new open, an exit, or the location popstate landed on.
  */
 
-import { ChevronLeft } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
+import { usePathname, useRouter, useSearchParams, useSelectedLayoutSegments } from "next/navigation";
 import {
   Suspense,
+  startTransition,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -45,23 +46,34 @@ import {
 
 import { Shell } from "@/components/shell/shell";
 import type { InputOrigin } from "@/components/shell/shell-context";
-import { railCategory } from "@/data/taxonomy";
 import { rules } from "@/data/ui-logic";
 import { catalogStores } from "@/lib/catalog/stores";
-import { deckFor, deckHas, deckPosition, resolveEntryDeck, type Deck } from "@/lib/navigation/deck";
+import { deckFor, deckHas, resolveEntryDeck } from "@/lib/navigation/deck";
 import {
   currentUrl,
   exitAction,
+  galleryState,
+  holdHistory,
   jumpFromRule,
   openFromGallery as openWrites,
+  readAxiomState,
   stampLoad,
   stepInRule,
   writeHistory,
+  type AxiomState,
 } from "@/lib/navigation/history";
 import { createRoutes, type CatalogLocation } from "@/lib/navigation/routes";
 import { runViewTransition, type TransitionHandle, type ViewTransitionElements } from "@/lib/navigation/view-transition";
 
 const ruleById = new Map(rules.map((rule) => [rule.id, rule]));
+
+/*
+ * The rule view: split from the wall's bundle, still rendered on the server.
+ * With SSR kept, next/dynamic adds no Suspense boundary,
+ * so a first open before its chunk arrived would suspend the whole commit and
+ * lose the 0 ms keyboard open. CatalogApp primes it once after hydration.
+ */
+const Stage = dynamic(() => import("@/components/rule/stage").then((mod) => mod.Stage));
 
 const same = (a: CatalogLocation, b: CatalogLocation) =>
   a.view === b.view && a.ruleId === b.ruleId && a.q === b.q && a.show === b.show && a.collection === b.collection;
@@ -85,6 +97,11 @@ function readHash(): string {
 /* The morph pair: a tile's frame and title, and the rule view's canvas and title. */
 const tileIn = (layer: HTMLElement | null, id: string) =>
   layer?.querySelector<HTMLElement>(`[data-rule-link][id="rule-${CSS.escape(id)}"]`) ?? null;
+const sectionIn = (layer: HTMLElement | null, id: string) =>
+  layer?.querySelector<HTMLElement>(`[id="${CSS.escape(id)}"]`) ?? null;
+
+/** What the wall brings into view on arrival: a rule's tile (focused), or a category's section. */
+type Reveal = { ruleId: string; section: string | null };
 const pairOf = (root: Element | null, canvas: string, title: string): ViewTransitionElements => ({
   canvas: root?.querySelector<HTMLElement>(canvas),
   title: root?.querySelector<HTMLElement>(title),
@@ -109,6 +126,8 @@ function RouterSearch({ onReady, onCommit }: { onReady: () => void; onCommit: (s
 const urlKey = (path: string, search: string) => `${path}?${new URLSearchParams(search).toString()}`;
 /** How long an exit waits for Next's router commit before it is abandoned. */
 const COMMIT_WAIT_MS = 3000;
+/** How long after a Back that cut such a wait short a stale router commit is still put right. */
+const POP_GUARD_MS = 10_000;
 
 export type CatalogAppProps = {
   /** The catalog mount point. Every URL comes from `createRoutes(basePath)`. */
@@ -130,9 +149,14 @@ export function CatalogApp({ basePath, wall, children }: CatalogAppProps) {
   const wallLayer = useRef<HTMLDivElement>(null);
   const morph = useRef<TransitionHandle | null>(null);
   const pendingOpen = useRef<{ ruleId: string; cancelled: boolean } | null>(null);
-  const pendingExit = useRef<{ ruleId: string; origin: InputOrigin } | null>(null);
-  /** The tile to bring into view and focus once the wall shows it. Open, exit and popstate clear it. */
-  const pendingReveal = useRef<string | null>(null);
+  const pendingExit = useRef<{ reveal: Reveal; origin: InputOrigin } | null>(null);
+  /** An exit after a direct load, holding the rule view until the router replace has filled @wall. */
+  const pendingWall = useRef<{ reveal: Reveal; origin: InputOrigin; below: CatalogLocation } | null>(null);
+  const wallWatch = useRef<MutationObserver | null>(null);
+  /** After a Back that interrupted an exit's wait: the entry it reached, which a late router commit must not overwrite. */
+  const popGuard = useRef<{ url: string; axiom: AxiomState; until: number } | null>(null);
+  /** The tile (or section) to bring into view once the wall shows it. Open, exit and popstate clear it. */
+  const pendingReveal = useRef<Reveal | null>(null);
 
   const readLocation = useCallback(
     () => routes.parseLocation(window.location.pathname, window.location.search),
@@ -170,18 +194,23 @@ export function CatalogApp({ basePath, wall, children }: CatalogAppProps) {
   const reveal = useCallback(function revealPending() {
     revealWatch.current?.disconnect();
     revealWatch.current = null;
-    const id = pendingReveal.current;
+    const target = pendingReveal.current;
     const layer = wallLayer.current;
-    if (!id || !layer || locRef.current.view !== "gallery") return;
-    const tile = tileIn(layer, id);
-    if (!tile) {
+    if (!target || !layer || locRef.current.view !== "gallery") return;
+    const found = target.section ? sectionIn(layer, target.section) : tileIn(layer, target.ruleId);
+    if (!found) {
       revealWatch.current = new MutationObserver(revealPending);
       revealWatch.current.observe(layer, { childList: true, subtree: true });
       return;
     }
     pendingReveal.current = null;
-    tile.scrollIntoView({ block: "nearest" });
-    tile.focus({ preventScroll: true });
+    if (target.section) {
+      // A category: its section at the top; focus stays where the reader chose it.
+      found.scrollIntoView({ block: "start" });
+      return;
+    }
+    found.scrollIntoView({ block: "nearest" });
+    found.focus({ preventScroll: true });
   }, []);
   useLayoutEffect(reveal, [loc, reveal]);
   useEffect(() => () => revealWatch.current?.disconnect(), []);
@@ -201,6 +230,26 @@ export function CatalogApp({ basePath, wall, children }: CatalogAppProps) {
     if (traversal.current) window.clearTimeout(traversal.current.timer);
     traversal.current = null;
     pendingExit.current = null;
+    pendingWall.current = null;
+    holdHistory(false);
+    wallWatch.current?.disconnect();
+    wallWatch.current = null;
+    popGuard.current = null;
+  }, []);
+
+  /*
+   * Back during that wait. The reader's own traversal is not
+   * gated, and Next's late commit then writes the address being left onto
+   * the entry Back reached. For a while after such a pop, a router commit
+   * that leaves the address bar anywhere but the entry popped to is put back
+   * through the one writer, so Next adopts that address too. Any move of ours
+   * supersedes it.
+   */
+  const holdPop = useCallback(() => {
+    const guard = popGuard.current;
+    if (!guard) return;
+    if (performance.now() > guard.until) popGuard.current = null;
+    else if (currentUrl(window.location) !== guard.url) writeHistory("replace", guard.axiom, guard.url);
   }, []);
   const release = useCallback(() => {
     const pending = traversal.current;
@@ -210,23 +259,30 @@ export function CatalogApp({ basePath, wall, children }: CatalogAppProps) {
     traversal.current = null;
     pending.run();
   }, []);
+  /* Every router commit: put a stale address back, run a waiting traversal, seat a wall that has arrived. */
+  const landWall = useRef(() => {});
   useLayoutEffect(() => {
     routerUrl.current.path = pathname;
+    holdPop();
     release();
-  }, [pathname, release]);
+    landWall.current();
+  }, [pathname, holdPop, release]);
   const onRouterSearch = useCallback(
     (search: string) => {
       routerUrl.current.search = search;
+      holdPop();
       release();
+      landWall.current();
     },
-    [release],
+    [holdPop, release],
   );
   useEffect(() => supersede, [supersede]);
 
   const showGallery = useCallback(
-    (next: CatalogLocation, revealId: string | null, origin: InputOrigin) => {
-      pendingReveal.current = revealId;
-      const tile = revealId ? tileIn(wallLayer.current, revealId) : null;
+    (next: CatalogLocation, target: Reveal | null, origin: InputOrigin) => {
+      pendingReveal.current = target;
+      // Only a return to the rule's own tile morphs; a category lands at once.
+      const tile = target && !target.section ? tileIn(wallLayer.current, target.ruleId) : null;
       const animate = origin === "pointer" && tile !== null;
       morph.current = runViewTransition(() => commit(next), {
         source: animate ? "pointer" : "keyboard",
@@ -238,6 +294,24 @@ export function CatalogApp({ basePath, wall, children }: CatalogAppProps) {
     },
     [commit],
   );
+
+  /*
+   * The first exit after a direct load waits here, with the rule view still
+   * on screen, until the router replace has committed the wall into @wall.
+   * Then it runs like any other exit: 0 ms from the keyboard, the morph from
+   * a pointer. Without the wait, a slow replace showed an empty sheet.
+   */
+  useLayoutEffect(() => {
+    landWall.current = () => {
+      const waiting = pendingWall.current;
+      if (!waiting || !wallLayer.current?.querySelector("[data-wall]")) return;
+      pendingWall.current = null;
+      holdHistory(false);
+      wallWatch.current?.disconnect();
+      wallWatch.current = null;
+      showGallery(waiting.below, waiting.reveal, waiting.origin);
+    };
+  }, [showGallery]);
 
   const openFromWall = useCallback(
     (id: string, origin: InputOrigin, tile: Element | null) => {
@@ -263,20 +337,22 @@ export function CatalogApp({ basePath, wall, children }: CatalogAppProps) {
     [commit, galleryUrl, ruleUrl, supersede],
   );
 
+  /** Back to the wall, at the rule's tile, or at `section` when a category icon asked for its run. */
   const exit = useCallback(
-    (origin: InputOrigin) => {
+    (origin: InputOrigin, section: string | null = null) => {
       const opening = pendingOpen.current;
       const cur = locRef.current;
       const ruleId = opening?.ruleId ?? cur.ruleId;
-      if (!ruleId || pendingExit.current) return;
+      if (!ruleId || pendingExit.current || pendingWall.current) return;
       if (opening) opening.cancelled = true;
       pendingOpen.current = null;
       pendingReveal.current = null;
       const below = wallLoc.current;
+      const reveal: Reveal = { ruleId, section };
       const action = exitAction(window.history.state, ruleId, deckFor(below), below, routes);
       if (action.type === "back") {
         supersede();
-        pendingExit.current = { ruleId, origin };
+        pendingExit.current = { reveal, origin };
         const mine = generation.current;
         const timer = window.setTimeout(() => {
           if (generation.current !== mine) return;
@@ -288,16 +364,26 @@ export function CatalogApp({ basePath, wall, children }: CatalogAppProps) {
         release();
         return;
       }
+      const href = section ? routes.galleryHref({ q: below.q, show: below.show, collection: below.collection, hash: section }) : action.href;
       if (!wallMounted()) {
         // No wall in this document (a direct load or a reload): fill the @wall
-        // slot with one real replace, in place. The tile is revealed when it lands.
-        pendingReveal.current = ruleId;
-        commitNow(below);
-        router.replace(action.href, { scroll: false });
+        // slot with one real replace, in place. The rule view stays until it
+        // lands, and no history write may interrupt it meanwhile (a scroll
+        // save, a page turn): Next would drop the navigation and the wall
+        // would never come.
+        supersede();
+        pendingWall.current = { reveal, origin, below };
+        holdHistory(true);
+        const layer = wallLayer.current;
+        if (layer) {
+          wallWatch.current = new MutationObserver(() => landWall.current());
+          wallWatch.current.observe(layer, { childList: true, subtree: true });
+        }
+        router.replace(href, { scroll: false });
         return;
       }
-      writeHistory("replace", action.axiom, action.href);
-      showGallery(below, ruleId, origin);
+      writeHistory("replace", action.axiom, href);
+      showGallery(below, reveal, origin);
     },
     [commitNow, readLocation, release, routes, router, showGallery, supersede],
   );
@@ -306,6 +392,8 @@ export function CatalogApp({ basePath, wall, children }: CatalogAppProps) {
   const onOpenRule = useCallback(
     (id: string, mode: "push" | "replace") => {
       const cur = locRef.current;
+      // An exit is already filling the wall: the page turn would race its router replace.
+      if (pendingWall.current) return;
       supersede();
       if (cur.view === "gallery") {
         openFromWall(id, "keyboard", null);
@@ -322,7 +410,7 @@ export function CatalogApp({ basePath, wall, children }: CatalogAppProps) {
   const onHome = useCallback(
     (categoryId: string | null, origin: InputOrigin) => {
       if (locRef.current.view === "rule") {
-        exit(origin);
+        exit(origin, categoryId);
         return;
       }
       const layer = wallLayer.current;
@@ -335,12 +423,25 @@ export function CatalogApp({ basePath, wall, children }: CatalogAppProps) {
 
   const onClearDeck = useCallback(() => {
     const cur = locRef.current;
-    if (cur.view !== "rule") return;
+    if (cur.view !== "rule" || pendingWall.current) return;
     const next: CatalogLocation = { ...cur, q: "", collection: null };
     const write = stepInRule(window.history.state);
     writeHistory(write.mode, write.axiom, ruleUrl(next));
     commitNow(next);
   }, [commitNow, ruleUrl]);
+
+  /* Prime the rule view in the background: its chunk and stylesheet are in before the first open. */
+  const [stageWarm, setStageWarm] = useState(false);
+  useEffect(() => startTransition(() => setStageWarm(true)), []);
+
+  /* Hydrated: phone CSS may now collapse what only script can reopen (the deep dive's sections). */
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    root.dataset.hydrated = "";
+    return () => {
+      delete root.dataset.hydrated;
+    };
+  }, []);
 
   /* After hydration: the real location, which the prerendered HTML could not know. */
   const onReady = useCallback(() => {
@@ -348,7 +449,7 @@ export function CatalogApp({ basePath, wall, children }: CatalogAppProps) {
     // The wall to return to, from the entry's own query, once: paging keeps it.
     wallLoc.current = wallOf(actual);
     if (actual.view === "rule") catalogStores.continueRule.suppress();
-    else if (readHash().startsWith("rule-")) pendingReveal.current = readHash().slice(5);
+    else if (readHash().startsWith("rule-")) pendingReveal.current = { ruleId: readHash().slice(5), section: null };
     if (!same(actual, locRef.current)) commit(actual);
     else reveal();
   }, [commit, readLocation, reveal]);
@@ -384,13 +485,19 @@ export function CatalogApp({ basePath, wall, children }: CatalogAppProps) {
     const onPop = () => {
       const next = readLocation();
       const exiting = pendingExit.current;
+      const interrupted = traversal.current !== null;
       supersede();
+      if (interrupted) {
+        const axiom = readAxiomState(window.history.state) ?? (next.view === "gallery" ? galleryState : null);
+        if (axiom) popGuard.current = { url: currentUrl(window.location), axiom, until: performance.now() + POP_GUARD_MS };
+      }
       pendingReveal.current = null;
       if (pendingOpen.current) pendingOpen.current.cancelled = true;
       pendingOpen.current = null;
       const cur = locRef.current;
       if (next.view === "gallery") {
-        showGallery(next, exiting?.ruleId ?? cur.ruleId, exiting?.origin ?? "keyboard");
+        const target = exiting?.reveal ?? (cur.ruleId ? { ruleId: cur.ruleId, section: null } : null);
+        showGallery(next, target, exiting?.origin ?? "keyboard");
         return;
       }
       commitNow(next);
@@ -428,6 +535,9 @@ export function CatalogApp({ basePath, wall, children }: CatalogAppProps) {
   );
 
   const ruleId = loc.view === "rule" ? loc.ruleId : null;
+  const shownRule = ruleId && ruleById.has(ruleId) ? ruleId : null;
+  const segments = useSelectedLayoutSegments();
+  const loadedRule = segments[0] === "rules" ? (segments[1] ?? null) : null;
   const deck = useMemo(() => (ruleId ? resolveEntryDeck(deckFor(loc), ruleId) : deckFor(loc)), [loc, ruleId]);
   const onWall = loc.view === "gallery";
   const hrefFor = useCallback((id: string) => routes.ruleHref(id), [routes]);
@@ -447,53 +557,24 @@ export function CatalogApp({ basePath, wall, children }: CatalogAppProps) {
         <div ref={wallLayer} className="shell-wall" data-hidden={onWall ? undefined : ""} inert={!onWall} onClick={onWallClick}>
           {wall}
         </div>
-        {ruleId ? <StagePlaceholder ruleId={ruleId} deck={deck} onExit={exit} /> : null}
-        {children}
+        {/*
+          The page slot holds the server-rendered Inspector of the rule this
+          document loaded (its router segment, which native history writes
+          never swap). It is the rule view's prose seed only while that rule is
+          shown; any other rule reads the loader. Elsewhere it renders as is,
+          so an unknown id still reaches its not-found boundary.
+        */}
+        {shownRule ? <Stage ruleId={shownRule} seed={shownRule === loadedRule ? children : null} /> : children}
+        {/* An empty id renders nothing; it only resolves the lazy rule view. */}
+        {!shownRule && stageWarm ? (
+          <Suspense fallback={null}>
+            <Stage ruleId="" />
+          </Suspense>
+        ) : null}
       </Shell>
       <Suspense fallback={null}>
         <RouterSearch onReady={onReady} onCommit={onRouterSearch} />
       </Suspense>
     </>
-  );
-}
-
-/** A stand-in for the rule view until the full one replaces it: the title, the position and a canvas to morph into. */
-function StagePlaceholder({ ruleId, deck, onExit }: { ruleId: string; deck: Deck; onExit: (origin: InputOrigin) => void }) {
-  const rule = ruleById.get(ruleId);
-  const position = deckPosition(deck, ruleId);
-  if (!rule || !position) return null;
-  return (
-    <article className="shell-rule" aria-labelledby="rule-title">
-      <header className="flex h-13 items-center gap-2 px-6">
-        <button type="button" className="shell-ctl -ml-2.5" onClick={(event) => onExit(event.detail === 0 ? "keyboard" : "pointer")}>
-          <ChevronLeft aria-hidden="true" />
-          All rules
-        </button>
-        <p className="ml-auto text-[13px] leading-5 text-ink-muted tabular-nums">
-          {railCategory(position.category).short} · {position.label}
-        </p>
-      </header>
-      <div className="px-6 pb-16">
-        <h1
-          id="rule-title"
-          data-rule-title
-          tabIndex={-1}
-          className="max-w-[24ch] font-serif text-4xl/10 font-semibold tracking-[-0.02em] text-balance text-ink outline-none"
-        >
-          {rule.title}
-        </h1>
-        <p className="mt-2 max-w-[65ch] text-base/7 text-ink-secondary">{rule.desc}</p>
-        <div data-rule-canvas className="mt-8 grid min-h-180 grid-cols-2 rounded-frame bg-sunken ring-1 ring-line ring-inset">
-          <p className="p-6 text-sm/6 text-ink-secondary">
-            <span className="block font-medium text-do-ink">Do</span>
-            {rule.do}
-          </p>
-          <p className="border-l border-line p-6 text-sm/6 text-ink-secondary">
-            <span className="block font-medium text-dont-ink">Don’t</span>
-            {rule.dont}
-          </p>
-        </div>
-      </div>
-    </article>
   );
 }

@@ -1,7 +1,10 @@
 // design-system: strict
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
+import { Inspector } from "@/components/rule/inspector";
 import { rules } from "@/data/ui-logic";
+import { ruleProse } from "@/lib/rule-prose";
 import { stagingEnabled } from "@/lib/staging";
 
 /** Only the 105 known ids, and none at all when staging is off: every other id is a 404. */
@@ -16,7 +19,13 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return { title: rules.find((rule) => rule.id === id)?.title ?? "Rule" };
 }
 
-/** CatalogApp in the layout draws the rule view, so the page slot renders nothing. */
-export default function StagingRulePage() {
-  return null;
+/**
+ * CatalogApp in the layout draws the rule view. The page renders only this
+ * rule's deep dive, built on the server, which the rule view seats while
+ * this rule is shown. No other rule's prose reaches the page.
+ */
+export default async function StagingRulePage({ params }: { params: Promise<{ id: string }> }) {
+  const prose = ruleProse((await params).id);
+  if (!prose) notFound();
+  return <Inspector ruleId={prose.id} prose={prose} />;
 }
