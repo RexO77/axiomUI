@@ -180,7 +180,7 @@
   text-wrap: pretty;
 }
 .rule-hint + .rule-hint { margin-top: 4px; }
-.rule-hint-touch { display: none; }
+.rule-hint-touch, .cmp-phone-copy { display: none; }
 @media (hover: none) {
   .rule-hint-key { display: none; }
   .rule-hint-touch { display: inline; }
@@ -388,6 +388,8 @@
 /* ── Phone: 44px targets, 13px floor, panes sized to their content ──── */
 
 @media (max-width: 640px), (pointer: coarse) and (max-height: 500px) {
+  .cmp-wide-copy { display: none; }
+  .cmp-phone-copy { display: inline; }
   .cmp-bar { min-height: 44px; }
   .cmp-ctl { height: 44px; padding-inline: 12px; }
   .cmp-show > .motion-showcase > .justify-between { min-height: 44px; }

@@ -1,7 +1,7 @@
 // design-system: strict
 "use client";
 
-// The rule comparison. Static rules: Side by side or Flip, at 1× or 2×, both
+// The rule comparison. Static rules: Side by side (Both on phones) or Flip, at 1× or 2×, both
 // variants on one canvas with their verdict labels inside, captions under each
 // half and the Flip hint under those. Engine-backed motion rules render
 // MotionCompare on the same canvas; the hand-built showcases (drag, interrupt,
@@ -33,7 +33,11 @@ import "./compare.css";
 
 const SIDES = ["do", "dont"] as const;
 const MODES = [
-  { value: "side", label: "Side by side", icon: <Columns2 /> },
+  {
+    value: "side",
+    label: <><span className="cmp-wide-copy">Side by side</span><span className="cmp-phone-copy">Both</span></>,
+    icon: <Columns2 />,
+  },
   { value: "flip", label: "Flip", icon: <SquareStack /> },
 ] as const;
 const ZOOMS = [
@@ -65,6 +69,8 @@ function StaticComparison({ rule }: { rule: Rule }) {
   const drag = useRef<{ from: Pan; x: number; y: number; id: number } | null>(null);
   const pointerKind = useRef("mouse");
   const uid = useId();
+  const panHintId = `${uid}-pan`;
+  const flipHintId = `${uid}-flip`;
 
   // Both variants sit in one box sized to the taller of the two, so their
   // positions correspond and Flip is a true blink comparison. The canvas is
@@ -106,15 +112,16 @@ function StaticComparison({ rule }: { rule: Rule }) {
   };
 
   const label = flip
-    ? `Comparison, showing ${VERDICT[showing]}. Hold Space to flip.${zoom === 2 ? " Arrow keys pan." : ""}`
+    ? `Comparison, showing ${VERDICT[showing]}.`
     : zoom === 2
-      ? "Comparison at 200%. Arrow keys pan."
+      ? "Comparison at 200%."
       : undefined;
+  const hints = [zoom === 2 ? panHintId : null, flip ? flipHintId : null].filter(Boolean).join(" ");
 
   return (
     <div className="cmp" data-kind="static" data-flip={flip || undefined}>
       <div className="cmp-bar">
-        <Tooltip content="Side by side or Flip (F)" side="bottom">
+        <Tooltip content={<><span className="cmp-wide-copy">Side by side or Flip (F)</span><span className="cmp-phone-copy">Show both or flip (F)</span></>} side="bottom">
           <Segmented label="Compare" value={mode} options={MODES} onChange={(next) => setMode(next)} />
         </Tooltip>
         {flip ? (
@@ -139,7 +146,9 @@ function StaticComparison({ rule }: { rule: Rule }) {
         data-flip={flip || undefined}
         data-zoom={zoom}
         tabIndex={flip || zoom === 2 ? 0 : undefined}
+        role={label ? "group" : undefined}
         aria-label={label}
+        aria-describedby={hints || undefined}
         onKeyDown={(event) => {
           // At 2× the arrow keys pan the focused canvas, and only then.
           if (zoom !== 2 || event.metaKey || event.ctrlKey || event.altKey) return;
@@ -205,7 +214,12 @@ function StaticComparison({ rule }: { rule: Rule }) {
             </figure>
           );
         })}
-        {zoom === 2 ? <span className="cmp-zoomchip">2× · drag or arrow keys to pan</span> : null}
+        {zoom === 2 ? (
+          <span className="cmp-zoomchip" id={panHintId}>
+            <span className="rule-hint-key">2× · drag or arrow keys to pan</span>
+            <span className="rule-hint-touch">2× · drag to pan</span>
+          </span>
+        ) : null}
       </div>
 
       <div className="cmp-captions">
@@ -221,11 +235,13 @@ function StaticComparison({ rule }: { rule: Rule }) {
         ))}
       </div>
       {flip ? (
-        <p className="rule-hint">
+        <p className="rule-hint" id={flipHintId}>
           <span className="rule-hint-key">
             Hold <Kbd>Space</Kbd> to flip
           </span>
-          <span className="rule-hint-touch">Tap the canvas to flip</span>
+          <span className="rule-hint-touch">
+            {zoom === 2 ? `Use ${flipped ? "Show Do" : "Show Don’t"} to flip` : "Tap the canvas to flip"}
+          </span>
         </p>
       ) : null}
     </div>
