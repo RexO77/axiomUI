@@ -380,3 +380,180 @@ test.describe("copy menu focus", () => {
     expect(await page.evaluate(() => document.activeElement?.outerHTML.slice(0, 80))).toBe(moved);
   });
 });
+
+test.describe("deep dive toggle", () => {
+  type Frame = { t: number; changed: boolean; running: boolean; title: number; cmpX: number; cmpY: number; side: number };
+
+  /** Every frame from now until the rule view has been still for 12 frames: where the title, the comparison and the panel are drawn. */
+  const recordFrames = (page: Page) =>
+    page.evaluate(
+      () =>
+        new Promise<Frame[]>((resolve) => {
+          const frames: Frame[] = [];
+          const start = document.documentElement.dataset.deep ?? "";
+          const view = document.querySelector(".rv")!;
+          const rect = (selector: string) => document.querySelector(selector)!.getBoundingClientRect();
+          let still = 0;
+          const tick = (t: number) => {
+            const running = document
+              .getAnimations()
+              .some((animation) => {
+                const target = (animation.effect as KeyframeEffect | null)?.target;
+                return animation.playState === "running" && target instanceof Element && view.contains(target);
+              });
+            const changed = (document.documentElement.dataset.deep ?? "") !== start;
+            frames.push({
+              t,
+              changed,
+              running,
+              title: rect("[data-rule-title]").left,
+              cmpX: rect(".rv-compare").left,
+              cmpY: rect(".rv-compare").top,
+              side: rect(".rv-side").left,
+            });
+            still = changed && !running ? still + 1 : 0;
+            if (still >= 12 || frames.length > 240) resolve(frames);
+            else requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        }),
+    );
+
+  /** The toggle's own motion in the rule view (not hover colour transitions), read in the frame after an action. */
+  const runningIn = (page: Page) =>
+    page.evaluate(
+      () =>
+        new Promise<number[]>((resolve) =>
+          requestAnimationFrame(() => {
+            const view = document.querySelector(".rv")!;
+            resolve(
+              document
+                .getAnimations()
+                .filter((animation) => {
+                  const target = (animation.effect as KeyframeEffect | null)?.target;
+                  return !(animation instanceof CSSTransition) && target instanceof Element && view.contains(target);
+                })
+                .map((animation) => Number(animation.effect?.getTiming().duration)),
+            );
+          }),
+        ),
+    );
+
+  for (const [step, ms] of [
+    ["closing", 140],
+    ["opening", 220],
+  ] as const) {
+    test(`a click ${step} it moves the column in one ${ms} ms step and ends exactly on the layout`, async ({ page }) => {
+      await openCatalog(page, ruleUrl("typo-1"));
+      const toggle = page.locator(".rv-head").getByRole("button", { name: "Deep dive", exact: true });
+      if (step === "opening") {
+        await page.keyboard.press("i");
+        await expect(toggle).toHaveAttribute("aria-expanded", "false");
+      }
+      const before = await page.locator(sel.ruleTitle).evaluate((el) => el.getBoundingClientRect().left);
+      const frames = recordFrames(page);
+      await toggle.click();
+      expect(await runningIn(page), "every part runs on the rail drawer's timing").not.toEqual([]);
+      const record = await frames;
+      const after = record.filter((frame) => frame.changed);
+      const end = after.at(-1)!;
+      expect(after.length).toBeGreaterThan(4);
+      // The commit frame draws the column where it was: no jump at the start.
+      expect(Math.abs(after[0].title - before)).toBeLessThan(1);
+      expect(record.some((frame) => frame.changed && frame.running), "it animated").toBe(true);
+      // One continuous move: every frame between where it was and where it ends, never past either.
+      const lo = Math.min(before, end.title) - 0.5;
+      const hi = Math.max(before, end.title) + 0.5;
+      for (const frame of after) {
+        expect(frame.title).toBeGreaterThanOrEqual(lo);
+        expect(frame.title).toBeLessThanOrEqual(hi);
+      }
+      const sign = Math.sign(end.title - before);
+      after.slice(1).forEach((frame, index) => expect(sign * (frame.title - after[index].title)).toBeGreaterThanOrEqual(-0.5));
+      // Once it stops, nothing moves again: the last animated frame is the layout itself.
+      const settled = after.slice(after.findLastIndex((frame) => frame.running) + 1);
+      expect(settled.length).toBeGreaterThanOrEqual(12);
+      for (const frame of settled) {
+        expect({ title: frame.title, cmpX: frame.cmpX, cmpY: frame.cmpY, side: frame.side }).toEqual({
+          title: end.title,
+          cmpX: end.cmpX,
+          cmpY: end.cmpY,
+          side: end.side,
+        });
+      }
+      const layout = await page.evaluate(() => ({
+        title: document.querySelector("[data-rule-title]")!.getBoundingClientRect().left,
+        cmpY: document.querySelector(".rv-compare")!.getBoundingClientRect().top,
+      }));
+      expect(layout).toEqual({ title: end.title, cmpY: end.cmpY });
+      expect(Math.abs(end.title - before), "the column really moved").toBeGreaterThan(40);
+    });
+  }
+
+  test("each part of a click toggle runs for the drawer's 220 ms in and 140 ms out, and leaves no copy behind", async ({ page }) => {
+    await openCatalog(page, ruleUrl("typo-1"));
+    const toggle = page.locator(".rv-head").getByRole("button", { name: "Deep dive", exact: true });
+    await toggle.click();
+    expect(new Set(await runningIn(page))).toEqual(new Set([140]));
+    await expect(page.locator(".rv-ghost"), "the leaving copy is removed when it ends").toHaveCount(0);
+    await toggle.click();
+    expect(new Set(await runningIn(page))).toEqual(new Set([220, 140]));
+  });
+
+  test("I and Enter on the button toggle it in the same frame, with nothing animating", async ({ page }) => {
+    await openCatalog(page, ruleUrl("typo-1"));
+    const title = page.locator(sel.ruleTitle);
+    const x = () => title.evaluate((el) => el.getBoundingClientRect().left);
+    const open = await x();
+    await page.keyboard.press("i");
+    expect(await runningIn(page)).toEqual([]);
+    const closed = await x();
+    expect(Math.abs(closed - open)).toBeGreaterThan(40);
+    await expect(page.locator(".rv-ghost")).toHaveCount(0);
+    const toggle = page.locator(".rv-head").getByRole("button", { name: "Deep dive", exact: true });
+    await toggle.focus();
+    await page.keyboard.press("Enter");
+    expect(await runningIn(page)).toEqual([]);
+    expect(await x()).toBe(open);
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  });
+
+  test("with reduced motion a click is instant too", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await openCatalog(page, ruleUrl("typo-1"));
+    await page.locator(".rv-head").getByRole("button", { name: "Deep dive", exact: true }).click();
+    expect(await runningIn(page)).toEqual([]);
+    await expect(page.locator(".rv-ghost")).toHaveCount(0);
+  });
+
+  for (const width of [1440, 1280]) {
+    test(`at ${width} the panel's hairline runs from the header's floor to the sheet's foot, and the floor is drawn`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await openCatalog(page, ruleUrl("typo-1"));
+      const edges = await page.evaluate(() => {
+        const head = document.querySelector<HTMLElement>(".rv-head")!;
+        const side = document.querySelector<HTMLElement>(".rv-side")!;
+        const sheet = document.querySelector<HTMLElement>(".shell-sheet")!.getBoundingClientRect();
+        const style = getComputedStyle(head);
+        return {
+          headBottom: head.getBoundingClientRect().bottom,
+          sideTop: side.getBoundingClientRect().top,
+          sideBottom: side.getBoundingClientRect().bottom,
+          sheetBottom: sheet.bottom,
+          divider: getComputedStyle(side).boxShadow,
+          floor: style.getPropertyValue("--rv-head-line").trim(),
+          line: getComputedStyle(document.documentElement).getPropertyValue("--ax-line").trim(),
+          headRight: head.getBoundingClientRect().right,
+          sideRight: side.getBoundingClientRect().right,
+        };
+      });
+      expect(edges.divider).toContain("inset");
+      // The divider meets the header's hairline: no gap, no overlap past it.
+      expect(edges.sideTop).toBe(edges.headBottom);
+      expect(edges.sideBottom).toBeGreaterThanOrEqual(edges.sheetBottom - 1);
+      expect(edges.floor).toBe(edges.line);
+      // The header spans the panel too, so its floor meets the divider in a T.
+      expect(edges.headRight).toBeGreaterThanOrEqual(edges.sideRight);
+    });
+  }
+});

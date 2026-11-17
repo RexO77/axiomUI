@@ -18,7 +18,7 @@
    the copy quotes CSS ("--swipe-amount"). Code-like tokens are
    <code class="rv-code"> in Plex Mono (prose-code.ts). */
 
-.rv { --rv-x: 24px; --rv-deep-w: 360px; }
+.rv { --rv-x: 24px; --rv-deep-w: 360px; overflow-x: clip; }
 @container sheet (min-width: 1280px) { .rv { --rv-x: 32px; } }
 @container sheet (min-width: 1360px) { .rv { --rv-deep-w: 400px; } }
 @container sheet (min-width: 1800px) { .rv { --rv-deep-w: 440px; } }
@@ -26,7 +26,12 @@
 /* ── Header: one 48px row on one 32px control height ───────────────────
    The crumb's icon sits on the title's x (--rv-x less its 8px padding); the
    last control's edge on the block's right text edge. --rv-head-max mirrors
-   the stage's caps, and the deep dive's width joins it when it is shown. */
+   the stage's caps, and the deep dive's width joins it when it is shown.
+
+   Its floor is the wall toolbar's: an inset hairline that fades in once the
+   sheet scrolls. With the deep dive docked beside the main column it is
+   always drawn, so the column hairline below meets it and the header reads
+   as one bar over two panes. */
 
 .rv-head {
   --rv-head-max: 1040px;
@@ -41,12 +46,20 @@
   height: 48px;
   padding: 0 calc(var(--rv-head-off) + var(--rv-head-end)) 0 calc(var(--rv-head-off) + var(--rv-x) - 8px);
   background: var(--ax-surface);
+  --rv-head-line: var(--ax-surface);
+  box-shadow: inset 0 -1px 0 var(--rv-head-line);
+  transition: box-shadow 140ms var(--ease-out-strong);
 }
+.rv-head[data-scrolled] { --rv-head-line: var(--ax-line); }
 @container sheet (min-width: 1160px) {
   /* data-deep comes from React; the html flag is right before hydration. */
-  html:not([data-deep="hidden"]) .rv-head[data-deep] { --rv-head-max: calc(1040px + var(--rv-deep-w)); --rv-head-end: 32px; }
+  html:not([data-deep="hidden"]) .rv-head[data-deep] {
+    --rv-head-max: calc(1040px + var(--rv-deep-w));
+    --rv-head-end: 32px;
+    --rv-head-line: var(--ax-line);
+  }
 }
-.rv-head[data-scrolled] { box-shadow: 0 1px 0 var(--ax-line); }
+:root[data-input="keyboard"] .rv-head { transition: none; }
 .rv-spacer { flex: 1; }
 
 /* The header's controls look like the shell's (.shell-ctl); only the crumb is
@@ -107,12 +120,15 @@
   line-height: 20px;
   color: var(--ax-ink-secondary);
   cursor: pointer;
+  transition: background-color 140ms var(--ease-out-strong), color 140ms var(--ease-out-strong);
 }
+.rv-deckq svg { transition: color 140ms var(--ease-out-strong); }
 .rv-deckq span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rv-deckq svg { width: 14px; height: 14px; flex: none; color: var(--ax-ink-muted); }
 @media (hover: hover) and (pointer: fine) {
   .rv-deckq:hover, .rv-deckq:hover svg { color: var(--ax-ink); }
 }
+.rv-deckq:active { background: var(--ax-press); }
 
 /* ── Copy rule ▾ (in the header; on phones under the comparison) ──── */
 
@@ -147,6 +163,7 @@
   box-shadow: inset 0 0 0 1px var(--ax-line-strong);
   color: var(--ax-ink-muted);
   cursor: pointer;
+  transition: background-color 140ms var(--ease-out-strong), color 140ms var(--ease-out-strong);
 }
 .rv-split-menu-btn svg { width: 14px; height: 14px; }
 @media (hover: hover) and (pointer: fine) {
@@ -156,7 +173,7 @@
 .rv-split-menu-btn[aria-expanded="true"] { background: var(--ax-hover); color: var(--ax-ink); }
 /* Each half's ring sits inside it and above its neighbour, so neither is cut off at the seam. */
 .rv-split-main:focus-visible, .rv-split-menu-btn:focus-visible { position: relative; z-index: 1; outline-offset: -2px; }
-:root[data-input="keyboard"] .rv-split-main { transition: none; }
+:root[data-input="keyboard"] :is(.rv-split-main, .rv-split-menu-btn, .rv-deckq, .rv-deckq svg) { transition: none; }
 .rv-menu {
   position: absolute;
   top: calc(100% + 6px);
@@ -183,8 +200,12 @@
   cursor: pointer;
 }
 .rv-menu button svg { width: 16px; height: 16px; color: var(--ax-ink-muted); }
-.rv-menu button:hover,
+/* Instant, as in every menu here; a hover only where there is one, so a tap on a phone leaves no row lit. */
 .rv-menu button:focus-visible { background: var(--ax-hover); color: var(--ax-ink); outline: none; }
+@media (hover: hover) and (pointer: fine) {
+  .rv-menu button:hover { background: var(--ax-hover); color: var(--ax-ink); }
+}
+.rv-menu button:active { background: var(--ax-press); }
 .rv-mcopy { display: none; }
 
 /* ── Title, summary, prose code ─────────────────────────────────────── */
@@ -407,17 +428,29 @@
   html:not([data-deep="hidden"]) .rv-stage:not(:has(.rv-dd[hidden])) > .rv-ship { grid-column: 1; grid-row: 2; align-self: start; }
   html:not([data-deep="hidden"]) .rv-stage:not(:has(.rv-dd[hidden])) > .rv-next { grid-column: 1; grid-row: 3; align-self: start; }
   html:not([data-deep="hidden"]) .rv-stage:not(:has(.rv-dd[hidden])) > .rv-side {
+    position: relative;
+    z-index: 1;
     display: block;
     grid-column: 2;
     grid-row: 1 / span 3;
     min-width: 0;
-    padding: 16px 32px 48px 24px;
+    padding: 24px 32px 48px 24px;
+    background: var(--ax-surface);
     box-shadow: inset 1px 0 0 var(--ax-line);
   }
   html:not([data-deep="hidden"]) .rv-stage:not(:has(.rv-dd[hidden])) > .rv-side > .rv-dd { display: block; margin: 0; padding: 0; }
   html:not([data-deep="hidden"]) .rv-stage:not(:has(.rv-dd[hidden])) .rv-dd-col + .rv-dd-col { margin-top: 40px; }
   html:not([data-deep="hidden"]) .rv-stage:not(:has(.rv-dd[hidden])) > .rv-side > .rv-related { margin: 40px 0 0; }
 }
+
+/* ── Showing and hiding the deep dive (deep-dive-motion.ts) ───────────
+   The layout changes once, in one frame; what moved is drawn back where it
+   was and eased home by transform. A closing panel leaves as a frozen,
+   inert copy (.rv-ghost) on top, so the column it gives back fills at once.
+   The copy's layout is copied inline from the panel it replaces. */
+
+.rv-ghost { position: absolute; z-index: 2; margin: 0; pointer-events: none; }
+.rv-ghost[data-surface] { background: var(--ax-surface); }
 
 /* Before hydration, a stored "hidden" keeps the dive out of the layout; phones never hide it. */
 html[data-deep="hidden"] .rv-dd { content-visibility: hidden; margin: 0; padding: 0; }
@@ -476,7 +509,7 @@ html[data-deep="hidden"] .rv-dd { content-visibility: hidden; margin: 0; padding
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rv-dd-h::after, .rv-nc-arrow { transition: none; }
+  .rv-head, .rv-dd-h::after, .rv-nc-arrow { transition: none; }
 }
 /* Forced colours drop every box-shadow: the edges, the column hairline and the review rings come back as borders. */
 @media (forced-colors: active) {
