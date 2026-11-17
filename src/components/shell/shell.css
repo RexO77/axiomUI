@@ -24,9 +24,11 @@
 
 /* ── Sheet ─────────────────────────────────────────────────────────── */
 
-/* Expanding the rail moves the sheet by translate, never by
-   width: it is laid out at the collapsed rail, translated by --shell-shift
-   while [data-moving], then reflows once at [data-wide]. */
+/* Expanding the rail moves the sheet's left edge, and its content reflows
+   with the edge on every frame, so it is already in its final layout when
+   the edge lands (rail.tsx, sheet-resize.ts). [data-wide] is where the edge
+   is going; the transition runs only while [data-moving], so the boot state,
+   hydration, a keyboard toggle and a resize never animate it. */
 .shell-sheet {
   position: absolute;
   top: var(--shell-inset);
@@ -44,8 +46,8 @@
   outline: none;
 }
 .shell[data-wide] .shell-sheet { left: var(--shell-rail-open); }
-.shell-sheet[data-moving] { transition: transform var(--shell-open-ms) var(--ease-drawer); }
-.shell-sheet[data-moving="close"] {
+.shell[data-moving] .shell-sheet { transition: left var(--shell-open-ms) var(--ease-drawer); }
+.shell[data-moving="close"] .shell-sheet {
   transition-duration: var(--shell-close-ms);
   transition-timing-function: var(--ease-out-strong);
 }
@@ -138,7 +140,6 @@
     bottom: 0;
     left: 0;
     border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
-    transform: none;
   }
   .shell[data-view="rule"] .shell-sheet {
     padding-bottom: calc(var(--shell-phone-foot) + env(safe-area-inset-bottom));
@@ -151,7 +152,7 @@
 /* ── Reduced motion and forced colours ─────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  .shell-sheet[data-moving] { transition: none; }
+  .shell[data-moving] .shell-sheet { transition: none; }
 }
 
 /* Forced colours drop every box-shadow, and with it the sheet's only edge. */
@@ -199,7 +200,7 @@
   line-height: 20px;
   font-weight: 600;
   letter-spacing: -0.01em;
-  transition: background-color 140ms var(--ease-out-strong);
+  transition: background-color 140ms var(--ease-out-strong), color 140ms var(--ease-out-strong);
 }
 .rail-logo-tile {
   width: 28px;
@@ -219,7 +220,6 @@
 :is(.shell[data-open], :root[data-rail="open"] .shell:not([data-rail-ready])) .rail-icon-expand { display: none; }
 .rail-brand-name { margin-left: 4px; }
 .rail-region { position: absolute; top: 60px; bottom: 128px; left: 0; width: var(--shell-rail); }
-.shell[data-open] .rail-region { visibility: hidden; }
 .rail-list {
   position: absolute;
   top: 60px;
@@ -235,6 +235,24 @@
 }
 .rail-list[data-scrolled] { mask-image: linear-gradient(to bottom, transparent, black 12px, black calc(100% - 24px), transparent); }
 .shell[data-open] .rail-list { visibility: visible; }
+
+/* The strip and the list share the rail's first 56px. The list and the
+   labels fade with the move (in over the open, out over the close) while the
+   edge uncovers or covers them; the strip swaps on the click itself. Its
+   marks are a hundred composited layers, and fading them costs every frame
+   of the move ~5ms at a 4x slower CPU.
+   [data-open] keeps the list (and the labels' layout) until a close lands;
+   [data-wide] is the target, so the fades turn around with the edge. */
+.shell[data-wide] .rail-region { visibility: hidden; }
+.shell-rail .rail-list { opacity: 0; }
+.shell[data-wide] .shell-rail .rail-list { opacity: 1; }
+.shell[data-rail-ready]:not([data-wide]) .shell-rail :is(.rail-brand-name, .rail-button-label, .rail-row-label) { opacity: 0; }
+.shell[data-moving] .shell-rail :is(.rail-list, .rail-brand-name, .rail-button-label, .rail-row-label) { transition: opacity var(--shell-open-ms) var(--ease-out-strong); }
+.shell[data-moving="close"] .shell-rail :is(.rail-list, .rail-brand-name, .rail-button-label, .rail-row-label) { transition-duration: var(--shell-close-ms); }
+/* The labels were display: none a frame ago: they fade from nothing, not appear. */
+@starting-style {
+  .shell[data-moving] .shell-rail :is(.rail-brand-name, .rail-button-label, .rail-row-label) { opacity: 0; }
+}
 .rail-list ul { list-style: none; margin: 0; padding: 0; }
 /* Icon and text columns sit on fixed coordinates: 8 + 11 = 19; 8 + 39 = 47. */
 .rail-catrow {
@@ -297,10 +315,14 @@
   cursor: pointer;
   white-space: nowrap;
   overflow: hidden;
+  transition: background-color 140ms var(--ease-out-strong), color 140ms var(--ease-out-strong);
 }
 .rail-button > svg { position: absolute; left: 11px; width: 18px; height: 18px; flex: none; }
 /* Collapsed, the button is a 40px icon square: its hover fill and ring stay clear of the sheet. */
 :is(.shell[data-open], :root[data-rail="open"] .shell:not([data-rail-ready])) .rail-button { padding: 0 8px 0 39px; }
+/* The rail's own controls (home, the toggle, the bottom rows) fill over
+   140ms like the sheet header's; list rows fill at once, so a sweep down the
+   list lights one row at a time, never a trail. */
 @media (hover: hover) and (pointer: fine) {
   .rail-home:hover, .rail-catrow:hover, .rail-rulerow:hover, .rail-button:hover { background: var(--ax-hover); color: var(--ax-ink); }
 }
@@ -308,11 +330,21 @@
 
 /* The boot attribute governs first paint, before the rail adopts the stored choice. */
 :root[data-rail="open"] .shell:not([data-rail-ready]) .shell-sheet { left: var(--shell-rail-open); }
-:root[data-rail="open"] .shell:not([data-rail-ready]) .rail-list { visibility: visible; }
+:root[data-rail="open"] .shell:not([data-rail-ready]) .rail-list { visibility: visible; opacity: 1; }
 :root[data-rail="open"] .shell:not([data-rail-ready]) .rail-region { visibility: hidden; }
 :root[data-rail="open"] .shell:not([data-rail-ready]) .rail-bottom { right: 8px; width: auto; }
-:root[data-input="keyboard"] .rail-home { transition: none; }
-@media (prefers-reduced-motion: reduce) { .rail-home { transition: none; } }
+/* A filtered link (boot-script.ts): the list's counts and dimming follow the
+   filter, so the list waits with the wall for the app to apply it, rather
+   than paint the whole catalog's and change a moment later. If the app never
+   gets there, it shows anyway after a few seconds, as the wall does. */
+:root[data-filter-pending] .shell .shell-rail .rail-list { visibility: hidden; animation: rail-pending 0s linear 4s forwards; }
+@keyframes rail-pending { to { visibility: visible; } }
+:root[data-input="keyboard"] :is(.rail-home, .rail-button, .rail-row) { transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  .rail-home,
+  .rail-button,
+  .shell[data-moving] .shell-rail :is(.rail-list, .rail-brand-name, .rail-button-label, .rail-row-label) { transition: none; }
+}
 @media (max-width: 640px), (pointer: coarse) and (max-height: 500px) {
   .shell-rail { display: none; }
   :root[data-rail="open"] .shell:not([data-rail-ready]) .shell-sheet { left: 0; }

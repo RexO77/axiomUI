@@ -1,0 +1,118 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { moveSheet, registerSheetResizer, type SheetResizer } from "@/components/shell/sheet-resize";
+
+/** A sheet whose left edge is at `left` on screen, and a log of what happened to it, in order. */
+function fixture(left: number) {
+  const log: string[] = [];
+  const style = {
+    transition: "",
+    left: "",
+    removeProperty: (name: "transition" | "left") => {
+      log.push(`sheet ${name} cleared`);
+      style[name] = "";
+    },
+  };
+  const sheet = {
+    style: new Proxy(style, {
+      set(target, name, value) {
+        log.push(`sheet ${String(name)}=${value}`);
+        (target as Record<string, unknown>)[name as string] = value;
+        return true;
+      },
+    }),
+    getBoundingClientRect: () => ({ left }),
+  } as unknown as HTMLElement;
+  vi.stubGlobal("getComputedStyle", () => {
+    log.push("style read");
+    return { transitionProperty: "left" };
+  });
+  const resizer = (name: string): SheetResizer => ({
+    measure: () => log.push(`${name} measure`),
+    release: () => log.push(`${name} release`),
+    pin: (grow) => log.push(`${name} pin ${grow}`),
+    glide: ({ duration, easing }) => log.push(`${name} glide ${duration} ${easing}`),
+  });
+  return { sheet, log, resizer };
+}
+
+const timing = { duration: 220, easing: "var(--ease-drawer)" };
+let unregister: (() => void)[] = [];
+
+afterEach(() => {
+  for (const off of unregister) off();
+  unregister = [];
+  vi.unstubAllGlobals();
+});
+
+describe("moveSheet", () => {
+  it("with nothing registered, only sets the target: CSS transitions the edge and retargets on its own", () => {
+    const { sheet, log } = fixture(56);
+    const apply = vi.fn(() => log.push("apply"));
+    const release = moveSheet(sheet, apply, 240, timing);
+    expect(log).toEqual(["apply"]);
+    release();
+    expect(log).toEqual(["apply"]);
+  });
+
+  it("reads before it writes, holds the edge where it is on screen, and starts the transition from there", () => {
+    const { sheet, log, resizer } = fixture(130);
+    unregister.push(registerSheetResizer(resizer("wall")));
+    moveSheet(sheet, () => log.push("apply"), 240, timing);
+    expect(log).toEqual([
+      "wall measure",
+      "wall release",
+      "sheet transition=none",
+      "sheet left=130px",
+      "apply",
+      "style read",
+      // Opening from 130 to 240: the sheet narrows by the 110px its left edge travels.
+      "wall pin -110",
+      "wall glide 220 var(--ease-drawer)",
+      "sheet left cleared",
+      "sheet transition cleared",
+    ]);
+  });
+
+  it("returns a release that unpins every resizer the move pinned", () => {
+    const { sheet, log, resizer } = fixture(240);
+    unregister.push(registerSheetResizer(resizer("a")), registerSheetResizer(resizer("b")));
+    const release = moveSheet(sheet, () => {}, 56, timing);
+    expect(log).toContain("a pin 184");
+    expect(log).toContain("b pin 184");
+    log.length = 0;
+    release();
+    expect(log).toEqual(["a release", "b release"]);
+  });
+
+  it("unregistering releases the resizer and leaves it out of later moves", () => {
+    const { sheet, log, resizer } = fixture(56);
+    const off = registerSheetResizer(resizer("wall"));
+    off();
+    expect(log).toEqual(["wall release"]);
+    log.length = 0;
+    moveSheet(sheet, () => log.push("apply"), 240, timing);
+    expect(log).toEqual(["apply"]);
+  });
+});
+
+describe("shell.css", () => {
+  const css = readFileSync(path.join(process.cwd(), "src/components/shell/shell.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+
+  it("moves the sheet by its left edge, only while a move is on, and never by transform", () => {
+    expect(css).toMatch(/\.shell\[data-wide\] \.shell-sheet \{ left: var\(--shell-rail-open\); \}/);
+    expect(css).toMatch(/\.shell\[data-moving\] \.shell-sheet \{ transition: left var\(--shell-open-ms\) var\(--ease-drawer\); \}/);
+    expect(css).not.toMatch(/\.shell-sheet[^{]*\{[^}]*transition:[^;}]*transform/);
+  });
+
+  it("drops the move's transitions for reduced motion", () => {
+    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{\s*\.shell\[data-moving\] \.shell-sheet \{ transition: none; \}/);
+  });
+
+  it("swaps the strip on the click: fading its hundred mark layers costs every frame of the move", () => {
+    const strip = [...css.matchAll(/([^{}]*\.rail-region[^{}]*)\{([^}]*)\}/g)];
+    expect(strip.length).toBeGreaterThan(0);
+    for (const [, , body] of strip) expect(body).not.toMatch(/transition|opacity/);
+  });
+});

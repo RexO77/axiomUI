@@ -8,12 +8,18 @@
  * layer's top and, on phones, the Do/Don't capsule to its bottom.
  */
 
+/* The gutters step at the sheet's width (the container query under Tile)
+   and on phones. Only the boxes they space read them, and they do not
+   inherit: a step restyles those few boxes, not the thousands of nodes in
+   the tiles, which matters when the step lands mid-way through the rail's
+   move (wall-resize.ts). These initial values are the default gutters. */
+@property --gw-pad { syntax: "<length>"; inherits: false; initial-value: 24px; }
+@property --gw-gap { syntax: "<length>"; inherits: false; initial-value: 20px; }
+@property --gw-row-gap { syntax: "<length>"; inherits: false; initial-value: 28px; }
+@property --gw-section-gap { syntax: "<length>"; inherits: false; initial-value: 48px; }
+
 .gw {
-  --gw-pad: 24px;
-  --gw-gap: 20px;
-  --gw-row-gap: 28px;
   --gw-bar-h: 52px;
-  --gw-section-gap: 48px;
   --gw-frame-h: 224px;
   --safe-bottom: env(safe-area-inset-bottom);
 
@@ -225,6 +231,9 @@
   white-space: nowrap;
 }
 
+/* While the sheet's width moves, wall-resize.ts pins the column count and
+   the gutters below at the destination's values: the count holds, and the
+   tracks may pass under 256px on the way to a layout where they are not. */
 .gw-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(256px, 100%), 1fr));
@@ -234,7 +243,7 @@
 .gw-gate { min-width: 0; }
 
 @container sheet (min-width: 1280px) {
-  .gw { --gw-pad: 32px; --gw-gap: 24px; --gw-row-gap: 32px; --gw-section-gap: 64px; }
+  :is(.gw-bar, .gw-wall, .gw-section, .gw-grid) { --gw-pad: 32px; --gw-gap: 24px; --gw-row-gap: 32px; --gw-section-gap: 64px; }
 }
 @container sheet (max-width: 760px) {
   .gw-continue { display: none; }
@@ -450,7 +459,8 @@
 /* ── Phone ─────────────────────────────────────────────────────────── */
 
 @media (max-width: 640px), (pointer: coarse) and (max-height: 500px) {
-  .gw { --gw-pad: 16px; --gw-bar-h: 56px; --gw-row-gap: 24px; }
+  .gw { --gw-bar-h: 56px; }
+  :is(.gw-bar, .gw-wall, .gw-section, .gw-grid) { --gw-pad: 16px; --gw-row-gap: 24px; }
 
   .gw-bar { gap: 0; padding: 0; }
   .gw-desk { display: none; }

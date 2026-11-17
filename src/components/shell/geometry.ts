@@ -6,8 +6,8 @@
  * that the shell root emits from `shellVars()`, so the two never drift.
  *
  * Desktop: a 56px rail is the back layer, and one sheet floats over it, 8px
- * from the top, right and bottom. Expanding the rail moves the sheet by
- * translate (184 = 240 − 56), never by width, then reflows once at the end.
+ * from the top, right and bottom. Expanding the rail moves the sheet's left
+ * edge 184px (240 − 56), and its content reflows with the edge as it travels.
  * The sheet header is 52px under that 8px inset, so its centre, the logo
  * tile's centre and every 32px header control share y = 34.
  *
@@ -19,7 +19,7 @@
 
 export const RAIL = 56;
 export const RAIL_OPEN = 240;
-/** The sheet's translate when the rail expands. */
+/** How far the sheet's left edge travels when the rail expands. */
 export const OPEN_SHIFT = RAIL_OPEN - RAIL;
 /** The sheet's distance from the top, right and bottom of the viewport. */
 export const SHEET_INSET = 8;

@@ -15,9 +15,10 @@
  *                                presence as "script runs here".
  *   data-filter-pending          the URL filters the wall (`?q=`, `?collection=`):
  *                                the server rendered every tile, so the wall
- *                                stays hidden until the app has applied the
- *                                filter and lifts this, instead of flashing
- *                                the whole catalog first.
+ *                                (and an open rail's list, whose counts and
+ *                                dimming follow the filter) stays hidden until
+ *                                the app has applied the filter and lifts this,
+ *                                instead of flashing the whole catalog first.
  *
  * The keys and defaults are the stores' (memory.ts, stores.ts, media.ts).
  * Those are client modules, so a server layout cannot import their values;

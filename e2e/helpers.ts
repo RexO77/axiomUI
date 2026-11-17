@@ -77,6 +77,11 @@ export const sel = {
   live: '[aria-live="polite"]',
   /** "Category · n of N": the rule's place in the deck it is paged through. */
   position: ".shell-rule header p",
+  /** The rail's expand/collapse toggle, and the list it reveals. */
+  railToggle: ".shell-rail .rail-button",
+  railList: ".shell-rail .rail-list",
+  /** The first grid the wall shows. */
+  wallGrid: ".gw-section:not([hidden]) .gw-grid",
 } as const;
 
 /** What a spec needs to know about the page, read in one evaluate. */

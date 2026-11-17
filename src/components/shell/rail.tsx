@@ -14,9 +14,10 @@ import { shortcutAction } from "@/lib/navigation/keyboard";
 import { memoryStore } from "@/lib/navigation/memory";
 import { createRoutes } from "@/lib/navigation/routes";
 import { siteConfig } from "@/lib/site";
-import { CLOSE_MS, OPEN_MS, OPEN_SHIFT } from "./geometry";
+import { CLOSE_MS, OPEN_MS, RAIL, RAIL_OPEN } from "./geometry";
 import { InstallRow } from "./install-row";
 import { MagnifyStrip } from "./magnify-strip";
+import { moveSheet } from "./sheet-resize";
 import { useShell } from "./shell-context";
 import { SidebarList } from "./sidebar-list";
 import { StripHint } from "./strip-hint";
@@ -46,16 +47,21 @@ export function Rail({ covered = false }: { covered?: boolean }) {
   const toggle = useRef<HTMLButtonElement>(null);
   const target = useRef(false);
   const railFocused = useRef(false);
-  const move = useRef<{ generation: number; stop: (() => void) | null; finish: (() => void) | null }>({ generation: 0, stop: null, finish: null });
+  const move = useRef<{ generation: number; finish: (() => void) | null }>({ generation: 0, finish: null });
 
+  /*
+   * One move, one motion: the sheet's left edge transitions (shell.css) and
+   * everything in it reflows with the edge, so it lands in its final layout
+   * when the edge does. Opening shows the list at once and the edge uncovers
+   * it; closing keeps it until the edge has covered it again. A second toggle
+   * mid-move turns the edge around from where it is.
+   */
   const setRail = useCallback((next: boolean, instant: boolean) => {
     const root = nav.current?.closest<HTMLElement>(".shell");
     const element = root?.querySelector<HTMLElement>(".shell-sheet");
     if (!element || !root) return;
     const session = move.current;
     session.generation += 1;
-    session.stop?.();
-    session.stop = null;
     session.finish = null;
     target.current = next;
     peek.current?.close();
@@ -63,54 +69,39 @@ export function Rail({ covered = false }: { covered?: boolean }) {
     // Focus must leave the surface before CSS hides it or React makes it inert.
     const disappearing = nav.current?.querySelector(next ? ".rail-region" : ".rail-list");
     if (disappearing?.contains(document.activeElement)) toggle.current?.focus({ preventScroll: true });
-    const commit = (expanded: boolean, wide: boolean) => {
+    const expand = (expanded: boolean) => {
       root.toggleAttribute("data-open", expanded);
-      root.toggleAttribute("data-wide", wide);
       setOpen(expanded);
     };
     root.setAttribute("data-rail-ready", "");
     const reduced = window.matchMedia(REDUCED_MOTION_QUERY).matches;
     if (instant || reduced || window.matchMedia(PHONE_QUERY).matches) {
-      delete element.dataset.moving;
-      element.style.transform = "";
-      commit(next, next);
+      delete root.dataset.moving;
+      root.toggleAttribute("data-wide", next);
+      expand(next);
       return;
     }
     const generation = session.generation;
-    const x = element.getBoundingClientRect().left;
-    // Keep the collapsed layout throughout the move; reflow only at the end.
-    commit(true, false);
-    delete element.dataset.moving;
-    const from = x - element.offsetLeft;
-    element.style.transform = `translateX(${from}px)`;
-    void element.offsetWidth;
-    const to = next ? OPEN_SHIFT : 0;
+    root.dataset.moving = next ? "open" : "close";
+    if (next) expand(true);
+    const release = moveSheet(element, () => root.toggleAttribute("data-wide", next), next ? RAIL_OPEN : RAIL, {
+      duration: next ? OPEN_MS : CLOSE_MS,
+      easing: next ? "var(--ease-drawer)" : "var(--ease-out-strong)",
+    });
     const finish = () => {
       if (session.generation !== generation) return;
-      session.stop?.();
-      session.stop = null;
       session.finish = null;
       // Closing keeps the list visible during travel; focus can enter it meanwhile.
       if (!next && nav.current?.querySelector(".rail-list")?.contains(document.activeElement)) toggle.current?.focus({ preventScroll: true });
-      delete element.dataset.moving;
-      element.style.transform = "";
-      commit(next, next);
+      delete root.dataset.moving;
+      release();
+      if (!next) expand(false);
     };
     session.finish = finish;
-    if (Math.abs(from - to) < 0.5) { finish(); return; }
-    element.dataset.moving = next ? "open" : "close";
-    element.style.transform = `translateX(${to}px)`;
-    const onEnd = (event: TransitionEvent) => {
-      if (event.target === element && event.propertyName === "transform") finish();
-    };
-    element.addEventListener("transitionend", onEnd);
-    element.addEventListener("transitioncancel", onEnd);
-    const timer = window.setTimeout(finish, (next ? OPEN_MS : CLOSE_MS) + 80);
-    session.stop = () => {
-      element.removeEventListener("transitionend", onEnd);
-      element.removeEventListener("transitioncancel", onEnd);
-      window.clearTimeout(timer);
-    };
+    // The edge's own transition decides when the move is over, at any playback speed.
+    const edge = element.getAnimations().find((animation) => animation instanceof CSSTransition && animation.transitionProperty === "left");
+    if (edge) edge.finished.then(finish, finish);
+    else finish();
   }, [peek]);
 
   useLayoutEffect(() => {
@@ -152,7 +143,7 @@ export function Rail({ covered = false }: { covered?: boolean }) {
     return () => {
       reduced.removeEventListener("change", settle);
       phoneQuery.removeEventListener("change", onPhone);
-      session.stop?.();
+      session.generation += 1;
     };
   }, [sheet]);
 
