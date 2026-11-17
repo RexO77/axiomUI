@@ -112,7 +112,10 @@ export function StageHeader({ rule }: { rule: Rule }) {
         </button>
       ) : null}
       <span className="rv-spacer" />
-      <button type="button" className="rv-ctl rv-ctl-search" onClick={shell.openPalette} aria-label={`Search ${rules.length} rules`}>
+      <button type="button" className="rv-ctl rv-ctl-search" onClick={(event) => {
+        event.currentTarget.focus({ preventScroll: true });
+        shell.openPalette();
+      }} aria-label={`Search ${rules.length} rules`}>
         <Search aria-hidden="true" />
         <span>Search</span>
         <Kbd>{shell.modKey}K</Kbd>
