@@ -69,8 +69,6 @@ export function cancelDeepDive(root: HTMLElement | null) {
 /** Docked beside the main column (≥ 1160), rather than a pass-through under the comparison. */
 const docked = (side: HTMLElement) => getComputedStyle(side).display !== "contents";
 
-const shiftOf = (el: Element) => new DOMMatrixReadOnly(getComputedStyle(el).transform).m41;
-
 /** A visual-only copy of `el`, frozen in its current layout, placed at `rect` inside `root`. */
 function ghostOf(el: HTMLElement, rect: DOMRect, root: HTMLElement, surface: boolean): HTMLElement {
   const copy = el.cloneNode(true) as HTMLElement;
@@ -109,6 +107,9 @@ export function toggleDeepDive(root: HTMLElement | null, opening: boolean, commi
     return;
   }
 
+  const sheet = root.closest<HTMLElement>(".shell-sheet");
+  const sheetRight = (sheet ?? root).getBoundingClientRect().right;
+
   // First: where everything is drawn now, transforms included.
   const wasDocked = docked(side);
   const related = root.querySelector<HTMLElement>(".rv-related");
@@ -118,10 +119,10 @@ export function toggleDeepDive(root: HTMLElement | null, opening: boolean, commi
   const opacity = Number(getComputedStyle(shown).opacity);
 
   // A closing panel and, opening a docked one, Related's place in the column: copied before they change.
-  let exit: { ghost: HTMLElement; shift: number; width: number } | null = null;
+  let exit: { ghost: HTMLElement; distance: number } | null = null;
   if (!opening) {
     const rect = shown.getBoundingClientRect();
-    exit = { ghost: ghostOf(shown, rect, root, true), shift: wasDocked ? shiftOf(shown) : 0, width: rect.width };
+    exit = { ghost: ghostOf(shown, rect, root, true), distance: sheetRight - rect.left };
   }
   const resume = old ? { rect: old.getBoundingClientRect(), opacity: Number(getComputedStyle(old).opacity) } : null;
   const relatedRect = related && first.get(related);
@@ -159,14 +160,16 @@ export function toggleDeepDive(root: HTMLElement | null, opening: boolean, commi
     const rest = entering.getBoundingClientRect();
     if (isDocked) {
       // From the sheet's edge, or from wherever the leaving copy had got to.
-      const from = resume ? resume.rect.left - rest.left : rest.width;
+      const from = resume ? resume.rect.left - rest.left : sheetRight - rest.left;
       play(
         entering,
-        [{ transform: `translateX(${from}px)`, opacity: resume?.opacity ?? 0 }, { transform: "none", opacity: 1 }],
+        [{ transform: `translateX(${from}px)` }, { transform: "none" }],
         timing,
       );
     } else {
-      play(entering, [{ opacity: resume?.opacity ?? 0 }, { opacity: 1 }], timing);
+      // Let the rows clear most of the entering surface before its prose appears.
+      const from = resume?.opacity ?? 0;
+      play(entering, [{ opacity: from }, { opacity: from, offset: 0.35, easing: timing.easing }, { opacity: 1 }], { ...timing, easing: "linear" });
     }
     // Related's old place in the column fades as the rows under it close up.
     if (relatedGhost && crossed) {
@@ -176,11 +179,12 @@ export function toggleDeepDive(root: HTMLElement | null, opening: boolean, commi
       play(relatedGhost, [{ opacity: 1 }, { opacity: 0 }], CLOSE).finished.then(gone, gone);
     }
   } else if (exit) {
-    const { ghost, shift, width } = exit;
+    const { ghost, distance } = exit;
     root.append(ghost);
     active.ghosts.push(ghost);
     leaving.set(root, ghost);
-    const out = wasDocked ? [{ transform: "none", opacity }, { transform: `translateX(${width - shift}px)`, opacity: 0 }] : [{ opacity }, { opacity: 0 }];
+    // The copy starts at the drawn rect, which already includes any interrupted shift.
+    const out = wasDocked ? [{ transform: "none" }, { transform: `translateX(${distance}px)` }] : [{ opacity }, { opacity: 0 }];
     const done = () => {
       ghost.remove();
       if (leaving.get(root) === ghost) leaving.delete(root);
@@ -190,7 +194,6 @@ export function toggleDeepDive(root: HTMLElement | null, opening: boolean, commi
     if (crossed && related) play(related, [{ opacity: 0 }, { opacity: 1 }], timing);
   }
 
-  const sheet = root.closest<HTMLElement>(".shell-sheet");
   if (sheet && active.animations.length) {
     const width = sheet.clientWidth;
     const height = sheet.clientHeight;

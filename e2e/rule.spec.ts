@@ -518,6 +518,138 @@ test.describe("deep dive toggle", () => {
     await expect(toggle).toHaveAttribute("aria-expanded", "true");
   });
 
+  test("at 1920 the docked panel travels from and back to the sheet edge without fading", async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await openCatalog(page, ruleUrl("typo-1"));
+    await page.keyboard.press("i");
+    const opening = await page.evaluate(async () => {
+      const side = document.querySelector<HTMLElement>(".rv-side")!;
+      document.querySelector(".rv-head button[aria-controls]")!
+        .dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
+      const animation = side.getAnimations().find((item) => !(item instanceof CSSTransition))!;
+      const frames: { left: number; opacity: number }[] = [];
+      await new Promise<void>((resolve) => {
+        const tick = () => {
+          frames.push({ left: side.getBoundingClientRect().left, opacity: Number(getComputedStyle(side).opacity) });
+          if (animation.playState === "finished" || animation.playState === "idle") resolve();
+          else requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      });
+      const rest = side.getBoundingClientRect();
+      return {
+        frames,
+        rest: rest.left,
+        width: rest.width,
+        sheetRight: document.querySelector(".shell-sheet")!.getBoundingClientRect().right,
+      };
+    });
+    expect(opening.sheetRight - opening.rest - opening.width, "there is a centred-stage gap to cross").toBeGreaterThan(150);
+    expect(opening.frames[0].left).toBeGreaterThanOrEqual(opening.sheetRight - 3);
+    expect(opening.frames[0].left - opening.rest).toBeCloseTo(opening.sheetRight - opening.rest, 0);
+    expect(opening.frames.every((frame) => frame.opacity === 1)).toBe(true);
+
+    // Also close an opening panel partway through its move: its drawn position already includes its shift.
+    for (const interrupt of [false, true]) {
+      const closing = await page.evaluate((interrupt) => {
+        const toggle = document.querySelector(".rv-head button[aria-controls]")!;
+        const click = () => toggle.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
+        if (interrupt) {
+          click();
+          const entering = document.querySelector(".rv-side")!.getAnimations().find((item) => !(item instanceof CSSTransition))!;
+          entering.pause();
+          entering.currentTime = 40;
+        }
+        const start = document.querySelector(".rv-side")!.getBoundingClientRect().left;
+        click();
+        const ghost = document.querySelector(".rv-ghost[data-surface]")!;
+        const animation = ghost.getAnimations().find((item) => !(item instanceof CSSTransition))!;
+        animation.pause();
+        animation.currentTime = 0;
+        const first = ghost.getBoundingClientRect().left;
+        animation.currentTime = 139.999;
+        const last = ghost.getBoundingClientRect().left;
+        const opacity = Number(getComputedStyle(ghost).opacity);
+        animation.finish();
+        return { start, first, last, opacity, sheetRight: document.querySelector(".shell-sheet")!.getBoundingClientRect().right };
+      }, interrupt);
+      expect(closing.first).toBeCloseTo(closing.start, 0);
+      expect(closing.last).toBeCloseTo(closing.sheetRight, 0);
+      expect(closing.opacity).toBe(1);
+      await expect(page.locator(".rv-ghost")).toHaveCount(0);
+    }
+  });
+
+  test("at 1100 moving rows stay behind the partially visible entering deep dive", async ({ page }) => {
+    await page.setViewportSize({ width: 1100, height: 1080 });
+    await openCatalog(page, ruleUrl("typo-1"));
+    await page.keyboard.press("i");
+    await page.locator(".rv-compare").evaluate((el) => {
+      document.querySelector(".shell-sheet")!.scrollTop = el.getBoundingClientRect().bottom - 200;
+    });
+    const frames = await page.evaluate(() => new Promise<{ opacity: number; overlaps: number; covered: boolean }[]>((resolve) => {
+      const panel = document.querySelector(".rv-dd")!;
+      const rows = [...document.querySelectorAll(".rv-ship, .rv-related, .rv-next")];
+      const frames: { opacity: number; overlaps: number; covered: boolean }[] = [];
+      document.querySelector(".rv-head button[aria-controls]")!
+        .dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
+      const tick = () => {
+        const opacity = Number(getComputedStyle(panel).opacity);
+        const box = panel.getBoundingClientRect();
+        let overlaps = 0;
+        let covered = true;
+        for (const row of rows) {
+          const rect = row.getBoundingClientRect();
+          const left = Math.max(box.left, rect.left);
+          const right = Math.min(box.right, rect.right);
+          const top = Math.max(box.top, rect.top, 60);
+          const bottom = Math.min(box.bottom, rect.bottom, innerHeight - 8);
+          if (right <= left || bottom <= top) continue;
+          overlaps++;
+          const hit = document.elementFromPoint((left + right) / 2, (top + bottom) / 2);
+          if (!hit || !panel.contains(hit)) covered = false;
+        }
+        frames.push({ opacity, overlaps, covered });
+        if (panel.getAnimations().some((animation) => animation.playState === "running")) requestAnimationFrame(tick);
+        else resolve(frames);
+      };
+      requestAnimationFrame(tick);
+    }));
+    const partial = frames.filter((frame) => frame.opacity > 0 && frame.opacity < 1);
+    expect(partial.length).toBeGreaterThan(2);
+    expect(frames.some((frame) => frame.overlaps > 0), "sample the crossing rows").toBe(true);
+    expect(partial.every((frame) => frame.covered), "the entering surface paints above every crossing row").toBe(true);
+  });
+
+  for (const action of ["click", "I", "Enter"]) {
+    test(`the first-visit hint disappears in the same frame as a deep-dive ${action} toggle`, async ({ page }) => {
+      await page.setViewportSize({ width: 1920, height: 1080 });
+      await openCatalog(page, ruleUrl("typo-1"));
+      await expect(page.locator(".strip-hint")).toBeVisible();
+      const result = await page.evaluate(async (action) => {
+        const toggle = document.querySelector<HTMLElement>(".rv-head button[aria-controls]")!;
+        if (action === "I") document.dispatchEvent(new KeyboardEvent("keydown", { key: "i", bubbles: true }));
+        else toggle.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: action === "click" ? 1 : 0 }));
+        await new Promise(requestAnimationFrame);
+        return { deep: toggle.getAttribute("aria-expanded"), hint: Boolean(document.querySelector(".strip-hint")) };
+      }, action);
+      expect(result).toEqual({ deep: "false", hint: false });
+    });
+  }
+
+  test("the header hairline follows the pointer opening duration and easing", async ({ page }) => {
+    await openCatalog(page, ruleUrl("typo-1"));
+    await page.keyboard.press("i");
+    const timing = await page.evaluate(() => {
+      document.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+      document.querySelector(".rv-head button[aria-controls]")!
+        .dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
+      const style = getComputedStyle(document.querySelector(".rv-head")!);
+      return { duration: style.transitionDuration, easing: style.transitionTimingFunction };
+    });
+    expect(timing).toEqual({ duration: "0.22s", easing: "cubic-bezier(0.32, 0.72, 0, 1)" });
+  });
+
   /** Both transformed parents and the visible controls must return to their layout. */
   const effects = (page: Page) => page.evaluate(() => ({
     ghosts: document.querySelectorAll(".rv-ghost").length,

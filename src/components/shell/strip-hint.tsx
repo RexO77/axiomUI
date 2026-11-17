@@ -18,7 +18,7 @@
  * is too narrow for that, it stays hidden rather than crowd.
  *
  * Showing or hiding the deep dive moves the header's controls under it, so
- * that fades it for this page view, as being left alone does.
+ * that hides it immediately for this page view.
  *
  * The server never renders it (the store's server snapshot says "seen"), so
  * first paint never flips. Plain text inside the rail's navigation, read once
@@ -68,19 +68,10 @@ export function StripHint({ ruleId, hidden }: { ruleId: string | null; hidden: b
     if (opened) catalogStores.dismissStripHint();
   }, [opened]);
   const showing = !seen && !opened && phase !== "gone";
-  // The deep dive shown or hidden while the hint is up: it fades now.
+  // The deep dive shown or hidden while the hint is up: clear it before the controls move.
   useEffect(() => {
     if (!showing) return;
-    let gone: ReturnType<typeof setTimeout> | undefined;
-    const unsubscribe = deepDive.subscribe(() => {
-      setPhase("leaving");
-      clearTimeout(gone);
-      gone = setTimeout(() => setPhase("gone"), FADE_MS);
-    });
-    return () => {
-      unsubscribe();
-      clearTimeout(gone);
-    };
+    return deepDive.subscribe(() => setPhase("gone"));
   }, [showing, deepDive]);
   useEffect(() => {
     if (!showing) return;
