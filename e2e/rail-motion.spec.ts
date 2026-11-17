@@ -17,7 +17,7 @@ import { expect, openCatalog, railIds, ruleUrl, sel, test, wallUrl } from "./hel
 /** The hooks the page-side samplers read: strings only, so they cross into the page. */
 const hooks = { shell: sel.shell, sheet: sel.sheet, wallGrid: sel.wallGrid, railList: sel.railList };
 
-type Frame = { t: number; edge: number; x: number; w: number; cols: number; list: number; moving: boolean; open: boolean };
+type Frame = { t: number; edge: number; x: number; w: number; cols: number; list: number; moving: boolean; open: boolean; viewport: number; wall: boolean };
 
 /** Samples every frame for `ms` while `act` runs. `target` is the box whose geometry is read. */
 async function record(page: Page, target: string, act: () => Promise<void>, ms = 900): Promise<Frame[]> {
@@ -34,6 +34,8 @@ async function record(page: Page, target: string, act: () => Promise<void>, ms =
         const list = document.querySelector(s.railList);
         frames.push({
           t: performance.now() - t0,
+          viewport: innerWidth,
+          wall: shell.getAttribute("data-view") === "gallery",
           edge: document.querySelector(s.sheet)!.getBoundingClientRect().left,
           x: box?.left ?? Number.NaN,
           w: box?.width ?? Number.NaN,
@@ -308,5 +310,130 @@ test.describe("first paint", () => {
     const edge = await page.locator(sel.sheet).evaluate((sheet) => sheet.getBoundingClientRect().left);
     expect(edge).toBe(0);
     await expect(page.locator(sel.shell)).not.toHaveAttribute("data-moving", /.*/);
+  });
+});
+
+/** Resolved geometry and any leftover move styles, without changing the wall. */
+async function wallLayout(page: Page) {
+  return page.locator(sel.wall).evaluate((wall) => {
+    const grid = wall.querySelector(".gw-section:not([hidden]) .gw-grid")!;
+    const bar = wall.querySelector(".gw-bar")!;
+    const frame = wall.querySelector(".gw-wall")!;
+    return {
+      columns: getComputedStyle(grid).gridTemplateColumns.trim().split(/\s+/).length,
+      gutters: [getComputedStyle(bar).paddingLeft, getComputedStyle(frame).paddingLeft, getComputedStyle(grid).columnGap, getComputedStyle(grid).rowGap],
+      styles: [...wall.querySelectorAll<HTMLElement>(".gw-bar[style], .gw-wall[style], .gw-section[style], .gw-grid[style], a.gw-tile[style]")].map((box) => box.getAttribute("style")).filter(Boolean),
+      pins: [...wall.querySelectorAll("[data-pin], [data-pinned]")].length,
+    };
+  });
+}
+
+test.describe("interrupted moves", () => {
+  test("the [ key mid-move releases the open layout and restores the natural closed wall", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openCatalog(page, wallUrl());
+    const natural = await wallLayout(page);
+    expect(natural.columns).toBe(4);
+    await page.locator(sel.railToggle).click();
+    await page.waitForTimeout(100);
+    await expect(page.locator(sel.shell)).toHaveAttribute("data-moving", "open");
+    await page.keyboard.press("[");
+    await page.waitForTimeout(500);
+    expect(await wallLayout(page)).toEqual(natural);
+    await expect(page.locator(sel.shell)).not.toHaveAttribute("data-moving", /.*/);
+  });
+
+  test("enabling reduced motion mid-move releases every pin", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openCatalog(page, wallUrl());
+    await page.locator(sel.railToggle).click();
+    await page.waitForTimeout(80);
+    await expect(page.locator(sel.shell)).toHaveAttribute("data-moving", "open");
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await expect(page.locator(sel.shell)).not.toHaveAttribute("data-moving", /.*/);
+    const landed = await wallLayout(page);
+    expect(landed.columns).toBe(3);
+    expect(landed.styles).toEqual([]);
+    await page.keyboard.press("[");
+    expect((await wallLayout(page)).columns).toBe(4);
+    expect((await wallLayout(page)).styles).toEqual([]);
+  });
+
+  test("a desktop resize settles the move and stays in the natural layout", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openCatalog(page, wallUrl());
+    await page.locator(sel.railToggle).click();
+    await page.waitForTimeout(80);
+    await expect(page.locator(sel.shell)).toHaveAttribute("data-moving", "open");
+    const frames = await record(page, firstTile, () => page.setViewportSize({ width: 1600, height: 800 }), 600);
+    const resized = frames.filter((frame) => frame.viewport === 1600);
+    expect(resized.length).toBeGreaterThan(5);
+    expect(resized.every((frame) => !frame.moving)).toBe(true);
+    expect(new Set(resized.map((frame) => `${frame.x},${frame.w},${frame.cols}`)).size).toBe(1);
+    await expect(page.locator(sel.shell)).not.toHaveAttribute("data-moving", /.*/);
+    const landed = await wallLayout(page);
+    expect(landed.styles).toEqual([]);
+    await page.reload();
+    await expect(page.locator(sel.railToggle)).toHaveAttribute("aria-label", "Collapse sidebar");
+    expect(await wallLayout(page)).toEqual(landed);
+  });
+
+  test("returning from a rule mid-move shows a wall whose columns hold on every frame", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openCatalog(page, wallUrl());
+    await page.locator(firstTile).focus();
+    await page.keyboard.press("Enter");
+    await expect(page.locator(sel.shell)).toHaveAttribute("data-view", "rule");
+    await page.locator(sel.railToggle).click();
+    await page.waitForTimeout(70);
+    await expect(page.locator(sel.shell)).toHaveAttribute("data-moving", "open");
+    const frames = await record(page, firstTile, () => page.keyboard.press("Escape"), 600);
+    await expect(page.locator(sel.shell)).toHaveAttribute("data-view", "gallery");
+    const shown = frames.filter((frame) => frame.wall);
+    expect(shown.length).toBeGreaterThan(5);
+    expect(new Set(shown.map((frame) => frame.cols)).size).toBe(1);
+    expect(shown.every((frame) => !frame.moving && frame.edge === RAIL_OPEN)).toBe(true);
+    expect((await wallLayout(page)).styles).toEqual([]);
+  });
+
+  test("fading tiles reject pointer hits and become fully visible on keyboard focus", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openCatalog(page, wallUrl());
+    const faded = await page.locator(sel.railToggle).evaluate((toggle) => {
+      toggle.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
+      const tiles = [...document.querySelectorAll<HTMLAnchorElement>("a.gw-tile")];
+      const tile = tiles.find((box) => {
+        const rect = box.getBoundingClientRect();
+        return Number(getComputedStyle(box).opacity) < 0.1 && rect.top > 100 && rect.bottom < innerHeight;
+      })!;
+      const rect = tile.getBoundingClientRect();
+      const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      const previous = tiles[tiles.indexOf(tile) - 1];
+      previous.focus({ preventScroll: true });
+      return { id: tile.id, hit: hit === tile || tile.contains(hit), opacity: Number(getComputedStyle(tile).opacity) };
+    });
+    expect(faded.opacity).toBeLessThan(0.1);
+    expect(faded.hit).toBe(false);
+    await page.keyboard.press("Tab");
+    const tile = page.locator(`[id="${faded.id}"]`);
+    const focused = await tile.evaluate((tile) => ({ focused: document.activeElement === tile, opacity: getComputedStyle(tile).opacity }));
+    expect(focused).toEqual({ focused: true, opacity: "1" });
+    await page.waitForTimeout(400);
+    expect((await wallLayout(page)).styles).toEqual([]);
+  });
+
+  test("classic scrollbar width does not change the sheet query gutters after landing", async ({ page }) => {
+    await page.setViewportSize({ width: 1530, height: 900 });
+    await openCatalog(page, wallUrl());
+    await page.addStyleTag({ content: ".shell-wall { scrollbar-gutter: stable; overflow-y: scroll } .shell-wall::-webkit-scrollbar { width: 15px }" });
+    const scrollbar = await page.locator(sel.wallLayer).evaluate((layer) => layer.getBoundingClientRect().width - layer.clientWidth);
+    expect(scrollbar).toBe(15);
+    const frames = await record(page, firstTile, () => page.locator(sel.railToggle).click());
+    expectOneMotion(frames, RAIL, RAIL_OPEN);
+    const landed = await wallLayout(page);
+    expect(landed.gutters[0]).toBe("32px");
+    expect(landed.styles).toEqual([]);
+    await page.waitForTimeout(300);
+    expect(await wallLayout(page)).toEqual(landed);
   });
 });

@@ -17,7 +17,7 @@ import { siteConfig } from "@/lib/site";
 import { CLOSE_MS, OPEN_MS, RAIL, RAIL_OPEN } from "./geometry";
 import { InstallRow } from "./install-row";
 import { MagnifyStrip } from "./magnify-strip";
-import { moveSheet } from "./sheet-resize";
+import { moveSheet, settleSheet } from "./sheet-resize";
 import { useShell } from "./shell-context";
 import { SidebarList } from "./sidebar-list";
 import { StripHint } from "./strip-hint";
@@ -47,7 +47,7 @@ export function Rail({ covered = false }: { covered?: boolean }) {
   const toggle = useRef<HTMLButtonElement>(null);
   const target = useRef(false);
   const railFocused = useRef(false);
-  const move = useRef<{ generation: number; finish: (() => void) | null }>({ generation: 0, finish: null });
+  const move = useRef<{ generation: number; finish: (() => void) | null; release: (() => void) | null }>({ generation: 0, finish: null, release: null });
 
   /*
    * One move, one motion: the sheet's left edge transitions (shell.css) and
@@ -76,6 +76,8 @@ export function Rail({ covered = false }: { covered?: boolean }) {
     root.setAttribute("data-rail-ready", "");
     const reduced = window.matchMedia(REDUCED_MOTION_QUERY).matches;
     if (instant || reduced || window.matchMedia(PHONE_QUERY).matches) {
+      session.release?.();
+      session.release = null;
       delete root.dataset.moving;
       root.toggleAttribute("data-wide", next);
       expand(next);
@@ -88,9 +90,11 @@ export function Rail({ covered = false }: { covered?: boolean }) {
       duration: next ? OPEN_MS : CLOSE_MS,
       easing: next ? "var(--ease-drawer)" : "var(--ease-out-strong)",
     });
+    session.release = release;
     const finish = () => {
-      if (session.generation !== generation) return;
+      if (session.generation !== generation || session.finish !== finish) return;
       session.finish = null;
+      session.release = null;
       // Closing keeps the list visible during travel; focus can enter it meanwhile.
       if (!next && nav.current?.querySelector(".rail-list")?.contains(document.activeElement)) toggle.current?.focus({ preventScroll: true });
       delete root.dataset.moving;
@@ -130,7 +134,10 @@ export function Rail({ covered = false }: { covered?: boolean }) {
     const session = move.current;
     const reduced = window.matchMedia(REDUCED_MOTION_QUERY);
     const phoneQuery = window.matchMedia(PHONE_QUERY);
-    const settle = () => session.finish?.();
+    const settle = () => {
+      if (sheet.current) settleSheet(sheet.current);
+      session.finish?.();
+    };
     const onPhone = () => {
       if (!phoneQuery.matches) return;
       // CSS or inert may already have blurred the hidden control to body.
@@ -138,12 +145,17 @@ export function Rail({ covered = false }: { covered?: boolean }) {
       railFocused.current = false;
       settle();
     };
+    window.addEventListener("resize", settle);
     reduced.addEventListener("change", settle);
     phoneQuery.addEventListener("change", onPhone);
     return () => {
+      window.removeEventListener("resize", settle);
       reduced.removeEventListener("change", settle);
       phoneQuery.removeEventListener("change", onPhone);
       session.generation += 1;
+      session.finish = null;
+      session.release?.();
+      session.release = null;
     };
   }, [sheet]);
 

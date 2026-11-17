@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { moveSheet, registerSheetResizer, type SheetResizer } from "@/components/shell/sheet-resize";
+import { moveSheet, registerSheetResizer, settleSheet, type SheetResizer } from "@/components/shell/sheet-resize";
 
 /** A sheet whose left edge is at `left` on screen, and a log of what happened to it, in order. */
 function fixture(left: number) {
@@ -29,7 +29,7 @@ function fixture(left: number) {
     return { transitionProperty: "left" };
   });
   const resizer = (name: string): SheetResizer => ({
-    measure: () => log.push(`${name} measure`),
+    measure: (grow) => log.push(`${name} measure ${grow}`),
     release: () => log.push(`${name} release`),
     pin: (grow) => log.push(`${name} pin ${grow}`),
     glide: ({ duration, easing }) => log.push(`${name} glide ${duration} ${easing}`),
@@ -61,7 +61,7 @@ describe("moveSheet", () => {
     unregister.push(registerSheetResizer(resizer("wall")));
     moveSheet(sheet, () => log.push("apply"), 240, timing);
     expect(log).toEqual([
-      "wall measure",
+      "wall measure -110",
       "wall release",
       "sheet transition=none",
       "sheet left=130px",
@@ -114,5 +114,29 @@ describe("shell.css", () => {
     const strip = [...css.matchAll(/([^{}]*\.rail-region[^{}]*)\{([^}]*)\}/g)];
     expect(strip.length).toBeGreaterThan(0);
     for (const [, , body] of strip) expect(body).not.toMatch(/transition|opacity/);
+  });
+});
+
+describe("settleSheet", () => {
+  it("finishes only the sheet edge transition, leaving content animations alone", () => {
+    class Transition {
+      readonly transitionProperty: string;
+      constructor(property: string) { this.transitionProperty = property; }
+      finish = vi.fn();
+    }
+    vi.stubGlobal("CSSTransition", Transition);
+    const edge = new Transition("left");
+    const opacity = new Transition("opacity");
+    const other = { finish: vi.fn() };
+    const sheet = { getAnimations: () => [edge, opacity, other] } as unknown as HTMLElement;
+    settleSheet(sheet);
+    expect(edge.finish).toHaveBeenCalledOnce();
+    expect(opacity.finish).not.toHaveBeenCalled();
+    expect(other.finish).not.toHaveBeenCalled();
+  });
+
+  it("can settle again after the edge has gone", () => {
+    const sheet = { getAnimations: () => [] } as unknown as HTMLElement;
+    expect(() => { settleSheet(sheet); settleSheet(sheet); }).not.toThrow();
   });
 });

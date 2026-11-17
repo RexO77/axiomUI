@@ -22,8 +22,8 @@
 export type SheetMoveTiming = { duration: number; easing: string };
 
 export type SheetResizer = {
-  /** Before anything changes: read positions as they are on screen. */
-  measure(): void;
+  /** Before anything changes: preflight the width change, then read any needed positions. */
+  measure(grow: number): void;
   /** Drop the pins and glides of an earlier move. Positions were already read. */
   release(): void;
   /** Pin, at their destination values, whatever would step on the way. `grow` is the sheet's width change in px. */
@@ -60,7 +60,7 @@ export function moveSheet(sheet: HTMLElement, apply: () => void, to: number, tim
   }
   // Read before any write: the edge where it is on screen (mid-move, too), and the content with it.
   const from = sheet.getBoundingClientRect().left;
-  for (const resizer of active) resizer.measure();
+  for (const resizer of active) resizer.measure(from - to);
   for (const resizer of active) resizer.release();
   // Hold the edge where it is while the target changes under it.
   sheet.style.transition = "none";
@@ -77,4 +77,11 @@ export function moveSheet(sheet: HTMLElement, apply: () => void, to: number, tim
   return () => {
     for (const resizer of active) resizer.release();
   };
+}
+
+/** Land the edge before a viewport or view change can invalidate its pinned layout. */
+export function settleSheet(sheet: HTMLElement): void {
+  for (const animation of sheet.getAnimations()) {
+    if (animation instanceof CSSTransition && animation.transitionProperty === "left") animation.finish();
+  }
 }

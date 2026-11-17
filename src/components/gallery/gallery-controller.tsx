@@ -22,7 +22,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
 
-import { registerSheetResizer } from "@/components/shell/sheet-resize";
+import { registerSheetResizer, settleSheet } from "@/components/shell/sheet-resize";
 import { useShell } from "@/components/shell/shell-context";
 import { collections } from "@/data/taxonomy";
 import { rules } from "@/data/ui-logic";
@@ -185,8 +185,10 @@ export function GalleryController({ base, total, sections, children }: GalleryCo
     scroller.current = scrollerOf(root.current);
   }, []);
   /* The rail moving the sheet's edge: the wall holds its columns and gutters on the way (wall-resize.ts). */
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = root.current;
+    const sheet = el?.closest<HTMLElement>(".shell-sheet");
+    if (sheet) settleSheet(sheet);
     if (!onWall || !el) return;
     return registerSheetResizer(wallResizer(el, () => scroller.current));
   }, [onWall]);

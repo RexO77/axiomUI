@@ -84,15 +84,15 @@ function readLayout(wall: HTMLElement): Layout {
  * the shell, read and removed in the same task. It answers the container
  * query and the auto-fill count exactly as the wall will.
  */
-function probeLayout(host: HTMLElement, width: number): Layout {
+function probeLayout(host: HTMLElement, sheetWidth: number, wallWidth: number): { layout: Layout; remove: () => void } {
   const probe = document.createElement("div");
   probe.setAttribute("aria-hidden", "true");
-  probe.style.cssText = `position:absolute;top:0;left:0;width:${width}px;height:0;overflow:hidden;visibility:hidden;pointer-events:none;container:sheet/inline-size`;
+  probe.style.cssText = `position:absolute;top:0;left:0;width:${sheetWidth}px;height:0;overflow:hidden;visibility:hidden;pointer-events:none;container:sheet/inline-size`;
   probe.innerHTML = '<div class="gw"><div class="gw-bar"></div><div class="gw-wall"><section class="gw-section"><ul class="gw-grid"><li></li></ul></section><section class="gw-section"></section></div></div>';
+  (probe.firstElementChild as HTMLElement).style.width = `${wallWidth}px`;
   host.append(probe);
   const layout = readLayout(probe.firstElementChild as HTMLElement);
-  probe.remove();
-  return layout;
+  return { layout, remove: () => probe.remove() };
 }
 
 /**
@@ -105,22 +105,43 @@ export function wallResizer(root: HTMLElement, scroller: () => HTMLElement | nul
   let anchor: HTMLElement | null = null;
   let glided: HTMLElement[] = [];
   let pins: HTMLElement[] = [];
-  let width = 0;
-  let current: Layout | null = null;
+  let next: Layout | null = null;
+  let faded: HTMLElement[] = [];
   /** The wall was pinned, or tiles were gliding, when this move began: it has to be pinned or glided again. */
   let carried = false;
 
+  // Keyboard focus must never inherit a fade, even before the edge lands.
+  const reveal = (event: FocusEvent) => {
+    const tile = event.currentTarget as HTMLElement;
+    tile.style.transition = "none";
+    tile.style.removeProperty("opacity");
+    tile.style.removeProperty("pointer-events");
+  };
+
   return {
-    measure() {
+    measure(grow) {
       const layer = scroller();
-      tiles = [...root.querySelectorAll<HTMLElement>(".gw-tile")].filter((tile) => !tile.closest("[hidden]"));
-      before = new Map(tiles.map((tile) => [tile, tile.getBoundingClientRect()]));
-      width = layer?.clientWidth ?? root.clientWidth;
-      carried = pins.length > 0 || glided.length > 0;
-      current = carried ? null : readLayout(root);
-      // The reader's place: the first tile whose top is in view, once the wall has scrolled.
-      const top = layer && layer.scrollTop > 0 ? layer.getBoundingClientRect().top : null;
-      anchor = top === null ? null : tiles.find((tile) => (before.get(tile)?.top ?? -Infinity) >= top) ?? null;
+      const sheet = root.closest<HTMLElement>(".shell-sheet");
+      const host = root.closest<HTMLElement>(".shell") ?? document.body;
+      // The query container is outside the wall's scrollbar; only the grid loses that width.
+      const sheetWidth = sheet?.getBoundingClientRect().width ?? root.clientWidth;
+      const wallWidth = layer?.clientWidth ?? root.clientWidth;
+      const { layout: destination, remove } = probeLayout(host, sheetWidth + grow, wallWidth + grow);
+      try {
+        carried = pins.length > 0 || glided.length > 0;
+        next = !carried && sameLayout(destination, readLayout(root)) ? null : destination;
+        tiles = [];
+        before.clear();
+        anchor = null;
+        if (!next) return;
+        tiles = [...root.querySelectorAll<HTMLElement>(".gw-tile")].filter((tile) => !tile.closest("[hidden]"));
+        before = new Map(tiles.map((tile) => [tile, tile.getBoundingClientRect()]));
+        // The reader's place: the first tile whose top is in view, once the wall has scrolled.
+        const top = layer && layer.scrollTop > 0 ? layer.getBoundingClientRect().top : null;
+        anchor = top === null ? null : tiles.find((tile) => (before.get(tile)?.top ?? -Infinity) >= top) ?? null;
+      } finally {
+        remove();
+      }
     },
     release() {
       for (const box of pins) for (const property of PROPERTIES) box.style.removeProperty(property);
@@ -128,15 +149,15 @@ export function wallResizer(root: HTMLElement, scroller: () => HTMLElement | nul
         tile.style.removeProperty("translate");
         tile.style.removeProperty("opacity");
         tile.style.removeProperty("transition");
+        tile.style.removeProperty("pointer-events");
       }
+      for (const tile of faded) tile.removeEventListener("focus", reveal);
+      faded = [];
       pins = [];
       glided = [];
     },
-    pin(grow) {
-      // The sheet's right edge holds, so its width (and the layer's) changes by what its left edge travels.
-      const host = root.closest(".shell") ?? document.body;
-      const next = probeLayout(host as HTMLElement, width + grow);
-      if (current && sameLayout(next, current)) return;
+    pin() {
+      if (!next) return;
       let at = 0;
       for (const selector of SELECTORS) {
         const properties = PINNED_USES[selector];
@@ -173,10 +194,16 @@ export function wallResizer(root: HTMLElement, scroller: () => HTMLElement | nul
       for (const [tile, settle] of moves) {
         tile.style.transition = "none";
         if ("glide" in settle) tile.style.translate = `${settle.glide.x}px ${settle.glide.y}px`;
-        else tile.style.opacity = "0";
+        else if (!tile.contains(document.activeElement)) {
+          tile.style.opacity = "0";
+          tile.style.pointerEvents = "none";
+          tile.addEventListener("focus", reveal);
+          faded.push(tile);
+        }
       }
       void root.offsetWidth;
       for (const [tile, settle] of moves) {
+        if ("fade" in settle && tile.contains(document.activeElement)) continue;
         tile.style.transition = `${"glide" in settle ? "translate" : "opacity"} ${duration}ms ${easing}`;
         tile.style.removeProperty("glide" in settle ? "translate" : "opacity");
       }

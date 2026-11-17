@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
-import { PINNED_GUTTERS, PINNED_USES, settleFor, trackCount } from "@/components/gallery/wall-resize";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { PINNED_GUTTERS, PINNED_USES, settleFor, trackCount, wallResizer } from "@/components/gallery/wall-resize";
 
 const box = (left: number, top: number, width = 270, height = 260) => ({ left, top, right: left + width, bottom: top + height });
 
@@ -76,5 +76,91 @@ describe("gallery.css and the pins", () => {
       if (selector.startsWith("@property")) continue;
       expect(selector).toBe(":is(.gw-bar, .gw-wall, .gw-section, .gw-grid)");
     }
+  });
+});
+
+/** Minimal frame boxes: style writes and tile reads stay observable without a browser. */
+function wallFixture(same = false) {
+  const element = () => {
+    const values = new Map<string, string>();
+    return { style: {
+      setProperty: (name: string, value: string) => values.set(name, value),
+      removeProperty: (name: string) => values.delete(name),
+    }, values };
+  };
+  const selectors = Object.keys(PINNED_USES);
+  const boxes = new Map(selectors.map((selector) => [selector, element()]));
+  const destination = new Map(selectors.map((selector) => [selector, element()]));
+  const tile = {
+    ...element(),
+    closest: () => null,
+    getBoundingClientRect: vi.fn(() => box(100, 120)),
+  };
+  const probeRoot = {
+    style: { width: "" },
+    querySelector: (selector: string) => destination.get(selector === ".gw-section:not([hidden]) .gw-grid" ? ".gw-grid" : selector),
+  };
+  const probe = { style: { cssText: "" }, setAttribute: vi.fn(), firstElementChild: probeRoot, remove: vi.fn(), innerHTML: "" };
+  const host = { append: vi.fn() };
+  const sheet = { getBoundingClientRect: () => ({ width: 1466 }) };
+  const root = {
+    closest: (selector: string) => selector === ".shell-sheet" ? sheet : host,
+    querySelector: (selector: string) => boxes.get(selector === ".gw-section:not([hidden]) .gw-grid" ? ".gw-grid" : selector),
+    querySelectorAll: vi.fn((selector: string) => selector === ".gw-tile" ? [tile] : [boxes.get(selector)]),
+  };
+  vi.stubGlobal("document", { createElement: () => probe });
+  vi.stubGlobal("getComputedStyle", (node: unknown) => ({
+    getPropertyValue: () => same || [...destination.values()].includes(node as ReturnType<typeof element>) ? "32px" : "24px",
+    gridTemplateColumns: "300px 300px 300px 300px",
+  }));
+  const layer = { clientWidth: 1451, scrollTop: 0 };
+  const resizer = wallResizer(root as unknown as HTMLElement, () => layer as HTMLElement);
+  return { resizer, root, tile, probe, probeRoot, boxes, matchLayout: () => { same = true; } };
+}
+
+afterEach(() => vi.unstubAllGlobals());
+
+describe("wallResizer lifecycle", () => {
+  it("skips tile collection and rect reads when the destination layout is unchanged", () => {
+    const { resizer, root, tile } = wallFixture(true);
+    resizer.measure(-184);
+    resizer.release();
+    resizer.pin(-184);
+    resizer.glide({ duration: 290, easing: "ease" });
+    expect(root.querySelectorAll).not.toHaveBeenCalled();
+    expect(tile.getBoundingClientRect).not.toHaveBeenCalled();
+  });
+
+  it("probes the sheet query width separately from the wall's scrollbar-reduced width", () => {
+    const { resizer, probe, probeRoot } = wallFixture();
+    resizer.measure(-184);
+    expect(probe.style.cssText).toContain("width:1282px");
+    expect(probeRoot.style.width).toBe("1267px");
+    expect(probe.remove).toHaveBeenCalledOnce();
+  });
+
+  it("releases all pinned properties on an instant interruption or teardown, repeatedly", () => {
+    const { resizer, boxes } = wallFixture();
+    resizer.measure(-184);
+    resizer.release();
+    resizer.pin(-184);
+    expect([...boxes.values()].every((box) => box.values.size > 0)).toBe(true);
+    resizer.release();
+    resizer.release();
+    expect([...boxes.values()].every((box) => box.values.size === 0)).toBe(true);
+  });
+
+  it("measures a carried layout before release even if the next natural layout would match", () => {
+    const { resizer, tile, matchLayout } = wallFixture();
+    resizer.measure(-184);
+    resizer.release();
+    resizer.pin(-184);
+    tile.getBoundingClientRect.mockClear();
+    matchLayout();
+    resizer.measure(184);
+    expect(tile.getBoundingClientRect).toHaveBeenCalledOnce();
+    resizer.release();
+    resizer.pin(184);
+    resizer.release();
   });
 });
