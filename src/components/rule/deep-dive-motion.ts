@@ -53,15 +53,23 @@ const CLOSE = { duration: CLOSE_MS, easing: "cubic-bezier(0.23, 1, 0.32, 1)" };
 
 /** The leaving copy of each rule view, so a reopen can pick it up where it is. */
 const leaving = new WeakMap<HTMLElement, HTMLElement>();
+const transitions = new WeakMap<HTMLElement, { animations: Animation[]; ghosts: HTMLElement[]; observer: ResizeObserver | null }>();
+
+/** End only this transition's effects, including copies detached from the stage grid. */
+export function cancelDeepDive(root: HTMLElement | null) {
+  if (!root) return;
+  const active = transitions.get(root);
+  transitions.delete(root);
+  active?.observer?.disconnect();
+  active?.animations.forEach((animation) => animation.cancel());
+  active?.ghosts.forEach((ghost) => ghost.remove());
+  leaving.delete(root);
+}
 
 /** Docked beside the main column (≥ 1160), rather than a pass-through under the comparison. */
 const docked = (side: HTMLElement) => getComputedStyle(side).display !== "contents";
 
 const shiftOf = (el: Element) => new DOMMatrixReadOnly(getComputedStyle(el).transform).m41;
-
-function stop(el: Element) {
-  for (const animation of el.getAnimations()) animation.cancel();
-}
 
 /** A visual-only copy of `el`, frozen in its current layout, placed at `rect` inside `root`. */
 function ghostOf(el: HTMLElement, rect: DOMRect, root: HTMLElement, surface: boolean): HTMLElement {
@@ -96,8 +104,7 @@ export function toggleDeepDive(root: HTMLElement | null, opening: boolean, commi
   const panel = root?.querySelector<HTMLElement>(".rv-dd");
   const old = root ? leaving.get(root) : undefined;
   if (!root || !side || !panel || !animate) {
-    if (root) for (const el of root.querySelectorAll(`${MOVERS}, .rv-side, .rv-dd`)) stop(el);
-    old?.remove();
+    cancelDeepDive(root);
     commit();
     return;
   }
@@ -120,11 +127,16 @@ export function toggleDeepDive(root: HTMLElement | null, opening: boolean, commi
   const relatedRect = related && first.get(related);
   const relatedGhost = opening && !wasDocked && related && relatedRect ? ghostOf(related, relatedRect, root, false) : null;
 
-  for (const el of [...movers, side, panel]) stop(el);
-  old?.remove();
-  leaving.delete(root);
-
+  cancelDeepDive(root);
   commit();
+
+  const active = { animations: [] as Animation[], ghosts: [] as HTMLElement[], observer: null as ResizeObserver | null };
+  transitions.set(root, active);
+  const play = (el: Element, frames: Keyframe[], options: KeyframeAnimationOptions) => {
+    const animation = el.animate(frames, options);
+    active.animations.push(animation);
+    return animation;
+  };
 
   // Last: the new layout, untransformed. Related changes column when the panel docks or leaves.
   const isDocked = docked(side);
@@ -139,7 +151,7 @@ export function toggleDeepDive(root: HTMLElement | null, opening: boolean, commi
     const dx = before.left - after.left;
     const dy = before.top - after.top;
     if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) continue;
-    el.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "none" }], timing);
+    play(el, [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "none" }], timing);
   }
 
   if (opening) {
@@ -148,30 +160,46 @@ export function toggleDeepDive(root: HTMLElement | null, opening: boolean, commi
     if (isDocked) {
       // From the sheet's edge, or from wherever the leaving copy had got to.
       const from = resume ? resume.rect.left - rest.left : rest.width;
-      entering.animate(
+      play(
+        entering,
         [{ transform: `translateX(${from}px)`, opacity: resume?.opacity ?? 0 }, { transform: "none", opacity: 1 }],
         timing,
       );
     } else {
-      entering.animate([{ opacity: resume?.opacity ?? 0 }, { opacity: 1 }], timing);
+      play(entering, [{ opacity: resume?.opacity ?? 0 }, { opacity: 1 }], timing);
     }
     // Related's old place in the column fades as the rows under it close up.
     if (relatedGhost && crossed) {
       const gone = () => relatedGhost.remove();
       root.append(relatedGhost);
-      relatedGhost.animate([{ opacity: 1 }, { opacity: 0 }], CLOSE).finished.then(gone, gone);
+      active.ghosts.push(relatedGhost);
+      play(relatedGhost, [{ opacity: 1 }, { opacity: 0 }], CLOSE).finished.then(gone, gone);
     }
   } else if (exit) {
     const { ghost, shift, width } = exit;
     root.append(ghost);
+    active.ghosts.push(ghost);
     leaving.set(root, ghost);
     const out = wasDocked ? [{ transform: "none", opacity }, { transform: `translateX(${width - shift}px)`, opacity: 0 }] : [{ opacity }, { opacity: 0 }];
     const done = () => {
       ghost.remove();
       if (leaving.get(root) === ghost) leaving.delete(root);
     };
-    ghost.animate(out, timing).finished.then(done, done);
+    play(ghost, out, timing).finished.then(done, done);
     // Related joins the main column again: it fades in where it now sits.
-    if (crossed && related) related.animate([{ opacity: 0 }, { opacity: 1 }], timing);
+    if (crossed && related) play(related, [{ opacity: 0 }, { opacity: 1 }], timing);
   }
+
+  const sheet = root.closest<HTMLElement>(".shell-sheet");
+  if (sheet && active.animations.length) {
+    const width = sheet.clientWidth;
+    const height = sheet.clientHeight;
+    active.observer = new ResizeObserver(() => {
+      if (sheet.clientWidth !== width || sheet.clientHeight !== height) cancelDeepDive(root);
+    });
+    active.observer.observe(sheet);
+  }
+  void Promise.allSettled(active.animations.map((animation) => animation.finished)).then(() => {
+    if (transitions.get(root) === active) cancelDeepDive(root);
+  });
 }

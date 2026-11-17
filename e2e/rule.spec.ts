@@ -518,6 +518,134 @@ test.describe("deep dive toggle", () => {
     await expect(toggle).toHaveAttribute("aria-expanded", "true");
   });
 
+  /** Both transformed parents and the visible controls must return to their layout. */
+  const effects = (page: Page) => page.evaluate(() => ({
+    ghosts: document.querySelectorAll(".rv-ghost").length,
+    transforms: [...document.querySelectorAll(".rv-head > :not(.rv-spacer), .rv-main, .rv-title, .rv-compare, .rv-side, .rv-dd, .rv-ship, .rv-related, .rv-next")]
+      .map((el) => getComputedStyle(el).transform).filter((transform) => transform !== "none"),
+    animations: document.querySelector(".rv")?.getAnimations({ subtree: true })
+      .filter((animation) => !(animation instanceof CSSTransition)).length ?? 0,
+  }));
+  const clean = { ghosts: 0, transforms: [], animations: 0 };
+  const closeThenKey = (page: Page, key: string, delay = 0) => page.evaluate(async ({ key, delay }) => {
+    document.querySelector(".rv-head button[aria-controls]")!
+      .dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
+    if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
+    const target = key === "Enter" ? document.querySelector(".rv-head button[aria-controls]")! : document;
+    if (key === "Enter") (target as HTMLElement).click();
+    else target.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }));
+  }, { key, delay });
+
+  for (const key of ["i", "Enter"]) {
+    test(`Close then ${key} at 50 ms cancels the exit before reopening instantly`, async ({ page }) => {
+      await openCatalog(page, ruleUrl("typo-1"));
+      await closeThenKey(page, key, 50);
+      await expect(page.locator(".rv-head button[aria-controls]")).toHaveAttribute("aria-expanded", "true");
+      expect(await effects(page)).toEqual(clean);
+      await page.waitForTimeout(300);
+      expect(await effects(page)).toEqual(clean);
+    });
+  }
+
+  for (const key of ["j", "k"]) {
+    test(`Close then ${key.toUpperCase()} immediately removes the old prose and transforms`, async ({ page }) => {
+      const id = "typo-2";
+      await openCatalog(page, ruleUrl(id));
+      await closeThenKey(page, key);
+      await expect(page.locator(sel.ruleTitle)).toHaveText(titleOf(railNeighbour(id, key === "j" ? 1 : -1)));
+      expect(await effects(page)).toEqual(clean);
+      await page.waitForTimeout(300);
+      expect(await effects(page)).toEqual(clean);
+    });
+  }
+
+  for (const action of ["beforematch", "storage"]) {
+    test(`${action} reopening cancels an active exit`, async ({ page }) => {
+      await openCatalog(page, ruleUrl("typo-1"));
+      await page.evaluate((action) => {
+        document.querySelector(".rv-head button[aria-controls]")!
+          .dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
+        if (action === "beforematch") document.querySelector(".rv-dd")!.dispatchEvent(new Event("beforematch"));
+        else {
+          localStorage.removeItem("axiom:deep-dive");
+          window.dispatchEvent(new StorageEvent("storage", { key: "axiom:deep-dive" }));
+        }
+      }, action);
+      await expect(page.locator(".rv-head button[aria-controls]")).toHaveAttribute("aria-expanded", "true");
+      expect(await effects(page)).toEqual(clean);
+    });
+  }
+
+  for (const destination of ["Related", "palette"]) {
+    test(`${destination} navigation cancels a departing panel`, async ({ page }) => {
+      await openCatalog(page, ruleUrl("typo-1"));
+      await page.evaluate(() => {
+        document.querySelector(".rv-head button[aria-controls]")!
+          .dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
+        // Hold the exit while the next input is made, rather than racing the 140 ms duration.
+        for (const animation of document.querySelector(".rv")!.getAnimations({ subtree: true })) {
+          if (!(animation instanceof CSSTransition)) animation.pause();
+        }
+      });
+      if (destination === "Related") {
+        await page.locator(".rv-related a").first().evaluate((el) => { if (el instanceof HTMLElement) el.click(); });
+      } else {
+        await page.keyboard.press("ControlOrMeta+k");
+        await page.getByRole("dialog", { name: "Search rules" }).getByRole("combobox").fill("kerning");
+        await page.keyboard.press("Enter");
+      }
+      await expect(page.locator(sel.ruleTitle)).not.toHaveText(titleOf("typo-1"));
+      expect(await effects(page)).toEqual(clean);
+    });
+  }
+
+  test("leaving for the wall cancels an active exit", async ({ page }) => {
+    await openCatalog(page, ruleUrl("typo-1"));
+    await closeThenKey(page, "Escape");
+    await awaitView(page, "gallery");
+    expect(await effects(page)).toEqual(clean);
+  });
+
+  for (const [from, to] of [[1440, 1100], [1100, 1440]]) {
+    test(`resizing from ${from} to ${to} during opening cancels effects at the sheet breakpoint`, async ({ page }) => {
+      await page.setViewportSize({ width: from, height: 900 });
+      await openCatalog(page, ruleUrl("typo-1"));
+      await page.keyboard.press("i");
+      await page.locator(".rv-head button[aria-controls]").click();
+      await page.setViewportSize({ width: to, height: 900 });
+      // Two frames allow delivery of the size observation, well before the 220 ms open ends.
+      await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      expect(await effects(page)).toEqual(clean);
+      const layout = await page.evaluate(() => {
+        const side = document.querySelector(".rv-side")!;
+        const panel = document.querySelector(".rv-dd")!.getBoundingClientRect();
+        const comparison = document.querySelector(".rv-compare")!.getBoundingClientRect();
+        return { display: getComputedStyle(side).display, panelX: panel.left, panelY: panel.top, compareRight: comparison.right, compareBottom: comparison.bottom };
+      });
+      if (to === 1440) {
+        expect(layout.display).toBe("block");
+        expect(layout.panelX).toBeGreaterThan(layout.compareRight);
+      } else {
+        expect(layout.display).toBe("contents");
+        expect(layout.panelY).toBeGreaterThan(layout.compareBottom);
+      }
+      await page.waitForTimeout(300);
+      expect(await effects(page)).toEqual(clean);
+    });
+  }
+
+  test("hiding the panel with focus on Retry returns focus to the header toggle", async ({ page }) => {
+    const next = railNeighbour("typo-1", 1);
+    await page.route(`**${proseUrl(next)}`, (route) => route.fulfill({ json: { id: next } }));
+    await openCatalog(page, ruleUrl("typo-1"));
+    await page.keyboard.press("j");
+    const retry = page.locator(".rv-dd").getByRole("button", { name: "Try again" });
+    await retry.focus();
+    await page.keyboard.press("i");
+    await expect(page.locator(".rv-head button[aria-controls]")).toBeFocused();
+    await expect(page.locator(".rv-dd")).toBeHidden();
+  });
+
   test("with reduced motion a click is instant too", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await openCatalog(page, ruleUrl("typo-1"));

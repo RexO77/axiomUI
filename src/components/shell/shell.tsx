@@ -35,6 +35,9 @@ import {
   type UIEvent,
 } from "react";
 
+import { flushSync } from "react-dom";
+
+import { cancelDeepDive, toggleDeepDive } from "@/components/rule/deep-dive-motion";
 import { collections, railCategory, railCategoryOf, railOrder } from "@/data/taxonomy";
 import { rules } from "@/data/ui-logic";
 import { catalogStores } from "@/lib/catalog/stores";
@@ -196,13 +199,21 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
   /* The deep dive's hidden state on <html>: the boot script sets it before paint, this keeps it in step. */
   useEffect(() => {
     const sync = () => {
+      cancelDeepDive(sheet.current?.querySelector<HTMLElement>(".rv") ?? null);
       if (deepDive.get()) delete document.documentElement.dataset.deep;
       else document.documentElement.dataset.deep = "hidden";
     };
     sync();
     return deepDive.subscribe(sync);
   }, [deepDive]);
-  const toggleInspector = useCallback(() => catalogStores.setDeepDiveOpen(!deepDive.get()), [deepDive]);
+  const toggleInspector = useCallback((origin: InputOrigin = "keyboard") => {
+    toggleDeepDive(
+      sheet.current?.querySelector<HTMLElement>(".rv") ?? null,
+      !deepDive.get(),
+      () => flushSync(() => catalogStores.setDeepDiveOpen(!deepDive.get())),
+      origin === "pointer" && !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    );
+  }, [deepDive]);
 
   /*
    * Reading position. This listener is registered before CatalogApp's (a

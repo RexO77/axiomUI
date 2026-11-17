@@ -24,7 +24,7 @@
  * held up by the heavier half.
  */
 
-import { Fragment, useDeferredValue, useEffect, type ReactNode } from "react";
+import { Fragment, useDeferredValue, useEffect, useLayoutEffect, useRef, type ReactNode } from "react";
 
 import { useShell } from "@/components/shell/shell-context";
 import { rules } from "@/data/ui-logic";
@@ -32,6 +32,7 @@ import { deckNeighbours } from "@/lib/navigation/deck";
 import { proseLoader } from "@/lib/prose-loader";
 import { Comparison } from "./comparison";
 import { CopyMenu } from "./copy-menu";
+import { cancelDeepDive } from "./deep-dive-motion";
 import { Inspector } from "./inspector";
 import { NextRow } from "./next-row";
 import { Prose } from "./prose";
@@ -48,6 +49,11 @@ export type StageProps = {
 
 export function Stage({ ruleId, seed = null }: StageProps) {
   const { deck } = useShell();
+  const root = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    const el = root.current;
+    return () => cancelDeepDive(el);
+  }, [ruleId]);
   const rule = ruleById.get(ruleId);
   const shown = useDeferredValue(rule);
   const shownId = shown?.id ?? null;
@@ -65,7 +71,7 @@ export function Stage({ ruleId, seed = null }: StageProps) {
   const seeded = seed !== null && shown.id === rule.id;
 
   return (
-    <article className="shell-rule rv" aria-labelledby="rule-title">
+    <article ref={root} className="shell-rule rv" aria-labelledby="rule-title">
       <StageHeader rule={rule} />
       <div className="rv-stage">
         <div className="rv-main">

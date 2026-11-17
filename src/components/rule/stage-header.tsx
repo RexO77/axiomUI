@@ -17,7 +17,6 @@
 
 import { ChevronLeft, ChevronRight, PanelRightClose, PanelRightOpen, Search, X } from "lucide-react";
 import type { MouseEvent } from "react";
-import { flushSync } from "react-dom";
 
 import { useShell } from "@/components/shell/shell-context";
 import { CategoryIcon } from "@/components/ui/category-icon";
@@ -28,11 +27,9 @@ import { rules, type Rule } from "@/data/ui-logic";
 import { deckNeighbours, deckPosition } from "@/lib/navigation/deck";
 import { proseLoader } from "@/lib/prose-loader";
 import { CopyMenu } from "./copy-menu";
-import { toggleDeepDive } from "./deep-dive-motion";
 import { DEEP_DIVE_ID } from "./inspector";
 
 const originOf = (event: MouseEvent) => (event.detail === 0 ? "keyboard" : "pointer");
-const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export function StageHeader({ rule }: { rule: Rule }) {
   const shell = useShell();
@@ -133,14 +130,7 @@ export function StageHeader({ rule }: { rule: Rule }) {
           aria-expanded={inspectorOpen}
           aria-controls={DEEP_DIVE_ID}
           // A click moves the panel and the column in one eased step; Enter, like I, is instant.
-          onClick={(event) =>
-            toggleDeepDive(
-              event.currentTarget.closest<HTMLElement>(".rv"),
-              !inspectorOpen,
-              () => flushSync(shell.toggleInspector),
-              originOf(event) === "pointer" && !reducedMotion(),
-            )
-          }
+          onClick={(event) => shell.toggleInspector(originOf(event))}
         >
           {inspectorOpen ? <PanelRightClose aria-hidden="true" /> : <PanelRightOpen aria-hidden="true" />}
         </button>

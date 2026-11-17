@@ -67,7 +67,7 @@ export type ShellApi = {
   modKey: string;
   /** The deep dive: open until the reader hides it (axiom:deep-dive). `I` toggles it. */
   inspectorOpen: boolean;
-  toggleInspector: () => void;
+  toggleInspector: (origin?: InputOrigin) => void;
   /** False when the reader turned single-key shortcuts off (WCAG 2.1.4). D, F and Z must check it. */
   singleKeys: boolean;
   inputOrigin: () => InputOrigin;
