@@ -103,8 +103,12 @@ function DeepDive({ ruleId, state }: { ruleId: string; state: ProseState }) {
   useLayoutEffect(() => {
     const el = aside.current;
     if (!el) return;
-    if (hide) el.setAttribute("hidden", "until-found");
-    else el.removeAttribute("hidden");
+    if (hide) {
+      if (el.contains(document.activeElement)) {
+        el.closest(".rv")?.querySelector<HTMLElement>(`.rv-head button[aria-controls="${DEEP_DIVE_ID}"]`)?.focus({ preventScroll: true });
+      }
+      el.setAttribute("hidden", "until-found");
+    } else el.removeAttribute("hidden");
   }, [hide]);
   useEffect(() => {
     const el = aside.current;

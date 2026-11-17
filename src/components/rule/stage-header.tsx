@@ -129,7 +129,8 @@ export function StageHeader({ rule }: { rule: Rule }) {
           aria-label="Deep dive"
           aria-expanded={inspectorOpen}
           aria-controls={DEEP_DIVE_ID}
-          onClick={shell.toggleInspector}
+          // A click moves the panel and the column in one eased step; Enter, like I, is instant.
+          onClick={(event) => shell.toggleInspector(originOf(event))}
         >
           {inspectorOpen ? <PanelRightClose aria-hidden="true" /> : <PanelRightOpen aria-hidden="true" />}
         </button>

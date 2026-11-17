@@ -380,3 +380,440 @@ test.describe("copy menu focus", () => {
     expect(await page.evaluate(() => document.activeElement?.outerHTML.slice(0, 80))).toBe(moved);
   });
 });
+
+test.describe("deep dive toggle", () => {
+  type Frame = { t: number; changed: boolean; running: boolean; title: number; cmpX: number; cmpY: number; side: number };
+
+  /** Every frame from now until the rule view has been still for 12 frames: where the title, the comparison and the panel are drawn. */
+  const recordFrames = (page: Page) =>
+    page.evaluate(
+      () =>
+        new Promise<Frame[]>((resolve) => {
+          const frames: Frame[] = [];
+          const start = document.documentElement.dataset.deep ?? "";
+          const view = document.querySelector(".rv")!;
+          const rect = (selector: string) => document.querySelector(selector)!.getBoundingClientRect();
+          let still = 0;
+          const tick = (t: number) => {
+            const running = document
+              .getAnimations()
+              .some((animation) => {
+                const target = (animation.effect as KeyframeEffect | null)?.target;
+                return animation.playState === "running" && target instanceof Element && view.contains(target);
+              });
+            const changed = (document.documentElement.dataset.deep ?? "") !== start;
+            frames.push({
+              t,
+              changed,
+              running,
+              title: rect("[data-rule-title]").left,
+              cmpX: rect(".rv-compare").left,
+              cmpY: rect(".rv-compare").top,
+              side: rect(".rv-side").left,
+            });
+            still = changed && !running ? still + 1 : 0;
+            if (still >= 12 || frames.length > 240) resolve(frames);
+            else requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        }),
+    );
+
+  /** The toggle's own motion in the rule view (not hover colour transitions), read in the frame after an action. */
+  const runningIn = (page: Page) =>
+    page.evaluate(
+      () =>
+        new Promise<number[]>((resolve) =>
+          requestAnimationFrame(() => {
+            const view = document.querySelector(".rv")!;
+            resolve(
+              document
+                .getAnimations()
+                .filter((animation) => {
+                  const target = (animation.effect as KeyframeEffect | null)?.target;
+                  return !(animation instanceof CSSTransition) && target instanceof Element && view.contains(target);
+                })
+                .map((animation) => Number(animation.effect?.getTiming().duration)),
+            );
+          }),
+        ),
+    );
+
+  for (const [step, ms] of [
+    ["closing", 140],
+    ["opening", 220],
+  ] as const) {
+    test(`a click ${step} it moves the column in one ${ms} ms step and ends exactly on the layout`, async ({ page }) => {
+      await openCatalog(page, ruleUrl("typo-1"));
+      const toggle = page.locator(".rv-head").getByRole("button", { name: "Deep dive", exact: true });
+      if (step === "opening") {
+        await page.keyboard.press("i");
+        await expect(toggle).toHaveAttribute("aria-expanded", "false");
+      }
+      const before = await page.locator(sel.ruleTitle).evaluate((el) => el.getBoundingClientRect().left);
+      const frames = recordFrames(page);
+      await toggle.click();
+      expect(await runningIn(page), "every part runs on the rail drawer's timing").not.toEqual([]);
+      const record = await frames;
+      const after = record.filter((frame) => frame.changed);
+      const end = after.at(-1)!;
+      expect(after.length).toBeGreaterThan(4);
+      // The commit frame draws the column where it was: no jump at the start.
+      expect(Math.abs(after[0].title - before)).toBeLessThan(1);
+      expect(record.some((frame) => frame.changed && frame.running), "it animated").toBe(true);
+      // One continuous move: every frame between where it was and where it ends, never past either.
+      const lo = Math.min(before, end.title) - 0.5;
+      const hi = Math.max(before, end.title) + 0.5;
+      for (const frame of after) {
+        expect(frame.title).toBeGreaterThanOrEqual(lo);
+        expect(frame.title).toBeLessThanOrEqual(hi);
+      }
+      const sign = Math.sign(end.title - before);
+      after.slice(1).forEach((frame, index) => expect(sign * (frame.title - after[index].title)).toBeGreaterThanOrEqual(-0.5));
+      // Once it stops, nothing moves again: the last animated frame is the layout itself.
+      const settled = after.slice(after.findLastIndex((frame) => frame.running) + 1);
+      expect(settled.length).toBeGreaterThanOrEqual(12);
+      for (const frame of settled) {
+        expect({ title: frame.title, cmpX: frame.cmpX, cmpY: frame.cmpY, side: frame.side }).toEqual({
+          title: end.title,
+          cmpX: end.cmpX,
+          cmpY: end.cmpY,
+          side: end.side,
+        });
+      }
+      const layout = await page.evaluate(() => ({
+        title: document.querySelector("[data-rule-title]")!.getBoundingClientRect().left,
+        cmpY: document.querySelector(".rv-compare")!.getBoundingClientRect().top,
+      }));
+      expect(layout).toEqual({ title: end.title, cmpY: end.cmpY });
+      expect(Math.abs(end.title - before), "the column really moved").toBeGreaterThan(40);
+    });
+  }
+
+  test("each part of a click toggle runs for the drawer's 220 ms in and 140 ms out, and leaves no copy behind", async ({ page }) => {
+    await openCatalog(page, ruleUrl("typo-1"));
+    const toggle = page.locator(".rv-head").getByRole("button", { name: "Deep dive", exact: true });
+    await toggle.click();
+    expect(new Set(await runningIn(page))).toEqual(new Set([140]));
+    await expect(page.locator(".rv-ghost"), "the leaving copy is removed when it ends").toHaveCount(0);
+    await toggle.click();
+    expect(new Set(await runningIn(page))).toEqual(new Set([220, 140]));
+  });
+
+  test("I and Enter on the button toggle it in the same frame, with nothing animating", async ({ page }) => {
+    await openCatalog(page, ruleUrl("typo-1"));
+    const title = page.locator(sel.ruleTitle);
+    const x = () => title.evaluate((el) => el.getBoundingClientRect().left);
+    const open = await x();
+    await page.keyboard.press("i");
+    expect(await runningIn(page)).toEqual([]);
+    const closed = await x();
+    expect(Math.abs(closed - open)).toBeGreaterThan(40);
+    await expect(page.locator(".rv-ghost")).toHaveCount(0);
+    const toggle = page.locator(".rv-head").getByRole("button", { name: "Deep dive", exact: true });
+    await toggle.focus();
+    await page.keyboard.press("Enter");
+    expect(await runningIn(page)).toEqual([]);
+    expect(await x()).toBe(open);
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  });
+
+  test("at 1920 the docked panel travels from and back to the sheet edge without fading", async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await openCatalog(page, ruleUrl("typo-1"));
+    await page.keyboard.press("i");
+    const opening = await page.evaluate(async () => {
+      const side = document.querySelector<HTMLElement>(".rv-side")!;
+      document.querySelector(".rv-head button[aria-controls]")!
+        .dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
+      const animation = side.getAnimations().find((item) => !(item instanceof CSSTransition))!;
+      const frames: { left: number; opacity: number }[] = [];
+      await new Promise<void>((resolve) => {
+        const tick = () => {
+          frames.push({ left: side.getBoundingClientRect().left, opacity: Number(getComputedStyle(side).opacity) });
+          if (animation.playState === "finished" || animation.playState === "idle") resolve();
+          else requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      });
+      const rest = side.getBoundingClientRect();
+      return {
+        frames,
+        rest: rest.left,
+        width: rest.width,
+        sheetRight: document.querySelector(".shell-sheet")!.getBoundingClientRect().right,
+      };
+    });
+    expect(opening.sheetRight - opening.rest - opening.width, "there is a centred-stage gap to cross").toBeGreaterThan(150);
+    expect(opening.frames[0].left).toBeGreaterThanOrEqual(opening.sheetRight - 3);
+    expect(opening.frames[0].left - opening.rest).toBeCloseTo(opening.sheetRight - opening.rest, 0);
+    expect(opening.frames.every((frame) => frame.opacity === 1)).toBe(true);
+
+    // Also close an opening panel partway through its move: its drawn position already includes its shift.
+    for (const interrupt of [false, true]) {
+      const closing = await page.evaluate((interrupt) => {
+        const toggle = document.querySelector(".rv-head button[aria-controls]")!;
+        const click = () => toggle.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
+        if (interrupt) {
+          click();
+          const entering = document.querySelector(".rv-side")!.getAnimations().find((item) => !(item instanceof CSSTransition))!;
+          entering.pause();
+          entering.currentTime = 40;
+        }
+        const start = document.querySelector(".rv-side")!.getBoundingClientRect().left;
+        click();
+        const ghost = document.querySelector(".rv-ghost[data-surface]")!;
+        const animation = ghost.getAnimations().find((item) => !(item instanceof CSSTransition))!;
+        animation.pause();
+        animation.currentTime = 0;
+        const first = ghost.getBoundingClientRect().left;
+        animation.currentTime = 139.999;
+        const last = ghost.getBoundingClientRect().left;
+        const opacity = Number(getComputedStyle(ghost).opacity);
+        animation.finish();
+        return { start, first, last, opacity, sheetRight: document.querySelector(".shell-sheet")!.getBoundingClientRect().right };
+      }, interrupt);
+      expect(closing.first).toBeCloseTo(closing.start, 0);
+      expect(closing.last).toBeCloseTo(closing.sheetRight, 0);
+      expect(closing.opacity).toBe(1);
+      await expect(page.locator(".rv-ghost")).toHaveCount(0);
+    }
+  });
+
+  test("at 1100 moving rows stay behind the partially visible entering deep dive", async ({ page }) => {
+    await page.setViewportSize({ width: 1100, height: 1080 });
+    await openCatalog(page, ruleUrl("typo-1"));
+    await page.keyboard.press("i");
+    await page.locator(".rv-compare").evaluate((el) => {
+      document.querySelector(".shell-sheet")!.scrollTop = el.getBoundingClientRect().bottom - 200;
+    });
+    const frames = await page.evaluate(() => new Promise<{ opacity: number; overlaps: number; covered: boolean }[]>((resolve) => {
+      const panel = document.querySelector(".rv-dd")!;
+      const rows = [...document.querySelectorAll(".rv-ship, .rv-related, .rv-next")];
+      const frames: { opacity: number; overlaps: number; covered: boolean }[] = [];
+      document.querySelector(".rv-head button[aria-controls]")!
+        .dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
+      const tick = () => {
+        const opacity = Number(getComputedStyle(panel).opacity);
+        const box = panel.getBoundingClientRect();
+        let overlaps = 0;
+        let covered = true;
+        for (const row of rows) {
+          const rect = row.getBoundingClientRect();
+          const left = Math.max(box.left, rect.left);
+          const right = Math.min(box.right, rect.right);
+          const top = Math.max(box.top, rect.top, 60);
+          const bottom = Math.min(box.bottom, rect.bottom, innerHeight - 8);
+          if (right <= left || bottom <= top) continue;
+          overlaps++;
+          const hit = document.elementFromPoint((left + right) / 2, (top + bottom) / 2);
+          if (!hit || !panel.contains(hit)) covered = false;
+        }
+        frames.push({ opacity, overlaps, covered });
+        if (panel.getAnimations().some((animation) => animation.playState === "running")) requestAnimationFrame(tick);
+        else resolve(frames);
+      };
+      requestAnimationFrame(tick);
+    }));
+    const partial = frames.filter((frame) => frame.opacity > 0 && frame.opacity < 1);
+    expect(partial.length).toBeGreaterThan(2);
+    expect(frames.some((frame) => frame.overlaps > 0), "sample the crossing rows").toBe(true);
+    expect(partial.every((frame) => frame.covered), "the entering surface paints above every crossing row").toBe(true);
+  });
+
+  for (const action of ["click", "I", "Enter"]) {
+    test(`the first-visit hint disappears in the same frame as a deep-dive ${action} toggle`, async ({ page }) => {
+      await page.setViewportSize({ width: 1920, height: 1080 });
+      await openCatalog(page, ruleUrl("typo-1"));
+      await expect(page.locator(".strip-hint")).toBeVisible();
+      const result = await page.evaluate(async (action) => {
+        const toggle = document.querySelector<HTMLElement>(".rv-head button[aria-controls]")!;
+        if (action === "I") document.dispatchEvent(new KeyboardEvent("keydown", { key: "i", bubbles: true }));
+        else toggle.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: action === "click" ? 1 : 0 }));
+        await new Promise(requestAnimationFrame);
+        return { deep: toggle.getAttribute("aria-expanded"), hint: Boolean(document.querySelector(".strip-hint")) };
+      }, action);
+      expect(result).toEqual({ deep: "false", hint: false });
+    });
+  }
+
+  test("the header hairline follows the pointer opening duration and easing", async ({ page }) => {
+    await openCatalog(page, ruleUrl("typo-1"));
+    await page.keyboard.press("i");
+    const timing = await page.evaluate(() => {
+      document.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+      document.querySelector(".rv-head button[aria-controls]")!
+        .dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
+      const style = getComputedStyle(document.querySelector(".rv-head")!);
+      return { duration: style.transitionDuration, easing: style.transitionTimingFunction };
+    });
+    expect(timing).toEqual({ duration: "0.22s", easing: "cubic-bezier(0.32, 0.72, 0, 1)" });
+  });
+
+  /** Both transformed parents and the visible controls must return to their layout. */
+  const effects = (page: Page) => page.evaluate(() => ({
+    ghosts: document.querySelectorAll(".rv-ghost").length,
+    transforms: [...document.querySelectorAll(".rv-head > :not(.rv-spacer), .rv-main, .rv-title, .rv-compare, .rv-side, .rv-dd, .rv-ship, .rv-related, .rv-next")]
+      .map((el) => getComputedStyle(el).transform).filter((transform) => transform !== "none"),
+    animations: document.querySelector(".rv")?.getAnimations({ subtree: true })
+      .filter((animation) => !(animation instanceof CSSTransition)).length ?? 0,
+  }));
+  const clean = { ghosts: 0, transforms: [], animations: 0 };
+  const closeThenKey = (page: Page, key: string, delay = 0) => page.evaluate(async ({ key, delay }) => {
+    document.querySelector(".rv-head button[aria-controls]")!
+      .dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
+    if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
+    const target = key === "Enter" ? document.querySelector(".rv-head button[aria-controls]")! : document;
+    if (key === "Enter") (target as HTMLElement).click();
+    else target.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }));
+  }, { key, delay });
+
+  for (const key of ["i", "Enter"]) {
+    test(`Close then ${key} at 50 ms cancels the exit before reopening instantly`, async ({ page }) => {
+      await openCatalog(page, ruleUrl("typo-1"));
+      await closeThenKey(page, key, 50);
+      await expect(page.locator(".rv-head button[aria-controls]")).toHaveAttribute("aria-expanded", "true");
+      expect(await effects(page)).toEqual(clean);
+      await page.waitForTimeout(300);
+      expect(await effects(page)).toEqual(clean);
+    });
+  }
+
+  for (const key of ["j", "k"]) {
+    test(`Close then ${key.toUpperCase()} immediately removes the old prose and transforms`, async ({ page }) => {
+      const id = "typo-2";
+      await openCatalog(page, ruleUrl(id));
+      await closeThenKey(page, key);
+      await expect(page.locator(sel.ruleTitle)).toHaveText(titleOf(railNeighbour(id, key === "j" ? 1 : -1)));
+      expect(await effects(page)).toEqual(clean);
+      await page.waitForTimeout(300);
+      expect(await effects(page)).toEqual(clean);
+    });
+  }
+
+  for (const action of ["beforematch", "storage"]) {
+    test(`${action} reopening cancels an active exit`, async ({ page }) => {
+      await openCatalog(page, ruleUrl("typo-1"));
+      await page.evaluate((action) => {
+        document.querySelector(".rv-head button[aria-controls]")!
+          .dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
+        if (action === "beforematch") document.querySelector(".rv-dd")!.dispatchEvent(new Event("beforematch"));
+        else {
+          localStorage.removeItem("axiom:deep-dive");
+          window.dispatchEvent(new StorageEvent("storage", { key: "axiom:deep-dive" }));
+        }
+      }, action);
+      await expect(page.locator(".rv-head button[aria-controls]")).toHaveAttribute("aria-expanded", "true");
+      expect(await effects(page)).toEqual(clean);
+    });
+  }
+
+  for (const destination of ["Related", "palette"]) {
+    test(`${destination} navigation cancels a departing panel`, async ({ page }) => {
+      await openCatalog(page, ruleUrl("typo-1"));
+      await page.evaluate(() => {
+        document.querySelector(".rv-head button[aria-controls]")!
+          .dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
+        // Hold the exit while the next input is made, rather than racing the 140 ms duration.
+        for (const animation of document.querySelector(".rv")!.getAnimations({ subtree: true })) {
+          if (!(animation instanceof CSSTransition)) animation.pause();
+        }
+      });
+      if (destination === "Related") {
+        await page.locator(".rv-related a").first().evaluate((el) => { if (el instanceof HTMLElement) el.click(); });
+      } else {
+        await page.keyboard.press("ControlOrMeta+k");
+        await page.getByRole("dialog", { name: "Search rules" }).getByRole("combobox").fill("kerning");
+        await page.keyboard.press("Enter");
+      }
+      await expect(page.locator(sel.ruleTitle)).not.toHaveText(titleOf("typo-1"));
+      expect(await effects(page)).toEqual(clean);
+    });
+  }
+
+  test("leaving for the wall cancels an active exit", async ({ page }) => {
+    await openCatalog(page, ruleUrl("typo-1"));
+    await closeThenKey(page, "Escape");
+    await awaitView(page, "gallery");
+    expect(await effects(page)).toEqual(clean);
+  });
+
+  for (const [from, to] of [[1440, 1100], [1100, 1440]]) {
+    test(`resizing from ${from} to ${to} during opening cancels effects at the sheet breakpoint`, async ({ page }) => {
+      await page.setViewportSize({ width: from, height: 900 });
+      await openCatalog(page, ruleUrl("typo-1"));
+      await page.keyboard.press("i");
+      await page.locator(".rv-head button[aria-controls]").click();
+      await page.setViewportSize({ width: to, height: 900 });
+      // Two frames allow delivery of the size observation, well before the 220 ms open ends.
+      await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      expect(await effects(page)).toEqual(clean);
+      const layout = await page.evaluate(() => {
+        const side = document.querySelector(".rv-side")!;
+        const panel = document.querySelector(".rv-dd")!.getBoundingClientRect();
+        const comparison = document.querySelector(".rv-compare")!.getBoundingClientRect();
+        return { display: getComputedStyle(side).display, panelX: panel.left, panelY: panel.top, compareRight: comparison.right, compareBottom: comparison.bottom };
+      });
+      if (to === 1440) {
+        expect(layout.display).toBe("block");
+        expect(layout.panelX).toBeGreaterThan(layout.compareRight);
+      } else {
+        expect(layout.display).toBe("contents");
+        expect(layout.panelY).toBeGreaterThan(layout.compareBottom);
+      }
+      await page.waitForTimeout(300);
+      expect(await effects(page)).toEqual(clean);
+    });
+  }
+
+  test("hiding the panel with focus on Retry returns focus to the header toggle", async ({ page }) => {
+    const next = railNeighbour("typo-1", 1);
+    await page.route(`**${proseUrl(next)}`, (route) => route.fulfill({ json: { id: next } }));
+    await openCatalog(page, ruleUrl("typo-1"));
+    await page.keyboard.press("j");
+    const retry = page.locator(".rv-dd").getByRole("button", { name: "Try again" });
+    await retry.focus();
+    await page.keyboard.press("i");
+    await expect(page.locator(".rv-head button[aria-controls]")).toBeFocused();
+    await expect(page.locator(".rv-dd")).toBeHidden();
+  });
+
+  test("with reduced motion a click is instant too", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await openCatalog(page, ruleUrl("typo-1"));
+    await page.locator(".rv-head").getByRole("button", { name: "Deep dive", exact: true }).click();
+    expect(await runningIn(page)).toEqual([]);
+    await expect(page.locator(".rv-ghost")).toHaveCount(0);
+  });
+
+  for (const width of [1440, 1280]) {
+    test(`at ${width} the panel's hairline runs from the header's floor to the sheet's foot, and the floor is drawn`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await openCatalog(page, ruleUrl("typo-1"));
+      const edges = await page.evaluate(() => {
+        const head = document.querySelector<HTMLElement>(".rv-head")!;
+        const side = document.querySelector<HTMLElement>(".rv-side")!;
+        const sheet = document.querySelector<HTMLElement>(".shell-sheet")!.getBoundingClientRect();
+        const style = getComputedStyle(head);
+        return {
+          headBottom: head.getBoundingClientRect().bottom,
+          sideTop: side.getBoundingClientRect().top,
+          sideBottom: side.getBoundingClientRect().bottom,
+          sheetBottom: sheet.bottom,
+          divider: getComputedStyle(side).boxShadow,
+          floor: style.getPropertyValue("--rv-head-line").trim(),
+          line: getComputedStyle(document.documentElement).getPropertyValue("--ax-line").trim(),
+          headRight: head.getBoundingClientRect().right,
+          sideRight: side.getBoundingClientRect().right,
+        };
+      });
+      expect(edges.divider).toContain("inset");
+      // The divider meets the header's hairline: no gap, no overlap past it.
+      expect(edges.sideTop).toBe(edges.headBottom);
+      expect(edges.sideBottom).toBeGreaterThanOrEqual(edges.sheetBottom - 1);
+      expect(edges.floor).toBe(edges.line);
+      // The header spans the panel too, so its floor meets the divider in a T.
+      expect(edges.headRight).toBeGreaterThanOrEqual(edges.sideRight);
+    });
+  }
+});
