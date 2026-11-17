@@ -178,7 +178,9 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
     const [plays, setPlays] = useState(0);
     const reduced = useReducedMotion();
     const canHover = useCanHover();
-    const autoplayed = useRef(false);
+    // Bumped whenever the rule changes; the autoplay guard records the one it played for.
+    const [specEpoch, setSpecEpoch] = useState(0);
+    const autoplayedIn = useRef<number | null>(null);
     // Press demos dogfood motion-8: feedback confirms the press was heard.
     const { tapLight } = useHaptics();
 
@@ -277,7 +279,7 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
 
     const enter = useCallback((options?: { countsAsInteraction?: boolean }) => {
         const counts = options?.countsAsInteraction !== false;
-        autoplayed.current = true;
+        autoplayedIn.current = specEpoch;
         clearTimeout(settleTimer.current);
         stopMsClocks();
         const run = nextGeneration();
@@ -350,7 +352,7 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
             // A pane cancelled mid-reset (unmount, a newer play) stays put.
             if (reset.every(Boolean)) start(true);
         });
-    }, [spec, playbackRate, holdRate, reduced, runBar, skipDo, clearBars, nextGeneration]);
+    }, [spec, specEpoch, playbackRate, holdRate, reduced, runBar, skipDo, clearBars, nextGeneration]);
 
     const exit = useCallback(() => {
         clearTimeout(settleTimer.current);
@@ -404,7 +406,7 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
         setPrevSpec(spec);
         setEngaged(false);
         setPlays(0);
-        autoplayed.current = false;
+        setSpecEpoch((epoch) => epoch + 1);
     }
 
     // Autoplay once when a play-style demo mounts — rest shells aren't empty for long.
@@ -414,9 +416,9 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
     useEffect(() => {
         if (reduced) return;
         if (spec.trigger !== "replay" && spec.trigger !== "action") return;
-        if (autoplayed.current) return;
+        if (autoplayedIn.current === specEpoch) return;
         const t = window.setTimeout(() => {
-            if (autoplayed.current) return;
+            if (autoplayedIn.current === specEpoch) return;
             enter({ countsAsInteraction: false });
         }, 350);
         return () => window.clearTimeout(t);

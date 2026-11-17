@@ -2,7 +2,7 @@
 "use client";
 
 import type { CSSProperties, MouseEvent, ReactNode, TransitionEvent } from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
 import { AlertCircle, ArrowLeft, ArrowRight, ArrowUpRight, Check, Copy, Download, LoaderCircle, X } from "lucide-react";
@@ -36,6 +36,11 @@ const PILL_SECONDARY =
   "pressable inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-line-strong px-4 text-xs font-medium text-ink-secondary hover:bg-fill hover:text-ink";
 const TEXT_LINK =
   "pressable -mx-2 inline-flex min-h-11 items-center gap-1.5 rounded-full px-2 text-sm font-medium text-ink-secondary underline-offset-4 hover:text-ink hover:underline";
+
+// The portal needs document.body, which exists only on the client: false while
+// rendering on the server and hydrating, true from then on.
+const subscribeNever = () => () => {};
+const useIsClient = () => useSyncExternalStore(subscribeNever, () => true, () => false);
 
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -209,7 +214,7 @@ export type SkillBonusProps = {
 export function SkillBonus({ open, onOpenChange }: SkillBonusProps = {}) {
   const controlled = open !== undefined;
   const pathname = usePathname();
-  const [isMounted, setIsMounted] = useState(false);
+  const isMounted = useIsClient();
   const [modalState, setModalState] = useState<ModalState>("closed");
   const [view, setView] = useState<ModalView>("install");
   const [swapPhase, setSwapPhase] = useState<SwapPhase>("idle");
@@ -256,19 +261,10 @@ export function SkillBonus({ open, onOpenChange }: SkillBonusProps = {}) {
     if (announcementTimerRef.current !== null) window.clearTimeout(announcementTimerRef.current);
   }, [viewSwap]);
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
   // The playbook is fetched only when Preview is chosen, so opening the
   // dialog does no network work.
   useEffect(() => {
-    if (!isPreviewing || skillText) {
-      if (skillText) {
-        setLoadState("ready");
-      }
-      return;
-    }
+    if (!isPreviewing || skillText) return;
 
     let active = true;
     const controller = new AbortController();
@@ -497,6 +493,8 @@ export function SkillBonus({ open, onOpenChange }: SkillBonusProps = {}) {
   }, [view]);
 
   const previewNodes = useMemo(() => parsePreviewNodes(skillText), [skillText]);
+  // Once the playbook has loaded it stays loaded, whatever an earlier attempt left behind.
+  const previewState: LoadState = skillText ? "ready" : loadState;
 
   const startOpening = useCallback((returnTo: HTMLElement | null) => {
     returnFocusRef.current = returnTo;
@@ -506,16 +504,24 @@ export function SkillBonus({ open, onOpenChange }: SkillBonusProps = {}) {
     setModalState(prefersReducedMotion() ? "open" : "mounted");
   }, [skillText, viewSwap]);
 
-  // Controlled: follow `open`. The opener is whatever held focus, and focus
-  // returns there on close.
+  // Controlled: follow `open`, adjusting the dialog's state in the same render
+  // as the prop. The opener is whatever held focus, which the focus trap
+  // records as the dialog mounts, and focus returns there on close.
+  if (controlled && open && modalState === "closed") {
+    setAnnouncement("");
+    setLoadState((current) => (current === "error" || (current === "loading" && !skillText) ? "idle" : current));
+    setModalState(reducedMotion ? "open" : "mounted");
+  } else if (controlled && !open && (modalState === "mounted" || modalState === "open")) {
+    setAnnouncement("");
+    setModalState(reducedMotion ? "closed" : "closing");
+  }
+
+  // However the dialog closes, a view swap in flight stops and the next open
+  // starts on the install view.
   useEffect(() => {
-    if (!controlled) return;
-    if (open && modalState === "closed") {
-      startOpening(document.activeElement instanceof HTMLElement ? document.activeElement : null);
-    } else if (!open && (modalState === "mounted" || modalState === "open")) {
-      closeModal();
-    }
-  }, [controlled, open, modalState, startOpening, closeModal]);
+    if (modalState === "closing") viewSwap.cancel();
+    else if (modalState === "closed") viewSwap.reset("install");
+  }, [modalState, viewSwap]);
 
   function openModal(event: MouseEvent<HTMLButtonElement>) {
     // Read the URL at click time rather than through useSearchParams, which
@@ -534,7 +540,7 @@ export function SkillBonus({ open, onOpenChange }: SkillBonusProps = {}) {
 
   function showView(next: ModalView) {
     if (modalState === "closing" || !viewSwap.request(next, prefersReducedMotion())) return;
-    if (next === "preview" && loadState === "error") setLoadState("idle");
+    if (next === "preview" && previewState === "error") setLoadState("idle");
     focusViewHeadingRef.current = true;
   }
 
@@ -674,7 +680,7 @@ export function SkillBonus({ open, onOpenChange }: SkillBonusProps = {}) {
             </p>
           </header>
 
-          {loadState === "loading" || loadState === "idle" ? (
+          {previewState === "loading" || previewState === "idle" ? (
             <div
               role="status"
               className="flex min-h-48 flex-col items-center justify-center gap-3 text-center text-sm text-ink-muted"
@@ -684,7 +690,7 @@ export function SkillBonus({ open, onOpenChange }: SkillBonusProps = {}) {
             </div>
           ) : null}
 
-          {loadState === "error" ? (
+          {previewState === "error" ? (
             <div className="flex min-h-48 flex-col items-center justify-center gap-3 text-center text-sm text-ink-muted">
               <p>Could not load the preview. Try again or open the file directly.</p>
               <button type="button" className={PILL_SECONDARY} onClick={() => setLoadAttempt((attempt) => attempt + 1)}>
@@ -697,7 +703,7 @@ export function SkillBonus({ open, onOpenChange }: SkillBonusProps = {}) {
             </div>
           ) : null}
 
-          {loadState === "ready" ? (
+          {previewState === "ready" ? (
             <div className="mt-6 space-y-6 sm:mt-8 sm:space-y-8">
               {previewNodes.map((node, index) => renderPreviewNode(node, index))}
             </div>

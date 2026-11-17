@@ -290,6 +290,40 @@ test("the skills dialog keeps ⌘K and ⌘/ from opening anything behind it", as
   await expect(skills).toBeVisible();
 });
 
+test("the skills dialog reopens on its install view and keeps a loaded playbook", async ({ page }) => {
+  let fetches = 0;
+  page.on("request", (request) => {
+    if (request.url().endsWith("/skills/axiomui-website-upgrade/SKILL.md")) fetches += 1;
+  });
+  await openCatalog(page, wallUrl());
+  const row = page.getByRole("button", { name: /^Install in your agent/ });
+  // The dialog takes its name from the view's heading.
+  const skills = page.getByRole("dialog", { name: "Agent skills" });
+  const playbook = page.getByRole("dialog", { name: "Website playbook" });
+  const browse = async () => {
+    await row.click();
+    await page.getByRole("dialog", { name: "Install in your agent" }).getByRole("button", { name: "Browse the skills" }).click();
+    await expect(skills).toBeVisible();
+  };
+  const preview = async () => {
+    await skills.getByRole("button", { name: "Preview the playbook" }).click();
+    await expect(playbook.getByRole("heading", { name: "Operating principles" })).toBeVisible();
+    await expect(playbook.getByText("Loading preview…")).toHaveCount(0);
+  };
+
+  await browse();
+  await preview();
+  await page.keyboard.press("Escape");
+  await expect(playbook).toHaveCount(0);
+  await expect(row).toBeFocused();
+
+  // Closed from the preview, it opens again on the install view, and the
+  // playbook it already loaded shows without a second request.
+  await browse();
+  await preview();
+  expect(fetches).toBe(1);
+});
+
 test.describe("a tablet held upright, touch", () => {
   test.use({ viewport: { width: 820, height: 1180 }, hasTouch: true, isMobile: true });
 
