@@ -65,7 +65,10 @@ export function PhoneBar({ routes, menuOpen, onMenu }: PhoneBarProps) {
         aria-label="Menu"
         aria-haspopup="dialog"
         aria-expanded={menuOpen}
-        onClick={onMenu}
+        onClick={(event) => {
+          event.currentTarget.focus({ preventScroll: true });
+          onMenu();
+        }}
       >
         <Menu aria-hidden="true" />
       </button>
@@ -101,7 +104,10 @@ export function PhoneBar({ routes, menuOpen, onMenu }: PhoneBarProps) {
         className="shell-ctl phone-ctl"
         aria-label={`Search ${TOTAL} rules`}
         aria-haspopup="dialog"
-        onClick={openPalette}
+        onClick={(event) => {
+          event.currentTarget.focus({ preventScroll: true });
+          openPalette();
+        }}
       >
         <Search aria-hidden="true" />
       </button>

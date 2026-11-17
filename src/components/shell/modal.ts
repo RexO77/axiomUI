@@ -105,7 +105,7 @@ function inertOutside(el: HTMLElement): () => void {
 }
 
 function focusables(root: HTMLElement): HTMLElement[] {
-  return [...root.querySelectorAll<HTMLElement>(FOCUSABLE)].filter((el) => !el.closest("[inert]") && el.getClientRects().length > 0);
+  return [...root.querySelectorAll<HTMLElement>(FOCUSABLE)].filter((el) => el.tabIndex >= 0 && !el.closest("[inert]") && el.getClientRects().length > 0);
 }
 
 /** Tab and Shift+Tab wrap inside `root`. Call from the dialog's onKeyDown. */
@@ -116,16 +116,11 @@ export function trapTab(event: { key: string; shiftKey: boolean; preventDefault:
     event.preventDefault();
     return;
   }
-  const first = list[0];
-  const last = list[list.length - 1];
-  const active = document.activeElement;
-  if (event.shiftKey && (active === first || !root.contains(active))) {
-    event.preventDefault();
-    last.focus();
-  } else if (!event.shiftKey && (active === last || !root.contains(active))) {
-    event.preventDefault();
-    first.focus();
-  }
+  const index = list.findIndex((el) => el === document.activeElement);
+  const next = index < 0 ? (event.shiftKey ? list.length - 1 : 0) : (index + (event.shiftKey ? -1 : 1) + list.length) % list.length;
+  // Safari's keyboard preference may skip controls during native Tab navigation.
+  event.preventDefault();
+  list[next].focus();
 }
 
 /**

@@ -819,7 +819,10 @@ export const BottomStrip = memo(function BottomStrip({ ruleId, routes, onContent
             className="bstrip-solo"
             aria-label={`Contents. ${currentSection.short}, ${position.index} of ${position.total}`}
             aria-haspopup="dialog"
-            onClick={onContents}
+            onClick={(event) => {
+              event.currentTarget.focus({ preventScroll: true });
+              onContents();
+            }}
           >
             <CategoryIcon categoryId={current} className="size-5" />
             <ChevronsUpDown aria-hidden="true" />
