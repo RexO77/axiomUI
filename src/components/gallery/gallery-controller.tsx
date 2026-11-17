@@ -389,11 +389,6 @@ export function GalleryController({ base, total, sections, children }: GalleryCo
         onJump={jumpTo}
         onChooseSide={chooseSide}
       />
-      {!wall.visible ? (
-        <p className="gw-phone-intro">
-          <strong>Axiom UI</strong> · Interface design rules with live Do/Don’t examples.
-        </p>
-      ) : null}
       <div className="gw-wall">
         {empty ? (
           <div className="gw-empty">

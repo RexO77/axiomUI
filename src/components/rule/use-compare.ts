@@ -71,7 +71,7 @@ export function flipReducer(state: FlipState, action: FlipAction): FlipState {
   }
 }
 
-/** What a Flip canvas shows: a hold inverts the toggled side. Side by side shows both, led by Do. */
+/** What a Flip canvas shows: a hold inverts the toggled side. Both shows both sides, led by Do. */
 export function flipShowing(mode: CompareMode, state: FlipState): Side {
   return mode === "flip" && state.flipped !== state.held ? "dont" : "do";
 }

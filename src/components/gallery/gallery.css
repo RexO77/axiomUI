@@ -15,6 +15,7 @@
   --gw-bar-h: 52px;
   --gw-section-gap: 48px;
   --gw-frame-h: 224px;
+  --safe-bottom: env(safe-area-inset-bottom);
 
   position: relative;
   min-height: 100%;
@@ -444,7 +445,7 @@
 
 /* The phone's Do/Don't capsule. Sticky at the end of the wall, so it rides
    the bottom of the layer while there is wall below. */
-.gw-float, .gw-phone-intro { display: none; }
+.gw-float { display: none; }
 
 /* ── Phone ─────────────────────────────────────────────────────────── */
 
@@ -508,15 +509,6 @@
   .gw-chip-clear svg { width: 16px; height: 16px; color: var(--ax-ink-muted); }
   .gw-chip:active { background: var(--ax-press); }
 
-  .gw-phone-intro {
-    display: block;
-    padding: 0 var(--gw-pad);
-    color: var(--ax-ink-secondary);
-    font-size: 13px;
-    line-height: 20px;
-  }
-  .gw-phone-intro strong { color: var(--ax-ink); font-weight: 600; }
-
   .gw-section-head { margin-bottom: 12px; }
   .gw-title { font-size: 15px; }
   .gw-tile { scroll-margin-bottom: 92px; }
@@ -527,11 +519,11 @@
      through it) with the raised thumb, the desktop recipe at thumb size. */
   .gw-float {
     position: sticky;
-    bottom: calc(16px + env(safe-area-inset-bottom));
+    bottom: calc(16px + var(--safe-bottom));
     z-index: 3;
     display: flex;
     justify-content: center;
-    padding: 16px 0 calc(16px + env(safe-area-inset-bottom));
+    padding: 16px 0;
     pointer-events: none;
   }
   .gw-float > * { pointer-events: auto; }

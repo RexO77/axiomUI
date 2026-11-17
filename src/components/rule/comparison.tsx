@@ -1,8 +1,8 @@
 // design-system: strict
 "use client";
 
-// The rule comparison. Static rules: Side by side (Both on phones) or Flip, at 1× or 2×, both
-// variants on one canvas with their verdict labels inside, captions under each
+// The rule comparison. Static rules: Both or Flip, at 1× or 2×. Both variants
+// share one canvas with their verdict labels inside, captions under each
 // half and the Flip hint under those. Engine-backed motion rules render
 // MotionCompare on the same canvas; the hand-built showcases (drag, interrupt,
 // load, toolbar) render MotionShowcase, laid into the same canvas, caption row
@@ -35,7 +35,7 @@ const SIDES = ["do", "dont"] as const;
 const MODES = [
   {
     value: "side",
-    label: <><span className="cmp-wide-copy">Side by side</span><span className="cmp-phone-copy">Both</span></>,
+    label: "Both",
     icon: <Columns2 />,
   },
   { value: "flip", label: "Flip", icon: <SquareStack /> },
@@ -121,7 +121,7 @@ function StaticComparison({ rule }: { rule: Rule }) {
   return (
     <div className="cmp" data-kind="static" data-flip={flip || undefined}>
       <div className="cmp-bar">
-        <Tooltip content={<><span className="cmp-wide-copy">Side by side or Flip (F)</span><span className="cmp-phone-copy">Show both or flip (F)</span></>} side="bottom">
+        <Tooltip content={<>Both or Flip<span className="rule-hint-key"> (F)</span></>} side="bottom">
           <Segmented label="Compare" value={mode} options={MODES} onChange={(next) => setMode(next)} />
         </Tooltip>
         {flip ? (
@@ -130,7 +130,7 @@ function StaticComparison({ rule }: { rule: Rule }) {
           </button>
         ) : null}
       </div>
-      <Tooltip content="Zoom (Z)" side="bottom" className="cmp-zoom">
+      <Tooltip content={<>Zoom<span className="rule-hint-key"> (Z)</span></>} side="bottom" className="cmp-zoom">
         <Segmented
           label="Zoom"
           value={zoom === 2 ? "2" : "1"}

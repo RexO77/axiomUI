@@ -1,8 +1,30 @@
 import { searchRules } from "../src/lib/rule-search";
-import { awaitView, expect, openCatalog, ruleUrl, test, wallUrl } from "./helpers";
+import { awaitInteractive, awaitView, expect, openCatalog, ruleUrl, test, wallUrl } from "./helpers";
 
 test.describe("touch search can show the filtered gallery", () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+
+  for (const [name, url] of [["unfiltered", wallUrl()], ["query", wallUrl({ q: "contrast" })], ["collection", wallUrl({ collection: "accessibility" })]] as const) {
+    test(`a direct ${name} load starts the gallery under the chips without an intro`, async ({ page }) => {
+      let releaseBundles!: () => void;
+      const bundlesReady = new Promise<void>((resolve) => { releaseBundles = resolve; });
+      await page.route("**/_next/static/**/*.js", async (route) => {
+        await bundlesReady;
+        await route.continue();
+      });
+      try {
+        await page.goto(url, { waitUntil: "domcontentloaded" });
+        await expect(page.locator(".gw-phone-intro")).toHaveCount(0);
+        await expect(page.locator(".gw-bar + .gw-wall")).toHaveCount(1);
+      } finally {
+        releaseBundles();
+      }
+      await awaitInteractive(page);
+      await expect(page.locator(".gw-phone-intro")).toHaveCount(0);
+      await expect(page.locator(".gw-bar + .gw-wall")).toHaveCount(1);
+      await expect(page.locator(".gw-wall [data-rule-link]:visible").first()).toBeInViewport();
+    });
+  }
 
   for (const [name, url] of [["gallery", wallUrl()], ["direct rule", ruleUrl("comp-1")]] as const) {
     test(`show all matches from the ${name}, without a keyboard shortcut`, async ({ page }) => {
