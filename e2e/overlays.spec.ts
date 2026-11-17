@@ -155,7 +155,7 @@ test("the peek takes 300 ms the first time and swaps at once after", async ({ pa
   const title = await card.locator(".peek-name").textContent();
 
   // A neighbour while open (about two marks down at the lens's 16px pitch): the card
-  // swaps without closing. A category icon would close it, so stay inside the run.
+  // swaps without closing.
   const second = { x: first.x, y: first.y + 24 };
   await page.evaluate(() => {
     const card = document.querySelector(".peek")!;
@@ -168,6 +168,52 @@ test("the peek takes 300 ms the first time and swaps at once after", async ({ pa
   await page.mouse.move(second.x, second.y, { steps: 4 });
   await expect(card.locator(".peek-name")).not.toHaveText(title ?? "", { timeout: 200 });
   expect(await page.evaluate(() => (window as unknown as { __closed: boolean }).__closed)).toBe(false);
+});
+
+test("a scrub across a category icon keeps the card up; resting on one closes it", async ({ page }) => {
+  await openCatalog(page, wallUrl());
+  const card = page.locator(".peek");
+  const boundary = railCategories[0].rules.length;
+  const before = await markCentre(page, boundary - 2);
+  await page.mouse.move(before.x, before.y);
+  await expect(card).toHaveAttribute("data-open", "");
+  const title = await card.locator(".peek-name").textContent();
+  await page.evaluate(() => {
+    const card = document.querySelector(".peek")!;
+    const w = window as unknown as { __closed: boolean; __crossed: boolean };
+    w.__closed = false;
+    w.__crossed = false;
+    new MutationObserver(() => {
+      if (!card.hasAttribute("data-open")) w.__closed = true;
+    }).observe(card, { attributes: true, attributeFilter: ["data-open"] });
+    // The category icon sits in a hot item of its own on the way to the next run.
+    new MutationObserver((records) => {
+      for (const record of records) {
+        const item = record.target as Element;
+        if (item.hasAttribute("data-hot") && item.querySelector(".strip-cat-mark")) w.__crossed = true;
+      }
+    }).observe(document.querySelector(".strip-col")!, { attributes: true, attributeFilter: ["data-hot"], subtree: true });
+  });
+  // Read after the lens has opened around the pointer: that is where the marks now sit.
+  const after = await markCentre(page, boundary + 1);
+  await page.mouse.move(after.x, after.y, { steps: 8 });
+  await expect(card.locator(".peek-name")).not.toHaveText(title ?? "", { timeout: 300 });
+  const scrub = await page.evaluate(() => {
+    const w = window as unknown as { __closed: boolean; __crossed: boolean };
+    return { closed: w.__closed, crossed: w.__crossed };
+  });
+  expect(scrub, "crossed the category icon without the card closing").toEqual({ closed: false, crossed: true });
+
+  // The lens moves the marks with the pointer, so a box read now is stale on arrival:
+  // walk back up from the next run, 2px at a time, until the icon is the hot item.
+  const iconHot = () => page.evaluate(() => Boolean(document.querySelector(".strip-item[data-hot] .strip-cat-mark")));
+  for (let dy = 2; dy <= 80 && !(await iconHot()); dy += 2) {
+    await page.mouse.move(after.x, after.y - dy);
+    await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  }
+  expect(await iconHot(), "resting on the category icon").toBe(true);
+  await expect(card).not.toHaveAttribute("data-open", "");
+  await expect(page.locator(".strip-label[data-cat]")).toBeVisible();
 });
 
 test("a resize below 900px during the delay opens no peek", async ({ page }) => {

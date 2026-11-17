@@ -32,6 +32,7 @@
   white-space: nowrap;
   overflow: hidden;
   cursor: pointer;
+  transition: background-color 140ms var(--ease-out-strong), color 140ms var(--ease-out-strong);
 }
 .rail-row > svg { position: absolute; left: 11px; width: 18px; height: 18px; flex: none; }
 :is(.shell[data-open], :root[data-rail="open"] .shell:not([data-rail-ready])) .rail-row { padding: 0 8px 0 39px; }
@@ -263,8 +264,10 @@
   color: var(--ax-ink-muted);
   font-variant-numeric: tabular-nums;
 }
-/* The card names the rule under the pointer; the strip's own label steps aside. */
-.shell[data-peek] .strip-label:not([data-cat]) { opacity: 0; visibility: hidden; transition: none; }
+/* The card names the rule under the pointer; the strip's own label steps aside,
+   a category's too: a scrub crossing one keeps the card up (peek.tsx), and the
+   category's name shows once the card has gone. */
+.shell[data-peek] .strip-label { opacity: 0; visibility: hidden; transition: none; }
 
 /* ── Modals: scrim, palette, shortcuts sheet ───────────────────────── */
 
@@ -495,6 +498,7 @@
   .peek[data-open][data-glide] { transition-duration: 140ms; transition-timing-function: linear; transition-property: opacity, visibility; }
   .install-pop, .strip-hint { animation-duration: 140ms; animation-timing-function: linear; }
   .keys-switch-track, .keys-switch-track::after { transition: none; }
+  .rail-row { transition: none; }
 }
 
 /* Phones: the rail is gone, and with it the peek, the hint and the popover.

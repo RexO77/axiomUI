@@ -413,9 +413,12 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
         <Rail covered={modal.kind !== null} />
         {/* Phones: the top bar. CSS shows it only in the phone layout. */}
         <PhoneBar routes={routes} menuOpen={modal.kind === "menu"} onMenu={openMenu} />
-        <main ref={sheet} id="main-content" className="shell-sheet" data-view={view} tabIndex={-1} onScroll={onScroll}>
-          {children}
-        </main>
+        {/* The sheet's query container while the rail moves it on the wall (shell.css). */}
+        <div className="shell-landing">
+          <main ref={sheet} id="main-content" className="shell-sheet" data-view={view} tabIndex={-1} onScroll={onScroll}>
+            {children}
+          </main>
+        </div>
         {/* Phones, on a rule: the strip in the thumb zone. In the server HTML everywhere (CSS hides it on wide screens), then only where it shows. */}
         {rule && (phone || !hydrated) ? <BottomStrip ruleId={rule.id} routes={routes} onContents={openMenu} /> : null}
 

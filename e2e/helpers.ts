@@ -77,7 +77,17 @@ export const sel = {
   live: '[aria-live="polite"]',
   /** "Category · n of N": the rule's place in the deck it is paged through. */
   position: ".shell-rule header p",
+  /** The rail's expand/collapse toggle, and the list it reveals. */
+  railToggle: ".shell-rail .rail-button",
+  railList: ".shell-rail .rail-list",
+  /** The collapsed rail's strip of category marks, where the list is not. */
+  railStrip: ".shell-rail .rail-region",
+  /** The first grid the wall shows. */
+  wallGrid: ".gw-section:not([hidden]) .gw-grid",
 } as const;
+
+/** Whether the sheet can be neither focused nor read: a modal makes what is around it inert, the sheet's frame with it. */
+export const sheetInert = (page: Page) => page.locator(sel.sheet).evaluate((sheet) => Boolean(sheet.closest("[inert]")));
 
 /** What a spec needs to know about the page, read in one evaluate. */
 export type CatalogState = {

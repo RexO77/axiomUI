@@ -10,7 +10,8 @@
  * Timing: the first open waits 300ms of rest; while open, another rule swaps
  * at once and the card glides to the new mark (140ms, a CSS transition on
  * `translate`, so it retargets mid-flight). It closes 150ms after the pointer
- * leaves, then stays warm for 300ms, so coming straight back opens at once.
+ * leaves or comes to rest on a category icon (a scrub across one keeps it up),
+ * then stays warm for 300ms, so coming straight back opens at once.
  *
  * Anchoring: the card's title sits level with the mark it describes. Near
  * the bottom of the window there is no room for that, so the card flips up
@@ -185,11 +186,17 @@ export function Peek({ handle }: { handle: Ref<PeekHandle> }) {
         clearTimeout(closeTimer.current);
         closeTimer.current = undefined;
         if (id === null) {
-          // On a category icon: nothing to show, but the card stays warm.
+          // On a category icon: nothing to show. A scrub crosses one in a frame or
+          // two, so the card waits as it does on leave; the next rule swaps it at once.
           clearTimeout(openTimer.current);
           openTimer.current = undefined;
           target.current = null;
-          setOpen(false);
+          if (open.current) {
+            closeTimer.current = setTimeout(() => {
+              closeTimer.current = undefined;
+              setOpen(false);
+            }, CLOSE_MS);
+          }
           return;
         }
         if (open.current || options?.instant || performance.now() < warmUntil.current) {

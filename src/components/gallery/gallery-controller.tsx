@@ -22,6 +22,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
 
+import { registerSheetResizer, settleSheet } from "@/components/shell/sheet-resize";
 import { useShell } from "@/components/shell/shell-context";
 import { collections } from "@/data/taxonomy";
 import { rules } from "@/data/ui-logic";
@@ -33,6 +34,7 @@ import { createRoutes, type GallerySide } from "@/lib/navigation/routes";
 import { readSide, SideSwitch, writeSide } from "./side-switch";
 import { Toolbar, type ChipSection } from "./toolbar";
 import { groupSectionId, shownCollection, useWall } from "./wall-context";
+import { wallResizer } from "./wall-resize";
 import "./gallery.css";
 
 /** The search follows typing once it pauses this long. */
@@ -182,6 +184,14 @@ export function GalleryController({ base, total, sections, children }: GalleryCo
   useLayoutEffect(() => {
     scroller.current = scrollerOf(root.current);
   }, []);
+  /* The rail moving the sheet's edge: the wall holds its columns and gutters on the way (wall-resize.ts). */
+  useLayoutEffect(() => {
+    const el = root.current;
+    const sheet = el?.closest<HTMLElement>(".shell-sheet");
+    if (sheet) settleSheet(sheet);
+    if (!onWall || !el) return;
+    return registerSheetResizer(wallResizer(el, () => scroller.current));
+  }, [onWall]);
   useEffect(() => {
     const sc = scroller.current;
     const el = root.current;

@@ -1,5 +1,5 @@
 import { searchRules } from "../src/lib/rule-search";
-import { awaitInteractive, awaitView, expect, openCatalog, ruleUrl, test, wallUrl } from "./helpers";
+import { awaitInteractive, awaitView, expect, openCatalog, ruleUrl, sheetInert, test, wallUrl } from "./helpers";
 
 test.describe("touch search can show the filtered gallery", () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
@@ -42,7 +42,7 @@ test.describe("touch search can show the filtered gallery", () => {
       await expect(dialog).toHaveCount(0);
       await awaitView(page, "gallery");
       await expect.poll(() => new URL(page.url()).searchParams.get("q")).toBe("contrast");
-      await expect(page.locator(".shell-sheet")).not.toHaveAttribute("inert", "");
+      await expect.poll(() => sheetInert(page)).toBe(false);
       await expect(page.locator("a[data-rule-link]:visible")).toHaveCount(count);
       await page.getByRole("button", { name: "Clear search “contrast”", exact: true }).tap();
       await expect.poll(() => new URL(page.url()).searchParams.has("q")).toBe(false);
