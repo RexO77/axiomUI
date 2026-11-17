@@ -15,9 +15,10 @@ import { expect, openCatalog, railIds, ruleUrl, sel, test, wallUrl } from "./hel
  */
 
 /** The hooks the page-side samplers read: strings only, so they cross into the page. */
-const hooks = { shell: sel.shell, sheet: sel.sheet, wallGrid: sel.wallGrid, railList: sel.railList };
+const hooks = { shell: sel.shell, sheet: sel.sheet, wallGrid: sel.wallGrid, railList: sel.railList, railStrip: sel.railStrip };
 
-type Frame = { t: number; edge: number; x: number; w: number; cols: number; list: number; moving: boolean; open: boolean; viewport: number; wall: boolean };
+/** `pad` is the wall's gutter as the sheet's container query answers it, before any pin. */
+type Frame = { t: number; edge: number; x: number; w: number; cols: number; list: number; strip: boolean; pad: string; moving: boolean; open: boolean; viewport: number; wall: boolean };
 
 /** Samples every frame for `ms` while `act` runs. `target` is the box whose geometry is read. */
 async function record(page: Page, target: string, act: () => Promise<void>, ms = 900): Promise<Frame[]> {
@@ -32,6 +33,7 @@ async function record(page: Page, target: string, act: () => Promise<void>, ms =
         const box = document.querySelector(target)?.getBoundingClientRect();
         const grid = document.querySelector(s.wallGrid);
         const list = document.querySelector(s.railList);
+        const strip = document.querySelector(s.railStrip);
         frames.push({
           t: performance.now() - t0,
           viewport: innerWidth,
@@ -41,6 +43,8 @@ async function record(page: Page, target: string, act: () => Promise<void>, ms =
           w: box?.width ?? Number.NaN,
           cols: grid ? getComputedStyle(grid).gridTemplateColumns.trim().split(/\s+/).length : 0,
           list: list ? Number(getComputedStyle(list).opacity) : 0,
+          strip: strip ? getComputedStyle(strip).visibility === "visible" : false,
+          pad: grid ? getComputedStyle(grid).getPropertyValue("--gw-pad").trim() : "",
           moving: shell.hasAttribute("data-moving"),
           open: shell.hasAttribute("data-open"),
         });
@@ -142,6 +146,38 @@ test.describe("one motion", () => {
     expectOneMotion(close, RAIL_OPEN, RAIL);
     expectListInStep(close, false);
     expect(close.at(-1)!.open, "the list leaves once the edge has covered it").toBe(false);
+  });
+
+  test("the strip waits for a close to land: it never shows through the fading list", async ({ page }) => {
+    await openCatalog(page, wallUrl());
+    const toggle = page.locator(sel.railToggle);
+    const open = await record(page, firstTile, () => toggle.click());
+    const close = await record(page, firstTile, () => toggle.click());
+    for (const frames of [open, close]) {
+      expect(frames.filter((frame) => frame.moving).length, "frames mid-move").toBeGreaterThan(2);
+      expect(frames.filter((frame) => frame.moving && frame.strip).map((frame) => Math.round(frame.t)), "strip shown mid-move").toEqual([]);
+      expect(frames.filter((frame) => frame.strip && frame.list > 0).map((frame) => Math.round(frame.t)), "strip over the list").toEqual([]);
+    }
+    expect(open.at(-1)!.strip).toBe(false);
+    expect(close.at(-1)!.strip, "the strip is back once the edge has landed").toBe(true);
+  });
+
+  test("on the wall, the sheet's queries answer for the landing width for the whole move", async ({ page }) => {
+    // 1440: the closed sheet is past the 1280px query, the open one is not, so the gutters differ.
+    await openCatalog(page, wallUrl());
+    const toggle = page.locator(sel.railToggle);
+    const open = await record(page, firstTile, () => toggle.click());
+    const close = await record(page, firstTile, () => toggle.click());
+    for (const [frames, from, to] of [[open, "32px", "24px"], [close, "24px", "32px"]] as const) {
+      expect(frames[0].pad).toBe(from);
+      const moving = frames.filter((frame) => frame.moving);
+      expect(moving.length).toBeGreaterThan(2);
+      expect(new Set(moving.map((frame) => frame.pad))).toEqual(new Set([to]));
+      expect(frames.at(-1)!.pad).toBe(to);
+    }
+    // At rest the sheet is the query container again, at the width it landed at.
+    const container = await page.locator(sel.sheet).evaluate((sheet) => ({ sheet: getComputedStyle(sheet).containerType, parent: getComputedStyle(sheet.parentElement!).containerType }));
+    expect(container).toEqual({ sheet: "inline-size", parent: "normal" });
   });
 
   test("where the column count differs, it changes on the click and holds", async ({ page }) => {

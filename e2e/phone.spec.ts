@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test";
 
 import { railCategories, railPosition } from "../src/data/taxonomy";
-import { awaitUrl, awaitView, expect, openCatalog, ruleUrl, test, wallUrl } from "./helpers";
+import { awaitUrl, awaitView, expect, openCatalog, ruleUrl, sheetInert, test, wallUrl } from "./helpers";
 
 /*
  * The phone shell: the top bar, the bottom strip and the menu. The layout is
@@ -160,7 +160,7 @@ test.describe("a phone, 390 × 844", () => {
     await expect(opener).toHaveAttribute("aria-expanded", "true");
     expect(await focused(page)).toEqual({ label: "Close menu", inMenu: true });
     // The page behind can be neither focused nor read.
-    await expect(page.locator(".shell-sheet")).toHaveAttribute("inert", "");
+    await expect.poll(() => sheetInert(page)).toBe(true);
     await expect(page.locator(sel.bar)).toHaveAttribute("inert", "");
 
     for (let i = 0; i < 30; i++) {
@@ -175,7 +175,7 @@ test.describe("a phone, 390 × 844", () => {
     await page.keyboard.press("Escape");
     await expect(menu).toHaveCount(0);
     await expect(opener).toBeFocused();
-    await expect(page.locator(".shell-sheet")).not.toHaveAttribute("inert", "");
+    await expect.poll(() => sheetInert(page)).toBe(false);
     // Esc closed the menu and nothing else.
     await awaitUrl(page, ruleUrl(RULE));
 
@@ -221,7 +221,7 @@ test.describe("a phone, 390 × 844", () => {
     await expect(page.locator(sel.menu)).toBeVisible();
     await page.setViewportSize({ width: 1440, height: 900 });
     await expect(page.locator(sel.menu)).toHaveCount(0);
-    await expect(page.locator(".shell-sheet")).not.toHaveAttribute("inert", "");
+    await expect.poll(() => sheetInert(page)).toBe(false);
     expect(await page.evaluate(() => document.activeElement?.id)).toBe("main-content");
   });
 });

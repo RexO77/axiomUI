@@ -52,6 +52,24 @@
   transition-timing-function: var(--ease-out-strong);
 }
 
+/* The sheet is the `sheet` query container, and WebKit restyles everything
+   inside a size container whenever that container's size changes, whether or
+   not any query answer does. Over the wall that is several thousand nodes,
+   about 20ms of every 16ms frame while the edge moves. So for a move on the
+   wall the container is the box around the sheet instead. It takes no part in
+   the sheet's layout (the sheet is positioned against the shell) and has the
+   width the sheet is landing at, so it resizes once, on the click, and every
+   query answers for the landing for the whole move, as the wall's own pins do
+   (wall-resize.ts). The sheet takes the container back at the width it
+   landed at, so no answer changes when the move ends. A rule page restyles
+   in a few ms, and its queries keep following the edge. */
+.shell[data-moving][data-view="gallery"] .shell-sheet { container-type: normal; }
+.shell[data-moving][data-view="gallery"] .shell-landing {
+  container: sheet / inline-size;
+  width: calc(100% - var(--shell-inset) - var(--shell-rail));
+}
+.shell[data-moving][data-view="gallery"][data-wide] .shell-landing { width: calc(100% - var(--shell-inset) - var(--shell-rail-open)); }
+
 /* ── Layers ────────────────────────────────────────────────────────── */
 
 /* The wall is its own scroller, so its position survives a rule above it.
@@ -242,8 +260,10 @@
    marks are a hundred composited layers, and fading them costs every frame
    of the move ~5ms at a 4x slower CPU.
    [data-open] keeps the list (and the labels' layout) until a close lands;
-   [data-wide] is the target, so the fades turn around with the edge. */
-.shell[data-wide] .rail-region { visibility: hidden; }
+   [data-wide] is the target, so the fades turn around with the edge. The
+   strip waits for a close to land, as the list waits for an open: it never
+   shows through the list while that fades. */
+.shell:is([data-wide], [data-moving="close"]) .rail-region { visibility: hidden; }
 .shell-rail .rail-list { opacity: 0; }
 .shell[data-wide] .shell-rail .rail-list { opacity: 1; }
 .shell[data-rail-ready]:not([data-wide]) .shell-rail :is(.rail-brand-name, .rail-button-label, .rail-row-label) { opacity: 0; }

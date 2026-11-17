@@ -84,9 +84,13 @@ export function Rail({ covered = false }: { covered?: boolean }) {
       return;
     }
     const generation = session.generation;
-    root.dataset.moving = next ? "open" : "close";
-    if (next) expand(true);
-    const release = moveSheet(element, () => root.toggleAttribute("data-wide", next), next ? RAIL_OPEN : RAIL, {
+    // Written together, after the move has read the page: one restyle on the click, not one per attribute.
+    const start = () => {
+      root.dataset.moving = next ? "open" : "close";
+      root.toggleAttribute("data-wide", next);
+      if (next) expand(true);
+    };
+    const release = moveSheet(element, start, next ? RAIL_OPEN : RAIL, {
       duration: next ? OPEN_MS : CLOSE_MS,
       easing: next ? "var(--ease-drawer)" : "var(--ease-out-strong)",
     });
