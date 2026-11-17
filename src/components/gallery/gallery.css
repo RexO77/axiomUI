@@ -15,6 +15,7 @@
   --gw-bar-h: 52px;
   --gw-section-gap: 48px;
   --gw-frame-h: 224px;
+  --safe-bottom: env(safe-area-inset-bottom);
 
   position: relative;
   min-height: 100%;
@@ -518,11 +519,11 @@
      through it) with the raised thumb, the desktop recipe at thumb size. */
   .gw-float {
     position: sticky;
-    bottom: calc(16px + env(safe-area-inset-bottom));
+    bottom: calc(16px + var(--safe-bottom));
     z-index: 3;
     display: flex;
     justify-content: center;
-    padding: 16px 0 calc(16px + env(safe-area-inset-bottom));
+    padding: 16px 0;
     pointer-events: none;
   }
   .gw-float > * { pointer-events: auto; }

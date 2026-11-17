@@ -12,7 +12,7 @@
  *   relevance order.
  * - A preview beside the list follows the active row, a beat behind it, so
  *   arrowing through rows never waits on a still.
- * - Enter opens the rule; Shift+Enter shows the query's matches on the wall.
+ * - Enter opens the rule; Shift+Enter or Show all matches filters the wall.
  *   While an input method is composing, Enter, the arrows and PageUp/PageDown
  *   belong to the composition.
  *
@@ -202,6 +202,13 @@ export function Palette({ session, currentId, onClose, onOpen, onSearch }: Palet
             Cancel
           </button>
         </div>
+        {q && count > 0 ? (
+          <div className="palette-search-actions">
+            <button type="button" className="palette-show-matches" onClick={() => onSearch(q)}>
+              Show all {count} {count === 1 ? "match" : "matches"}
+            </button>
+          </div>
+        ) : null}
         <div className="palette-body" data-empty={count ? undefined : ""}>
           <div ref={list} id={`${uid}-list`} role="listbox" aria-label="Rules" className="palette-list">
             {groups.map((group) => (

@@ -272,6 +272,18 @@ test.describe("a phone held sideways, 844 × 390", () => {
     for (let x = run.x + 4; x <= run.x + run.width / 2; x += 20) await page.mouse.move(x, y);
     await expect(page.locator(sel.rise)).toHaveAttribute("data-open", "");
     await page.waitForTimeout(250);
+    const panes = page.locator(`${sel.rise} .still-pane`);
+    await expect(panes).toHaveCount(2);
+    for (const pane of await panes.all()) {
+      await expect(pane).toBeVisible();
+      const bounds = await pane.boundingBox();
+      if (!bounds) throw new Error("The scrub preview should have a box");
+      expect(bounds.height).toBeGreaterThan(100);
+      await expect(pane.locator(".still")).toBeVisible();
+      expect(await pane.locator(".still").evaluate((element) => element.childElementCount)).toBeGreaterThan(0);
+      expect(bounds.y).toBeGreaterThanOrEqual(0);
+      expect(bounds.y + bounds.height).toBeLessThanOrEqual(run.y);
+    }
     const card = await box(page, sel.rise);
     expect(card.y).toBeGreaterThanOrEqual(0);
     expect(card.y + card.height).toBeLessThanOrEqual(run.y);

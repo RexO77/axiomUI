@@ -194,6 +194,7 @@
   .cmp-tally .rule-hint-reduced { display: inline; }
 }
 
+/* Landscape phones keep panes side by side on purpose; only narrow containers stack. */
 @container (max-width: 640px) {
   .cmp-canvas:not([data-flip]) { grid-template-columns: minmax(0, 1fr); }
   .cmp-canvas:not([data-flip]) .cmp-pane + .cmp-pane { box-shadow: inset 0 1px 0 var(--ax-line); }
