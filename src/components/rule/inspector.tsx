@@ -22,7 +22,7 @@
  * reader with no script sees all four sections.
  */
 
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "@/components/ui/icons";
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 
 import { useShell } from "@/components/shell/shell-context";

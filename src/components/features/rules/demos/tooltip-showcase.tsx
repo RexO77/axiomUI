@@ -7,7 +7,7 @@ import {
     useRef,
     useState,
 } from "react";
-import { ClipboardPaste, Copy, Scissors } from "lucide-react";
+import { ClipboardPaste, Copy, Scissors } from "@/components/ui/icons";
 
 import { cn } from "@/lib/utils";
 import { PaneChrome, ShowcaseControls } from "@/components/features/rules/demos/showcase-chrome";

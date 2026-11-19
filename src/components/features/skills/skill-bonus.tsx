@@ -5,7 +5,7 @@ import type { CSSProperties, MouseEvent, ReactNode, TransitionEvent } from "reac
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
-import { AlertCircle, ArrowLeft, ArrowRight, ArrowUpRight, Check, Copy, Download, LoaderCircle, X } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, ArrowUpRight, Check, Copy, Download, LoaderCircle, X } from "@/components/ui/icons";
 
 import {
   skillCatalog,

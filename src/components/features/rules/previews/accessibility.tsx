@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { CircleAlert } from "lucide-react";
+import { CircleAlert } from "@/components/ui/icons";
 
 import type { DemoProps, PreviewRenderer } from "@/components/features/rules/preview-primitives";
 import { Annotation, ANNOTATION_INK, PreviewFrame } from "@/components/features/rules/preview-primitives";

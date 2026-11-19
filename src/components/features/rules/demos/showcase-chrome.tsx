@@ -2,7 +2,7 @@
 "use client";
 
 import { createContext, Fragment, useContext, type ReactNode, type RefObject } from "react";
-import { Play } from "lucide-react";
+import { Play } from "@/components/ui/icons";
 
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "@/lib/media";

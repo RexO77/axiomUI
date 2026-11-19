@@ -11,7 +11,7 @@ import {
     Trash2,
     X,
     Zap,
-} from "lucide-react";
+} from "@/components/ui/icons";
 
 import {
     Annotation,

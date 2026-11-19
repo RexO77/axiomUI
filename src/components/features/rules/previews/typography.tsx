@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { CreditCard, FileText, History, Settings, ShieldAlert, Users } from "lucide-react";
+import { CreditCard, FileText, History, Settings, ShieldAlert, Users } from "@/components/ui/icons";
 
 import {
     Annotation,

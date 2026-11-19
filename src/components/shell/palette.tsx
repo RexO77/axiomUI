@@ -22,7 +22,7 @@
  * button in place of the key hints.
  */
 
-import { CornerDownLeft, Search } from "lucide-react";
+import { CornerDownLeft, Search } from "@/components/ui/icons";
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 
 import { StillPair } from "@/components/rule/still";

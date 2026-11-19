@@ -9,12 +9,12 @@ import {
   Palette,
   TextCursorInput,
   Type,
-  type LucideIcon,
-} from "lucide-react";
+  type AppIcon,
+} from "@/components/ui/icons";
 
 import { cn } from "@/lib/utils";
 
-const categoryIcons: Record<string, LucideIcon> = {
+const categoryIcons: Record<string, AppIcon> = {
   typography: Type,
   layout: LayoutGrid,
   color: Palette,

@@ -15,7 +15,7 @@
  *   the shell sets document.title.
  */
 
-import { ChevronLeft, ChevronRight, PanelRightClose, PanelRightOpen, Search, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, PanelRightClose, PanelRightOpen, Search, X } from "@/components/ui/icons";
 import type { MouseEvent } from "react";
 
 import { useShell } from "@/components/shell/shell-context";

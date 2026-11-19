@@ -249,6 +249,12 @@
    ========================================================================== */
 
 @layer base {
+  /* Hugeicons sets strokes on each path. Let icon and button styles control the whole glyph. */
+  [data-axiom-icon] > [stroke] {
+    stroke: inherit;
+    stroke-width: inherit;
+  }
+
   html {
     background-color: var(--ax-canvas);
     color-scheme: light;

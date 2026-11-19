@@ -13,7 +13,7 @@
  * the label stays in the name and the tooltip shows it.
  */
 
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun } from "@/components/ui/icons";
 import { flushSync } from "react-dom";
 
 import { useTheme } from "@/components/providers/theme-provider";

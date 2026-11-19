@@ -40,7 +40,7 @@
  * the run shows (shell.css).
  */
 
-import { ChevronLeft, ChevronRight, ChevronsUpDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsUpDown } from "@/components/ui/icons";
 import dynamic from "next/dynamic";
 import {
   memo,

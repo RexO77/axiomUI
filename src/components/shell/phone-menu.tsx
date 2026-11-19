@@ -15,7 +15,7 @@
  * A keyboard close and reduced motion are 0ms.
  */
 
-import { X } from "lucide-react";
+import { X } from "@/components/ui/icons";
 import { useEffect, useRef, type ReactNode } from "react";
 
 import { AxiomLogo } from "@/components/ui/axiom-logo";

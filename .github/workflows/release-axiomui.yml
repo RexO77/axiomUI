@@ -28,6 +28,8 @@ jobs:
           cache: npm
 
       - name: Install
+        env:
+          HUGEICONS_KEY: ${{ secrets.HUGEICONS_KEY }}
         run: npm ci
 
       - name: Lint
