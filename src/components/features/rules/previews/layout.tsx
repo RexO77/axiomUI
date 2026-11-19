@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { Bell, Play } from "lucide-react";
+import { Bell, Play } from "@/components/ui/icons";
 
 import {
     Annotation,

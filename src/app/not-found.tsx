@@ -1,7 +1,7 @@
 // design-system: strict
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "@/components/ui/icons";
 
 import { AxiomLogo } from "@/components/ui/axiom-logo";
 import { Button } from "@/components/ui/button";

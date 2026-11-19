@@ -13,7 +13,7 @@
  * opened the palette.
  */
 
-import { X } from "lucide-react";
+import { X } from "@/components/ui/icons";
 import { useId, useRef } from "react";
 
 import { Kbd } from "@/components/ui/kbd";

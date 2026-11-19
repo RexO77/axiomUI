@@ -7,7 +7,7 @@ import {
     CircleAlert,
     CircleCheck,
     CreditCard,
-} from "lucide-react";
+} from "@/components/ui/icons";
 
 import {
     Annotation,

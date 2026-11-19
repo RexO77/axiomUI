@@ -16,7 +16,7 @@
 // a page turn. Mode and zoom are stored preferences (use-compare.ts).
 
 import { useId, useLayoutEffect, useRef } from "react";
-import { Columns2, SquareStack } from "lucide-react";
+import { Columns2, SquareStack } from "@/components/ui/icons";
 
 import type { Rule } from "@/data/ui-logic";
 import { RulePreview } from "@/components/features/rules/rule-preview";

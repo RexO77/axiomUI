@@ -14,7 +14,7 @@
  *   from the data, never a literal.
  */
 
-import { ArrowRight } from "lucide-react";
+import { ArrowRight } from "@/components/ui/icons";
 import { useId, type ReactNode } from "react";
 
 import { useShell } from "@/components/shell/shell-context";

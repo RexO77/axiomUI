@@ -16,7 +16,7 @@
 // window. Reduced-motion text is always in the server HTML; compare.css shows it.
 
 import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
-import { Play, RotateCcw } from "lucide-react";
+import { Play, RotateCcw } from "@/components/ui/icons";
 
 import { paneReadout, showcaseSpecs, type PaneSpec, type ShowcaseSpec } from "@/components/features/rules/demos/showcase-specs";
 import { rules, type Rule } from "@/data/ui-logic";

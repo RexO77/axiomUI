@@ -8,7 +8,7 @@ import {
     useState,
     type KeyboardEvent,
 } from "react";
-import { Play } from "lucide-react";
+import { Play } from "@/components/ui/icons";
 
 import { cn } from "@/lib/utils";
 import { useCanHover, useReducedMotion } from "@/lib/media";

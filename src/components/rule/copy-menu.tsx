@@ -16,7 +16,7 @@
  *   J/K and ←/→ never page the rule from inside it.
  */
 
-import { AlertCircle, Check, ChevronDown, Copy, FileText, Link2 } from "lucide-react";
+import { AlertCircle, Check, ChevronDown, Copy, FileText, Link2 } from "@/components/ui/icons";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 
 import type { Rule } from "@/data/ui-logic";

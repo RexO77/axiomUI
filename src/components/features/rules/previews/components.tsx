@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { Archive, ArrowDown, FileText, Share2, Trash2, X } from "lucide-react";
+import { Archive, ArrowDown, FileText, Share2, Trash2, X } from "@/components/ui/icons";
 
 import {
     Annotation,

@@ -15,7 +15,7 @@
  *   and replayed on hover or keyboard focus.
  */
 
-import { Play } from "lucide-react";
+import { Play } from "@/components/ui/icons";
 
 import { showcaseSpecs } from "@/components/features/rules/demos/showcase-specs";
 import type { Variant } from "@/components/features/rules/preview-primitives";

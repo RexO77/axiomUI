@@ -12,7 +12,7 @@
  * and warm the rule's prose. Preview requests do nothing while the handle is null.
  */
 
-import { ChevronRight } from "lucide-react";
+import { ChevronRight } from "@/components/ui/icons";
 import { useId, type FocusEvent, type MouseEvent, type PointerEvent } from "react";
 
 import { useShell } from "@/components/shell/shell-context";

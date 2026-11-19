@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { CircleCheck, CircleX } from "@/components/ui/icons";
 import { AxiomLogo } from "@/components/ui/axiom-logo";
 import { railCategory, railCategoryOf } from "@/data/taxonomy";
 import { rules } from "@/data/ui-logic";
@@ -99,27 +100,9 @@ const MONO = "'IBM Plex Mono', monospace";
 
 // ── Shared pieces ───────────────────────────────────────────────────
 
-/** lucide CheckCircle2 / XCircle, matching the rule cards' label chrome. */
 function VerdictIcon({ kind }: { kind: "do" | "dont" }) {
-  return (
-    <svg
-      width={23}
-      height={23}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke={kind === "do" ? EMERALD_ICON : ROSE_ICON}
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="12" r="10" />
-      {kind === "do" ? (
-        <path d="m9 12 2 2 4-4" />
-      ) : (
-        <path d="m15 9-6 6M9 9l6 6" />
-      )}
-    </svg>
-  );
+  const Icon = kind === "do" ? CircleCheck : CircleX;
+  return <Icon size={23} color={kind === "do" ? EMERALD_ICON : ROSE_ICON} strokeWidth={2} />;
 }
 
 /**

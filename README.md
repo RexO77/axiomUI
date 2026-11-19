@@ -88,6 +88,8 @@ Use the same rules outside the browser:
 
 The web app uses Next.js, React, TypeScript and Tailwind CSS. Use **Node.js 22.18 or later** for the repository; the standalone installer's lower runtime requirement is separate.
 
+Website builds use Hugeicons Pro Stroke Rounded. Set `HUGEICONS_KEY` in the install environment before running `npm ci`. For the tagged release workflow, configure the same name as a GitHub Actions secret. The standalone skills installer has no icon dependency.
+
 ```sh
 git clone https://github.com/RexO77/axiomUI.git
 cd axiomUI

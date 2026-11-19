@@ -9,7 +9,7 @@
  * from events, never during render, so hydration never disagrees with it.
  */
 
-import { CircleCheck, CircleX } from "lucide-react";
+import { CircleCheck, CircleX } from "@/components/ui/icons";
 import { useSyncExternalStore } from "react";
 
 import { Kbd } from "@/components/ui/kbd";

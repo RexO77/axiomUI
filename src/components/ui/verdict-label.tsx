@@ -1,5 +1,5 @@
 // design-system: strict
-import { CircleCheck, CircleX } from "lucide-react";
+import { CircleCheck, CircleX } from "@/components/ui/icons";
 import { VERDICT_LABEL, type Verdict } from "@/lib/verdict";
 import { cn } from "@/lib/utils";
 

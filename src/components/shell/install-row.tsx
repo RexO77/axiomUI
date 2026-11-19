@@ -26,7 +26,7 @@
  */
 
 import dynamic from "next/dynamic";
-import { ArrowRight, Check, Copy, SquareTerminal } from "lucide-react";
+import { ArrowRight, Check, Copy, SquareTerminal } from "@/components/ui/icons";
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent, type RefObject } from "react";
 
 import { Tooltip } from "@/components/ui/tooltip";

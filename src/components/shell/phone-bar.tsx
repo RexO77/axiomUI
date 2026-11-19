@@ -16,7 +16,7 @@
  * scrolling up or reaching the end brings it back.
  */
 
-import { ChevronLeft, Menu, Search } from "lucide-react";
+import { ChevronLeft, Menu, Search } from "@/components/ui/icons";
 import { useCallback, useEffect, useRef, type MouseEvent, type RefObject } from "react";
 
 import { collections, railCategory, railOrder } from "@/data/taxonomy";

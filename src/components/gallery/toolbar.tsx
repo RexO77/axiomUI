@@ -15,7 +15,7 @@
  * active category, and passes them in.
  */
 
-import { CornerDownRight, Search, X } from "lucide-react";
+import { CornerDownRight, Search, X } from "@/components/ui/icons";
 import type { KeyboardEvent, RefObject } from "react";
 
 import { CategoryIcon } from "@/components/ui/category-icon";

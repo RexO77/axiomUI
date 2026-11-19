@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
-import { Archive, CheckCircle2, ChevronDown, FileText, Inbox, Moon, Pencil } from "lucide-react";
+import { Archive, CheckCircle2, ChevronDown, FileText, Inbox, Moon, Pencil } from "@/components/ui/icons";
 
 import { cn } from "@/lib/utils";
 import { MiniButton } from "@/components/features/rules/preview-primitives";
