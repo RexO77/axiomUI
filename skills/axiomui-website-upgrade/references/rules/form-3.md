@@ -1,32 +1,34 @@
-# Mark optional, not required
+# Make required and optional choices clear
 
 - ID: form-3
 - Category: Forms & inputs
 - Tags: Labels, Clarity
 - URL: https://axiomui.nischal.fyi/rules/form-3
 
-If 90% of fields are required, don't put red asterisks everywhere. Just mark the exceptions as (Optional).
+When most questions are required, state that convention and mark the optional exceptions in words. Keep the visible instructions and the form’s actual validation in agreement.
 
 - Do: Full name · Email · Phone (Optional)
 - Don't: Full name * · Email * · Phone *
 
 ## Why it works
 
-Marking every field with a red asterisk adds a decoding step to each row: the eye has to check the symbol, recall what it means, then read the label. When 90% of fields share that state, the asterisk stops carrying information and just becomes visual noise the user has to filter out. Flagging only the exceptions, like Phone (Optional), cuts the number of symbols to parse to almost zero.
+“Phone (optional)” answers a practical question before someone looks up their number. An asterisk can also communicate a requirement when its meaning is explained before the form and exposed to assistive technology.
+
+- [W3C WAI · Form instructions](https://www.w3.org/WAI/tutorials/forms/instructions/)
+- [GOV.UK · Question pages](https://design-system.service.gov.uk/patterns/question-pages/)
 
 ## What breaks
 
-A ten-field form shows nine asterisks and users start ignoring them entirely, so the one truly optional field gets filled in anyway, adding friction the form was trying to avoid.
+Marking Phone as required while the service accepts an empty value invites unnecessary disclosure. Leaving a truly required field unmarked under an unclear convention produces avoidable errors at submission.
 
 ## How to apply it
 
-1. Label optional fields directly, e.g. Phone (Optional), and leave required fields unmarked.
-2. Remove asterisks from Full name, Email, and any other required field.
-3. Only introduce a required marker if optional fields outnumber required ones.
-4. Scan the form for asterisk density before shipping; more than one or two is a signal to invert the pattern.
+1. Ask only for information the task needs.
+2. State the marking convention before the first field and label exceptions consistently.
+3. Set native required semantics on required controls and verify the server enforces the same contract.
 
 ## Review questions
 
-1. Are optional fields the only ones carrying an explicit marker?
-2. Is the form free of asterisks on the majority of required fields?
-3. Can a user tell which fields are optional without reading every label?
+1. Can someone tell which questions may be skipped?
+2. Do announced and visual requirements agree?
+3. Will the service accept a blank optional answer?

@@ -5,28 +5,29 @@
 - Tags: Wrapping, Headings
 - URL: https://axiomui.nischal.fyi/rules/typo-12
 
-Short headings should use balanced wrapping so line breaks feel intentional instead of leaving a single orphaned word.
+Try balanced wrapping when a short multiline heading ends with an isolated word. Read the resulting phrases at several widths before making it the heading default.
 
 - Do: h1, h2, h3 { text-wrap: balance }
 - Don't: h1, h2, h3 { text-wrap: wrap }
 
 ## Why it works
 
-Default browser wrapping breaks a heading purely on available width, which often strands a single word alone on the last line. text-wrap: balance redistributes words across all lines so each one is closer to equal length, producing breaks that look chosen rather than accidental, the same instinct a designer applies manually in Figma.
+The 19ch sample lets the browser choose two more even lines. The same setting on a different heading may move a name, number, or modifier away from the words it belongs with. Line shapes and meaning both deserve a check.
+
+- [CSS Text · Wrapping styles](https://www.w3.org/TR/css-text-4/#text-wrap-style)
 
 ## What breaks
 
-A two-line heading wraps to three words then one lonely orphaned word, and that ragged, unbalanced shape reads as unpolished even though the copy itself is fine.
+Hard-coded breaks fitted to one title can fragment a translation or waste an entire line on a smaller screen. A balanced arrangement can also look awkward when its break cuts across a phrase.
 
 ## How to apply it
 
-1. Apply text-wrap: balance to h1, h2, and h3 elements.
-2. Rely on it instead of manually inserting line breaks for short headings.
-3. Skip it on long, multi-sentence headings where the browser limit kicks in anyway.
-4. Check every heading at multiple viewport widths, since balance recalculates per width.
+1. Compare natural and balanced breaks in the actual heading width.
+2. Review short, long, and translated headings.
+3. Keep natural wrapping when it already preserves the phrase.
 
 ## Review questions
 
-1. Do short headings avoid leaving a single orphaned word on the last line?
-2. Is text-wrap: balance applied to h1/h2/h3 elements?
-3. Do heading line breaks look intentional rather than accidental?
+1. Does the title read naturally across the break?
+2. How does the longest translated heading wrap?
+3. Does the layout still work with ordinary wrapping?

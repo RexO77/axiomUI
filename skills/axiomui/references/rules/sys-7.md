@@ -1,32 +1,33 @@
-# Show progress for multi-step
+# Orient people in a multi-step flow
 
 - ID: sys-7
 - Category: System & logic
 - Tags: Guidance, Feedback
 - URL: https://axiomui.nischal.fyi/rules/sys-7
 
-If a flow runs three or more steps, show where the user is in it. An unbounded flow gives them no way to decide whether to start now or come back later.
+For a long, predictable sequence, show the current stage and the work ahead. Use stage names without a fixed total when answers can change which steps appear.
 
 - Do: Step 2 of 4
 - Don't: No progress indicator
 
 ## Why it works
 
-Without a denominator a flow has no visible end, so every screen could be the second of five or the second of twenty. Step 2 of 4 supplies that denominator, and the goal-gradient effect takes it from there: effort rises as the remaining distance shrinks, which is why abandonment concentrates in the early steps of flows that feel unbounded.
+“Step 2 of 4” is useful in a fixed sequence because the denominator is credible. In a branching application the same answer could add dependents, documents or eligibility questions, making a confident total misleading.
+
+- [USWDS · Step indicators](https://designsystem.digital.gov/components/step-indicator/)
 
 ## What breaks
 
-A five-screen onboarding with no counter loses people at screen two, because from inside screen two there is no way to tell whether three more are coming or thirteen.
+A progress bar that moves backward after a new section appears can make completing an answer feel like losing progress. Counting every field as a step can also exaggerate the remaining effort.
 
 ## How to apply it
 
-1. Show a Step 2 of 4 counter on any flow of three or more steps.
-2. Fix the total up front and never let it grow mid-flow; a moving denominator is worse than none.
-3. Let users step back into completed steps, and keep their entries when they do.
-4. Skip the counter below three steps, where it costs more attention than it returns.
+1. Use the terms people recognize for major stages.
+2. Show a reliable total only when the route is known.
+3. Preserve completed answers when users review or return to an earlier stage.
 
 ## Review questions
 
-1. Does a flow with three or more steps show a current step and total count?
-2. Does the total number of steps stay fixed as the user progresses?
-3. Can the user tell how much is left at every point in the flow?
+1. Can the person identify the current task?
+2. Does the stated total remain accurate on each branch?
+3. Can they review an earlier answer without losing later work?

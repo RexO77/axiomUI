@@ -107,8 +107,8 @@ describe("local catalog memory", () => {
     expect(store.getSnapshot()).toMatchObject({ last: null, visited: [] });
   });
 
-  it("caps visited at the catalog's 105 rules, keeping the newest", () => {
-    expect(VISITED_LIMIT).toBe(105);
+  it("caps visited at the catalog's 108 rules, keeping the newest", () => {
+    expect(VISITED_LIMIT).toBe(108);
     expect(rules).toHaveLength(VISITED_LIMIT);
     const all = rules.map((rule) => rule.id);
     const padded = [...all, ...all.map((id) => `${id}0`), "extra-1"];

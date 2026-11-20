@@ -1,32 +1,34 @@
-# Truncation strategy
+# Preserve meaning when text overflows
 
 - ID: typo-10
 - Category: Typography & text
 - Tags: Wrapping, Responsive
 - URL: https://axiomui.nischal.fyi/rules/typo-10
 
-Long text needs a plan: truncate with ellipsis, wrap, or fade. Never let text overflow or break layout.
+Let meaningful text wrap when space permits. In a compact row, an ellipsis can protect neighboring controls if the reader can still obtain the full value before acting.
 
-- Do: text-ellipsis overflow-hidden
+- Do: truncate (single-line ellipsis)
 - Don't: overflow-visible, no truncation
 
 ## Why it works
 
-Layout containers have fixed dimensions, but real content, names, filenames, descriptions, is unbounded in length, so every text container needs an explicit overflow plan. Ellipsis truncation (text-ellipsis, overflow-hidden) signals more exists while keeping the layout grid intact, unlike overflow that pushes neighboring elements around.
+A file list must accommodate a long name and a size column in the same row. Ellipsis preserves the column boundary while indicating omitted text. The omitted part may include the version or extension that distinguishes two files.
+
+- [CSS Overflow · Text overflow and ellipsis](https://www.w3.org/TR/css-overflow-3/#text-overflow)
+- [WCAG 2.2 · Reflow](https://www.w3.org/WAI/WCAG22/Understanding/reflow.html)
 
 ## What breaks
 
-An unhandled long filename or title overflows its card, pushing adjacent buttons off-screen or breaking the row’s alignment, and the layout looks broken rather than merely full.
+A row of identically shortened filenames can make choosing a file guesswork. A hover-only title leaves people on touchscreens without a way to resolve the ambiguity.
 
 ## How to apply it
 
-1. Apply text-ellipsis and overflow-hidden to any container with variable-length text.
-2. Never let text overflow and break surrounding layout.
-3. Choose wrap or fade instead of ellipsis where truncation would hide meaning, like file extensions.
-4. Test every text container with the longest realistic string, not placeholder text.
+1. Try wrapping first for instructions and error messages.
+2. For a single-line filename, give its flex item room to shrink and apply the truncate utility.
+3. Provide access to the full name through a details view or another keyboard- and touch-operable action.
 
 ## Review questions
 
-1. Does long text truncate with an ellipsis instead of overflowing?
-2. Does the layout stay intact when text content is unusually long?
-3. Was truncation tested with a realistic worst-case string, not just short placeholders?
+1. Can two files with the same prefix still be distinguished?
+2. Can keyboard and touch users reveal the complete value?
+3. Do the size and actions stay accessible at narrow widths?

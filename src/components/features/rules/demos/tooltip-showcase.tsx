@@ -108,7 +108,10 @@ export function TooltipToolbarShowcase() {
                 onPointerLeave={(e) => {
                     if (e.pointerType !== "touch") setHoverIndex(toolIndex(document.activeElement));
                 }}
-                onFocus={(e) => setHoverIndex(toolIndex(e.target))}
+                onFocus={(e) => {
+                    if (e.target.matches(":focus-visible")) markOpened();
+                    setHoverIndex(toolIndex(e.target));
+                }}
                 onBlur={(e) => setHoverIndex(toolIndex(e.relatedTarget))}
                 className="grid grid-cols-1 gap-3 @md:grid-cols-2"
                 style={{ touchAction: "manipulation" }}
@@ -132,7 +135,7 @@ export function TooltipToolbarShowcase() {
             </div>
             <ShowcaseControls
                 hints={[
-                    "Hover or tab through Cut, Copy and Paste. The Do toolbar waits once, then shows each tooltip immediately.",
+                    "Hover across Cut, Copy and Paste to compare delays. In the Do toolbar, keyboard focus reveals the shortcut immediately.",
                 ]}
                 reducedNote="Reduced motion: the tooltips appear without their fade. The waits are the same."
             />
@@ -180,6 +183,7 @@ function ToolbarPane({
                 const reveal = () => {
                     tip.style.transition = `opacity ${FADE_MS}ms var(--ease-out-strong)`;
                     tip.style.opacity = "1";
+                    tip.style.pointerEvents = "auto";
                     visible.current[i] = true;
                     onOpened();
                 };
@@ -188,6 +192,7 @@ function ToolbarPane({
             } else if (visible.current[i]) {
                 tip.style.transition = `opacity ${FADE_MS}ms var(--ease-out-strong)`;
                 tip.style.opacity = "0";
+                tip.style.pointerEvents = "none";
                 visible.current[i] = false;
             }
         });
@@ -212,10 +217,11 @@ function ToolbarPane({
                             <div key={label} className="relative flex flex-col items-center">
                                 <div
                                     aria-hidden="true"
+                                    data-tool-index={i}
                                     ref={(el) => {
                                         tipRefs.current[i] = el;
                                     }}
-                                    className="pointer-events-none absolute bottom-full mb-1.5 whitespace-nowrap rounded-md bg-neutral-900 px-2 py-1 text-[10px] font-medium text-white shadow-md dark:bg-neutral-100 dark:text-neutral-900"
+                                    className="pointer-events-none absolute bottom-full mb-1.5 whitespace-nowrap rounded-md bg-neutral-900 px-2 py-1 text-[10px] font-medium text-white shadow-md after:absolute after:inset-x-0 after:top-full after:h-1.5 dark:bg-neutral-100 dark:text-neutral-900"
                                     style={{ opacity: 0 }}
                                 >
                                     {label}{" "}

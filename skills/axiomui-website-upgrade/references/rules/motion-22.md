@@ -1,32 +1,34 @@
-# Use WAAPI for programmatic motion
+# Use a playback controller for programmatic animation
 
 - ID: motion-22
 - Category: Motion & interaction
 - Tags: Animation API, Performance
 - URL: https://axiomui.nischal.fyi/rules/motion-22
 
-When animation needs JavaScript control, the Web Animations API gives runtime control while preserving CSS-level performance.
+Use element.animate() when code needs to start, pause or reverse a known sequence. Let the browser interpolate between keyframes.
 
-- Do: element.animate transform/opacity
-- Don't: setInterval layout animation
+- Do: element.animate() on transform
+- Don't: setInterval transform every 80ms
 
 ## Why it works
 
-The difference is who authors the frames. element.animate() hands the browser one declaration — keyframes, duration, easing — and the compositor interpolates every frame from it, at whatever rate the display actually refreshes, without JavaScript running again. setInterval asks the main thread to author each position by hand, on a period that has no relationship to the frame budget, so positions land twice or not at all and smooth travel collapses into a visible staircase. JavaScript still gets its runtime control either way: it decides when to play, reverse, or retarget, then hands the interpolation back.
+A timer scheduled every 80ms can send only about twelve or thirteen position updates a second, even when the display can present more. The Web Animations API accepts the start and end transforms together and returns a controller. It can keep playback aligned with the animation timeline without per-frame script writes.
+
+- [W3C · Web Animations timing and playback](https://www.w3.org/TR/web-animations-1/)
+- [web.dev · Animation performance and profiling](https://web.dev/articles/animations-guide)
 
 ## What breaks
 
-A programmatic animation is built with setInterval adjusting a layout property like top or width, causing forced synchronous layout recalculation every frame and visible jank under any load.
+When a component unmounts or a later action supersedes the first, an old completion callback can restore the wrong end state. Choosing an animation API alone does not resolve ownership.
 
 ## How to apply it
 
-1. Drive programmatic motion with element.animate() targeting transform and opacity.
-2. Never reach for setInterval to animate a layout-affecting property.
-3. Use the returned Animation object’s play, pause, and reverse methods for runtime control.
-4. Chain or update keyframes only after the values needed are actually known.
+1. Store the Animation handle while the operation is active.
+2. Handle cancellation separately from successful completion.
+3. Profile the chosen properties and use per-frame scripting only when the state really depends on live input.
 
 ## Review questions
 
-1. Does the programmatic animation stay smooth when triggered by dynamic runtime data?
-2. Is the animation built with the Web Animations API rather than setInterval or setTimeout loops?
-3. Are only transform and opacity being animated, not width, top, or other layout properties?
+1. Can playback reverse or pause without creating another competing animation?
+2. What state remains after cancellation?
+3. Is a coarse timer visibly stepping through an otherwise continuous movement?

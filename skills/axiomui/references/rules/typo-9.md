@@ -1,32 +1,33 @@
-# Limit font weights
+# Assign font weights by role
 
 - ID: typo-9
 - Category: Typography & text
 - Tags: Hierarchy, Consistency
 - URL: https://axiomui.nischal.fyi/rules/typo-9
 
-Use at most two weights per typeface (Regular + Semibold). Every extra weight shrinks the step between levels, until nothing reads as clearly dominant.
+Use a small set of weights with named purposes. Regular and semibold can distinguish the body and heading in a settings card. Add another weight only when the distinction remains visible at the intended size.
 
 - Do: Regular + Semibold
 - Don't: Regular + Medium + Semibold + Bold
 
 ## Why it works
 
-Hierarchy works by contrast: two weights, say Regular and Semibold, create one unambiguous distinction between normal and emphasized text. Adding Light, Medium, and Bold into the same interface gives every weight a neighbor close enough to blur into it, so the contrast that signals importance disappears.
+In the digest card, a bold metadata line competes with the title although the metadata is less important. Four weights can work across a product. In this small card the problem is where the emphasis lands.
+
+- [IBM Carbon · Type sets](https://www.carbondesignsystem.com/building-blocks/foundations/typography/type-sets)
 
 ## What breaks
 
-With five weights in play, a Medium label and a Regular label sit close enough in visual weight that users can’t tell which one is meant to stand out, and hierarchy collapses across the screen.
+A different weight on every line can make incidental details look like actions or headings. A font that lacks a requested weight can make two nominally distinct roles render alike.
 
 ## How to apply it
 
-1. Restrict a typeface to two weights: Regular and Semibold.
-2. Never introduce Light, Medium, and Bold alongside them.
-3. Reassign any Medium-weight text to either Regular or Semibold.
-4. Audit a full screen for weight count before adding a new one.
+1. Map weights to roles such as heading, body, and emphasis.
+2. Compare those roles together using the loaded font at actual size.
+3. Where two weights look alike, try spacing or a clearer level of type.
 
 ## Review questions
 
-1. Does the interface use at most two font weights?
-2. Is it obvious which text is emphasized versus normal at a glance?
-3. Are there any Light or Medium weights that could collapse into Regular?
+1. Which text should the reader encounter first?
+2. Does incidental metadata compete with the heading?
+3. Do adjacent weights remain distinct in the loaded font?

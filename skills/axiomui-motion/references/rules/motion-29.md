@@ -1,32 +1,33 @@
-# Skip default load animation
+# Show the initial interface in its ready state
 
 - ID: motion-29
 - Category: Motion & interaction
 - Tags: Entry, Perceived performance
 - URL: https://axiomui.nischal.fyi/rules/motion-29
 
-Default-state UI should not replay entrance motion on the first render. Save enter animations for intentional changes after the page is interactive.
+Render controls that are already available in their usable state. Reserve an entrance for a later change the user needs to notice.
 
 - Do: AnimatePresence initial={false}
 - Don't: AnimatePresence initial={true}
 
 ## Why it works
 
-Entrance motion exists to mark a change the user caused after the page is already interactive, not to narrate the first render. Setting AnimatePresence initial={false} distinguishes the initial-mount case from later state changes, so default-state UI appears immediately while the same component still animates properly on subsequent opens. Without that distinction, every component that could animate on state change also replays that animation on page load, whether or not the user asked for it.
+On refresh, a persistent control has no preceding on-screen position to transition from. Delaying its opacity hides something the application already knows how to render. Content that genuinely arrives later can use an entrance to show what changed.
+
+- [Motion · Initial animations in AnimatePresence](https://motion.dev/docs/react-animate-presence#initial)
 
 ## What breaks
 
-A modal that defaults to open animates in from scratch on every page load or refresh, making the app feel like it is still loading even after content is ready.
+On a frequently revisited screen, entrance effects can briefly hide the controls needed to resume work or make a restored focus target difficult to locate.
 
 ## How to apply it
 
-1. Set initial={false} on AnimatePresence for components that can be open on first render.
-2. Verify the same component still animates correctly on later state changes, not just skips motion permanently.
-3. Never let a modal or panel play its enter animation on initial page load.
-4. Distinguish first-mount state explicitly from subsequent user-triggered state changes.
+1. Render the initial state visibly in the first usable page.
+2. With Motion for React, AnimatePresence initial={false} skips initial animations on children present at first render.
+3. Test refresh, restored state and a later insertion separately.
 
 ## Review questions
 
-1. Does content that is open by default appear instantly on first page load, without an enter animation?
-2. Does that same component still animate normally when the user closes and reopens it later?
-3. Is initial={false} set on AnimatePresence for this component?
+1. Which content is known before the first render?
+2. Can the user locate the initial focus target immediately?
+3. Does the later insertion still communicate a meaningful change?

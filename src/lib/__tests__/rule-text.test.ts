@@ -9,8 +9,8 @@ describe("rule-text serializers", () => {
     expect(rule).toBeDefined();
     expect(ruleToText(rule!, "https://example.com")).toBe(
       [
-        "Sentence case is king (Typography & text)",
-        "Capitalize only the first word and proper nouns instead of using title case. Sentence case reads as plain speech, removes the per-word capitalization debate, and keeps proper nouns standing out.",
+        "Use sentence case for English UI labels (Typography & text)",
+        "Use sentence case for ordinary English labels and headings. Keep the spelling of names and acronyms intact, including title case in official titles. Follow the casing conventions of each translation.",
         "",
         "Do: Invite your team / Skip for now",
         "Don't: Invite Your Team / Skip For Now",

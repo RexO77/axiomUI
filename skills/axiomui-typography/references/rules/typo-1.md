@@ -1,32 +1,33 @@
-# Sentence case is king
+# Use sentence case for English UI labels
 
 - ID: typo-1
 - Category: Typography & text
 - Tags: Labels, Headings, Buttons
 - URL: https://axiomui.nischal.fyi/rules/typo-1
 
-Capitalize only the first word and proper nouns instead of using title case. Sentence case reads as plain speech, removes the per-word capitalization debate, and keeps proper nouns standing out.
+Use sentence case for ordinary English labels and headings. Keep the spelling of names and acronyms intact, including title case in official titles. Follow the casing conventions of each translation.
 
 - Do: Invite your team / Skip for now
 - Don't: Invite Your Team / Skip For Now
 
 ## Why it works
 
-Sentence case has one rule that anyone applies the same way: capitalize the first word and proper nouns, nothing else. Title Case has no rule everyone agrees on. Style guides split over short words like with, for, and to, so a team that adopts it ships “Sign In With Google” on one screen and “Continue with Email” on the next. Sentence case also sets the tone, reading as a person speaking plainly where Title Case reads as a headline or a form heading. And because only proper nouns keep their capitals, they stand out: in “Connect to Slack”, the product is the one capitalized word after the first.
+In an invite dialog, the title and actions belong to the same conversation. A writer who knows the team uses sentence case can write “Invite your team” without deciding whether “your” counts as a title word. Keeping “Sign in with GitHub” intact also preserves the service’s own spelling.
+
+- [Microsoft Writing Style Guide · Capitalization](https://learn.microsoft.com/en-us/style-guide/capitalization)
 
 ## What breaks
 
-Casing drifts the moment a second writer touches the copy, so “Sign In With Google” and “Continue with Email” ship side by side and the interface reads as unedited. Proper nouns lose their only marker too: in “Share With Team Members”, nothing tells the reader whether Team Members is a product feature or simply the people on their team.
+A blanket lowercase transform can silently turn GitHub into Github or change an acronym. In translated copy the same transform can undo an editor’s language-specific choices.
 
 ## How to apply it
 
-1. Set titles and buttons in sentence case: “Invite your team” and “Skip for now”, not “Invite Your Team” and “Skip For Now”.
-2. Capitalize only the first word and proper nouns, including product and feature names such as Slack or Google Drive.
-3. Enforce via a lint rule or CMS transform, not manual review.
-4. Audit existing headers and nav items for stray Title Case.
+1. Write the final casing in the localized string.
+2. Keep a short list of the product names and abbreviations writers actually encounter.
+3. Use the invite dialog to review a title and an action together.
 
 ## Review questions
 
-1. Is only the first word (and proper nouns) capitalized in this label?
-2. Do buttons and headers avoid capitalizing every word?
-3. Can a reader tell a product or feature name from ordinary words by its capitals alone?
+1. Does the label follow the convention for this language?
+2. Does a named service retain its own spelling?
+3. Will the localized string reach the screen as written?

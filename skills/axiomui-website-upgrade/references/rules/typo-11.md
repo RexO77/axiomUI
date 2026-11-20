@@ -1,32 +1,34 @@
-# Minimum body size
+# Choose a readable body size
 
 - ID: typo-11
 - Category: Typography & text
 - Tags: Readability, Mobile
 - URL: https://axiomui.nischal.fyi/rules/typo-11
 
-Body text should never be smaller than 14px on mobile or 12px on desktop, and subtext should stop at 12px. Below that the x-height drops under what most people can scan without leaning in.
+Start routine reading around 16px and adjust for the typeface, task, and distance. Give essential details enough space to enlarge without losing content.
 
 - Do: Body: 16px / Subtext: 12px
 - Don't: Body: 11px / Subtext: 9px
 
 ## Why it works
 
-What fails below 12px is stroke weight, not overall size. A typical UI sans draws its stems at roughly 8-9% of the em, so a 10px regular stem falls under one CSS pixel and antialiases to gray instead of rendering as a solid stroke, while the x-height drops to about five pixels, too few rows to keep a, e, and s distinct from each other. Mobile keeps the higher floor of the two, 14px against 12px, because phones get read while moving and in unpredictable light, where that thinned rendering has no margin left.
+The alert asks the reader to recognize a sign-in and inspect its supporting detail. The large x-height of one face can make it read differently from another at the same CSS size. The 16px/12px pair in the preview illustrates a hierarchy and needs a reading check in context.
+
+- [USWDS · Typesetting and optical size](https://designsystem.digital.gov/design-tokens/typesetting/overview/)
+- [WCAG 2.2 · Resize text](https://www.w3.org/WAI/WCAG22/Understanding/resize-text.html)
 
 ## What breaks
 
-Body text set at 11px on mobile forces users to zoom in or hold the phone closer to read comfortably, and subtext dropping to 9px becomes illegible for anyone with even mild vision strain.
+Shrinking an alert to 11px with 9px detail buys space by making the information harder to inspect. Enlarging it may expose a second problem if the row has a fixed height.
 
 ## How to apply it
 
-1. Set body text to 16px by default and treat 14px mobile / 12px desktop as floors, not targets.
-2. Never let subtext fall below 12px, on any breakpoint or in any density mode.
-3. Give text inputs at least 16px on mobile: iOS Safari zooms the viewport for anything smaller.
-4. Check dense data screens first, where shrinking type is the easiest shortcut.
+1. Start with a tested body token and relative units.
+2. Try the smallest supporting text using the actual content on a representative device.
+3. Check enlargement to 200% and allow the row to grow.
 
 ## Review questions
 
-1. Is body text at least 14px on mobile and 12px on desktop?
-2. Does subtext stay at or above 12px everywhere?
-3. Can the smallest text on screen be read without zooming?
+1. Can the reader make the decision using the smallest essential line?
+2. At 200% enlargement, are all details and actions available?
+3. Could moving or wrapping a detail recover space?

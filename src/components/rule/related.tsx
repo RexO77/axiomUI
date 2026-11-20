@@ -2,8 +2,8 @@
 "use client";
 
 /*
- * Related, at the foot of the deep dive: one to three rules from the shared-tag
- * scorer (`relatedRules`), as real links that open in a new tab when
+ * Related, at the foot of the deep dive: one to three editorially selected
+ * rules, as real links that open in a new tab when
  * asked. A plain click opens the rule in place (a push). Each row carries its
  * rail category, so a re-homed Accessibility rule reads as System or Color, as
  * it does everywhere else in the shell.
@@ -13,7 +13,7 @@
  */
 
 import { ChevronRight } from "@/components/ui/icons";
-import { useId, type FocusEvent, type MouseEvent, type PointerEvent } from "react";
+import { useId, useRef, type FocusEvent, type MouseEvent, type PointerEvent } from "react";
 
 import { useShell } from "@/components/shell/shell-context";
 import { CategoryIcon } from "@/components/ui/category-icon";
@@ -28,16 +28,18 @@ export const plainClick = (event: MouseEvent) =>
 export function Related({ ruleId }: { ruleId: string }) {
   const shell = useShell();
   const uid = useId();
+  const group = useRef<HTMLElement>(null);
+  const hoveredRow = useRef<HTMLAnchorElement | null>(null);
   const related = relatedRules(ruleId);
   if (related.length === 0) return null;
 
   const hover = (id: string, rect: DOMRect) => {
     proseLoader.prefetch(id);
-    shell.peek.current?.hover(id, rect.top + rect.height / 2, { rect });
+    if (group.current) shell.peek.current?.hover(id, rect.top + rect.height / 2, { group: group.current });
   };
 
   return (
-    <section className="rv-related" aria-labelledby={`${uid}-h`}>
+    <section ref={group} className="rv-related" aria-labelledby={`${uid}-h`}>
       <h2 id={`${uid}-h`}>Related</h2>
       <ul>
         {related.map((rule) => {
@@ -46,18 +48,26 @@ export function Related({ ruleId }: { ruleId: string }) {
             <li key={rule.id}>
               <a
                 className="rv-rrow"
+                data-related-rule={rule.id}
                 href={shell.hrefFor(rule.id)}
                 aria-describedby={`${uid}-${rule.id}`}
                 onClick={(event) => {
                   if (!plainClick(event)) return;
                   event.preventDefault();
                   shell.peek.current?.close();
-                  shell.openRule(rule.id);
+                  shell.openRule(rule.id, "related");
                 }}
-                onPointerEnter={(event: PointerEvent<HTMLAnchorElement>) => {
-                  if (event.pointerType === "mouse") hover(rule.id, event.currentTarget.getBoundingClientRect());
+                onPointerMove={(event: PointerEvent<HTMLAnchorElement>) => {
+                  // Paging can put another row under a stationary cursor. Only
+                  // an actual pointer move should open a peek on the new rule.
+                  if (event.pointerType !== "mouse" || hoveredRow.current === event.currentTarget) return;
+                  hoveredRow.current = event.currentTarget;
+                  hover(rule.id, event.currentTarget.getBoundingClientRect());
                 }}
-                onPointerLeave={() => shell.peek.current?.leave()}
+                onPointerLeave={() => {
+                  hoveredRow.current = null;
+                  shell.peek.current?.leave();
+                }}
                 onFocus={(event: FocusEvent<HTMLAnchorElement>) => {
                   if (event.currentTarget.matches(":focus-visible")) hover(rule.id, event.currentTarget.getBoundingClientRect());
                 }}

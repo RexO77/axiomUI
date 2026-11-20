@@ -40,6 +40,10 @@ test.describe("direct load", () => {
     const before = await readCatalog(page);
     expect(before).toMatchObject({ view: "rule", wallMounted: false });
     expect(before.axiom).toMatchObject({ view: "rule", depth: 0 });
+    // The idle prefetch can reuse the gallery stylesheet on a direct rule. Its
+    // registered gutter has a computed initial value even before the wall mounts.
+    const galleryGutter = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--gw-pad").trim());
+    expect(galleryGutter).toMatch(/^\d+(?:\.\d+)?px$/);
 
     traffic.reset();
     await page.keyboard.press("Escape");
@@ -254,6 +258,51 @@ test.describe("paging and exit", () => {
 });
 
 test.describe("Back and Forward", () => {
+  test("a Related jump restores the docked reading panel and link on Back, and the destination's panel on Forward", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 500 });
+    await openCatalog(page, ruleUrl("typo-1"));
+    const panel = page.locator(".rv-stage .rv-dd[data-panel-rule]");
+    const link = page.locator(".rv-related a").last();
+    const href = (await link.getAttribute("href"))!;
+    await panel.evaluate((el) => { el.scrollTop = 105; });
+    await link.focus();
+    const before = await panel.evaluate((el) => Math.round(el.scrollTop));
+    expect(before).toBeGreaterThan(0);
+    await link.press("Enter");
+    await awaitUrl(page, href);
+    await expect(panel).toHaveAttribute("data-state", "ready");
+    await expect(panel).not.toHaveAttribute("data-panel-rule", "typo-1");
+    const second = await panel.evaluate((el) => {
+      el.scrollTop = 60;
+      return Math.round(el.scrollTop);
+    });
+    expect(second).toBeGreaterThan(0);
+    await expect.poll(() => page.evaluate(() => history.state.axiom.scroll?.panelTop)).toBe(second);
+    await page.goBack();
+    await awaitUrl(page, ruleUrl("typo-1"));
+    await expect(page.locator(`.rv-related a[href="${href}"]`)).toBeFocused();
+    await expect.poll(() => panel.evaluate((el) => Math.round(el.scrollTop))).toBe(before);
+    await page.goForward();
+    await awaitUrl(page, href);
+    await expect.poll(() => panel.evaluate((el) => Math.round(el.scrollTop))).toBe(second);
+  });
+
+  test("native fragment navigation reveals a closed wide deep dive", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await openCatalog(page, ruleUrl("typo-1"));
+    const panel = page.locator(".rv-stage .rv-dd");
+    await page.keyboard.press("i");
+    await expect(panel).toHaveAttribute("hidden", "until-found");
+    expect(await panel.evaluate((el) => getComputedStyle(el).display)).not.toBe("none");
+    expect(await panel.evaluate((el) => el.getBoundingClientRect().height)).toBe(0);
+    const target = await panel.locator(".rv-dd-body[id]").first().getAttribute("id");
+    expect(target).toBeTruthy();
+    // The browser must discover the subtree and dispatch beforematch itself.
+    await page.evaluate((id) => { window.location.hash = id!; }, target);
+    await expect(panel).not.toHaveAttribute("hidden", "until-found");
+    await expect(page.locator(".rv-head button[aria-controls]")).toHaveAttribute("aria-expanded", "true");
+  });
+
   test("never reload the document and never touch the network; Forward restores the reading position", async ({ page }) => {
     const first = "color-1";
     const second = railNeighbour(first, 1);
@@ -496,6 +545,8 @@ test.describe("a push from a rule loaded directly", () => {
     const href = await related.getAttribute("href");
     const target = routes().parseLocation(href ?? "").ruleId!;
 
+    await related.hover();
+    await expect(page.locator(".peek[data-open] .peek-name")).toHaveText(titleOf(target));
     await related.click();
     await awaitView(page, "rule");
     expect(await settledUrl(page)).toBe(ruleUrl(target));

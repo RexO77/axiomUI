@@ -1,32 +1,34 @@
-# Transition only what changes
+# Limit transitions to intended properties
 
 - ID: sys-13
 - Category: System & logic
 - Tags: Motion, CSS, Performance
 - URL: https://axiomui.nischal.fyi/rules/sys-13
 
-Never use transition: all. Specify the exact properties that should animate so unrelated style changes do not move unexpectedly.
+List the properties that should animate in a state change. A broad transition can also animate unrelated changes in computed style.
 
 - Do: transition-property: scale, background-color
 - Don't: transition: all 150ms ease-out
 
 ## Why it works
 
-Specifying transition-property explicitly, scale and background-color, ensures only intended properties animate, while transition: all animates every property that changes, including ones altered by unrelated state updates like a font load. This causes unexpected elements to visibly glide when they should snap instantly.
+Suppose a button animates its hover color and scale. Later a layout state changes its explicit width. With a general transition the width can interpolate too, while an explicit property list allows it to settle immediately.
+
+- [CSS Transitions · Starting a transition](https://www.w3.org/TR/css-transitions-1/#starting)
+- [CSS Transitions · Selecting properties to transition](https://www.w3.org/TR/css-transitions-1/#transition-property-property)
 
 ## What breaks
 
-transition: all 150ms puts the late webfont on the same timeline as your hover state, so the Save changes button grows through two intermediate widths after the page has already settled. Nobody reads that as a font arriving; they read it as the layout coming apart.
+A button that stretches for 150ms while adjacent controls reposition can make a layout update look unfinished. A font swap changing intrinsic dimensions alone does not establish a transition between explicit width values.
 
 ## How to apply it
 
-1. Replace transition: all with an explicit list such as transition-property: scale, background-color.
-2. Audit each transitioning component for the exact properties that should animate.
-3. Set explicit duration and easing per property group rather than one blanket rule.
-4. Watch for unrelated properties, width, font, animating unintentionally during QA.
+1. Define the intended properties, duration and easing for each state change.
+2. Exercise unrelated layout and theme changes while the control is mounted.
+3. Respect reduced motion where animation would distract or disorient.
 
 ## Review questions
 
-1. Does the CSS specify exact transition properties instead of transition: all?
-2. Do unrelated style changes on the element happen instantly, without animating?
-3. Does only the intended property, like scale or color, visibly animate on interaction?
+1. Which computed values are intended to interpolate?
+2. Does an unrelated explicit width change stretch the control?
+3. Does the rest of the interface settle as expected?

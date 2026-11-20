@@ -229,7 +229,7 @@ function BlockedThreadRace() {
         <div className="motion-showcase @container">
             <div className="grid grid-cols-2 gap-3">
                 <PaneChrome variant="do" caption={spec.do.caption}>
-                    <RaceRail railRef={rail} cardRef={doCard} label="Compositor" />
+                    <RaceRail railRef={rail} cardRef={doCard} label="CSS transition" />
                 </PaneChrome>
                 <PaneChrome variant="dont" caption={spec.dont.caption}>
                     <RaceRail railRef={dontRail} cardRef={dontCard} label="Main thread" />
@@ -239,9 +239,9 @@ function BlockedThreadRace() {
                 control={{ label: "Race + block main thread", onClick: race, disabled: running }}
                 hints={[
                     !reduced &&
-                        "Watch the Don’t card — it freezes three times; the strip below is the receipt",
+                        "Watch both cards during the three long tasks. The strip samples gaps between main-thread callbacks.",
                 ]}
-                reducedNote="Reduced motion: both cards jump to the finish and the thread isn’t blocked. With motion on, the Don’t card freezes at every stall and the Do card glides through."
+                reducedNote="With reduced motion, both cards go directly to the finish and the long tasks are skipped."
             />
             <ThreadMeter
                 samples={samples}

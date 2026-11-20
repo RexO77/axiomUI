@@ -242,8 +242,9 @@ test("the install popover follows a [ collapse", async ({ page }) => {
     const [a, p] = await Promise.all([row.boundingBox(), popover.boundingBox()]);
     return Math.round(p!.x - (a!.x + a!.width));
   };
+  // The pointer entrance slides out from the rail into the final 16px gap.
+  await expect.poll(gap).toBe(16);
   const before = await popover.boundingBox();
-  expect(await gap()).toBe(16);
 
   await page.keyboard.press("[");
   await expect(page.locator(".shell")).not.toHaveAttribute("data-open", "");
@@ -319,6 +320,35 @@ test("a palette opened on a phone keeps the rail inert when the window widens", 
   await page.keyboard.press("Escape");
   await expect(palette(page)).toHaveCount(0);
   await expect(page.locator(".shell-rail")).not.toHaveAttribute("inert", "");
+});
+
+test("the Agent skills panel expands from the rail popover’s rendered bounds", async ({ page }) => {
+  await openCatalog(page, ruleUrl("motion-25"));
+  const trigger = page.getByRole("button", { name: /^Install in your agent/ });
+  await trigger.click();
+  const box = page.getByRole("dialog", { name: "Install in your agent" });
+  await box.evaluate(async el => { await Promise.all(el.getAnimations().map(a => a.finished)); });
+  const source = (await box.boundingBox())!;
+  const firstFrame = page.evaluate(() => new Promise<{ x: number; y: number; width: number; height: number }>(resolve => {
+    const observer = new MutationObserver(() => {
+      const panel = document.querySelector(".skill-modal-surface");
+      if (!panel) return;
+      observer.disconnect();
+      const { x, y, width, height } = panel.getBoundingClientRect();
+      resolve({ x, y, width, height });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  }));
+  await box.getByRole("button", { name: "Browse the skills" }).click();
+  const start = await firstFrame;
+  for (const key of ["x", "y", "width", "height"] as const) {
+    expect(Math.abs(start[key] - source[key]), key).toBeLessThan(1);
+  }
+  const panel = page.getByRole("dialog", { name: "Agent skills" });
+  await expect.poll(async () => (await panel.boundingBox())?.width).toBe(768);
+  await panel.getByRole("button", { name: "Close agent skills" }).click();
+  await expect(panel).toHaveCount(0);
+  await expect(trigger).toBeFocused();
 });
 
 test("the skills dialog keeps ⌘K and ⌘/ from opening anything behind it", async ({ page }) => {
@@ -399,3 +429,28 @@ test.describe("a tablet held upright, touch", () => {
     }
   });
 });
+
+for (const width of [1111, 1510]) {
+  test(`Related previews keep every link visible at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 867 });
+    await openCatalog(page, ruleUrl("form-5"));
+    const group = page.getByRole("region", { name: "Related" });
+    const links = group.getByRole("link");
+    await group.scrollIntoViewIfNeeded();
+    for (const link of await links.all()) {
+      await link.hover();
+      const preview = page.locator(".peek[data-open]");
+      await expect(preview.locator(".peek-name")).toHaveText(await link.locator(".rv-rrow-title").innerText());
+      await expect(preview).toBeVisible();
+      const title = link.locator(".rv-rrow-title");
+      expect(await title.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+      const positions = await page.evaluate(() => {
+        const preview = document.querySelector(".peek")!.getBoundingClientRect();
+        const related = [...document.querySelectorAll(".rv-related, .rv-related a")].map(el => el.getBoundingClientRect());
+        const intersects = related.some(box => preview.left < box.right && preview.right > box.left && preview.top < box.bottom && preview.bottom > box.top);
+        return { intersects, withinScreen: preview.left >= 0 && preview.top >= 0 && preview.right <= innerWidth && preview.bottom <= innerHeight };
+      });
+      expect(positions).toEqual({ intersects: false, withinScreen: true });
+    }
+  });
+}

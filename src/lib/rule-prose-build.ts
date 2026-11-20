@@ -1,4 +1,5 @@
 import { buildDeepDive } from "@/data/deep-dive-builder";
+import { ruleSources } from "@/data/rule-sources";
 import { rules } from "@/data/ui-logic";
 import { findListSection, findTextSection } from "@/lib/deep-dive-sections";
 import type { RuleProse } from "@/lib/rule-prose-types";
@@ -21,6 +22,7 @@ export function ruleProse(id: string): RuleProse | null {
     id: rule.id,
     how: findListSection(sections, "Implementation notes"),
     why: findTextSection(sections, "Why it matters") ?? "",
+    sources: ruleSources[rule.id],
     breaks: findTextSection(sections, "Risk when ignored") ?? "",
     review: findListSection(sections, "Design review prompts"),
   };

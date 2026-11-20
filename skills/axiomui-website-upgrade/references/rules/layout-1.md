@@ -1,32 +1,33 @@
-# The 4pt grid system
+# Use a shared spacing scale
 
 - ID: layout-1
 - Category: Layout & spacing
 - Tags: Spacing, Consistency
 - URL: https://axiomui.nischal.fyi/rules/layout-1
 
-Every margin, padding, and height should be divisible by 4. A fixed step means components built by different people still line up, and nobody has to defend a 13px gap.
+Choose named spacing steps for repeated relationships. A 4px base is useful for padding and gaps. Hairlines, optical offsets, and content-driven dimensions can use other values.
 
 - Do: 4px, 8px, 16px, 24px, 32px, 48px
 - Don't: 13px, 5px
 
 ## Why it works
 
-The 4pt grid turns spacing into a shared vocabulary: every value is a whole multiple of one base unit, so any two components snap into alignment without negotiation. It also survives fractional device pixel ratios — 4, 8, 16, and 24 stay whole numbers at 1.5x and 2x, while 13px lands on 19.5 device pixels at 1.5x and gets rounded one way here and the other way there. This is systemic scale design, not personal taste.
+The settings cards compare 16px padding and 8px gaps with 13px and 5px. A shared scale gives the next person building a settings row a known starting point. The reason to reuse 8px is the relationship between items, even when an equally tidy number would fit the grid.
+
+- [USWDS · Spacing units](https://designsystem.digital.gov/design-tokens/spacing-units/)
 
 ## What breaks
 
-Once one component uses 13px padding, every neighboring component built to the 4pt scale misaligns by a few pixels, and the drift compounds across nested containers until edges visibly stair-step down the page.
+Repeatedly inventing nearly identical gaps makes changes expensive. Conversely, rounding a 1px border or a text container’s intrinsic height onto the spacing grid can visibly damage it.
 
 ## How to apply it
 
-1. Restrict every spacing value to one published scale: 4, 8, 16, 24, 32, 48px.
-2. Reject values like 13px or 5px on sight — round to the nearest multiple of 4.
-3. Encode the scale in Tailwind config or CSS variables so arbitrary values need an explicit escape hatch.
-4. Audit existing components for legacy odd-numbered padding or margin and normalize them.
+1. Choose tokens for common spaces within a group and between groups.
+2. Reuse one token wherever the same relationship recurs.
+3. Keep optical adjustments local and explain what required them.
 
 ## Review questions
 
-1. Does every margin and padding value divide evenly by 4?
-2. Do adjacent components share the same base spacing unit?
-3. Are there any hardcoded odd pixel values, like 13px or 5px, in the styles?
+1. Do comparable components use the same spacing step?
+2. Does each larger gap represent a different relationship?
+3. Would rounding this exception improve the result?

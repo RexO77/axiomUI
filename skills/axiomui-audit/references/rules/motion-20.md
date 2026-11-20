@@ -1,32 +1,35 @@
-# Capture pointer during drag
+# Keep a drag attached to its initiating pointer
 
 - ID: motion-20
 - Category: Motion & interaction
 - Tags: Gestures, Touch
 - URL: https://axiomui.nischal.fyi/rules/motion-20
 
-Once dragging starts, capture pointer events and ignore extra touches so the element does not jump or drop mid-gesture.
+For an element-local drag, capture the initiating pointer and track its ID. Clean up on release, cancellation and loss of capture.
 
 - Do: setPointerCapture on drag start
 - Don't: No pointer capture on drag start
 
 ## Why it works
 
-Once a drag starts, the element should keep tracking that one pointer even if it strays outside the element’s bounds or a second finger touches down. setPointerCapture on drag start redirects all subsequent pointer events to the dragged element regardless of what is under the cursor, which is exactly the pointer capture semantics browsers expose for this case. Without it, moving fast enough to leave the element’s hit area silently drops the gesture.
+Pointer capture retargets events for a particular active pointer to the capture element. A mouse drag can then continue outside the handle. Direct-manipulation devices may supply implicit capture, so a touch demo alone can conceal a missing capture path.
+
+- [Pointer Events · Pointer capture](https://www.w3.org/TR/pointerevents3/#pointer-capture)
+- [WCAG 2.2 · Dragging movements](https://www.w3.org/WAI/WCAG22/Understanding/dragging-movements.html)
 
 ## What breaks
 
-A user drags quickly and their pointer slips outside the element’s bounding box mid-gesture, the drag handler stops receiving events, and the element abruptly freezes or drops.
+If a second contact overwrites the active pointer or a canceled drag follows the commit path, the handle can jump or submit an unintended change.
 
 ## How to apply it
 
-1. Call setPointerCapture on the drag target inside the pointerdown handler.
-2. Release capture explicitly on pointerup or pointercancel.
-3. Ignore additional pointer IDs that arrive while a capture is active.
-4. Verify the element keeps tracking the pointer even when dragged outside its own bounds.
+1. Record the active pointerId and capture it when the drag starts.
+2. Choose touch-action to preserve the page gestures the control does not own.
+3. Handle pointerup, pointercancel and lostpointercapture with idempotent cleanup.
+4. For a slider, let a tap on the track set the value as well. Check the keyboard path and the single-pointer path separately.
 
 ## Review questions
 
-1. Does the drag keep following the pointer even when it moves outside the element’s edges?
-2. Does introducing a second touch during a drag leave the first drag unaffected?
-3. Does releasing the pointer cleanly end the drag without a stuck or jumping element?
+1. Does a mouse drag continue outside the handle?
+2. Can a second finger take over unexpectedly?
+3. Can scrolling, cancellation or loss of capture leave the control stuck?

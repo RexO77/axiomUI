@@ -1,6 +1,6 @@
 ---
 name: axiomui-components
-description: Axiom UI's component and action rules, with Do/Don't values and reasoning. Use when setting button hierarchy or styling destructive actions, choosing between a modal and a drawer or a toast and an inline error, computing nested border radii, labeling icon buttons, explaining disabled states, adding loading states to buttons, sizing icons consistently, making whole cards clickable, adding close affordances to overlays, or reviewing component code for interaction consistency.
+description: Use Axiom UI’s component guidance when prioritizing actions within a task, confirming deletion, nesting corners, representing people and files, choosing inline or overlay surfaces, placing errors, labeling icons, explaining disabled or pending actions, sizing card links, dismissing overlays, or providing chart summaries and accessible data.
 license: MIT
 metadata:
   author: Nischal Skanda
@@ -11,114 +11,122 @@ metadata:
 
 # Axiom UI: Components & actions
 
-Components teach the interaction model, and every screen that breaks the pattern makes the user relearn it. These rules decide which action leads, which container an interruption belongs in, how a control explains itself when it is disabled or busy, and how geometry such as nested radii, icon size and hit area stays consistent. Fix the shared primitive, not the one instance you happened to see.
+Judge the component in the task that contains it. A project card might open details and also offer an independent Archive action. Give each a distinct target. In a chart, identify whether readers need a trend, an exact value, or both before deciding how much information to show alongside it.
 
 ## How to use these rules
 
 1. Find the rule that governs the decision in front of you.
-2. Apply its Do as written. Values are targets, not suggestions.
-3. Check the result against its Don't. Code that matches the Don't is a violation, whatever the intent behind it.
+2. Read the rule’s description and compare its example with the task, platform, language and state you are working on.
+3. Test the failure the comparison illustrates. For a standard, verify the applicable requirement and its exceptions. For a design convention, judge the outcome with representative content and input.
 4. Read the file on its Reasoning line when the case is ambiguous or high-stakes, or when you have to justify the choice. Cite the rule id and URL when you explain a change.
 
 Where the project already has a token or component for the decision, use it. When that token contradicts a rule, flag the conflict instead of quietly rewriting the system.
 
 ## Rules
 
-### Action hierarchy (`comp-1`)
+### Prioritize the next action (`comp-1`)
 
-Give a screen one primary action and demote the rest to outline or text-link styling. Two equally loud buttons make the user choose before they have understood the choice.
+Give the next step in a task the strongest button treatment. When two choices deserve equal consideration, give them equal weight.
 
 - Do: 1 filled + 1 outline + 1 ghost button
 - Don't: 3 filled buttons side by side
 - Reasoning: `references/rules/comp-1.md` · https://axiomui.nischal.fyi/rules/comp-1
 
-### Destructive actions (`comp-2`)
+### Confirm irreversible deletion (`comp-2`)
 
-Keep Delete secondary. For permanent deletes, confirm in a modal with a red button; when the delete can be undone, skip the modal and offer an undo toast instead.
+Match the safeguard to the loss. Let people recover a reversible removal. Before permanent deletion, identify what will disappear and ask for an explicit decision.
 
 - Do: Secondary “Delete project…” → red confirm
 - Don't: Red “Delete” in the row, no confirm
 - Reasoning: `references/rules/comp-2.md` · https://axiomui.nischal.fyi/rules/comp-2
 
-### Nested radius formula (`comp-3`)
+### Align nested corner radii (`comp-3`)
 
-Outer Radius = Inner Radius + Padding. This makes concentric corners look mathematically parallel.
+For circular corners with an even inset, subtract the distance between the two painted edges from the outer radius. An outer radius of 12px and an 8px inset leave an inner radius of 4px.
 
-- Do: Outer 12px = Inner 4px + Padding 8px
-- Don't: Outer 4px = Inner 4px (padding ignored)
+- Do: Outer 12px = Inner 4px + Inset 8px
+- Don't: Outer 4px and inner 4px with an 8px inset
 - Reasoning: `references/rules/comp-3.md` · https://axiomui.nischal.fyi/rules/comp-3
 
-### Avatars are circles (`comp-4`)
+### Distinguish people from content (`comp-4`)
 
-Put people in circles and content in rectangles. The shape becomes a type signal, so a mixed list of avatars and files can be scanned without reading a single label.
+Use a consistent shape for person avatars in mixed lists. A circular portrait beside a rectangular document thumbnail gives readers an extra cue about what each row represents.
 
 - Do: Avatar = circle, file = rectangle
 - Don't: Avatar = square, file = rectangle
 - Reasoning: `references/rules/comp-4.md` · https://axiomui.nischal.fyi/rules/comp-4
 
-### Modal vs drawer (`comp-5`)
+### Choose a surface for the task (`comp-5`)
 
-Use a modal for one short, focused decision; use a drawer for a context-heavy task where the user needs to keep seeing what sits behind it.
+Use a modal when the current decision needs exclusive attention. Use a side panel when the surrounding page helps someone compare or edit information. Choose a full page if either surface would leave too little working room.
 
-- Do: 1 decision = modal, 6 fields = drawer
-- Don't: 1 decision = modal, 6 fields = modal
+- Do: Profile editor beside the visible record
+- Don't: Six profile fields in a one-row modal viewport
 - Reasoning: `references/rules/comp-5.md` · https://axiomui.nischal.fyi/rules/comp-5
 
-### Toast vs inline error (`comp-6`)
+### Place field errors beside the field (`comp-6`)
 
-Toasts are for system-level news (saved, disconnected); inline errors are for a field the user has to fix. An error has to appear where the fix happens, because a toast is gone before they get there.
+Identify the field and explain how to fix it where the user can make the change. After submission, a linked error summary can also help people find several errors.
 
 - Do: Invalid email = inline, under the field
 - Don't: Invalid email = toast, far from the field
 - Reasoning: `references/rules/comp-6.md` · https://axiomui.nischal.fyi/rules/comp-6
 
-### Icon + label for ambiguous actions (`comp-7`)
+### Label ambiguous actions (`comp-7`)
 
-Icons are only universal for a few actions. Add labels for everything else to avoid guesswork.
+Add visible text when an icon leaves the action open to interpretation. Give every icon-only button an accessible name that describes what it does.
 
 - Do: Icon + label on every toolbar action
 - Don't: Icon only on every toolbar action
 - Reasoning: `references/rules/comp-7.md` · https://axiomui.nischal.fyi/rules/comp-7
 
-### Disabled needs a reason (`comp-8`)
+### Explain unavailable actions (`comp-8`)
 
-Disabled controls without explanation feel broken. Add a tooltip or helper text.
+When someone might reasonably try an unavailable action, explain the prerequisite beside it. A disabled button alone gives no indication of what to do next.
 
 - Do: Disabled + reason under the button
 - Don't: Disabled + no reason
 - Reasoning: `references/rules/comp-8.md` · https://axiomui.nischal.fyi/rules/comp-8
 
-### Loading states on buttons (`comp-9`)
+### Acknowledge a pending submission (`comp-9`)
 
-Buttons that trigger async actions should show a spinner/loading state and disable re-click. Never leave a button looking clickable during submission.
+Acknowledge a submission while it is pending and prevent accidental repeats. Keep “Saving” distinct from “Saved” until the service confirms the result.
 
 - Do: Spinner + disabled during submit
 - Don't: Static button allows double-click
 - Reasoning: `references/rules/comp-9.md` · https://axiomui.nischal.fyi/rules/comp-9
 
-### Consistent icon size (`comp-10`)
+### Match icon scale within a toolbar (`comp-10`)
 
-Icons in the same context should be the same size. Don't mix 16px and 20px icons in the same toolbar or nav.
+Use a shared icon size for controls with equal roles. Check their apparent weight at the actual toolbar size and size the hit areas independently.
 
 - Do: All toolbar icons: 20px
 - Don't: Mixed 16px, 20px, 24px icons in toolbar
 - Reasoning: `references/rules/comp-10.md` · https://axiomui.nischal.fyi/rules/comp-10
 
-### Card click area (`comp-11`)
+### Size a card’s primary link (`comp-11`)
 
-If a card is clickable, the entire card should be the click target, not just the title or a tiny link inside it.
+A card with one destination can offer a generous link target. On a card with multiple actions, give each an independent target and preserve text selection where readers need it.
 
-- Do: Hit area: 100% of the card
-- Don't: Hit area: 16% (title text only)
+- Do: Single-destination card with a card-sized target
+- Don't: Card looks clickable, only its title responds
 - Reasoning: `references/rules/comp-11.md` · https://axiomui.nischal.fyi/rules/comp-11
 
-### Close affordance on overlays (`comp-12`)
+### Make overlay dismissal discoverable (`comp-12`)
 
-Every modal, drawer, and popover needs a visible close button AND should close on backdrop click and Escape key.
+Give dismissible dialogs a visible Close or Cancel action and support Escape. Choose outside-click behavior according to the cost of an accidental dismissal.
 
 - Do: X button + backdrop close + Esc key
 - Don't: No close button, only backdrop click
 - Reasoning: `references/rules/comp-12.md` · https://axiomui.nischal.fyi/rules/comp-12
+
+### Make the chart’s question answerable in text (`comp-13`)
+
+Identify what the chart shows and describe the comparison readers need. When the task calls for individual values, offer them in a labeled table or another accessible representation that follows the selected period.
+
+- Do: Summarize the trend and offer the monthly counts
+- Don't: Leave the trend and counts in the bars alone
+- Reasoning: `references/rules/comp-13.md` · https://axiomui.nischal.fyi/rules/comp-13
 
 ## Related
 

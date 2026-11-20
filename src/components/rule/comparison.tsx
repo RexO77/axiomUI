@@ -18,6 +18,8 @@
 import { useId, useLayoutEffect, useRef } from "react";
 import { Columns2, SquareStack } from "@/components/ui/icons";
 
+import { workedExampleIds } from "@/data/taxonomy";
+import { WorkedComparison } from "./worked-comparison";
 import type { Rule } from "@/data/ui-logic";
 import { RulePreview } from "@/components/features/rules/rule-preview";
 import { MotionShowcase } from "@/components/features/rules/demos/motion-showcase";
@@ -47,6 +49,7 @@ const ZOOMS = [
 const VERDICT: Record<Side, string> = { do: "Do", dont: "Don’t" };
 
 export function Comparison({ rule }: { rule: Rule }) {
+  if (workedExampleIds.includes(rule.id)) return <WorkedComparison key={rule.id} rule={rule} />;
   if (hasShowcase(rule.id) && isNativeMotion(rule.id)) return <MotionCompare ruleId={rule.id} />;
   if (hasShowcase(rule.id)) {
     return (

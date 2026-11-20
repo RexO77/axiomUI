@@ -12,9 +12,13 @@ export type RuleProse = Readonly<{
   id: string;
   how: readonly string[];
   why: string;
+  /** Older cached rule payloads predate references. */
+  sources?: readonly RuleSource[];
   breaks: string;
   review: readonly string[];
 }>;
+
+export type RuleSource = Readonly<{ title: string; href: `https://${string}` }>;
 
 /** The four section headings, in reading order. Shared by the view and its tests. */
 export const PROSE_HEADINGS = Object.freeze({

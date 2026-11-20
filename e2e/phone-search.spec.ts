@@ -1,5 +1,5 @@
 import { searchRules } from "../src/lib/rule-search";
-import { awaitInteractive, awaitView, expect, openCatalog, ruleUrl, sheetInert, test, wallUrl } from "./helpers";
+import { awaitInteractive, awaitView, expect, openCatalog, ruleUrl, sheetInert, test, titleOf, wallUrl } from "./helpers";
 
 test.describe("touch search can show the filtered gallery", () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
@@ -81,7 +81,7 @@ test.describe("touch search can show the filtered gallery", () => {
       await input.fill(query);
       await expect(action).toHaveCount(0);
     }
-    await input.fill("Action hierarchy");
+    await input.fill(titleOf("comp-1"));
     await expect(action).toHaveText("Show all 1 match");
     await dialog.getByRole("button", { name: "Cancel", exact: true }).tap();
     await expect(opener).toBeFocused();

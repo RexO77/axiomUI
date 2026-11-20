@@ -94,24 +94,24 @@ describe("decks follow the wall", () => {
   });
 
   it("sorts search hits into wall order, not relevance order", () => {
-    expect(ids(searchDeck("toast"))).toEqual(["layout-11", "comp-2", "comp-6", "motion-15"]);
-    const relevance = searchRules("toast").map((hit) => hit.rule.id);
-    expect(relevance).not.toEqual(ids(searchDeck("toast")));
-    expect([...relevance].sort()).toEqual([...ids(searchDeck("toast"))].sort());
-    const deck = searchDeck("toast");
-    expect(deckPosition(deck, "comp-6")).toMatchObject({ index: 3, total: 4, label: "3 of 4" });
-    expect(stepRule(deck, "layout-11", 1)?.id).toBe("comp-2");
+    expect(ids(searchDeck("border"))).toEqual(["layout-7", "a11y-2", "color-5", "color-6", "color-12", "motion-8"]);
+    const relevance = searchRules("border").map((hit) => hit.rule.id);
+    expect(relevance).not.toEqual(ids(searchDeck("border")));
+    expect([...relevance].sort()).toEqual([...ids(searchDeck("border"))].sort());
+    const deck = searchDeck("border");
+    expect(deckPosition(deck, "color-5")).toMatchObject({ index: 3, total: 6, label: "3 of 6" });
+    expect(stepRule(deck, "layout-7", 1)?.id).toBe("a11y-2");
   });
 
-  it("walks sections of the wall-ordered toast deck", () => {
-    const deck = searchDeck("toast");
-    expect(sectionJump(deck, "layout-11", 1)?.id).toBe("comp-2");
-    expect(sectionJump(deck, "comp-2", 1)?.id).toBe("motion-15");
-    expect(sectionJump(deck, "comp-6", 1)?.id).toBe("motion-15");
-    expect(sectionJump(deck, "comp-6", -1)?.id).toBe("layout-11");
-    expect(sectionJump(deck, "comp-2", -1)?.id).toBe("layout-11");
-    expect(sectionJump(deck, "layout-11", -1)).toBeNull();
-    expect(sectionJump(deck, "motion-15", 1)).toBeNull();
+  it("walks sections of the wall-ordered border deck", () => {
+    const deck = searchDeck("border");
+    expect(sectionJump(deck, "layout-7", 1)?.id).toBe("a11y-2");
+    expect(sectionJump(deck, "a11y-2", 1)?.id).toBe("motion-8");
+    expect(sectionJump(deck, "color-5", 1)?.id).toBe("motion-8");
+    expect(sectionJump(deck, "color-5", -1)?.id).toBe("layout-7");
+    expect(sectionJump(deck, "a11y-2", -1)?.id).toBe("layout-7");
+    expect(sectionJump(deck, "layout-7", -1)).toBeNull();
+    expect(sectionJump(deck, "motion-8", 1)).toBeNull();
     expect(sectionJump(deck, "typo-1", 1)).toBeNull();
   });
 
@@ -153,9 +153,9 @@ describe("decks follow the wall", () => {
     const stale = searchDeck("zzqx");
     expect(deckContaining(stale, "motion-7")).toBeNull();
     expect(resolveEntryDeck(stale, "motion-7")).toBe(catalogDeck);
-    const toast = searchDeck("toast");
-    expect(resolveEntryDeck(toast, "comp-2")).toBe(toast);
-    expect(resolveEntryDeck(toast, "typo-3")).toBe(catalogDeck);
+    const filtered = searchDeck("border");
+    expect(resolveEntryDeck(filtered, "a11y-2")).toBe(filtered);
+    expect(resolveEntryDeck(filtered, "typo-3")).toBe(catalogDeck);
     expect(resolveEntryDeck(collectionDeck("accessibility"), "motion-7")).toBe(catalogDeck);
   });
 
@@ -164,8 +164,8 @@ describe("decks follow the wall", () => {
     expect(categoryHandoff(catalogDeck, first.rules.at(-1)!.id)).toMatchObject({ rule: second.rules[0], category: second.id, count: second.rules.length });
     expect(categoryHandoff(catalogDeck, first.rules[0].id)).toBeNull();
     expect(categoryHandoff(catalogDeck, railOrder.at(-1)!.id)).toBeNull();
-    expect(stepRule(searchDeck("toast"), "layout-11", 1)?.id).toBe("comp-2");
-    expect(categoryHandoff(searchDeck("toast"), "layout-11")).toBeNull();
+    expect(stepRule(searchDeck("border"), "layout-7", 1)?.id).toBe("a11y-2");
+    expect(categoryHandoff(searchDeck("border"), "layout-7")).toBeNull();
     const collection = collectionDeck("accessibility");
     for (const rule of collection.rules) expect(categoryHandoff(collection, rule.id)).toBeNull();
   });
@@ -318,5 +318,16 @@ describe("history recipe", () => {
     expect(read({ view: "rule", depth: -2, scroll: { id: "a", top: NaN } })).toEqual({ view: "rule", depth: 0, scroll: null });
     expect(read({ view: "rule", depth: 1.5, scroll: { id: "a", top: -4 } })).toEqual({ view: "rule", depth: 0, scroll: { id: "a", top: 0 } });
     expect(read({ view: "gallery", depth: 4 })).toEqual({ view: "gallery", depth: 0, scroll: null });
+  });
+
+  it("round-trips a panel offset and Related link with the sheet position, including old entries", () => {
+    const write = saveScroll({ axiom: { view: "rule", depth: 2 } }, "typo-3", 50, 286, "type-2");
+    const restored = readAxiomState(historyEntry(write.axiom));
+    expect(restored).toEqual({ view: "rule", depth: 2, scroll: { id: "typo-3", top: 50, panelTop: 286, relatedId: "type-2" } });
+    expect(scrollToRestore({ axiom: restored }, "typo-4")).toBeNull();
+    for (const optional of [{}, { panelTop: -10, relatedId: 4 }, { panelTop: Infinity, relatedId: "" }]) {
+      const state = { axiom: { view: "rule", depth: 1, scroll: { id: "typo-3", top: 50, ...optional } } };
+      expect(readAxiomState(state)?.scroll).toEqual({ id: "typo-3", top: 50 });
+    }
   });
 });

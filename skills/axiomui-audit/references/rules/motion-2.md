@@ -1,32 +1,34 @@
-# Keyboard actions stay instant
+# Keep keyboard input responsive
 
 - ID: motion-2
 - Category: Motion & interaction
 - Tags: Keyboard, Perceived performance
 - URL: https://axiomui.nischal.fyi/rules/motion-2
 
-Keyboard-driven actions are repeated constantly. Do not animate shortcuts, command palettes, or focus movement in ways that delay the result.
+When a shortcut opens a command palette, move focus into the field and accept the next keystroke while the panel settles.
 
 - Do: Keyboard panel: 0ms
 - Don't: Keyboard panel: 240ms
 
 ## Why it works
 
-Keyboard input assumes near-zero perceived latency, since repetition amplifies any added delay into visible lag. Shortcuts, palette toggles, and focus moves must resolve without waiting on a transition to finish.
+Opening a palette and typing a query is one keyboard sequence. If focus moves only after the entrance finishes, the first characters can reach the previous control. A brief visual transition is compatible with immediate keyboard ownership.
+
+- [WAI-ARIA APG · Modal dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/)
+- [web.dev · Interaction latency and presentation delay](https://web.dev/articles/optimize-inp)
 
 ## What breaks
 
-A shortcut that waits for a slide-in transition before revealing its result trains users to distrust the keyboard path, and they fall back to slower mouse navigation.
+A missing first character sends the user into a different set of results. Escape during entry can also leave focus behind a closing overlay.
 
 ## How to apply it
 
-1. Land the shortcut result on the same frame as the keypress by updating state before, or independent of, any animation.
-2. Never gate command palette open or close on a transition-end event.
-3. Move focus synchronously and animate only the focus ring afterward, not the move itself.
-4. Test rapid repeated keypresses to confirm no animation backlog queues up.
+1. Choose the initial focus target when mounting the panel.
+2. Keep the input and its focus indicator visible while typing.
+3. Open, type and dismiss without pausing between keys.
 
 ## Review questions
 
-1. Does pressing a shortcut show its result instantly, with no visible wait?
-2. Does the command palette open on keypress without a delay?
-3. Does focus move immediately when triggered from the keyboard?
+1. Does the first character appear in the query?
+2. Where does focus return after Escape during entry?
+3. Can the user see the currently focused control throughout?

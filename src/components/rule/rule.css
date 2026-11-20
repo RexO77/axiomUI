@@ -52,8 +52,7 @@
 }
 .rv-head[data-scrolled] { --rv-head-line: var(--ax-line); }
 @container sheet (min-width: 1160px) {
-  /* data-deep comes from React; the html flag is right before hydration. */
-  html:not([data-deep="hidden"]) .rv-head[data-deep] {
+  .rv-head {
     --rv-head-max: calc(1040px + var(--rv-deep-w));
     --rv-head-end: 32px;
     --rv-head-line: var(--ax-line);
@@ -96,7 +95,7 @@
 .rv-crumb { min-width: 0; padding: 0 8px; gap: 8px; font-weight: 400; }
 .rv-crumb span { overflow: hidden; text-overflow: ellipsis; }
 .rv-pager { display: flex; align-items: center; gap: 2px; }
-/* Wide enough for "10 of 29", and "match 105 of 105" in a deck, so Next never moves. */
+/* Wide enough for "10 of 29", and "match 108 of 108" in a deck, so Next never moves. */
 .rv-pager-count {
   min-width: 7ch;
   font-size: 13px;
@@ -134,48 +133,31 @@
 
 /* ── Copy rule ▾ (in the header; on phones under the comparison) ──── */
 
-.rv-split { position: relative; display: inline-flex; align-items: center; }
-.rv-split-main {
+.rv-copy { position: relative; display: inline-flex; }
+.rv-copy-trigger {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   height: 32px;
   min-width: 112px;
-  padding: 0 10px 0 12px;
-  border-radius: var(--radius-control) 0 0 var(--radius-control);
-  /* Three sides: the menu half draws the seam, so it is one line, not two. */
-  box-shadow: inset 1px 0 0 var(--ax-line-strong), inset 0 1px 0 var(--ax-line-strong), inset 0 -1px 0 var(--ax-line-strong);
+  padding-inline: 12px;
+  border-radius: var(--radius-control);
+  box-shadow: inset 0 0 0 1px var(--ax-line-strong);
   font-size: 13px;
   line-height: 20px;
   font-weight: 500;
   color: var(--ax-ink-secondary);
-  white-space: nowrap;
   cursor: pointer;
-  transition: background-color 140ms var(--ease-out-strong), color 140ms var(--ease-out-strong);
 }
-.rv-split-main svg { width: 14px; height: 14px; }
-.rv-split-main[data-state="copied"] svg { color: var(--ax-do); }
-.rv-split-main[data-state="error"] svg { color: var(--ax-dont); }
-.rv-split-menu-btn {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 32px;
-  border-radius: 0 var(--radius-control) var(--radius-control) 0;
-  box-shadow: inset 0 0 0 1px var(--ax-line-strong);
-  color: var(--ax-ink-muted);
-  cursor: pointer;
-  transition: background-color 140ms var(--ease-out-strong), color 140ms var(--ease-out-strong);
-}
-.rv-split-menu-btn svg { width: 14px; height: 14px; }
+.rv-copy-trigger svg { width: 14px; height: 14px; }
+.rv-copy-trigger[data-state="copied"] svg:first-child { color: var(--ax-do); }
+.rv-copy-trigger[data-state="error"] svg:first-child { color: var(--ax-dont); }
 @media (hover: hover) and (pointer: fine) {
-  .rv-split-main:hover, .rv-split-menu-btn:hover { background: var(--ax-hover); color: var(--ax-ink); }
+  .rv-copy-trigger:hover { background: var(--ax-hover); color: var(--ax-ink); }
 }
-.rv-split-main:active, .rv-split-menu-btn:active { background: var(--ax-press); }
-.rv-split-menu-btn[aria-expanded="true"] { background: var(--ax-hover); color: var(--ax-ink); }
-/* Each half's ring sits inside it and above its neighbour, so neither is cut off at the seam. */
-.rv-split-main:focus-visible, .rv-split-menu-btn:focus-visible { position: relative; z-index: 1; outline-offset: -2px; }
-:root[data-input="keyboard"] :is(.rv-split-main, .rv-split-menu-btn, .rv-deckq, .rv-deckq svg) { transition: none; }
+.rv-copy-trigger[aria-expanded="true"] { background: var(--ax-hover); color: var(--ax-ink); }
+.rv-copy-trigger:active { background: var(--ax-press); }
 .rv-menu {
   position: absolute;
   top: calc(100% + 6px);
@@ -186,7 +168,21 @@
   border-radius: var(--radius-frame);
   background: var(--ax-overlay);
   box-shadow: var(--ax-shadow-popover);
+  transform-origin: top right;
+  opacity: 1;
+  transform: none;
+  transition: opacity 160ms var(--ease-out-strong), transform 160ms var(--ease-out-strong), display 160ms allow-discrete;
 }
+.rv-menu[hidden] {
+  display: none;
+  opacity: 0;
+  transform: translateY(-3px) scale(.98);
+  transition-duration: 100ms;
+}
+@starting-style {
+  .rv-menu:not([hidden]) { opacity: 0; transform: translateY(-4px) scale(.98); }
+}
+:root[data-input="keyboard"] .rv-menu { transition: none; }
 .rv-menu button {
   display: flex;
   align-items: center;
@@ -202,12 +198,10 @@
   cursor: pointer;
 }
 .rv-menu button svg { width: 16px; height: 16px; color: var(--ax-ink-muted); }
-/* Instant, as in every menu here; a hover only where there is one, so a tap on a phone leaves no row lit. */
-.rv-menu button:focus-visible { background: var(--ax-hover); color: var(--ax-ink); outline: none; }
 @media (hover: hover) and (pointer: fine) {
   .rv-menu button:hover { background: var(--ax-hover); color: var(--ax-ink); }
 }
-.rv-menu button:active { background: var(--ax-press); }
+.rv-menu button:focus-visible { background: var(--ax-hover); color: var(--ax-ink); outline: none; }
 .rv-mcopy { display: none; }
 
 /* ── Title, summary, prose code ─────────────────────────────────────── */
@@ -241,7 +235,7 @@
 }
 
 /* ── Layout ──────────────────────────────────────────────────────────
-   Below 1160 (and with the deep dive hidden) .rv-side is a pass-through:
+   Below 1160, .rv-side is a pass-through:
    its deep dive and Related are the stage's own grid items, ordered main,
    deep dive, Before you ship, Related, Next. Order only moves Before you
    ship (nothing to focus) ahead of Related, so focus still follows the page. */
@@ -409,50 +403,70 @@
 }
 .rv-rrow:active { background: var(--ax-press); }
 
-/* ── Wide sheet (≥ 1160): main column + side column, one centred block ─
-   Left: main, Before you ship, Next. Right: the deep dive with Related at
-   its foot. The side column spans every row, so its inset hairline runs the
-   stage's full height whichever column is taller; the stage fills the sheet
-   below the header.
-
-   Hidden deep dive: the side column stays a pass-through and the main
-   column centres at 1040, exactly the layout below 1160. Hidden is either
-   the aside's [hidden] (inspector.tsx) or html[data-deep="hidden"], which the
-   boot script sets before first paint from the stored choice, so a reload
-   with it hidden does not shift. */
-
+/* Related stays at the top of the reserved column. Only the reading card scrolls. */
 @container sheet (min-width: 1160px) {
-  html:not([data-deep="hidden"]) .rv-stage:not(:has(.rv-dd[hidden])) {
+  .rv-stage {
     max-width: calc(1040px + var(--rv-deep-w));
     min-height: calc(100dvh - 2 * var(--shell-inset) - 48px);
     grid-template-columns: minmax(0, 1fr) var(--rv-deep-w);
     grid-template-rows: auto auto 1fr;
   }
-  html:not([data-deep="hidden"]) .rv-stage:not(:has(.rv-dd[hidden])) > * { order: 0; }
-  html:not([data-deep="hidden"]) .rv-stage:not(:has(.rv-dd[hidden])) > .rv-main { grid-column: 1; grid-row: 1; }
-  html:not([data-deep="hidden"]) .rv-stage:not(:has(.rv-dd[hidden])) > .rv-ship { grid-column: 1; grid-row: 2; align-self: start; }
-  html:not([data-deep="hidden"]) .rv-stage:not(:has(.rv-dd[hidden])) > .rv-next { grid-column: 1; grid-row: 3; align-self: start; }
-  html:not([data-deep="hidden"]) .rv-stage:not(:has(.rv-dd[hidden])) > .rv-side {
-    position: relative;
-    z-index: 1;
-    display: block;
+  .rv-stage > * { order: 0; }
+  .rv-stage > .rv-main { grid-column: 1; grid-row: 1; }
+  .rv-stage > .rv-ship { grid-column: 1; grid-row: 2; align-self: start; }
+  .rv-stage > .rv-next { grid-column: 1; grid-row: 3; align-self: start; }
+  .rv-stage > .rv-side {
+    display: flex;
+    flex-direction: column;
+    reading-flow: flex-visual;
     grid-column: 2;
     grid-row: 1 / span 3;
     min-width: 0;
-    padding: 24px 32px 48px 24px;
-    background: var(--ax-surface);
-    box-shadow: inset 1px 0 0 var(--ax-line);
+    align-self: start;
+    position: sticky;
+    /* The sticky bounds must stay the same when the reading card disappears.
+       Let a short window scroll past Related to reach the lower card. */
+    --rv-side-min-height: 360px;
+    top: min(64px, calc(100dvh - var(--rv-side-min-height) - 16px));
+    height: max(var(--rv-side-min-height), calc(100dvh - 2 * var(--shell-inset) - 80px));
+    margin: 16px var(--rv-x) 32px 0;
   }
-  html:not([data-deep="hidden"]) .rv-stage:not(:has(.rv-dd[hidden])) > .rv-side > .rv-dd { display: block; margin: 0; padding: 0; }
-  html:not([data-deep="hidden"]) .rv-stage:not(:has(.rv-dd[hidden])) .rv-dd-col + .rv-dd-col { margin-top: 40px; }
-  html:not([data-deep="hidden"]) .rv-stage:not(:has(.rv-dd[hidden])) > .rv-side > .rv-related { margin: 40px 0 0; }
+  .rv-side > .rv-related,
+  html:not([data-deep="hidden"]) .rv-side > .rv-dd:not([hidden]) {
+    padding: 20px;
+    background: var(--ax-sunken);
+    box-shadow: inset 0 0 0 1px var(--ax-line);
+    border-radius: var(--radius-frame);
+  }
+  .rv-side > .rv-related {
+    order: -1;
+    flex: none;
+    margin: 0;
+  }
+  .rv-side .rv-rrow { height: auto; min-height: 36px; padding-block: 6px; }
+  .rv-side .rv-rrow-title { white-space: normal; overflow-wrap: anywhere; }
+  .rv-side > .rv-dd {
+    display: block;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    scrollbar-gutter: stable;
+  }
+  html:not([data-deep="hidden"]) .rv-side > .rv-dd:not([hidden]) { margin-top: 12px; }
+  .rv-side .rv-dd-sec + .rv-dd-sec,
+  .rv-side .rv-dd-col + .rv-dd-col {
+    margin-top: 24px;
+    padding-block-start: 20px;
+    border-block-start: 1px solid var(--ax-line);
+  }
 }
 
 /* ── Showing and hiding the deep dive (deep-dive-motion.ts) ───────────
-   The layout changes once, in one frame; what moved is drawn back where it
-   was and eased home by transform. A closing panel leaves as a frozen,
-   inert copy (.rv-ghost) on top, so the column it gives back fills at once.
-   The copy's layout is copied inline from the panel it replaces. */
+   The docked card slides within its reserved row. An inline card reveals
+   its height in the grid so the following content clears it each frame.
+   The inert exit copy retains the actual panel’s layout and scroll offset. */
 
 .rv-ghost { position: absolute; z-index: 2; margin: 0; pointer-events: none; }
 .rv-ghost[data-surface] { background: var(--ax-surface); }
@@ -473,8 +487,9 @@ html[data-deep="hidden"] .rv-dd { content-visibility: hidden; margin: 0; padding
   .rv-title { font-size: 28px; line-height: 34px; }
   .rv-main { padding-top: 24px; }
   .rv-mcopy { display: block; }
-  .rv-mcopy .rv-split-main { height: 44px; padding: 0 16px; font-size: 14px; }
-  .rv-mcopy .rv-split-menu-btn { width: 44px; height: 44px; }
+  .rv-mcopy .rv-copy-trigger { height: 44px; padding: 0 16px; font-size: 14px; }
+  .rv-mcopy .rv-menu { right: auto; left: 0; transform-origin: top left; }
+  .rv-mcopy .rv-menu button { height: 44px; }
 
   html[data-deep="hidden"] .rv-dd { content-visibility: visible; }
   .rv-dd, html[data-deep="hidden"] .rv-dd { display: block; margin-top: 40px; padding-inline: var(--rv-x); }
@@ -514,12 +529,26 @@ html[data-deep="hidden"] .rv-dd { content-visibility: hidden; margin: 0; padding
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .rv-menu { transition: none; }
   .rv-head, .rv-dd-h::after, .rv-nc-arrow { transition: none; }
 }
 /* Forced colours drop every box-shadow: the edges, the column hairline and the review rings come back as borders. */
 @media (forced-colors: active) {
   .rv-menu, .rv-nextcard, .rv-ship, .rv-ship li::before { border: 1px solid CanvasText; }
-  .rv-split-main, .rv-split-menu-btn { border: 1px solid ButtonText; }
-  .rv-side { border-inline-start: 1px solid CanvasText; }
+  .rv-copy-trigger { border: 1px solid ButtonText; }
+  @container sheet (min-width: 1160px) {
+    .rv-side > .rv-related, .rv-side > .rv-dd:not([hidden]) { border: 1px solid CanvasText; }
+  }
   .rv-related li + li { border-top: 1px solid CanvasText; }
 }
+
+.rv-sources {
+  margin: 12px 0 0;
+  padding-inline-start: 1rem;
+  list-style: disc;
+  color: var(--ax-ink-secondary);
+  font-size: 14px;
+  line-height: 24px;
+}
+.rv-sources a { text-decoration: underline; text-underline-offset: 0.18em; overflow-wrap: anywhere; }
+.rv-sources a:hover { color: var(--ax-ink); }

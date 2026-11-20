@@ -1,33 +1,34 @@
-# Animate contextual icons
+# Make icon state changes recognizable
 
 - ID: motion-28
 - Category: Motion & interaction
 - Tags: Icons, States
 - URL: https://axiomui.nischal.fyi/rules/motion-28
 
-When icons appear, disappear, or swap state, animate opacity, scale, and blur rather than toggling visibility abruptly.
+When an icon changes meaning, keep the result recognizable at rest. A short crossfade can help connect the two shapes. Use scale or blur only when the small glyph remains legible.
 
 - Do: scale 0.25 → 1, opacity 0 → 1, blur 4px → 0
 - Don't: display: none to display: block
 
 ## Why it works
 
-An icon appearing, disappearing, or swapping state is a small but real signal, and a display: none to display: block toggle gives the eye nothing to track: the change is over before it registers. Animating scale 0.25 to 1 with opacity 0 to 1 and blur 4px to 0 gives it something legible instead. A 0.25 start would be far too much travel on a panel, but on a 20px icon it starts at 5px across and covers 15 pixels of growth in total, so the same ratio reads as a crisp snap rather than a zoom.
+Two glyphs in one stable slot can communicate a state change without shifting the label or the pointer target. A transition can show that one replaces the other, but the durable evidence is the resulting state. Someone who looks back after the animation finishes should still know what happened.
+
+- [WCAG 2.2 · Status messages](https://www.w3.org/WAI/WCAG22/Understanding/status-messages.html)
+- [WCAG 2.2 · Animation from interactions](https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions.html)
 
 ## What breaks
 
-A status icon swaps instantly via display toggling when a task completes, and users scanning the screen miss the change entirely because there was no motion to catch their attention.
+An icon can animate beautifully and still leave an assistive-technology user unaware of completion. A long blur can also obscure the one cue a sighted user needs.
 
 ## How to apply it
 
-1. Animate icon scale from 0.25 to 1 with opacity 0 to 1 and blur 4px to 0 on appear.
-2. Never swap icon visibility with a plain display: none to display: block toggle.
-3. Reverse the same scale, opacity, and blur values on disappear so the pair reads as one gesture.
-4. Keep the blur to small elements: filter costs more than transform and opacity, and on a large surface that cost shows.
-5. Hold the whole swap to about 300ms so it reads as one object changing state, not a delay before the next one.
+1. Keep both glyphs inside one fixed-size slot.
+2. Give the resulting control or status an appropriate accessible name, state or announcement.
+3. Test rapid reversals, the smallest rendered size and an immediate reduced-motion swap.
 
 ## Review questions
 
-1. Does the icon scale and fade in rather than snapping into view?
-2. Is a blur-to-sharp transition visible as the icon appears?
-3. Does the icon disappear with a matching animated transition instead of vanishing instantly?
+1. Can someone identify the final state after looking away?
+2. Does the control retain its name and focus during the swap?
+3. Does the glyph remain understandable without movement?

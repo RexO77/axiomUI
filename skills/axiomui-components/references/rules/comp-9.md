@@ -1,32 +1,34 @@
-# Loading states on buttons
+# Acknowledge a pending submission
 
 - ID: comp-9
 - Category: Components & actions
 - Tags: Buttons, States, Async
 - URL: https://axiomui.nischal.fyi/rules/comp-9
 
-Buttons that trigger async actions should show a spinner/loading state and disable re-click. Never leave a button looking clickable during submission.
+Acknowledge a submission while it is pending and prevent accidental repeats. Keep “Saving” distinct from “Saved” until the service confirms the result.
 
 - Do: Spinner + disabled during submit
 - Don't: Static button allows double-click
 
 ## Why it works
 
-A static button during an async submit gives no feedback that the click registered, so users interpret silence as failure and click again, firing duplicate requests. A spinner plus disabled state closes that feedback loop immediately, showing the system received the action and is working on it.
+A submit control has two audiences. The person needs to know whether the request started, and the service needs to know whether a retry represents the same operation. A spinner can answer the first question. The server must handle the second.
+
+- [Stripe · Idempotent requests](https://docs.stripe.com/api/idempotent_requests)
+- [WCAG 2.2 · Status messages](https://www.w3.org/WAI/WCAG22/Understanding/status-messages.html)
 
 ## What breaks
 
-A save button that stays static and clickable during submission invites a second click before the first request resolves, creating duplicate records or double-charged actions on the backend.
+A connection can drop after a payment succeeds but before the receipt reaches the browser. Disabling the original button cannot make a later retry safe.
 
 ## How to apply it
 
-1. Spin on any submit that changes server state — an order, a payment, a save — where a second click would fire a second request. A cheap reversible toggle has nothing to double, so it needs no spinner.
-2. Put the spinner beside the label rather than replacing it, or reserve the resting width, so the button does not collapse mid-submit.
-3. Disable the button for the life of the request and set aria-busy, so the state is announced and not only drawn.
-4. Restore the resting state on failure as well as success, and surface the error next to the button.
+1. Keep a meaningful label and preserve the button’s dimensions during loading.
+2. Prevent duplicate activation while pending and give important operations an idempotent server contract.
+3. Expose a meaningful status, preserve input on failure and tell the user how to recover.
 
 ## Review questions
 
-1. Does the button show a spinner while the request is in flight?
-2. Is the button disabled during submission, so a second click cannot fire?
-3. Does the button return to its resting state on failure as well as on success?
+1. Does the user know the request is still pending?
+2. Can a retry create the same order twice?
+3. Can someone recover after a timeout without re-entering the form?

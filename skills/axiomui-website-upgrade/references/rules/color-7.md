@@ -1,32 +1,34 @@
-# Hover = same hue
+# Keep hover feedback distinct from a result
 
 - ID: color-7
 - Category: Color & depth
 - Tags: Hover, States, Consistency
 - URL: https://axiomui.nischal.fyi/rules/color-7
 
-Hover and active states should stay in the same hue and only move lightness or saturation. A hue shift reads as a different element, not as the same element responding.
+A hover treatment should communicate availability without implying the operation has completed. A darker shade of the button’s existing color works when green is reserved nearby for success.
 
 - Do: blue-600 → blue-700
 - Don't: blue-600 → green-600
 
 ## Why it works
 
-Shifting hue on hover, like blue to green, forces the brain to re-identify the color category entirely, while stepping blue-600 to blue-700 only changes lightness within a category already recognized. Staying within one hue keeps the interaction legible as the same element deepening, not a different colored object appearing.
+Hover changes what the pointer is over. It does not submit the form. In the example a blue button deepens on hover. Turning it green could resemble the confirmation treatment used after a successful action. In another system a deliberate hue change may be a recognizable brand interaction.
+
+- [Atlassian · Color roles](https://atlassian.design/foundations/color)
+- [WCAG 2.2 · Non-text contrast](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html)
 
 ## What breaks
 
-A button that shifts from blue to green on hover reads as a state change — like a status flipping to success — rather than a hover effect, confusing users about whether an action already completed.
+If hover alone makes a button look selected or complete, a person can misread the state before acting. A touch user may never see a hover cue at all.
 
 ## How to apply it
 
-1. Step hover states within the same hue, e.g. blue-600 to blue-700.
-2. Never cross into a different color family like blue to green on interaction.
-3. Adjust only lightness or saturation for hover/active/pressed states.
-4. Check every interactive color transition for accidental hue shifts.
+1. Define resting, hover, pressed, focus, and completed states separately.
+2. Inspect the label and icon contrast through each state.
+3. Ensure the action can be identified and operated with touch and keyboard.
 
 ## Review questions
 
-1. Does the hover color stay in the same hue family as the resting state?
-2. Could the hover state be mistaken for a status change like success?
-3. Is only the lightness/saturation shifting on interaction, not the hue?
+1. What does the color change communicate here?
+2. Is completion still distinct from hovering?
+3. Can the control be found before hover occurs?

@@ -1,32 +1,34 @@
-# Z-index scale
+# Define stacking order within each context
 
 - ID: layout-11
 - Category: Layout & spacing
 - Tags: System, Overlays
 - URL: https://axiomui.nischal.fyi/rules/layout-11
 
-Define a z-index scale (base 0, dropdown 100, sticky 200, modal 300, toast 400) and only use its steps. Arbitrary values turn every new overlay into a bidding war that ends at 9999.
+Give overlay roles an intentional order and identify the stacking context that contains them. A large z-index on a child cannot lift it above a higher sibling context or the browser’s top layer.
 
 - Do: z-dropdown: 100, z-modal: 300
 - Don't: z-index: 9999
 
 ## Why it works
 
-Z-index only resolves relative to other values within the same stacking context, so arbitrary numbers like 9999 guarantee nothing — a new stacking context can bury it under a lower value elsewhere. A defined scale, base 0, dropdown 100, sticky 200, modal 300, toast 400, keeps stacking order legible and stops ad hoc escalation.
+The two diagrams put the modal above the dropdown. Both sets of numbers achieve that ordering in the same context. Role names explain the decision to the next author. Native dialogs and popovers in the top layer follow a different stacking mechanism.
+
+- [CSS · Stacking contexts](https://www.w3.org/TR/CSS2/visuren.html#z-index)
+- [CSS Positioned Layout · The top layer](https://www.w3.org/TR/css-position-4/#top-layer)
 
 ## What breaks
 
-Once one component ships with z-index: 9999 to win, the next fix ships 99999 to beat it, and eventually a toast renders behind a modal because nobody knows which arbitrary number currently wins.
+A dropdown inside a transformed ancestor can stay under a sticky header even with z-index 9999. Raising the number conceals the actual question of where the dropdown belongs in the document.
 
 ## How to apply it
 
-1. Assign layers from the fixed scale only, z-dropdown 100, z-modal 300, and so on.
-2. Ban arbitrary values like z-index: 9999 anywhere in the codebase.
-3. Centralize the scale as CSS variables or design tokens so every component references the same source.
-4. Add new layers between existing steps, like 150, rather than inventing values above the top of the scale.
+1. List which overlays may appear together and which must take input.
+2. Inspect ancestor stacking contexts before changing a layer value.
+3. Use a suitable portal or a native top-layer primitive when the overlay must escape its context.
 
 ## Review questions
 
-1. Does every stacked element, dropdown, sticky header, modal, toast, use a value from the defined scale?
-2. Is there any arbitrary z-index value like 9999 anywhere in the styles?
-3. Do toasts and modals stack in the correct visual order when triggered together?
+1. Which context owns each competing element?
+2. Does the visual order match focus and pointer behavior?
+3. Can feedback for an action still be seen inside the active dialog?

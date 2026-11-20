@@ -1,32 +1,34 @@
-# Graceful degradation
+# Recover at the point of failure
 
 - ID: sys-10
 - Category: System & logic
 - Tags: Error handling, Images, Async
 - URL: https://axiomui.nischal.fyi/rules/sys-10
 
-Always show a fallback when assets fail to load (broken images, failed API calls). Never show a broken state.
+When part of a view fails, preserve the content that still works. Identify the unavailable information and offer a retry or another route when it can help.
 
 - Do: Placeholder image + retry option
 - Don't: Broken image icon / blank screen
 
 ## Why it works
 
-A failed request is a normal event, not an exception, and the browser’s default handling of one is hostile: an img that 404s collapses to its alt box, so everything below it jumps up the page. Rendering a placeholder at the same dimensions, with a retry, holds the layout still and keeps the failure legible as a failure rather than as a page that looks half-built.
+A missing decorative image and a missing invoice total have very different consequences. Reserving media dimensions can keep a product grid stable. A missing required value needs an explicit unavailable state so nobody mistakes a blank for zero.
+
+- [W3C WAI · Choosing image alternatives](https://www.w3.org/WAI/tutorials/images/decision-tree/)
+- [Stripe · Idempotent requests](https://docs.stripe.com/api/idempotent_requests)
 
 ## What breaks
 
-One CDN hiccup and a grid of product cards shows broken-image glyphs at assorted sizes while the rows reflow around each failure, so the page reads as broken rather than as temporarily missing a few pictures.
+A decorative placeholder used in place of a diagram can hide the only explanation of a task. An unrestricted retry on a nonrepeatable action can also duplicate the operation.
 
 ## How to apply it
 
-1. Reserve the space before the request resolves, with aspect-ratio or a fixed box, so a failure cannot shift the layout.
-2. Handle the image onError by swapping in a placeholder; never let it fall through to the browser glyph.
-3. Give failed fetches a fallback state with a labelled retry that re-requests only the resource that failed.
-4. Test degraded states deliberately: block the image host and the API in devtools and walk the page.
+1. Reserve image dimensions and provide an appropriate text alternative for informative images.
+2. Keep usable content in place and distinguish failure from loading or an empty result.
+3. Offer a scoped retry for recoverable failures and an alternative for persistent ones.
 
 ## Review questions
 
-1. Does a failed image show a placeholder at the same size, with nothing below it moving?
-2. Is there any raw broken-image glyph or blank gap left on the page?
-3. Can the user retry the failed request without reloading the whole page?
+1. What information does the missing resource carry?
+2. Can the rest of the task continue safely?
+3. Is another attempt likely to help, and is it safe to repeat?

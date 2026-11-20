@@ -106,7 +106,10 @@
   box-shadow: var(--ax-shadow-popover);
   color: var(--ax-ink);
   outline: none;
-  animation: overlay-in 220ms var(--ease-out-strong);
+  animation: install-from-rail 180ms var(--ease-out-strong);
+}
+@keyframes install-from-rail {
+  from { opacity: 0; transform: translateX(-10px); }
 }
 /* It takes focus as a whole when it opens; the rail's focus ring is for its own controls. */
 .shell-rail .install-pop:focus-visible { outline: none; }
@@ -240,6 +243,10 @@
 }
 .peek-notch { top: var(--peek-anchor); }
 .peek[data-free] .peek-notch { display: none; }
+/* Related changes the preview in place. Gliding across the links would
+   temporarily obscure the next option, even when both end positions fit. */
+.peek[data-free][data-glide] { transition: opacity 140ms var(--ease-out-strong); }
+.peek[data-no-room] { opacity: 0; visibility: hidden; transition: none; }
 .peek-body { border-radius: var(--radius-sheet); overflow: clip; }
 .peek-title {
   display: flex;
@@ -496,7 +503,8 @@
   .peek,
   .peek[data-open],
   .peek[data-open][data-glide] { transition-duration: 140ms; transition-timing-function: linear; transition-property: opacity, visibility; }
-  .install-pop, .strip-hint { animation-duration: 140ms; animation-timing-function: linear; }
+  .install-pop { animation: none; }
+  .strip-hint { animation-duration: 140ms; animation-timing-function: linear; }
   .keys-switch-track, .keys-switch-track::after { transition: none; }
   .rail-row { transition: none; }
 }

@@ -1,6 +1,6 @@
 ---
 name: axiomui-typography
-description: Axiom UI's typography rules for interface text, with Do/Don't values and reasoning. Use when choosing or limiting fonts and weights, setting body or heading line-height, adding tracking to uppercase labels, applying sentence case to buttons and headings, de-emphasizing secondary text, aligning numbers with tabular figures, setting a minimum body size, balancing headings, wrapping or truncating text, or reviewing UI code for typography problems.
+description: Use Axiom UI’s typography guidance to choose typefaces and weights by role, set line height and measure, review casing in English labels, space short uppercase Latin labels, align comparable figures, preserve meaning under truncation, tune heading and paragraph wrapping, or isolate a name in mixed-direction text.
 license: MIT
 metadata:
   author: Nischal Skanda
@@ -11,22 +11,22 @@ metadata:
 
 # Axiom UI: Typography & text
 
-Interface text is scanned in fragments: a button, a label, a number in a table, a heading over a card. These rules fix casing, tracking, line height, weight, figures and wrapping so each fragment reads correctly on the first pass. Set every value once, as a token or a shared utility, and apply it everywhere. A typography fix made on one screen is next month's inconsistency.
+Start with a real string in the typeface and language that will appear on screen. A two-line heading, an amount that changes and a name beside a review count each expose a different failure. Record the role and the conditions you tested before sharing its type settings across components.
 
 ## How to use these rules
 
 1. Find the rule that governs the decision in front of you.
-2. Apply its Do as written. Values are targets, not suggestions.
-3. Check the result against its Don't. Code that matches the Don't is a violation, whatever the intent behind it.
+2. Read the rule’s description and compare its example with the task, platform, language and state you are working on.
+3. Test the failure the comparison illustrates. For a standard, verify the applicable requirement and its exceptions. For a design convention, judge the outcome with representative content and input.
 4. Read the file on its Reasoning line when the case is ambiguous or high-stakes, or when you have to justify the choice. Cite the rule id and URL when you explain a change.
 
 Where the project already has a token or component for the decision, use it. When that token contradicts a rule, flag the conflict instead of quietly rewriting the system.
 
 ## Rules
 
-### Sentence case is king (`typo-1`)
+### Use sentence case for English UI labels (`typo-1`)
 
-Capitalize only the first word and proper nouns instead of using title case. Sentence case reads as plain speech, removes the per-word capitalization debate, and keeps proper nouns standing out.
+Use sentence case for ordinary English labels and headings. Keep the spelling of names and acronyms intact, including title case in official titles. Follow the casing conventions of each translation.
 
 - Do: Invite your team / Skip for now
 - Don't: Invite Your Team / Skip For Now
@@ -34,79 +34,79 @@ Capitalize only the first word and proper nouns instead of using title case. Sen
 
 ### Letter spacing on caps (`typo-2`)
 
-If text is uppercase, always add letter-spacing (tracking) to improve legibility. Uppercase letters have no natural rhythm.
+For a short uppercase Latin label, compare the font’s default spacing with a small positive adjustment. Judge the result at its displayed size.
 
 - Do: tracking-wider (0.05em)
 - Don't: tracking-normal (0em)
 - Reasoning: `references/rules/typo-2.md` · https://axiomui.nischal.fyi/rules/typo-2
 
-### Line height math (body) (`typo-3`)
+### Set body leading for sustained reading (`typo-3`)
 
-Body text needs a line-height near 1.5x its size. Tighter and the eye loses its place on the return sweep; looser and the paragraph reads as separate stripes.
+For a paragraph of 16px Latin text, try a unitless line-height of 1.5. Adjust it with the typeface, line length, and language in view.
 
 - Do: Size: 16px / Line-height: 24px
 - Don't: Size: 16px / Line-height: 18px
 - Reasoning: `references/rules/typo-3.md` · https://axiomui.nischal.fyi/rules/typo-3
 
-### Line height math (headings) (`typo-4`)
+### Fit leading to wrapped headings (`typo-4`)
 
-As type gets larger, line-height should get tighter — roughly 1.1x to 1.2x for headings. Leading scales with the font, so a body-text ratio leaves a display heading looking unglued.
+Set heading leading with a two- or three-line title. Start tighter than paragraph leading if that keeps the title together, and leave clearance for the tallest marks in the supported scripts.
 
 - Do: 22px / 24px line-height (1.1x)
 - Don't: 22px / 33px line-height (1.5x)
 - Reasoning: `references/rules/typo-4.md` · https://axiomui.nischal.fyi/rules/typo-4
 
-### The 2-font limit (`typo-5`)
+### Give each typeface a job (`typo-5`)
 
-One typeface is almost always enough; weight and size carry the hierarchy. If you must pair, contrast a serif heading with a sans body — two sans faces differ too little to read as deliberate.
+Start with one family for product headings and body text. Add another family when it serves a recognizable role, such as code, editorial display, or coverage for another script.
 
 - Do: Manrope for headings + body
 - Don't: Arial headings + Verdana body
 - Reasoning: `references/rules/typo-5.md` · https://axiomui.nischal.fyi/rules/typo-5
 
-### De-emphasize with color, not size (`typo-6`)
+### Keep secondary text legible (`typo-6`)
 
-To make secondary text recede, lighten its color rather than shrink it below 12px. Color lowers emphasis without lowering legibility; size lowers both.
+Give secondary text a quieter role through position, weight, size, or tone. Keep ordinary informative text at 4.5:1 or higher against its background for WCAG AA.
 
 - Do: text-neutral-500 (14px)
 - Don't: text-neutral-900 (10px)
 - Reasoning: `references/rules/typo-6.md` · https://axiomui.nischal.fyi/rules/typo-6
 
-### Numeric alignment (`typo-7`)
+### Align comparable numbers (`typo-7`)
 
-Use tabular (monospaced) figures or right-align numbers in tables so decimals stack. Aligned digits let the eye compare magnitudes without reading every value.
+Align amounts at the numeric end of a column and use tabular figures when the font supports them. With consistent fractional precision, corresponding place values then line up.
 
 - Do: font-variant-numeric: tabular-nums
 - Don't: font-variant-numeric: proportional-nums
 - Reasoning: `references/rules/typo-7.md` · https://axiomui.nischal.fyi/rules/typo-7
 
-### Left align body copy (`typo-8`)
+### Align paragraphs to the reading start (`typo-8`)
 
-Center-aligned paragraphs slow scanning: every line starts in a different place, so the eye has to hunt for the next one. Reserve centering for headlines of a line or two.
+Give multiline prose a stable starting edge. For horizontal text, start alignment places English on the left and Arabic on the right. Reserve centering for short, self-contained passages that still work when they wrap.
 
 - Do: Left-aligned paragraph text
 - Don't: Centered multi-line paragraph
 - Reasoning: `references/rules/typo-8.md` · https://axiomui.nischal.fyi/rules/typo-8
 
-### Limit font weights (`typo-9`)
+### Assign font weights by role (`typo-9`)
 
-Use at most two weights per typeface (Regular + Semibold). Every extra weight shrinks the step between levels, until nothing reads as clearly dominant.
+Use a small set of weights with named purposes. Regular and semibold can distinguish the body and heading in a settings card. Add another weight only when the distinction remains visible at the intended size.
 
 - Do: Regular + Semibold
 - Don't: Regular + Medium + Semibold + Bold
 - Reasoning: `references/rules/typo-9.md` · https://axiomui.nischal.fyi/rules/typo-9
 
-### Truncation strategy (`typo-10`)
+### Preserve meaning when text overflows (`typo-10`)
 
-Long text needs a plan: truncate with ellipsis, wrap, or fade. Never let text overflow or break layout.
+Let meaningful text wrap when space permits. In a compact row, an ellipsis can protect neighboring controls if the reader can still obtain the full value before acting.
 
-- Do: text-ellipsis overflow-hidden
+- Do: truncate (single-line ellipsis)
 - Don't: overflow-visible, no truncation
 - Reasoning: `references/rules/typo-10.md` · https://axiomui.nischal.fyi/rules/typo-10
 
-### Minimum body size (`typo-11`)
+### Choose a readable body size (`typo-11`)
 
-Body text should never be smaller than 14px on mobile or 12px on desktop, and subtext should stop at 12px. Below that the x-height drops under what most people can scan without leaning in.
+Start routine reading around 16px and adjust for the typeface, task, and distance. Give essential details enough space to enlarge without losing content.
 
 - Do: Body: 16px / Subtext: 12px
 - Don't: Body: 11px / Subtext: 9px
@@ -114,19 +114,27 @@ Body text should never be smaller than 14px on mobile or 12px on desktop, and su
 
 ### Balance short headings (`typo-12`)
 
-Short headings should use balanced wrapping so line breaks feel intentional instead of leaving a single orphaned word.
+Try balanced wrapping when a short multiline heading ends with an isolated word. Read the resulting phrases at several widths before making it the heading default.
 
 - Do: h1, h2, h3 { text-wrap: balance }
 - Don't: h1, h2, h3 { text-wrap: wrap }
 - Reasoning: `references/rules/typo-12.md` · https://axiomui.nischal.fyi/rules/typo-12
 
-### Pretty wrap UI copy (`typo-13`)
+### Review wrapping in short descriptions (`typo-13`)
 
-Short-to-medium descriptions, captions, list items, and card text should use pretty wrapping to avoid awkward final lines.
+Try text-wrap: pretty on a caption or card description with an awkward ending. Browsers choose the details of the wrapping algorithm, so judge the result on the engines you support.
 
 - Do: p.description { text-wrap: pretty }
 - Don't: p.description { text-wrap: wrap }
 - Reasoning: `references/rules/typo-13.md` · https://axiomui.nischal.fyi/rules/typo-13
+
+### Keep names and counts together across scripts (`typo-14`)
+
+A name inserted into a translated sentence can run in either direction. Isolate the name so the browser keeps the surrounding punctuation and count with the sentence.
+
+- Do: Isolate the restaurant name before its review count
+- Don't: Insert the name directly before the dash and count
+- Reasoning: `references/rules/typo-14.md` · https://axiomui.nischal.fyi/rules/typo-14
 
 ## Related
 

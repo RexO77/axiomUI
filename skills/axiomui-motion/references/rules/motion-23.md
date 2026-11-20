@@ -1,32 +1,34 @@
-# Avoid inheritable motion variables
+# Scope rapidly changing drag styles
 
 - ID: motion-23
 - Category: Motion & interaction
 - Tags: Gestures, Performance
 - URL: https://axiomui.nischal.fyi/rules/motion-23
 
-Updating CSS variables on a parent can recalculate styles for every child. For drag distance, update the element transform directly.
+Update a drag value near the element that consumes it. If a changing custom property is inherited from a large ancestor, measure how much style work reaches its descendants.
 
 - Do: element.style.transform
 - Don't: Parent --swipe-amount variable
 
 ## Why it works
 
-Setting a CSS custom property like --swipe-amount on a parent element forces the browser to recompute styles for every descendant that references it, since custom property invalidation cascades down the whole subtree on each update. Writing directly to element.style.transform touches only that one element’s compositor layer. For a value updating every drag frame, that difference is the gap between 60fps and a dropped-frame stutter.
+Unregistered custom properties normally inherit. A variable genuinely shared by many items can be useful. When only one card needs a per-frame offset, setting it on the list can enlarge the scope of invalidation. The browser, subtree and actual consumers determine the cost.
+
+- [CSS Custom Properties · Inheritance and substitution](https://www.w3.org/TR/css-variables-1/)
+- [CSS Properties and Values API · Registered properties](https://www.w3.org/TR/css-properties-values-api-1/)
 
 ## What breaks
 
-A drag handler updates a --swipe-amount variable on a parent container every pointermove, style recalculation cascades to every child that reads it, and the drag visibly stutters under a large or nested DOM tree.
+A tiny benchmark can exaggerate the effect in either direction. Forced computed-style reads include synchronization overhead, and rounded timing values can make ratios unstable.
 
 ## How to apply it
 
-1. Write drag distance straight to element.style.transform on the dragged element.
-2. Never update a shared custom property on a parent as the per-frame drag value.
-3. Confirm no descendant styles reference a variable that changes every pointermove.
-4. Profile style recalculation in devtools while dragging to confirm it stays scoped to one element.
+1. Identify which elements actually consume the drag offset.
+2. Compare a local transform, a local variable, or a registered non-inheriting property when appropriate.
+3. Profile the real subtree on representative hardware and measure input as well as style work.
 
 ## Review questions
 
-1. Is the drag transform written directly to the dragged element’s style, not a parent variable?
-2. Does dragging stay smooth even inside a deeply nested or large DOM subtree?
-3. Does devtools performance recording show no wide style recalculation during the drag?
+1. Which descendants need to change with the card?
+2. Does the trace show style work outside those consumers?
+3. Does the difference remain on representative content and hardware?

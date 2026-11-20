@@ -43,8 +43,8 @@
   from the checkout and a real package tarball on Node 18.17.0 and 20, using throwaway homes.
   Run `node packages/axiomui/test/smoke.mjs` after changing package behavior; an optional
   bin path argument exercises an extracted tarball. Regenerate skills first.
-- `npm run check` (`scripts/check-deep-dives.mjs`) asserts all 105 rules have authored
-  deep-dive prose. It must print `105/105`.
+- `npm run check` (`scripts/check-deep-dives.mjs`) asserts all 108 rules have authored
+  deep-dive prose. It must print `108/108`.
 - `src/data/__tests__/consistency.test.ts` checks *claims*, not syntax: stated contrast ratios
   are recomputed, Tailwind classes are validated against the real scale, and showcase captions
   are checked against the durations and scale values their panes actually run. A rule's

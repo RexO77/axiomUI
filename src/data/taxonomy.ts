@@ -64,7 +64,7 @@ export type RuleGroup = {
 const groupsByCategory: Record<RailCategoryId, RuleGroup[]> = {
   typography: [
     { label: "Type foundations", ruleIds: ids("typo", 5, 9, 11, 6, 1, 2) },
-    { label: "Reading and wrapping", ruleIds: ids("typo", 3, 4, 8, 7, 10, 12, 13) },
+    { label: "Reading and wrapping", ruleIds: ids("typo", 3, 4, 8, 14, 7, 10, 12, 13) },
   ],
   layout: [{ label: null, ruleIds: ids("layout", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11) }],
   color: [
@@ -77,8 +77,8 @@ const groupsByCategory: Record<RailCategoryId, RuleGroup[]> = {
       ],
     },
   ],
-  components: [{ label: null, ruleIds: ids("comp", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12) }],
-  forms: [{ label: null, ruleIds: ids("form", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12) }],
+  components: [{ label: null, ruleIds: ids("comp", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13) }],
+  forms: [{ label: null, ruleIds: ids("form", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13) }],
   system: [
     { label: "State, progress and recovery", ruleIds: ids("sys", 2, 1, 7, 4, 9, 10, 6) },
     {
@@ -139,7 +139,7 @@ export const railCategories: readonly RailCategory[] = railCategoryIds.map((id) 
   };
 });
 
-/** All 105 rules in rail order: categories in rail order, each in learning order. */
+/** All catalog rules in rail order: categories in rail order, each in learning order. */
 export const railOrder: readonly Rule[] = railCategories.flatMap((category) => category.rules);
 
 const railIndex = new Map(railOrder.map((rule, index) => [rule.id, index]));
@@ -211,27 +211,25 @@ function collection(id: string, name: string, groups: RuleGroup[]): Collection {
 }
 
 /**
- * The 14 rules an accessibility review needs, drawn from every category and
+ * The rules in the accessibility review, drawn from every category and
  * grouped by what the review checks.
  */
 export const accessibilityCollection = collection("accessibility", "Accessibility", [
   { label: "Keyboard and focus", ruleIds: ["a11y-1", "sys-8", "comp-12"] },
   {
-    label: "Contrast and legibility",
-    ruleIds: ["color-9", "color-6", "typo-6", "typo-11", "a11y-2"],
+    label: "Reading visual information",
+    ruleIds: ["color-9", "color-6", "typo-6", "typo-11", "a11y-2", "comp-13"],
   },
-  { label: "Names and labels", ruleIds: ["form-2", "comp-7", "comp-8"] },
+  { label: "Labels and input assistance", ruleIds: ["form-2", "comp-7", "comp-8", "form-13"] },
   { label: "Targets and motion", ruleIds: ["sys-3", "a11y-3", "motion-17"] },
 ]);
 
-/**
- * The 33 rules whose comparison is a live demo (a showcase spec exists).
- * A test holds this list to `showcaseSpecs`, so it cannot drift from the demos.
- */
+/** These three comparisons operate on text or data rather than timed tracks. */
+export const workedExampleIds: readonly string[] = ["typo-14", "comp-13", "form-13"];
 export const liveDemoCollection = collection("live", "Live demos", [
   {
     label: null,
-    ruleIds: [...ids("motion", ...Array.from({ length: 29 }, (_, i) => i + 1)), "color-7", "comp-9", "sys-1", "sys-9"],
+    ruleIds: [...ids("motion", ...Array.from({ length: 29 }, (_, i) => i + 1)), "color-7", "comp-9", "sys-1", "sys-9", ...workedExampleIds],
   },
 ]);
 
@@ -239,7 +237,7 @@ export const collections: readonly Collection[] = [accessibilityCollection, live
 
 const liveDemoIds = new Set(liveDemoCollection.ruleIds);
 
-/** True when the rule's comparison is a live motion demo rather than two static panes. */
+/** True when the rule's comparison is interactive. */
 export function hasLiveDemo(id: string): boolean {
   return liveDemoIds.has(id);
 }
@@ -264,10 +262,12 @@ export const structuralRuleIds: ReadonlySet<string> = new Set([
   "comp-5", // side drawer vs centred modal
   "comp-6", // inline error under the field vs a toast in the corner
   "comp-7", // labels widen the toolbar, so the icons move
+  "comp-13", // a chart with a summary and data table vs the chart alone
   // forms
   "form-1", // labels above vs labels beside the inputs
   "form-6", // a list of radios vs one dropdown
   "form-10", // one column vs a two-column grid
+  "form-13", // one whole-code field vs six individual digit fields
   // system
   "sys-1", // skeleton bars vs a centred spinner
   "sys-2", // an empty state with a next step vs a blank panel
@@ -282,7 +282,7 @@ export const structuralRuleIds: ReadonlySet<string> = new Set([
   "motion-14", // toast vs a growing box
 ]);
 
-/** Every rule's compare kind. A test holds that all 105 are classified exactly once. */
+/** Every rule's compare kind. A test holds that all rules are classified exactly once. */
 export const compareKind: Readonly<Record<string, CompareKind>> = Object.fromEntries(
   rules.map((rule) => [rule.id, structuralRuleIds.has(rule.id) ? "structural" : "aligned"]),
 );

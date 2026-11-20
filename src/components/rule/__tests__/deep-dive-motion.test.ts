@@ -19,7 +19,7 @@ function fixture() {
   const side = { getBoundingClientRect: () => rect, animate };
   const sheet = { clientWidth: 1200, clientHeight: 900, getBoundingClientRect: () => ({ right: 1200 }) };
   const root = {
-    querySelector: (selector: string) => selector === ".rv-side" ? side : selector === ".rv-dd" ? {} : null,
+    querySelector: (selector: string) => selector === ".rv-side" ? side : selector === ".rv-dd" ? side : null,
     querySelectorAll: () => [],
     closest: () => sheet,
   } as unknown as HTMLElement;

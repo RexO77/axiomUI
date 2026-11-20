@@ -1,6 +1,6 @@
 ---
 name: axiomui-color
-description: Axiom UI's color and depth rules, with Do/Don't values and reasoning. Use when building a palette or applying the 60-30-10 balance, picking text and border colors, checking WCAG contrast, mapping semantic status colors, designing hover states, deriving a dark mode, tinting shadows, choosing between shadows and borders, outlining images, or reviewing UI that looks harsh, muddy, flat, or low contrast.
+description: Use Axiom UI’s color guidance when assigning accent and status roles, checking text or control contrast, designing hover and selected states, adapting a palette to dark surfaces, compositing translucent colors, defining image edges, or choosing borders and shadows for elevation.
 license: MIT
 metadata:
   author: Nischal Skanda
@@ -11,78 +11,78 @@ metadata:
 
 # Axiom UI: Color & depth
 
-Color is a budget. Spend it on meaning and on the next action, and let neutral structure carry everything else. These rules set palette balance, contrast floors with their ratios, status semantics, hover behavior, dark mode and depth. Measure contrast instead of judging it by eye, and derive states from the base color instead of hand-picking new ones.
+Identify what the color needs to communicate. A divider can be quiet when the rows are already distinct. An outline that identifies the only visible text field needs enough contrast against its surroundings. Measure the actual rendered pair, including the surface beneath a translucent fill.
 
 ## How to use these rules
 
 1. Find the rule that governs the decision in front of you.
-2. Apply its Do as written. Values are targets, not suggestions.
-3. Check the result against its Don't. Code that matches the Don't is a violation, whatever the intent behind it.
+2. Read the rule’s description and compare its example with the task, platform, language and state you are working on.
+3. Test the failure the comparison illustrates. For a standard, verify the applicable requirement and its exceptions. For a design convention, judge the outcome with representative content and input.
 4. Read the file on its Reasoning line when the case is ambiguous or high-stakes, or when you have to justify the choice. Cite the rule id and URL when you explain a change.
 
 Where the project already has a token or component for the decision, use it. When that token contradicts a rule, flag the conflict instead of quietly rewriting the system.
 
 ## Rules
 
-### 60-30-10 rule (`color-1`)
+### Use accent color to mark priority (`color-1`)
 
-Split the palette roughly 60% neutral surface and text, 30% secondary structure like borders and subtitles, 10% primary. An accent only reads as an accent while it stays rare.
+Reserve the strongest accent for the action or information that should stand out in its immediate context. The familiar 60-30-10 split is a composition prompt. The page has no required color percentages.
 
 - Do: Mostly whites/grays, splashes of blue
 - Don't: Blue header, blue sidebar, blue buttons
 - Reasoning: `references/rules/color-1.md` · https://axiomui.nischal.fyi/rules/color-1
 
-### Never pure black (`color-2`)
+### Use the intended text color (`color-2`)
 
-Pure black (#000000) creates eye strain against white. Use a very dark gray or blue-gray.
+Choose an ink color for each theme and check it against its surface. Black and near-black can both give excellent contrast on white. Reuse the chosen text token so adjacent screens follow the same palette.
 
 - Do: #0f172a on #ffffff (17.9:1)
 - Don't: #000000 on #ffffff (21:1)
 - Reasoning: `references/rules/color-2.md` · https://axiomui.nischal.fyi/rules/color-2
 
-### Colored shadows (`color-3`)
+### Match shadows to their role (`color-3`)
 
-Shadows in real life are rarely gray. They pick up the color of the object. Mix your brand color into the shadow.
+Choose the shadow tint as part of the surface style. A branded promotion can use an accent-tinted shadow, while a neutral elevation token can serve reusable cards and menus.
 
-- Do: shadow-indigo-500/20
-- Don't: shadow-black/20
+- Do: Campaign shadow: indigo tint
+- Don't: Same campaign card: black shadow
 - Reasoning: `references/rules/color-3.md` · https://axiomui.nischal.fyi/rules/color-3
 
-### Semantic colors (`color-4`)
+### Make status colors dependable (`color-4`)
 
-Don't spend red, green, or amber on decoration; reserve them for error, success, and warning. Once red also means 'liked', it can no longer mean 'something went wrong'.
+Give status roles a consistent meaning in context and pair them with labels or recognizable symbols. A red heart can express affection. Reserve a distinct treatment for a destructive command shown beside it.
 
 - Do: Like icon: blue-500
 - Don't: Like icon: rose-500
 - Reasoning: `references/rules/color-4.md` · https://axiomui.nischal.fyi/rules/color-4
 
-### Border colors (`color-5`)
+### Keep decorative dividers quiet (`color-5`)
 
-Borders should sit well below text contrast — if your text is neutral-900, your borders belong near neutral-200. A border is structure, not content, and at text contrast it competes with the words it frames.
+Use a subdued border when it only separates rows that already read as distinct. If a line is necessary to identify a control or understand a graphic, give it adequate contrast for that role.
 
 - Do: border: neutral-200
 - Don't: border: neutral-400
 - Reasoning: `references/rules/color-5.md` · https://axiomui.nischal.fyi/rules/color-5
 
-### Double contrast for borders (`color-6`)
+### Give essential control edges enough contrast (`color-6`)
 
-An interactive edge needs more contrast than a passive divider, so inputs and outline buttons should sit a step darker. A border has to be found before it can be clicked.
+When a boundary is needed to identify an enabled control, WCAG AA requires at least 3:1 contrast against its adjacent color. A decorative divider may be quieter. Check the actual pair in each theme.
 
-- Do: input border: neutral-300 · divider: neutral-200
+- Do: input border: neutral-500 · divider: neutral-200
 - Don't: input border: neutral-100 · divider: neutral-200
 - Reasoning: `references/rules/color-6.md` · https://axiomui.nischal.fyi/rules/color-6
 
-### Hover = same hue (`color-7`)
+### Keep hover feedback distinct from a result (`color-7`)
 
-Hover and active states should stay in the same hue and only move lightness or saturation. A hue shift reads as a different element, not as the same element responding.
+A hover treatment should communicate availability without implying the operation has completed. A darker shade of the button’s existing color works when green is reserved nearby for success.
 
 - Do: blue-600 → blue-700
 - Don't: blue-600 → green-600
 - Reasoning: `references/rules/color-7.md` · https://axiomui.nischal.fyi/rules/color-7
 
-### Dark mode isn't inverted (`color-8`)
+### Design the dark palette by role (`color-8`)
 
-Dark mode is not an inverted light theme. Reduce surface contrast, desaturate brand colors, and flip the elevation model so a lighter surface reads as a higher one.
+Define dark-theme colors for text, surfaces, states, and media. Lighter raised surfaces can distinguish layers when dark shadows are subtle. Tune the accent against its surroundings and preserve meaningful image colors.
 
 - Do: bg neutral-900 / card neutral-800 / brand sat 91% → 55%
 - Don't: filter: invert(1) on the whole page
@@ -90,31 +90,31 @@ Dark mode is not an inverted light theme. Reduce surface contrast, desaturate br
 
 ### Accessible contrast ratios (`color-9`)
 
-Text must meet WCAG AA contrast (4.5:1 for body, 3:1 for large text). Don't eyeball it — check it.
+For WCAG AA, ordinary text needs at least 4.5:1 contrast. Large text qualifies at 3:1. Measure unrounded values against the actual background, including overlays and images behind the text.
 
 - Do: #737373 on #ffffff (4.7:1)
 - Don't: #aaaaaa on #ffffff (2.3:1)
 - Reasoning: `references/rules/color-9.md` · https://axiomui.nischal.fyi/rules/color-9
 
-### Opacity over new colors (`color-10`)
+### Give state colors a shared source (`color-10`)
 
-Build hover, pressed, and tint states from one color plus an alpha value (bg-blue-500/10) instead of hand-picking a hex per state. A token with alpha follows the brand when it changes; a pasted hex does not.
+Map hover and selection colors to named state roles. A translucent fill can adapt to the surface beneath it. An opaque token can be preferable when the state needs a predictable appearance across surfaces.
 
 - Do: Every state = blue-500 / alpha
 - Don't: Three hand-picked hexes
 - Reasoning: `references/rules/color-10.md` · https://axiomui.nischal.fyi/rules/color-10
 
-### Neutral image outlines (`color-11`)
+### Define image edges when they disappear (`color-11`)
 
-Images need a subtle inset outline for edge definition. Use pure black at low opacity in light mode and pure white at low opacity in dark mode.
+When a thumbnail blends into its surrounding surface, try a subtle inset edge. Choose its tone for the theme. Full-bleed imagery and images with clear edges may need no outline.
 
 - Do: outline-black/10 dark:outline-white/10
 - Don't: outline-slate-900/10 in both themes
 - Reasoning: `references/rules/color-11.md` · https://axiomui.nischal.fyi/rules/color-11
 
-### Shadows can replace borders (`color-12`)
+### Use elevation when a surface is raised (`color-12`)
 
-For cards, buttons, and raised containers, layered transparent shadows define an edge more cleanly than a border. A border draws one hard line at full strength; a shadow describes the same edge with a falloff, so the card lifts instead of being outlined.
+When a surface sits above another, a crisp shadow plus a soft drop can communicate its edge and depth. A flat item may need only a divider. Keep essential boundaries visible in forced colors.
 
 - Do: 0 0 0 1px rgb(0 0 0 / 6%), 0 2px 4px rgb(0 0 0 / 4%)
 - Don't: border: 1px neutral-300 on every card

@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import { TicketChart } from "./reading-examples";
+
 import { Archive, ArrowDown, FileText, Share2, Trash2, X } from "@/components/ui/icons";
 
 import {
@@ -214,7 +216,7 @@ function nestedRadius(variant: Variant) {
     return (
         <PreviewFrame className="flex flex-col items-center justify-center gap-2.5">
             <div
-                className="relative mt-3 border border-neutral-200 bg-white p-2 dark:border-neutral-700 dark:bg-neutral-900"
+                className="relative mt-3 border border-neutral-200 bg-white p-[7px] dark:border-neutral-700 dark:bg-neutral-900"
                 style={{ borderRadius: outer }}
             >
                 {/* Sits on the 1px border, so the arc replaces that stretch of it. */}
@@ -234,11 +236,11 @@ function nestedRadius(variant: Variant) {
             <Annotation className={ANNOT}>
                 {isDo ? (
                     <>
-                        <span className={ACCENT_TEXT}>12</span> = 4 + 8 padding
+                        <span className={ACCENT_TEXT}>12</span> = 4 + 8 inset
                     </>
                 ) : (
                     <>
-                        <span className={ACCENT_TEXT}>4</span> ≠ 4 + 8 — corners pinch
+                        <span className={ACCENT_TEXT}>4</span> ≠ 4 + 8 inset
                     </>
                 )}
             </Annotation>
@@ -380,10 +382,10 @@ function toastVsInline(variant: Variant) {
                     Email
                 </span>
                 <div className="mt-1 flex h-6 items-center rounded-md border border-rose-500 bg-white px-2 text-[10px] text-neutral-600 dark:bg-neutral-900 dark:text-neutral-300">
-                    maya@acme
+                    maya@
                 </div>
                 <span className="mt-1 block h-3 text-[9px] font-medium leading-3 text-rose-600 dark:text-rose-400">
-                    {isDo ? "Enter a valid email address" : null}
+                    {isDo ? "Add the domain after @" : null}
                 </span>
             </div>
             <Annotation className={ANNOT}>
@@ -393,7 +395,7 @@ function toastVsInline(variant: Variant) {
                 <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-md border border-neutral-200 bg-white px-2 py-1.5 shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
                     <span className="size-1.5 rounded-full bg-rose-500" />
                     <span className="text-[9px] font-medium text-neutral-700 dark:text-neutral-200">
-                        Invalid email
+                        Add the domain after @
                     </span>
                 </div>
             ) : null}
@@ -503,7 +505,7 @@ function iconSizes(variant: Variant) {
 
 // ── comp-11 · Card click area ───────────────────────────────────────
 // The same article card; the dashed accent region is the hit area.
-// The whole card, or just the title text — 16% of the card's area.
+// The illustrated target covers either the card or its title.
 function cardClickArea(variant: Variant) {
     const isDo = variant === "do";
     return (
@@ -529,7 +531,7 @@ function cardClickArea(variant: Variant) {
                 <TextLine widthClass="w-full" className="mt-1.5" />
                 <TextLine widthClass="w-2/3" className="mt-1" />
             </div>
-            <Annotation className={ANNOT}>{isDo ? "hit area · 100%" : "hit area · 16%"}</Annotation>
+            <Annotation className={ANNOT}>{isDo ? "hit area · whole card" : "hit area · title only"}</Annotation>
         </PreviewFrame>
     );
 }
@@ -606,6 +608,8 @@ export const componentPreviews: PreviewRenderer = (ruleId, variant): ReactNode |
             return cardClickArea(variant);
         case "comp-12":
             return closeAffordance(variant);
+        case "comp-13":
+            return <PreviewFrame className="flex items-center justify-center"><TicketChart variant={variant} /></PreviewFrame>;
         default:
             return null;
     }

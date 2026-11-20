@@ -1,32 +1,34 @@
-# Use strong custom easing
+# Choose easing for the movement
 
 - ID: motion-4
 - Category: Motion & interaction
 - Tags: Easing, Polish
 - URL: https://axiomui.nischal.fyi/rules/motion-4
 
-Default CSS easings are often too weak. Use intentional curves like strong ease-out for entrances and ease-in-out for on-screen movement.
+For an entrance, compare how much ground each curve covers before the content needs to be read. Use a stronger ease-out when the panel should reach its resting position early.
 
 - Do: cubic-bezier(0.23, 1, 0.32, 1)
 - Don't: ease — cubic-bezier(0.25, 0.1, 0.25, 1)
 
 ## Why it works
 
-The browser default is a shallow curve, not a wrong one. ease — cubic-bezier(0.25, 0.1, 0.25, 1) — leaves the start at well under half the average rate, never exceeds about 2.3x it, and is 58% of the way there a third of the duration in. cubic-bezier(0.23, 1, 0.32, 1) leaves at more than four times the average rate and is 88% of the way there at that same point, then spends the rest of the time settling. Same 360ms, same direction, same distance: the strength of the curve is doing all the work.
+At the same duration, changing the curve redistributes the travel. One third of the way through this 360ms example, CSS ease covers about 58% of the distance and the stronger curve covers about 88%. Both finish at the same time. The choice changes how long the content stays far from its destination.
+
+- [CSS Easing · Cubic Bézier curves](https://www.w3.org/TR/css-easing-1/#cubic-bezier-easing-functions)
+- [IBM Carbon · Motion principles and timing](https://www.carbondesignsystem.com/building-blocks/foundations/motion/overview)
 
 ## What breaks
 
-On the browser default a panel is still travelling when the eye has already landed on its first line, so the reader spends the back half of the animation trying to read moving text. Nothing about it looks broken, which is exactly why it survives review — it just leaves every surface in the product feeling a beat behind the click.
+A curve tuned for an 8px menu entrance can produce a jarring first movement on a wide panel. A keyword curve may already suit a short move.
 
 ## How to apply it
 
-1. Use cubic-bezier(0.23, 1, 0.32, 1) for entrances rather than ease, ease-out, or any other keyword default.
-2. Reserve ease-in-out only for elements moving between two on-screen positions, where both ends are already visible.
-3. Judge a curve by where the distance goes, not by the duration: most of the travel belongs in the first third.
-4. Store the custom curve as a shared token so every entrance reuses the same feel.
+1. Keep distance and duration fixed for the comparison.
+2. Check the early movement at the largest supported distance.
+3. Reuse a token for components with the same motion and purpose.
 
 ## Review questions
 
-1. Has most of the travel happened by the first third of the duration?
-2. Is the same custom easing curve reused consistently across similar components?
-3. Is any entrance still running on a keyword default like ease?
+1. How far has the panel moved when the user starts reading?
+2. Does the largest instance appear to jump?
+3. Does a simpler curve communicate the same transition?

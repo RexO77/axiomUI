@@ -35,7 +35,6 @@ import { readSide, SideSwitch, writeSide } from "./side-switch";
 import { Toolbar, type ChipSection } from "./toolbar";
 import { groupSectionId, shownCollection, useWall } from "./wall-context";
 import { wallResizer } from "./wall-resize";
-import "./gallery.css";
 
 /** The search follows typing once it pauses this long. */
 const SEARCH_DEBOUNCE_MS = 300;

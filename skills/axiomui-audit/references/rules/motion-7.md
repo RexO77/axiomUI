@@ -1,32 +1,34 @@
-# Asymmetric enter and exit
+# Tune entrance and exit separately
 
 - ID: motion-7
 - Category: Motion & interaction
 - Tags: Timing, Exit, Entry
 - URL: https://axiomui.nischal.fyi/rules/motion-7
 
-Entrances can be slightly slower for comprehension, but exits should be faster so the interface feels responsive.
+A toast can arrive slowly enough to locate and leave quickly once dismissed. Choose each direction’s timing for what the user needs to follow.
 
 - Do: Enter 220ms, exit 160ms
 - Don't: Enter 360ms, exit 360ms
 
 ## Why it works
 
-The two directions are paying for different things. An entrance buys the eye time to locate and read something that was not there a moment ago, so its 220ms is spent on comprehension. An exit has nothing left to comprehend — the user decided before the animation began — and every frame of it sits on the critical path of whatever they do next, because the leaving element still holds its space, and often the focus, until it finishes. Cutting the exit to 160ms is not stylistic asymmetry; run both at 360ms and dismissing costs 200ms more than it needs to, every single time.
+On entry, a toast introduces information. On dismissal, the next task may already be underway. The example gives entry 220ms and exit 160ms. A dismissal that visibly returns an object to its destination may warrant more time than a routine fade.
+
+- [IBM Carbon · Motion principles and timing](https://www.carbondesignsystem.com/building-blocks/foundations/motion/overview)
+- [WCAG 2.2 · Status messages](https://www.w3.org/WAI/WCAG22/Understanding/status-messages.html)
 
 ## What breaks
 
-Using the same slow timing for both directions makes closing a panel feel as sluggish as opening it, so dismissing things quickly reads as an unresponsive interface.
+An exit can block the next click if its invisible layer still intercepts input. An exit that is too brief can hide where the object went.
 
 ## How to apply it
 
-1. Set enter to 220ms and exit to 160ms as separate tokens.
-2. Never reuse a single duration variable for both enter and exit states.
-3. Bias any asymmetry toward faster exits, never slower ones.
-4. Test rapid open-close cycles to confirm exits never lag behind input.
+1. Set aside enough time to read a message before its dismissal begins.
+2. Keep focus on the person’s current task when a passive status toast appears or disappears. If a person dismisses it from a focused toast action, move focus to a logical surviving control.
+3. Interrupt an entrance with a dismissal and check the result.
 
 ## Review questions
 
-1. Does closing an element feel faster than opening it?
-2. Are enter and exit using different, deliberately chosen durations?
-3. Does dismissing a panel ever feel like it takes as long as opening it?
+1. Can the message be read before it goes away?
+2. Where does the next click or keystroke go?
+3. Does the destination of a moving item remain clear?

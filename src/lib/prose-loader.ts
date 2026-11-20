@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 
-import type { RuleProse } from "@/lib/rule-prose-types";
+import type { RuleProse, RuleSource } from "@/lib/rule-prose-types";
 
 /*
  * The rule view's deep-dive prose, one rule at a time.
@@ -27,10 +27,22 @@ export const proseUrl = (id: string) => `/deep-dives/${encodeURIComponent(id)}`;
 const LOADING: ProseState = Object.freeze({ status: "loading" });
 const ERROR: ProseState = Object.freeze({ status: "error" });
 
+function isSource(data: unknown): data is RuleSource {
+  if (!data || typeof data !== "object") return false;
+  const { title, href } = data as Record<string, unknown>;
+  if (typeof title !== "string" || !title.trim() || typeof href !== "string" || !href.startsWith("https://")) return false;
+  try {
+    return new URL(href).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 function isProse(data: unknown, id: string): data is RuleProse {
   if (!data || typeof data !== "object") return false;
   const value = data as Record<string, unknown>;
   const strings = (list: unknown) => Array.isArray(list) && list.every((item) => typeof item === "string");
+  if (value.sources !== undefined && (!Array.isArray(value.sources) || !value.sources.every(isSource))) return false;
   return value.id === id && typeof value.why === "string" && typeof value.breaks === "string" && strings(value.how) && strings(value.review);
 }
 

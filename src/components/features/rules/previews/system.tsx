@@ -307,12 +307,11 @@ function undoDelete(variant: Variant) {
             <div className="flex items-center gap-2 self-center rounded-md bg-neutral-900 px-2.5 py-1.5 dark:border dark:border-neutral-700 dark:bg-neutral-800">
                 {variant === "do" ? (
                     <>
-                        <span className="text-[10px] leading-none text-white">Q3-report.pdf deleted</span>
+                        <span className="text-[10px] leading-none text-white">Q3-report.pdf moved to Trash</span>
                         <span className="inline-flex items-center gap-1 text-[10px] font-semibold leading-none text-blue-400">
                             <CornerUpLeft aria-hidden className="size-2.5 stroke-[2]" />
                             Undo
                         </span>
-                        <span className="font-mono text-[9px] leading-none tabular-nums text-neutral-400">5s</span>
                     </>
                 ) : (
                     <>
@@ -510,7 +509,7 @@ function breakpoints(variant: Variant) {
 }
 
 // ── sys-13 · Transition only what changes ───────────────────────────
-// Same Save button under a font-swap width change. Scoped transitions
+// Same Save button after a change in its explicit CSS width. Scoped transitions
 // let it snap to its new width; `all` makes it drift through the
 // intermediate widths, drawn as fading dashed outlines behind the button.
 // The button itself never wraps or shrinks: the drift is the only change.
@@ -579,14 +578,7 @@ function HintCard({ accent = false }: { accent?: boolean }) {
 function willChange(variant: Variant) {
     return (
         <PreviewFrame className="flex flex-col justify-center gap-3">
-            <CodeChip>
-                will-change:{" "}
-                {variant === "do" ? (
-                    <span className="text-blue-600 dark:text-blue-400">transform, opacity</span>
-                ) : (
-                    "all"
-                )}
-            </CodeChip>
+            <CodeChip>will-change: transform, opacity</CodeChip>
             <div className="flex items-end gap-4 pt-1">
                 {variant === "do" ? (
                     <>

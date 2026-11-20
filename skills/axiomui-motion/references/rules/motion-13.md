@@ -1,32 +1,34 @@
-# Use starting styles for entry
+# Give new elements a starting style
 
 - ID: motion-13
 - Category: Motion & interaction
 - Tags: Animation API, Entry, CSS
 - URL: https://axiomui.nischal.fyi/rules/motion-13
 
-Animate new elements from their starting visual state instead of mounting them and then forcing a JavaScript state flip.
+Use @starting-style for a CSS transition on newly rendered content. Leave the normal style visible so the content remains usable if the entry animation is skipped.
 
-- Do: @starting-style { opacity: 0 }
+- Do: .row { @starting-style { opacity: 0 } }
 - Don't: useEffect(() => setShown(true))
 
 ## Why it works
 
-@starting-style lets the browser animate from a defined starting visual state the moment an element mounts, instead of mounting at its final state and forcing a useEffect to flip a class on the next tick. That extra JS round-trip is fragile and can flash the unanimated final state first.
+A transition normally needs a previous computed style. A newly rendered row may have none. A starting style supplies that missing state in the cascade and lets the row settle into its normal style. A second render solely to toggle an animation class adds timing to coordinate.
+
+- [CSS Transitions · Defining a starting style](https://www.w3.org/TR/css-transitions-2/#defining-before-change-style)
+- [React · When effects run](https://react.dev/reference/react/useEffect#caveats)
 
 ## What breaks
 
-Relying on useEffect to trigger entry means a slow re-render or effect timing hiccup makes the element flash into place fully formed before the animation class applies, producing an inconsistent, sometimes-broken entrance.
+A base style that keeps the row transparent until an effect runs can leave real content invisible when the script is delayed.
 
 ## How to apply it
 
-1. Define @starting-style with opacity and transform values.
-2. Remove any useEffect solely dedicated to toggling an entry-animation class.
-3. Check browser support and provide a JS fallback only where @starting-style is unavailable.
-4. Confirm the starting-style values match the same properties animated in the base transition.
+1. Define final opacity and position in the normal rule.
+2. Place the starting declaration inside the row’s style rule, or target the row with a selector inside a standalone @starting-style block. At equal specificity, put the starting rule after the final declaration so its starting value wins.
+3. Insert successive rows and test with animation disabled.
 
 ## Review questions
 
-1. Does the element animate in immediately on mount without a visible flash?
-2. Is entry animation declared in CSS rather than triggered by a JS effect?
-3. Does the entrance ever appear to snap into its final state before animating?
+1. Does the row appear on its first insertion?
+2. Is its ordinary computed style visible?
+3. Does removing the animation leave the information accessible?

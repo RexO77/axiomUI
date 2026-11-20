@@ -1,32 +1,33 @@
-# The container fallacy
+# Choose a boundary that explains the group
 
 - ID: layout-7
 - Category: Layout & spacing
 - Tags: Grouping, Surfaces
 - URL: https://axiomui.nischal.fyi/rules/layout-7
 
-Don't put every section in a bordered box. Use a background shade or plain space instead: each border is another line competing for attention, and space separates just as well for no ink.
+Use headings and space for related content that reads in sequence. A card surface or border can help when an item stands on its own or takes a distinct action.
 
 - Do: White card on light gray bg
 - Don't: White card with gray border on white bg
 
 ## Why it works
 
-Separation between sections needs one contrast channel, not two stacked together. A white card on a light-gray background already reads as a distinct region through figure-ground contrast; adding a border on top is redundant and starts competing with the content it’s meant to frame.
+In the stat panel, four nested outlines give the wrapper, label, and two values similar visual status. One surface can hold the same material together. In a grid of independently actionable records, a repeated border can instead clarify where each item begins and ends.
+
+- [USWDS · Cards](https://designsystem.digital.gov/components/card/)
 
 ## What breaks
 
-Wrap a white card in a gray border on an already-white page and the border becomes the loudest element on screen, drawing more attention than the content it boxes in, while the page reads as a grid of boxes rather than a layout.
+Removing all outlines can hide the bounds of separate interactive items. Adding a frame to every label makes it harder to see which pieces share a single action.
 
 ## How to apply it
 
-1. Separate sections with a background-color shift, like a white card on a light-gray page.
-2. Drop the border when a background-color difference already exists.
-3. Reserve borders for cases with no background contrast available.
-4. Test by removing borders temporarily — if sections still read as separate, the border wasn’t needed.
+1. Identify whether a group is an independent item, a section, or a control.
+2. Try a heading and a change in spacing before adding an inner frame.
+3. Keep the boundary when its removal obscures an action or ownership.
 
 ## Review questions
 
-1. Is background-color contrast, rather than a border, doing the work of separating this section?
-2. Would sections still look distinct if every border line were removed?
-3. Is there a box with a border sitting on top of an already-contrasting background?
+1. What does this edge tell the reader?
+2. Can the items be reordered independently?
+3. Can a reader tell which action belongs to each item?

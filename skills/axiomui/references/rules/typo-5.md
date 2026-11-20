@@ -1,32 +1,33 @@
-# The 2-font limit
+# Give each typeface a job
 
 - ID: typo-5
 - Category: Typography & text
 - Tags: System, Consistency
 - URL: https://axiomui.nischal.fyi/rules/typo-5
 
-One typeface is almost always enough; weight and size carry the hierarchy. If you must pair, contrast a serif heading with a sans body — two sans faces differ too little to read as deliberate.
+Start with one family for product headings and body text. Add another family when it serves a recognizable role, such as code, editorial display, or coverage for another script.
 
 - Do: Manrope for headings + body
 - Don't: Arial headings + Verdana body
 
 ## Why it works
 
-Each typeface carries its own rhythm of stroke contrast, x-height, and spacing; mixing two sans-serifs like Roboto and Open Sans puts two similar-but-different rhythms side by side, which reads as a mismatch rather than a deliberate contrast. A serif-plus-sans pairing signals hierarchy through genuine structural difference, or one typeface removes the risk entirely.
+In the landing card, changing from Arial to Verdana announces a change of texture without explaining why. A consistent family already has size, weight, and position available to mark the transition from title to description. A second face earns its place when readers encounter a different kind of content.
+
+- [USWDS · Font families](https://designsystem.digital.gov/design-tokens/typesetting/font-family/)
 
 ## What breaks
 
-Two similar sans-serifs next to each other look like a font-loading bug rather than a design choice, especially at similar weights and sizes, and teams end up debating which one is off with no clear answer.
+Two interchangeable body styles can creep into adjacent screens and wrap the same string differently. Conversely, forcing one font across every language can introduce unpredictable fallback within a word.
 
 ## How to apply it
 
-1. Default to one typeface for everything, like Inter, across headings and body.
-2. If pairing, use exactly one serif for headings and one sans for body.
-3. Never combine two sans-serifs such as Roboto and Open Sans.
-4. Limit any project to two typefaces total, no exceptions.
+1. Name the role a new family will serve before adding it.
+2. Check the heading and body together at their final sizes and widths.
+3. Inspect fallback coverage in the languages your product supports.
 
 ## Review questions
 
-1. Does the page use one typeface, or a clear serif-plus-sans pair?
-2. Are there two different sans-serif fonts appearing anywhere?
-3. Would a viewer describe the pairing as intentional contrast, not a mismatch?
+1. Where does the change of family signal a change of role?
+2. Could the existing family express the same distinction?
+3. Which face actually renders the localized copy?

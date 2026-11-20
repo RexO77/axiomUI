@@ -24,6 +24,7 @@ const ROOTS = [
 const FORBIDDEN = [
   "@/data/deep-dive-builder",
   "@/data/deep-dives",
+  "@/data/rule-sources",
   "@/lib/rule-prose",
   "@/lib/rule-prose-build",
 ];
@@ -128,6 +129,7 @@ describe("client import graph", () => {
 
   it("names the forbidden modules", () => {
     expect(isForbidden(path.join(SRC, "data/deep-dives.ts"))).toBe("@/data/deep-dives");
+    expect(isForbidden(path.join(SRC, "data/rule-sources.ts"))).toBe("@/data/rule-sources");
     expect(isForbidden(path.join(SRC, "lib/catalog/stores.ts"))).toBeNull();
     expect(isForbidden(path.join(SRC, "lib/rule-prose.ts"))).toBe("@/lib/rule-prose");
     expect(isForbidden(path.join(SRC, "lib/rule-prose-build.ts"))).toBe("@/lib/rule-prose-build");

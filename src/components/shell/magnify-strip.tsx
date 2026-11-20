@@ -3,7 +3,7 @@
 
 /*
  * The collapsed rail's dot column: one mark per rule, all
- * 105, in runs per rail category, each run headed by its coloured category
+ * 108, in runs per rail category, each run headed by its coloured category
  * icon. Under the pointer it magnifies like the Dock: the column keeps its
  * length and the mark under the pointer stays under the pointer
  * (`magnifyInto`, which writes into buffers this strip owns, so a frame

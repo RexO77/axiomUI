@@ -1,32 +1,34 @@
-# Opacity over new colors
+# Give state colors a shared source
 
 - ID: color-10
 - Category: Color & depth
 - Tags: States, Consistency
 - URL: https://axiomui.nischal.fyi/rules/color-10
 
-Build hover, pressed, and tint states from one color plus an alpha value (bg-blue-500/10) instead of hand-picking a hex per state. A token with alpha follows the brand when it changes; a pasted hex does not.
+Map hover and selection colors to named state roles. A translucent fill can adapt to the surface beneath it. An opaque token can be preferable when the state needs a predictable appearance across surfaces.
 
 - Do: Every state = blue-500 / alpha
 - Don't: Three hand-picked hexes
 
 ## Why it works
 
-Deriving hover and tint states from opacity, like bg-blue-500/10, keeps every state mathematically tied to one source color, so the palette scales without designers inventing a new hex like #e8f0fe for each surface. This is a systems argument, not just convenience: opacity states stay correct automatically if the brand color ever changes.
+The nav sample derives two tints from the same blue. Alpha mixes the source color with whatever is underneath, so an identical value produces different colors over light and dark panels. A change to the brand updates a derived tint but does not guarantee readable text or visible selection.
+
+- [W3C · Simple alpha compositing](https://www.w3.org/TR/compositing-1/#simplealphacompositing)
+- [Atlassian · Elevation](https://atlassian.design/foundations/elevation)
 
 ## What breaks
 
-A codebase full of one-off hex tints like #e8f0fe, #eaf1fd, #e6effd for slightly different components will drift out of sync the moment the brand blue updates, leaving stale-looking mismatched tints scattered across the app.
+An opaque light-blue value reused on a dark sidebar can look like a stray light-theme row. A very faint translucent fill can cause the opposite problem and leave selection hard to distinguish.
 
 ## How to apply it
 
-1. Replace custom tint hexes like #e8f0fe with bg-blue-500/10.
-2. Derive hover, pressed, and subtle backgrounds all from opacity of one base color.
-3. Never hand-pick a new hex for a state that opacity could produce.
-4. Search the codebase for one-off light-tint hex values and consolidate them.
+1. Name hover and selected backgrounds separately.
+2. Use a shared source where those roles intentionally track the brand.
+3. Check the composited result on every supported surface and retain a persistent selected cue.
 
 ## Review questions
 
-1. Are tint backgrounds built from opacity of the base color, not new hexes?
-2. Would updating the brand color automatically update all its tint states?
-3. Are there multiple near-identical light-blue hexes scattered in the styles?
+1. Does the selected row stay distinguishable from a hovered row?
+2. Can the label still be read over the composited fill?
+3. Which states should change when the brand color changes?

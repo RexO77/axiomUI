@@ -1,242 +1,242 @@
 # Motion & interaction checklist
 
-Ask each question of the surface under review. Record a finding only for a concrete violation, with evidence.
+Ask each question of the surface under review. Record the observed failure or unmet requirement and the evidence for it.
 
 ## Animate by frequency (`motion-1`)
 
 - Do: Rare modal: 220ms · Don't: Frequent palette: 220ms
-- [ ] Does the command palette open without any perceptible delay?
-- [ ] Does a rarely-seen modal still get its full standard motion rather than feeling clipped?
-- [ ] Do frequently repeated actions feel faster than one-off actions?
+- [ ] Where does the first keystroke land?
+- [ ] Does anything move under the pointer as the user reaches for the next action?
+- [ ] What does the entrance explain on the tenth open?
 - Reasoning: `references/rules/motion-1.md`
 
-## Keyboard actions stay instant (`motion-2`)
+## Keep keyboard input responsive (`motion-2`)
 
 - Do: Keyboard panel: 0ms · Don't: Keyboard panel: 240ms
-- [ ] Does pressing a shortcut show its result instantly, with no visible wait?
-- [ ] Does the command palette open on keypress without a delay?
-- [ ] Does focus move immediately when triggered from the keyboard?
+- [ ] Does the first character appear in the query?
+- [ ] Where does focus return after Escape during entry?
+- [ ] Can the user see the currently focused control throughout?
 - Reasoning: `references/rules/motion-2.md`
 
 ## Purpose before motion (`motion-3`)
 
 - Do: Drawer slides from its edge · Don't: Modal bounces in
-- [ ] Can you name the job of every animation on this screen?
-- [ ] Does each panel or view move from the direction it belongs to?
-- [ ] Is any motion present purely for decoration, playing on every load?
+- [ ] Can someone explain where the drawer went?
+- [ ] Does the animation call attention to the right event?
+- [ ] Does the end state communicate the result with reduced motion enabled?
 - Reasoning: `references/rules/motion-3.md`
 
-## Use strong custom easing (`motion-4`)
+## Choose easing for the movement (`motion-4`)
 
 - Do: cubic-bezier(0.23, 1, 0.32, 1) · Don't: ease — cubic-bezier(0.25, 0.1, 0.25, 1)
-- [ ] Has most of the travel happened by the first third of the duration?
-- [ ] Is the same custom easing curve reused consistently across similar components?
-- [ ] Is any entrance still running on a keyword default like ease?
+- [ ] How far has the panel moved when the user starts reading?
+- [ ] Does the largest instance appear to jump?
+- [ ] Does a simpler curve communicate the same transition?
 - Reasoning: `references/rules/motion-4.md`
 
-## Never use ease-in for UI (`motion-5`)
+## Make the start of an entrance visible (`motion-5`)
 
 - Do: Menu open: ease-out · Don't: Menu open: ease-in
-- [ ] Does the menu begin moving immediately when opened, with no slow start?
-- [ ] Do any UI responses appear to hesitate before they begin animating?
-- [ ] Is ease-in absent from all entrance and response animations?
+- [ ] What is the first visible response to the press?
+- [ ] Does the trigger still provide feedback with animation disabled?
+- [ ] Does the exit communicate where the panel is going?
 - Reasoning: `references/rules/motion-5.md`
 
-## Keep UI motion under 300ms (`motion-6`)
+## Time motion to the task (`motion-6`)
 
 - Do: Menu: 180ms · Don't: Menu: 500ms
-- [ ] Does the dropdown finish opening in under 200ms?
-- [ ] Does any popover or menu take half a second or longer to appear?
-- [ ] Do small UI transitions feel snappy rather than deliberate?
+- [ ] Can a user select an item while the menu opens?
+- [ ] Is the destination easy to follow on a wide screen?
+- [ ] Does the transition still help after several uses?
 - Reasoning: `references/rules/motion-6.md`
 
-## Asymmetric enter and exit (`motion-7`)
+## Tune entrance and exit separately (`motion-7`)
 
 - Do: Enter 220ms, exit 160ms · Don't: Enter 360ms, exit 360ms
-- [ ] Does closing an element feel faster than opening it?
-- [ ] Are enter and exit using different, deliberately chosen durations?
-- [ ] Does dismissing a panel ever feel like it takes as long as opening it?
+- [ ] Can the message be read before it goes away?
+- [ ] Where does the next click or keystroke go?
+- [ ] Does the destination of a moving item remain clear?
 - Reasoning: `references/rules/motion-7.md`
 
-## Press feedback (`motion-8`)
+## Show when a control is pressed (`motion-8`)
 
 - Do: button:active scale(0.96) · Don't: button:active scale(0.90)
-- [ ] Does every button visibly compress when pressed?
-- [ ] Does the press effect feel subtle rather than jarring or exaggerated?
-- [ ] Does feedback appear the instant you press down, not after release?
+- [ ] Can a press near an edge finish or cancel predictably?
+- [ ] Is the label still sharp and readable while held?
+- [ ] Can the pressed state be recognized without movement?
 - Reasoning: `references/rules/motion-8.md`
 
-## Never scale from zero (`motion-9`)
+## Keep surface entrances near full size (`motion-9`)
 
 - Do: scale(0.95) + opacity 0 · Don't: scale(0) + opacity 0
-- [ ] Does the panel appear at nearly full size as it fades in?
-- [ ] Is there any element that visibly grows from a single point or zero size?
-- [ ] Does the entrance feel like a subtle settle rather than a dramatic pop?
+- [ ] Can the user identify the menu as it appears?
+- [ ] How far do its outer edges travel?
+- [ ] Does scaling add information beyond the fade?
 - Reasoning: `references/rules/motion-9.md`
 
-## Origin-aware popovers (`motion-10`)
+## Anchor a popover’s motion to its trigger (`motion-10`)
 
 - Do: transform-origin: the trigger · Don't: transform-origin: center
-- [ ] Does the popover visually grow out of the element that triggered it?
-- [ ] Does a modal scale from the center of the screen rather than an edge?
-- [ ] Does any anchored menu appear to originate from the wrong location?
+- [ ] Does the origin stay on the correct edge when the menu flips?
+- [ ] Does it line up with an off-center trigger?
+- [ ] Would a simple fade work better for a dialog without an anchor?
 - Reasoning: `references/rules/motion-10.md`
 
-## Subsequent tooltips are instant (`motion-11`)
+## Share tooltip timing across a toolbar (`motion-11`)
 
 - Do: First tooltip 300ms, then 0ms · Don't: Every tooltip 300ms
-- [ ] Does the first tooltip in a session wait briefly before appearing?
-- [ ] Do adjacent tooltips appear instantly once you’re already hovering the toolbar?
-- [ ] Does every toolbar item impose its own separate hover delay?
+- [ ] Does a pass across unopened tools avoid a flash of unwanted tips?
+- [ ] Can someone travel from a trigger onto its tip?
+- [ ] After leaving and returning, does the initial delay reset?
 - Reasoning: `references/rules/motion-11.md`
 
-## Use transitions for interruptible UI (`motion-12`)
+## Retarget interrupted motion from its current position (`motion-12`)
 
 - Do: transition: transform 420ms · Don't: animation: turn 420ms
-- [ ] Does rapidly re-toggling the control reverse smoothly instead of snapping back?
-- [ ] Is a CSS transition, not a keyframe animation, driving this interruptible state?
-- [ ] Does the animation ever visibly jump to a start position under fast clicking?
+- [ ] Does the object jump when its destination changes?
+- [ ] Does the semantic state reflect the latest input?
+- [ ] Can a stale completion handler undo a newer choice?
 - Reasoning: `references/rules/motion-12.md`
 
-## Use starting styles for entry (`motion-13`)
+## Give new elements a starting style (`motion-13`)
 
-- Do: @starting-style { opacity: 0 } · Don't: useEffect(() => setShown(true))
-- [ ] Does the element animate in immediately on mount without a visible flash?
-- [ ] Is entry animation declared in CSS rather than triggered by a JS effect?
-- [ ] Does the entrance ever appear to snap into its final state before animating?
+- Do: .row { @starting-style { opacity: 0 } } · Don't: useEffect(() => setShown(true))
+- [ ] Does the row appear on its first insertion?
+- [ ] Is its ordinary computed style visible?
+- [ ] Does removing the animation leave the information accessible?
 - Reasoning: `references/rules/motion-13.md`
 
-## Animate transform and opacity (`motion-14`)
+## Choose animation properties with layout in mind (`motion-14`)
 
 - Do: translateY + opacity · Don't: height
-- [ ] Does the animation stay smooth even while other work is happening on the page?
-- [ ] Is movement driven by transform and opacity rather than top, left, or size properties?
-- [ ] Does any panel visibly stutter as it grows or shrinks in height?
+- [ ] Are surrounding elements in the right places throughout?
+- [ ] Can the keyboard still reach each visible control?
+- [ ] What does the performance trace show while other work runs?
 - Reasoning: `references/rules/motion-14.md`
 
-## Use percentage transforms (`motion-15`)
+## Size slide exits to the moving element (`motion-15`)
 
 - Do: translateY(150%) · Don't: translateY(40px)
-- [ ] Does the drawer or toast fully leave the screen regardless of its content length?
-- [ ] Is positioning driven by a percentage transform rather than a fixed pixel value?
-- [ ] Does any hidden panel show a visible sliver when its content changes size?
+- [ ] Does the tallest toast clear the boundary?
+- [ ] Does the shortest toast also clear its inset?
+- [ ] Can focus reach the dismissed content?
 - Reasoning: `references/rules/motion-15.md`
 
-## Gate hover motion (`motion-16`)
+## Gate decorative hover motion (`motion-16`)
 
 - Do: @media (hover: hover) · Don't: Hover scale on touch
-- [ ] Does tapping a card on a touch device skip the hover animation entirely?
-- [ ] Does the hover effect still play correctly with a mouse on desktop?
-- [ ] Is there a separate, immediate feedback state for touch taps?
+- [ ] Can the control be identified before hovering?
+- [ ] Does the action work with focus and activation from a keyboard?
+- [ ] What happens when the user switches from trackpad to touch?
 - Reasoning: `references/rules/motion-16.md`
 
-## Reduced motion still has intent (`motion-17`)
+## Preserve feedback with reduced motion (`motion-17`)
 
 - Do: Reduced motion: fade in place · Don't: Reduced motion: slides anyway
-- [ ] With reduced motion enabled, does the interface still confirm the action happened?
-- [ ] Is movement removed while opacity or color feedback remains?
-- [ ] Does no component silently do nothing when reduced motion is on?
+- [ ] With motion reduced, what tells the user the action succeeded?
+- [ ] Do both CSS and JavaScript honor a preference change?
+- [ ] Which movements are essential to the information or function?
 - Reasoning: `references/rules/motion-17.md`
 
-## Gesture dismissal uses velocity (`motion-18`)
+## Use release direction and speed for swipe dismissal (`motion-18`)
 
 - Do: Dismiss on distance or velocity · Don't: Distance-only swipe threshold
-- [ ] Does a quick short flick dismiss the element even without reaching full distance?
-- [ ] Does a slow drag still dismiss once it crosses the distance threshold?
-- [ ] Does an accidental slow small nudge correctly snap back instead of dismissing?
+- [ ] Does a stationary release below the distance threshold keep the card?
+- [ ] Does a canceled pointer leave the item intact?
+- [ ] Can someone complete the same action with a single tap or click?
 - Reasoning: `references/rules/motion-18.md`
 
-## Damp drag boundaries (`motion-19`)
+## Use drag resistance where overshoot is meaningful (`motion-19`)
 
 - Do: Increasing friction past edge · Don't: Invisible wall stop
-- [ ] Does dragging past the edge still move slightly, with rising resistance, instead of stopping dead?
-- [ ] Does releasing past the boundary spring the element back smoothly?
-- [ ] Does the resistance feel proportional to how far past the edge the drag goes?
+- [ ] What does movement beyond the edge mean here?
+- [ ] Can someone mistake overshoot for a valid value?
+- [ ] Does releasing or canceling show the correct resting state?
 - Reasoning: `references/rules/motion-19.md`
 
-## Capture pointer during drag (`motion-20`)
+## Keep a drag attached to its initiating pointer (`motion-20`)
 
 - Do: setPointerCapture on drag start · Don't: No pointer capture on drag start
-- [ ] Does the drag keep following the pointer even when it moves outside the element’s edges?
-- [ ] Does introducing a second touch during a drag leave the first drag unaffected?
-- [ ] Does releasing the pointer cleanly end the drag without a stuck or jumping element?
+- [ ] Does a mouse drag continue outside the handle?
+- [ ] Can a second finger take over unexpectedly?
+- [ ] Can scrolling, cancellation or loss of capture leave the control stuck?
 - Reasoning: `references/rules/motion-20.md`
 
-## Use CSS under load (`motion-21`)
+## Keep decorative motion independent of busy scripts (`motion-21`)
 
 - Do: Tab indicator: CSS transition · Don't: Tab indicator: rAF + style writes
-- [ ] Does the tab motion stay smooth when the main thread is artificially busy?
-- [ ] Is the animation defined as a CSS transition rather than a JS interval or rAF loop?
-- [ ] Does the motion have a fixed, predetermined timing rather than depending on live data?
+- [ ] Which updates require JavaScript on every frame?
+- [ ] Does the indicator actually keep moving on the target device?
+- [ ] Can the user activate the destination during the work?
 - Reasoning: `references/rules/motion-21.md`
 
-## Use WAAPI for programmatic motion (`motion-22`)
+## Use a playback controller for programmatic animation (`motion-22`)
 
-- Do: element.animate transform/opacity · Don't: setInterval layout animation
-- [ ] Does the programmatic animation stay smooth when triggered by dynamic runtime data?
-- [ ] Is the animation built with the Web Animations API rather than setInterval or setTimeout loops?
-- [ ] Are only transform and opacity being animated, not width, top, or other layout properties?
+- Do: element.animate() on transform · Don't: setInterval transform every 80ms
+- [ ] Can playback reverse or pause without creating another competing animation?
+- [ ] What state remains after cancellation?
+- [ ] Is a coarse timer visibly stepping through an otherwise continuous movement?
 - Reasoning: `references/rules/motion-22.md`
 
-## Avoid inheritable motion variables (`motion-23`)
+## Scope rapidly changing drag styles (`motion-23`)
 
 - Do: element.style.transform · Don't: Parent --swipe-amount variable
-- [ ] Is the drag transform written directly to the dragged element’s style, not a parent variable?
-- [ ] Does dragging stay smooth even inside a deeply nested or large DOM subtree?
-- [ ] Does devtools performance recording show no wide style recalculation during the drag?
+- [ ] Which descendants need to change with the card?
+- [ ] Does the trace show style work outside those consumers?
+- [ ] Does the difference remain on representative content and hardware?
 - Reasoning: `references/rules/motion-23.md`
 
-## Stagger without blocking (`motion-24`)
+## Limit the total stagger (`motion-24`)
 
-- Do: 30-80ms between items · Don't: 220ms between items
-- [ ] Is the delay between staggered items within roughly 30-80ms rather than a long cascade?
-- [ ] Can the user interact with earlier items while later ones are still animating in?
-- [ ] Does the stagger actually improve the sense of a related group, not just delay the UI?
+- Do: 60ms between three row starts · Don't: 220ms between items
+- [ ] How long does the last useful item take to appear?
+- [ ] What happens when the list has thirty items?
+- [ ] Can someone tab to or click an invisible result?
 - Reasoning: `references/rules/motion-24.md`
 
-## Review motion in slow time (`motion-25`)
+## Review motion slowly, then at normal speed (`motion-25`)
 
 - Do: Inspect at 2x-5x duration · Don't: Judge only at full speed
-- [ ] Was this animation reviewed at 2x-5x its normal duration before shipping?
-- [ ] Do all animated properties stay synchronized when played back slowly?
-- [ ] Does any color transition pass through an unintended muddy blend when slowed down?
+- [ ] Which property creates the unexpected frame?
+- [ ] Is an offset deliberate and useful at normal speed?
+- [ ] Does a real input interrupt the sequence cleanly?
 - Reasoning: `references/rules/motion-25.md`
 
-## Split enter animations (`motion-26`)
+## Sequence panel content when order explains something (`motion-26`)
 
-- Do: Title, copy, actions staggered 80-100ms · Don't: Title, copy, actions in one fade
-- [ ] Do the title, copy, and actions animate in as separate staggered groups?
-- [ ] Does the stagger order follow natural reading order, top to bottom?
-- [ ] Does the whole panel avoid animating in as one single fading block?
+- Do: Title, copy, actions staggered 90ms · Don't: Title, copy, actions in one fade
+- [ ] What information does the order reveal?
+- [ ] Can the user see and use the initial focus target immediately?
+- [ ] Does the hierarchy remain clear with every group displayed together?
 - Reasoning: `references/rules/motion-26.md`
 
-## Subtle exit motion (`motion-27`)
+## Keep routine exits quiet (`motion-27`)
 
 - Do: opacity 0 + translateY(-12px) at 150ms · Don't: translateY(-100%) scale(0.5) at 400ms
-- [ ] Does the exit use a small translate and fade rather than a dramatic scale or slide?
-- [ ] Is the exit noticeably quicker than the element’s entrance animation?
-- [ ] Does surrounding content stay stable in place while the element exits?
+- [ ] Where does the next action take place?
+- [ ] Does the departure explain a destination when one exists?
+- [ ] Can the leaving element still block input after it disappears?
 - Reasoning: `references/rules/motion-27.md`
 
-## Animate contextual icons (`motion-28`)
+## Make icon state changes recognizable (`motion-28`)
 
 - Do: scale 0.25 → 1, opacity 0 → 1, blur 4px → 0 · Don't: display: none to display: block
-- [ ] Does the icon scale and fade in rather than snapping into view?
-- [ ] Is a blur-to-sharp transition visible as the icon appears?
-- [ ] Does the icon disappear with a matching animated transition instead of vanishing instantly?
+- [ ] Can someone identify the final state after looking away?
+- [ ] Does the control retain its name and focus during the swap?
+- [ ] Does the glyph remain understandable without movement?
 - Reasoning: `references/rules/motion-28.md`
 
-## Skip default load animation (`motion-29`)
+## Show the initial interface in its ready state (`motion-29`)
 
 - Do: AnimatePresence initial={false} · Don't: AnimatePresence initial={true}
-- [ ] Does content that is open by default appear instantly on first page load, without an enter animation?
-- [ ] Does that same component still animate normally when the user closes and reopens it later?
-- [ ] Is initial={false} set on AnimatePresence for this component?
+- [ ] Which content is known before the first render?
+- [ ] Can the user locate the initial focus target immediately?
+- [ ] Does the later insertion still communicate a meaningful change?
 - Reasoning: `references/rules/motion-29.md`
 
 ## Also in scope
 
 This domain also depends on rules filed under other domains. Walk these items too whenever this domain is in scope:
 
-- `sys-13` Transition only what changes (`references/checklists/system.md`)
+- `sys-13` Limit transitions to intended properties (`references/checklists/system.md`)
 - `sys-14` Use will-change sparingly (`references/checklists/system.md`)

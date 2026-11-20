@@ -1,32 +1,34 @@
-# Colored shadows
+# Match shadows to their role
 
 - ID: color-3
 - Category: Color & depth
 - Tags: Depth, Surfaces
 - URL: https://axiomui.nischal.fyi/rules/color-3
 
-Shadows in real life are rarely gray. They pick up the color of the object. Mix your brand color into the shadow.
+Choose the shadow tint as part of the surface style. A branded promotion can use an accent-tinted shadow, while a neutral elevation token can serve reusable cards and menus.
 
-- Do: shadow-indigo-500/20
-- Don't: shadow-black/20
+- Do: Campaign shadow: indigo tint
+- Don't: Same campaign card: black shadow
 
 ## Why it works
 
-In physical environments, shadows are tinted by ambient bounce light and the color of nearby surfaces, never neutral gray — that’s why shadow-indigo-500/20 under an indigo element reads as believable while shadow-black/20 reads as a flat drop-shadow filter. Mixing brand hue into the shadow simulates that light-source physics instead of faking depth with pure darkness.
+Both samples use the same offsets, blur, and opacity. Changing just the tint lets you judge whether the promo card belongs to the campaign’s indigo treatment. The choice communicates an art direction. Other surfaces can share one neutral elevation token.
+
+- [CSS Backgrounds and Borders · Shadow layers](https://www.w3.org/TR/css-backgrounds-3/#shadow-layers)
+- [Atlassian · Elevation](https://atlassian.design/foundations/elevation)
 
 ## What breaks
 
-A gray shadow under a saturated colored card looks pasted on rather than lifted off the page, making elevated elements feel like flat cutouts instead of physical objects.
+A literal brand-colored glow on every dropdown and dialog can compete with focus indicators or suggest a special state. A one-off black shadow on a campaign card can also drift from its intended treatment.
 
 ## How to apply it
 
-1. Swap shadow-black/20 for a hue-matched shadow like shadow-indigo-500/20.
-2. Match the shadow tint to the element’s own dominant color, not a global default.
-3. Keep opacity low (10-20%) so the tint reads as ambient, not a color cast.
-4. Test shadows against both light and dark surfaces for believability.
+1. Choose a shadow role and compare its appearance on the actual surrounding surface.
+2. Hold blur, offset, and opacity constant while judging the tint.
+3. Check whether the group boundary remains clear when forced colors remove shadows.
 
 ## Review questions
 
-1. Does the shadow under a colored element pick up that element’s hue?
-2. Would the shadow look wrong if swapped for flat black?
-3. Does the elevated element feel like it is floating rather than pasted on?
+1. Does this shadow represent ordinary elevation or a specific visual treatment?
+2. Does it compete with focus or selection cues?
+3. Can the content stand on its own when shadows disappear?

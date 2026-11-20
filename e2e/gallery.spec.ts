@@ -40,7 +40,7 @@ async function countPlays(page: Page, id: string): Promise<() => Promise<number>
 const settledRunning = (page: Page) =>
   expect.poll(() => page.evaluate(() => document.getAnimations().filter((a) => a.playState === "running").length), { timeout: 2_000 });
 
-const TOAST = ["layout-11", "comp-2", "comp-6", "motion-15"];
+const BORDER = ["layout-7", "a11y-2", "color-5", "color-6", "color-12", "motion-8"];
 /** A motion rule whose tile replays (an action showcase). */
 const MOTION = "motion-1";
 
@@ -117,58 +117,58 @@ test.describe("search and collections", () => {
     await openCatalog(page, wallUrl());
     await page.keyboard.press("/");
     await expect(page.locator(wall.search)).toBeFocused();
-    await page.keyboard.type("toast");
-    await awaitUrl(page, wallUrl({ q: "toast" }));
-    await expect.poll(() => visibleTiles(page)).toEqual(TOAST);
-    await expect(page.locator(".gw-count")).toHaveText("4 of 105 rules");
+    await page.keyboard.type("border");
+    await awaitUrl(page, wallUrl({ q: "border" }));
+    await expect.poll(() => visibleTiles(page)).toEqual(BORDER);
+    await expect(page.locator(".gw-count")).toHaveText("6 of 108 rules");
 
     // J skips hidden neighbours; Shift+J skips hidden sections.
     await page.locator(wall.search).blur();
-    for (const id of TOAST) {
+    for (const id of BORDER) {
       await page.keyboard.press("j");
       expect(await focused(page)).toBe(id);
     }
     await page.keyboard.press("Shift+K");
-    expect(await focused(page)).toBe("comp-2");
+    expect(await focused(page)).toBe("a11y-2");
     await page.keyboard.press("Shift+K");
-    expect(await focused(page)).toBe("layout-11");
+    expect(await focused(page)).toBe("layout-7");
     await page.keyboard.press("Shift+J");
-    expect(await focused(page)).toBe("comp-2");
+    expect(await focused(page)).toBe("a11y-2");
     await page.keyboard.press("Shift+J");
-    expect(await focused(page)).toBe("motion-15");
+    expect(await focused(page)).toBe("motion-8");
 
     // The rule view pages the same deck.
     await page.keyboard.press("Shift+K");
     await page.keyboard.press("Shift+K");
     await page.keyboard.press("Enter");
     await awaitView(page, "rule");
-    await awaitUrl(page, ruleUrl("layout-11", { q: "toast" }));
+    await awaitUrl(page, ruleUrl("layout-7", { q: "border" }));
     await page.keyboard.press("j");
-    await awaitUrl(page, ruleUrl("comp-2", { q: "toast" }));
+    await awaitUrl(page, ruleUrl("a11y-2", { q: "border" }));
 
     // Back on the wall, the filter and the tile are where they were.
     await page.keyboard.press("Escape");
     await awaitView(page, "gallery");
-    await expect.poll(() => visibleTiles(page)).toEqual(TOAST);
-    expect(await focused(page)).toBe("comp-2");
+    await expect.poll(() => visibleTiles(page)).toEqual(BORDER);
+    expect(await focused(page)).toBe("a11y-2");
   });
 
   test("a ?q link filters after hydration, and Esc clears it", async ({ page }) => {
-    await openCatalog(page, wallUrl({ q: "toast" }));
-    await expect.poll(() => visibleTiles(page)).toEqual(TOAST);
-    await expect(page.locator(wall.search)).toHaveValue("toast");
+    await openCatalog(page, wallUrl({ q: "border" }));
+    await expect.poll(() => visibleTiles(page)).toEqual(BORDER);
+    await expect(page.locator(wall.search)).toHaveValue("border");
     await page.keyboard.press("Escape");
     await awaitUrl(page, wallUrl());
-    await expect.poll(() => visibleTiles(page)).toHaveLength(105);
+    await expect.poll(() => visibleTiles(page)).toHaveLength(108);
   });
 
   test("a search with no matches shows the empty state beside the wall", async ({ page }) => {
     await openCatalog(page, wallUrl({ q: "zzqx" }));
     await expect(page.getByText("No rules match “zzqx”")).toBeVisible();
     expect(await visibleTiles(page)).toEqual([]);
-    expect(await page.locator(sel.tileLink).count()).toBe(105);
+    expect(await page.locator(sel.tileLink).count()).toBe(108);
     await page.getByRole("button", { name: "Clear search" }).last().click();
-    await expect.poll(() => visibleTiles(page)).toHaveLength(105);
+    await expect.poll(() => visibleTiles(page)).toHaveLength(108);
   });
 
   test("Enter while an input method is composing belongs to the composition", async ({ page }) => {
@@ -177,7 +177,7 @@ test.describe("search and collections", () => {
     await search.focus();
     // The field holds text React has not seen yet: only a committing Enter would read it.
     const prevented = await search.evaluate((input: HTMLInputElement) => {
-      input.value = "toast";
+      input.value = "border";
       const event = new KeyboardEvent("keydown", { key: "Enter", isComposing: true, bubbles: true, cancelable: true });
       input.dispatchEvent(event);
       return event.defaultPrevented;
@@ -195,26 +195,26 @@ test.describe("search and collections", () => {
     await page.locator(wall.search).fill("kerning");
     await page.keyboard.press("ControlOrMeta+k");
     const combobox = page.getByRole("dialog", { name: "Search rules" }).getByRole("combobox");
-    await combobox.fill("toast");
+    await combobox.fill("border");
     await combobox.press("Shift+Enter");
-    await awaitUrl(page, wallUrl({ q: "toast" }));
+    await awaitUrl(page, wallUrl({ q: "border" }));
     await page.clock.runFor(1_000);
     await page.clock.resume();
-    expect(await settledUrl(page)).toBe(wallUrl({ q: "toast" }));
-    await expect(page.locator(wall.search)).toHaveValue("toast");
-    await expect.poll(() => visibleTiles(page)).toEqual(TOAST);
+    expect(await settledUrl(page)).toBe(wallUrl({ q: "border" }));
+    await expect(page.locator(wall.search)).toHaveValue("border");
+    await expect.poll(() => visibleTiles(page)).toEqual(BORDER);
   });
 
   for (const via of ["hash", "query"] as const) {
-    test(`the Accessibility collection opens its 14 rules from the ${via}`, async ({ page }) => {
+    test(`the Accessibility collection opens its 16 rules from the ${via}`, async ({ page }) => {
       const url = via === "hash" ? wallUrl({ hash: "accessibility" }) : wallUrl({ collection: "accessibility" });
       await openCatalog(page, url);
       await awaitUrl(page, wallUrl({ collection: "accessibility" }));
-      await expect.poll(async () => (await visibleTiles(page)).length).toBe(14);
-      await expect(page.locator(".gw-count")).toHaveText("14 of 105 rules");
+      await expect.poll(async () => (await visibleTiles(page)).length).toBe(16);
+      await expect(page.locator(".gw-count")).toHaveText("16 of 108 rules");
       await page.getByRole("button", { name: /Accessibility collection, show all rules/ }).click();
       await awaitUrl(page, wallUrl());
-      await expect.poll(async () => (await visibleTiles(page)).length).toBe(105);
+      await expect.poll(async () => (await visibleTiles(page)).length).toBe(108);
     });
   }
 });

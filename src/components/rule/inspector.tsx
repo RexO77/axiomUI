@@ -2,7 +2,7 @@
 "use client";
 
 /*
- * The deep dive, Related at its foot, and Before you ship.
+ * The deep dive, Related rules, and Before you ship.
  *
  * The prose arrives as props: the rule page renders this component on the
  * server with the landing rule's payload, and the rule view renders it for
@@ -121,7 +121,7 @@ function DeepDive({ ruleId, state }: { ruleId: string; state: ProseState }) {
   const section = { collapsible: hydrated && phone, onToggle: toggle };
   let body: ReactNode;
   if (state.status === "ready") {
-    const { how, why, breaks } = state.prose;
+    const { how, why, sources, breaks } = state.prose;
     body = (
       <>
         <div className="rv-dd-col">
@@ -142,6 +142,13 @@ function DeepDive({ ruleId, state }: { ruleId: string; state: ProseState }) {
             <p>
               <Prose text={why} />
             </p>
+            {sources && sources.length > 0 && (
+              <ul className="rv-sources" aria-label="Sources">
+                {sources.map(({ href, title }) => (
+                  <li key={href}><a href={href}>{title}</a></li>
+                ))}
+              </ul>
+            )}
           </DeepSection>
           <DeepSection id="breaks" icon={<AlertTriangle aria-hidden="true" />} open={open.breaks} {...section}>
             <p>
@@ -172,6 +179,7 @@ function DeepDive({ ruleId, state }: { ruleId: string; state: ProseState }) {
     <aside
       ref={aside}
       id={DEEP_DIVE_ID}
+      data-panel-rule={ruleId}
       className="rv-dd"
       aria-label="Deep dive"
       aria-busy={state.status === "loading" || undefined}
@@ -207,9 +215,14 @@ export type InspectorProps = {
 };
 
 export function Inspector({ ruleId, prose }: InspectorProps) {
+  const { restorePanel } = useShell();
+  const panel = useRef<HTMLDivElement>(null);
   const seeded = prose && prose.id === ruleId ? prose : null;
   const loaded = useProse(ruleId);
   const state: ProseState = seeded ? { status: "ready", prose: seeded } : loaded;
+  useLayoutEffect(() => {
+    if (state.status !== "loading" && panel.current) restorePanel(ruleId, panel.current);
+  }, [restorePanel, ruleId, state.status]);
 
   // The seed joins the cache, so coming back to this rule later needs no fetch.
   useEffect(() => {
@@ -218,7 +231,7 @@ export function Inspector({ ruleId, prose }: InspectorProps) {
 
   return (
     <>
-      <div className="rv-side">
+      <div ref={panel} className="rv-side">
         <DeepDive ruleId={ruleId} state={state} />
         <Related ruleId={ruleId} />
       </div>

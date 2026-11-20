@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { buildDeepDive } from "@/data/deep-dive-builder";
 import { ruleDeepDives } from "@/data/deep-dives";
+import { ruleSources } from "@/data/rule-sources";
 import { rules } from "@/data/ui-logic";
 import { findListSection, findTextSection } from "@/lib/deep-dive-sections";
 import { ruleProse } from "@/lib/rule-prose-build";
@@ -31,6 +32,7 @@ describe("ruleProse", () => {
       id: "typo-1",
       how: findListSection(sections, "Implementation notes"),
       why: findTextSection(sections, "Why it matters"),
+      sources: [{ title: "Microsoft Writing Style Guide · Capitalization", href: "https://learn.microsoft.com/en-us/style-guide/capitalization" }],
       breaks: findTextSection(sections, "Risk when ignored"),
       review: findListSection(sections, "Design review prompts"),
     });
@@ -61,6 +63,20 @@ describe("ruleProse", () => {
     expect(ruleProse("nope-0")).toBeNull();
     expect(ruleProse("sys-12")).toBeNull();
     expect(ruleProse("__proto__")).toBeNull();
+  });
+
+  it("serves one to three distinct, named HTTPS sources for every canonical rule", () => {
+    expect(Object.keys(ruleSources).sort()).toEqual(rules.map((rule) => rule.id).sort());
+    for (const rule of rules) {
+      const sources = ruleProse(rule.id)?.sources ?? [];
+      expect(sources.length, rule.id).toBeGreaterThanOrEqual(1);
+      expect(sources.length, rule.id).toBeLessThanOrEqual(3);
+      expect(new Set(sources.map(({ href }) => href)).size, rule.id).toBe(sources.length);
+      for (const { title, href } of sources) {
+        expect(title.trim(), rule.id).toMatch(/\S/);
+        expect(new URL(href).protocol, rule.id).toBe("https:");
+      }
+    }
   });
 
   it("is small enough to ship one rule at a time", () => {

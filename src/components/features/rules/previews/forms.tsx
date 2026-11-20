@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+
+import { CodeResult } from "./reading-examples";
 import {
     CalendarDays,
     Check,
@@ -377,7 +379,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
                         {field("Full name", "Maya Chen")}
                         {field("Email", "maya@company.com")}
                         {field(<>Phone{optional}</>)}
-                        <Ann>1 marker on 3 fields</Ann>
+                        <Ann>Required unless marked optional</Ann>
                     </PreviewFrame>
                 );
             }
@@ -386,7 +388,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
                     {field(<>Full name{asterisk}</>, "Maya Chen")}
                     {field(<>Email{asterisk}</>, "maya@company.com")}
                     {field(<>Phone{asterisk}</>)}
-                    <Ann>3 markers on 3 fields — none informs</Ann>
+                    <Ann>Optional phone marked required</Ann>
                 </PreviewFrame>
             );
         }
@@ -631,7 +633,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
                 return (
                     <PreviewFrame className="flex flex-col justify-center gap-1.5">
                         {fields.map(([order, label, value]) => cell(order, label, value))}
-                        <Ann>1 column · eye and Tab agree</Ann>
+                        <Ann>1 column · same visual and Tab order</Ann>
                     </PreviewFrame>
                 );
             }
@@ -647,20 +649,12 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
                             {fields.slice(2).map(([order, label, value]) => cell(order, label, value))}
                         </div>
                     </div>
-                    <Ann>2 columns · eye reads 1 → 3, Tab goes 1 → 2</Ann>
+                    <Ann>Across: 1 → 3 · Tab: 1 → 2</Ann>
                 </PreviewFrame>
             );
         }
 
-        // The same two signup fields in both panes. The one variable is
-        // whether the answer the app already holds — the request locale, the
-        // system clock — arrives in the field or is left for the user to hunt.
-        //
-        // The default date reads "Today", as real date fields show it, rather
-        // than a literal date. The previews are prerendered, so any date
-        // written here goes stale the next morning and the Do would claim a
-        // past day was today; a date computed after mount would pop in on
-        // hydration.
+        // Reuse two answers explicitly supplied earlier in the same booking.
         case "form-11": {
             const isDo = variant === "do";
             const note = (filled: string, empty: string) => (
@@ -673,7 +667,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
                     <div className="space-y-1">
                         <div className="flex h-3.5 items-baseline justify-between gap-2">
                             <Label>Country</Label>
-                            {note("from en-IN locale", "195 options · A–Z")}
+                            {note("from saved address", "choose again")}
                         </div>
                         <Shell>
                             <Value muted={!isDo}>{isDo ? "India" : "Select country…"}</Value>
@@ -683,11 +677,11 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
                     <div className="space-y-1">
                         <div className="flex h-3.5 items-baseline justify-between gap-2">
                             <Label>Start date</Label>
-                            {note("defaults to today", "no default")}
+                            {note("from itinerary", "choose again")}
                         </div>
                         <Shell>
                             <Value muted={!isDo} mono={!isDo}>
-                                {isDo ? "Today" : "dd/mm/yyyy"}
+                                {isDo ? "19 Nov 2026" : "dd/mm/yyyy"}
                             </Value>
                             <CalendarDays
                                 size={12}
@@ -697,7 +691,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
                             />
                         </Shell>
                     </div>
-                    <Ann>{isDo ? "0 taps to accept both" : "2 lookups before you start"}</Ann>
+                    <Ann>{isDo ? "Both answers carried forward" : "Both answers requested again"}</Ann>
                 </PreviewFrame>
             );
         }
@@ -735,6 +729,8 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
             );
         }
 
+        case "form-13":
+            return <PreviewFrame className="flex items-center justify-center"><CodeResult variant={variant} /></PreviewFrame>;
         default:
             return null;
     }

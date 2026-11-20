@@ -8,7 +8,7 @@ A visual field guide for making interfaces feel right. Compare what works with w
 
 ## What’s in V2
 
-- **105 curated UI decisions**, each with a Do/Don’t example and an authored deep dive.
+- **108 curated UI decisions**, each with a Do/Don’t example and an authored deep dive.
 - **Interactive comparisons**: view static examples together or flip between them, zoom in, and try live demos for motion and interaction rules.
 - **Search and collections**: find a rule, browse the Accessibility or Live demos collection, and move through the matching rules without losing your place.
 - **Desktop and phone navigation**: a category rail on desktop; dedicated menu, search and rule navigation on phones, with touch-friendly comparison controls.
@@ -54,22 +54,22 @@ Install from GitHub:
 npx skills add RexO77/axiomUI
 ```
 
-Choose all skills or install only the ones you need. The three core skills each carry all 105 rules; domain skills carry focused selections and their own local references. The table below and machine catalog are generated from the reviewed distribution selection.
+Choose all skills or install only the ones you need. The three core skills each carry all 108 rules; domain skills carry focused selections and their own local references. The table below and machine catalog are generated from the reviewed distribution selection.
 
 <!-- skills:start -->
 | Skill | Group | Rules | What it covers | Install on its own |
 |---|---|---|---|---|
-| `axiomui` | Core | 105 | Every Axiom UI rule, indexed by domain, with full reasoning one file away. | `npx skills add RexO77/axiomUI --skill axiomui` |
-| `axiomui-website-upgrade` | Core | 105 | A playbook for upgrading a real interface in code, backed by every Axiom UI rule. | `npx skills add RexO77/axiomUI --skill axiomui-website-upgrade` |
-| `axiomui-audit` | Core | 105 | A read-only design review where every finding cites a rule, a location and a fix. | `npx skills add RexO77/axiomUI --skill axiomui-audit` |
-| `axiomui-typography` | Domain | 13 | Casing, tracking, line height, weights, figures and wrapping for interface text. | `npx skills add RexO77/axiomUI --skill axiomui-typography` |
-| `axiomui-layout` | Domain | 11 | Spacing scale, measure, proximity, optical alignment, gutters and z-index. | `npx skills add RexO77/axiomUI --skill axiomui-layout` |
-| `axiomui-color` | Domain | 12 | Palette balance, contrast, semantic status, hover, dark mode and depth. | `npx skills add RexO77/axiomUI --skill axiomui-color` |
-| `axiomui-components` | Domain | 12 | Button hierarchy, overlays, radii, icon buttons, disabled and loading states. | `npx skills add RexO77/axiomUI --skill axiomui-components` |
-| `axiomui-forms` | Domain | 12 | Labels, field sizing, control choice, validation timing, hints and defaults. | `npx skills add RexO77/axiomUI --skill axiomui-forms` |
-| `axiomui-system` | Domain | 13 | Loading, empty and error states, undo, optimistic updates, tokens and breakpoints. | `npx skills add RexO77/axiomUI --skill axiomui-system` |
-| `axiomui-motion` | Domain | 31 | Exact durations, easing and gesture physics for UI motion. | `npx skills add RexO77/axiomUI --skill axiomui-motion` |
-| `axiomui-accessibility` | Domain | 11 | Focus, contrast, target size, keyboard paths, labels and reduced motion. | `npx skills add RexO77/axiomUI --skill axiomui-accessibility` |
+| `axiomui` | Core | 108 | Every Axiom UI rule, indexed by domain, with full reasoning one file away. | `npx skills add RexO77/axiomUI --skill axiomui` |
+| `axiomui-website-upgrade` | Core | 108 | A playbook for upgrading a real interface in code, backed by every Axiom UI rule. | `npx skills add RexO77/axiomUI --skill axiomui-website-upgrade` |
+| `axiomui-audit` | Core | 108 | A read-only design review where every finding cites a rule, a location and a fix. | `npx skills add RexO77/axiomUI --skill axiomui-audit` |
+| `axiomui-typography` | Domain | 14 | Interface text, from labels and tabular figures to long passages and mixed-direction names. | `npx skills add RexO77/axiomUI --skill axiomui-typography` |
+| `axiomui-layout` | Domain | 12 | Grouping, measure, control padding, alignment, gutters and stacking across viewport sizes. | `npx skills add RexO77/axiomUI --skill axiomui-layout` |
+| `axiomui-color` | Domain | 12 | Accent and status roles, text and control contrast, hover feedback, dark themes and elevation. | `npx skills add RexO77/axiomUI --skill axiomui-color` |
+| `axiomui-components` | Domain | 13 | Action hierarchy, overlays, button states, icon labels, card links and chart alternatives. | `npx skills add RexO77/axiomUI --skill axiomui-components` |
+| `axiomui-forms` | Domain | 13 | Field labels, choice controls, validation, reused answers, submission feedback and sign-in codes. | `npx skills add RexO77/axiomUI --skill axiomui-forms` |
+| `axiomui-system` | Domain | 13 | Loading, empty states, recovery, timestamps, keyboard behavior, breakpoints and transitions. | `npx skills add RexO77/axiomUI --skill axiomui-system` |
+| `axiomui-motion` | Domain | 31 | Timing, easing, interruption, gestures, reduced motion and browser animation performance. | `npx skills add RexO77/axiomUI --skill axiomui-motion` |
+| `axiomui-accessibility` | Domain | 13 | Focus, targets, contrast, keyboard access, chart alternatives, authentication and reduced motion. | `npx skills add RexO77/axiomUI --skill axiomui-accessibility` |
 <!-- skills:end -->
 
 The standalone `axiomui` npm installer is **not published yet**. For its source commands and local package workflow, see [`packages/axiomui/README.md`](packages/axiomui/README.md). Installing the GitHub skills does not require that package to be published.
@@ -112,7 +112,7 @@ npm test
 npm run build
 ```
 
-`npm run check` verifies authored deep dives for all 105 rules. `npm run skills:check` verifies the generated skills, references, catalog and README tables against their source.
+`npm run check` verifies authored deep dives for all 108 rules. `npm run skills:check` verifies the generated skills, references, catalog and README tables against their source.
 
 For browser coverage:
 

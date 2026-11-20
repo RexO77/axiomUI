@@ -80,11 +80,11 @@ describe("rail view", () => {
 
   it("counts honestly after re-homing", () => {
     expect(Object.fromEntries(railCategories.map((c) => [c.id, c.rules.length]))).toEqual({
-      typography: 13,
+      typography: 14,
       layout: 11,
       color: 13,
-      components: 12,
-      forms: 12,
+      components: 13,
+      forms: 13,
       system: 15,
       motion: 29,
     });
@@ -108,7 +108,7 @@ describe("rail view", () => {
     ]);
     expect(groups("typography")).toEqual([
       ["Type foundations", ["typo-5", "typo-9", "typo-11", "typo-6", "typo-1", "typo-2"]],
-      ["Reading and wrapping", ["typo-3", "typo-4", "typo-8", "typo-7", "typo-10", "typo-12", "typo-13"]],
+      ["Reading and wrapping", ["typo-3", "typo-4", "typo-8", "typo-14", "typo-7", "typo-10", "typo-12", "typo-13"]],
     ]);
     expect(groups("system")).toEqual([
       ["State, progress and recovery", ["sys-2", "sys-1", "sys-7", "sys-4", "sys-9", "sys-10", "sys-6"]],
@@ -130,8 +130,8 @@ describe("rail view", () => {
   it.each([
     ["layout", "layout", 11],
     ["color", "color", 12],
-    ["components", "comp", 12],
-    ["forms", "form", 12],
+    ["components", "comp", 13],
+    ["forms", "form", 13],
   ] as const)("keeps %s in its catalog numbering order", (categoryId, prefix, total) => {
     const category = railCategories.find((entry) => entry.id === categoryId)!;
     expect(category.rules.filter((rule) => rule.category === categoryId).map((rule) => rule.id))
@@ -163,9 +163,9 @@ describe("rail view", () => {
 });
 
 describe("collections", () => {
-  it("makes Accessibility a 14-rule collection across categories, holding all three a11y rules", () => {
-    expect(accessibilityCollection.ruleIds).toHaveLength(14);
-    expect(new Set(accessibilityCollection.ruleIds).size).toBe(14);
+  it("makes Accessibility a 16-rule collection across categories, holding all three a11y rules", () => {
+    expect(accessibilityCollection.ruleIds).toHaveLength(16);
+    expect(new Set(accessibilityCollection.ruleIds).size).toBe(16);
     for (const id of ["a11y-1", "a11y-2", "a11y-3"]) {
       expect(accessibilityCollection.ruleIds).toContain(id);
     }
@@ -174,10 +174,10 @@ describe("collections", () => {
   });
 
   it("holds Live demos to the showcase registry, so it cannot drift from the demos", () => {
-    expect([...liveDemoCollection.ruleIds].sort()).toEqual(Object.keys(showcaseSpecs).sort());
-    expect(liveDemoCollection.ruleIds).toHaveLength(33);
+    expect([...liveDemoCollection.ruleIds].sort()).toEqual([...Object.keys(showcaseSpecs), "typo-14", "comp-13", "form-13"].sort());
+    expect(liveDemoCollection.ruleIds).toHaveLength(36);
     for (const rule of rules) {
-      expect(hasLiveDemo(rule.id), rule.id).toBe(rule.id in showcaseSpecs);
+      expect(hasLiveDemo(rule.id), rule.id).toBe(rule.id in showcaseSpecs || ["typo-14", "comp-13", "form-13"].includes(rule.id));
     }
   });
 
@@ -202,13 +202,13 @@ describe("compare kind", () => {
   it("pins the editorial split, so a change to it is a deliberate edit here", () => {
     expect([...structuralRuleIds].sort()).toEqual(
       [
-        "comp-2", "comp-5", "comp-6", "comp-7",
-        "form-1", "form-6", "form-10",
+        "comp-2", "comp-5", "comp-6", "comp-7", "comp-13",
+        "form-1", "form-6", "form-10", "form-13",
         "sys-1", "sys-2", "sys-5", "sys-6", "sys-7", "sys-10", "sys-11",
         "motion-1", "motion-3", "motion-14",
       ].sort(),
     );
-    expect(alignedRuleIds.size).toBe(88);
+    expect(alignedRuleIds.size).toBe(89);
   });
 
   it("suggests Flip only on aligned static rules", () => {

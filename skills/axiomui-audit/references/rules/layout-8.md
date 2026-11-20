@@ -5,28 +5,30 @@
 - Tags: Spacing, Consistency
 - URL: https://axiomui.nischal.fyi/rules/layout-8
 
-Within one grid, use one gutter for siblings of the same kind. Vary the gap only to show grouping; otherwise mixed gaps feel accidental.
+Keep gutters consistent between equivalent siblings. A grid of independent cards can start with equal gaps on both axes. Use different row and column gaps when the two directions represent different relationships.
 
 - Do: Cards: gap-2 throughout
 - Don't: Rows gap-6, columns gap-2
 
 ## Why it works
 
-A layout region reads as one system when a single gap value repeats in every direction; the eye calibrates to that rhythm and treats any deviation as a mistake, not a variation. Mixing gap-6 rows with gap-2 columns breaks that calibration because the grid no longer has one unit to measure by.
+The preview changes only the gap between rows in a two-by-two grid. At 8px across and 24px down, the cells begin to look like two horizontal pairs. That is a useful distinction when the pairs belong together.
+
+- [CSS Box Alignment · Gaps between boxes](https://www.w3.org/TR/css-align-3/#gaps)
+- [IBM Carbon · Spacing](https://www.carbondesignsystem.com/building-blocks/foundations/spacing/overview)
 
 ## What breaks
 
-Set rows to gap-6 and columns to gap-2 in the same card grid and the layout reads as accidentally uneven, with cards sitting closer together side-to-side than top-to-bottom for no visible reason.
+An unexplained row break can suggest a grouping that the content does not support. Enforcing square gutters everywhere can also crowd rows of captions or separate a label from its value.
 
 ## How to apply it
 
-1. Pick one gutter for siblings of the same kind and apply it in both directions: gap-2 for rows and columns alike.
-2. Don’t mix values, such as gap-6 rows with gap-2 columns, within one grid of like items; a larger gap belongs only where it marks a new group.
-3. Extend the same gutter value to nested grids in that region unless there’s a clear hierarchy reason not to.
-4. Audit grid and flex gap properties for row-gap versus column-gap mismatches.
+1. Identify the units a reader should compare or scan together.
+2. Apply a consistent row gap and a consistent column gap.
+3. Inspect actual captions and unequal card heights before linking both axes to one token.
 
 ## Review questions
 
-1. Is the same gap value used for both rows and columns in this grid?
-2. Do any two adjacent grids in the same region use different gutter sizes?
-3. Does the spacing rhythm feel like one system rather than several stitched together?
+1. Does the pattern imply rows, columns, or independent cards?
+2. Is that grouping meaningful in the content?
+3. What happens to the gutters when the grid loses a column?

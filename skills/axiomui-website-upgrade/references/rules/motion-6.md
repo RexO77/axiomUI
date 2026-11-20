@@ -1,32 +1,33 @@
-# Keep UI motion under 300ms
+# Time motion to the task
 
 - ID: motion-6
 - Category: Motion & interaction
 - Tags: Timing, Perceived performance
 - URL: https://axiomui.nischal.fyi/rules/motion-6
 
-Most interface motion should finish quickly. Slow everyday transitions make the product feel heavier than it is.
+Use short transitions for nearby controls. Start with 180ms for a small menu and compare it at normal speed. Larger changes in position or context can need longer.
 
 - Do: Menu: 180ms
 - Don't: Menu: 500ms
 
 ## Why it works
 
-Everyday transitions like a 180ms dropdown stay under the threshold where motion reads as responsive rather than deliberate; a 500ms popover crosses into feeling like a loading state instead of an instant UI reaction.
+A menu opened beside its trigger has little ground to cover. Stretching the same motion from 180ms to 500ms leaves its labels moving for longer. A large change of view may need more time to show the relationship between the starting and ending positions.
+
+- [IBM Carbon · Motion principles and timing](https://www.carbondesignsystem.com/building-blocks/foundations/motion/overview)
 
 ## What breaks
 
-A 500ms popover triggered on every hover adds up across dozens of daily uses, making the whole product feel padded and slow even though nothing is actually loading.
+A fixed duration applied across a product can make a small menu linger and a full-width panel rush across the screen.
 
 ## How to apply it
 
-1. Cap dropdown transitions at 180ms and popovers well under 300ms.
-2. Flag any transition duration above 300ms in code review as a motion violation.
-3. Reserve durations closer to 300ms for larger surfaces like page transitions, not small popovers.
-4. Measure the rendered duration, not just the declared value, since easing can extend perceived length.
+1. Group motion tokens by role and travel distance.
+2. Test the smallest and largest instances of the component.
+3. Measure when content is usable separately from when it comes to rest.
 
 ## Review questions
 
-1. Does the dropdown finish opening in under 200ms?
-2. Does any popover or menu take half a second or longer to appear?
-3. Do small UI transitions feel snappy rather than deliberate?
+1. Can a user select an item while the menu opens?
+2. Is the destination easy to follow on a wide screen?
+3. Does the transition still help after several uses?

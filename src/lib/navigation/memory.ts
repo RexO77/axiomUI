@@ -8,8 +8,8 @@ export const MEMORY_KEY = "axiom:v1";
 /** The schema version written into `axiom:v1`. Readers accept any version and keep the fields they know. */
 export const MEMORY_VERSION = 1;
 export const VISIT_DELAY_MS = 2000;
-/** One mark per rule: the catalog has 105, so a longer list is corrupt or stale. */
-export const VISITED_LIMIT = 105;
+/** One mark per rule: a longer list is corrupt or stale. */
+export const VISITED_LIMIT = rules.length;
 export const RECENT_LIMIT = 5;
 
 export type MemoryPrefs = {

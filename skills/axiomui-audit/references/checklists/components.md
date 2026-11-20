@@ -1,99 +1,107 @@
 # Components & actions checklist
 
-Ask each question of the surface under review. Record a finding only for a concrete violation, with evidence.
+Ask each question of the surface under review. Record the observed failure or unmet requirement and the evidence for it.
 
-## Action hierarchy (`comp-1`)
+## Prioritize the next action (`comp-1`)
 
 - Do: 1 filled + 1 outline + 1 ghost button · Don't: 3 filled buttons side by side
-- [ ] Is there exactly one filled button visible on this screen?
-- [ ] Are the remaining actions stepped down to outline and ghost rather than left filled?
-- [ ] Does the filled button match the action most users should take next?
+- [ ] What is someone trying to finish here?
+- [ ] Can someone who wants to cancel find that option?
+- [ ] Is there a reason to recommend one of these choices?
 - Reasoning: `references/rules/comp-1.md`
 
-## Destructive actions (`comp-2`)
+## Confirm irreversible deletion (`comp-2`)
 
 - Do: Secondary “Delete project…” → red confirm · Don't: Red “Delete” in the row, no confirm
-- [ ] Is the initial Delete… trigger styled as a secondary action rather than red?
-- [ ] For a permanent delete, does clicking it open a confirmation step before anything is removed?
-- [ ] Is red reserved for the confirming button inside the modal?
+- [ ] Whose data changes?
+- [ ] Could the confirmation be mistaken for a harmless removal?
+- [ ] Can someone back out using only the keyboard?
 - Reasoning: `references/rules/comp-2.md`
 
-## Nested radius formula (`comp-3`)
+## Align nested corner radii (`comp-3`)
 
-- Do: Outer 12px = Inner 4px + Padding 8px · Don't: Outer 4px = Inner 4px (padding ignored)
-- [ ] Does the outer radius equal inner radius plus the padding between them?
-- [ ] Do the nested corners look concentric rather than pinched?
-- [ ] Was the radius recalculated after any recent padding change?
+- Do: Outer 12px = Inner 4px + Inset 8px · Don't: Outer 4px and inner 4px with an 8px inset
+- [ ] Which two edges should track each other?
+- [ ] Has the border been included in their separation?
+- [ ] Does the corner still read as an even inset at the smallest component size?
 - Reasoning: `references/rules/comp-3.md`
 
-## Avatars are circles (`comp-4`)
+## Distinguish people from content (`comp-4`)
 
 - Do: Avatar = circle, file = rectangle · Don't: Avatar = square, file = rectangle
-- [ ] Is every user avatar displayed as a circle?
-- [ ] Are document or project thumbnails shown as squares or rects, not circles?
-- [ ] Is the circle-for-people rule applied consistently across the whole screen?
+- [ ] Can a reader distinguish a person from a file without recognizing the photo?
+- [ ] How does a team avatar differ from an individual in this system?
+- [ ] Does a missing image preserve the same identity cue?
 - Reasoning: `references/rules/comp-4.md`
 
-## Modal vs drawer (`comp-5`)
+## Choose a surface for the task (`comp-5`)
 
-- Do: 1 decision = modal, 6 fields = drawer · Don't: 1 decision = modal, 6 fields = modal
-- [ ] Is this modal reserved for a short, single decision rather than a complex task?
-- [ ] Does the drawer keep the background page visible while editing?
-- [ ] Would this task feel cramped if forced into a small modal?
+- Do: Profile editor beside the visible record · Don't: Six profile fields in a one-row modal viewport
+- [ ] Can the user see the information needed to finish?
+- [ ] Can they interact with the underlying page when the task calls for it?
+- [ ] Would a dedicated page give a complex task a clearer sequence?
 - Reasoning: `references/rules/comp-5.md`
 
-## Toast vs inline error (`comp-6`)
+## Place field errors beside the field (`comp-6`)
 
 - Do: Invalid email = inline, under the field · Don't: Invalid email = toast, far from the field
-- [ ] Do system-level updates like save confirmations appear as toasts?
-- [ ] Does the invalid email error show inline, next to the field itself?
-- [ ] Is any field-specific error message sitting far from its field?
+- [ ] Can someone find the field from the summary?
+- [ ] Does the message explain a correction the user can actually make?
+- [ ] Can someone returning to the field still read the error?
 - Reasoning: `references/rules/comp-6.md`
 
-## Icon + label for ambiguous actions (`comp-7`)
+## Label ambiguous actions (`comp-7`)
 
 - Do: Icon + label on every toolbar action · Don't: Icon only on every toolbar action
-- [ ] Does the archive action show both an icon and a text label?
-- [ ] Is the toolbar free of icon-only buttons for non-universal actions?
-- [ ] Could a first-time user name each icon’s action without hovering?
+- [ ] What else might this glyph mean in this context?
+- [ ] Can someone identify the action without hover?
+- [ ] Does the accessible name match the visible action?
 - Reasoning: `references/rules/comp-7.md`
 
-## Disabled needs a reason (`comp-8`)
+## Explain unavailable actions (`comp-8`)
 
 - Do: Disabled + reason under the button · Don't: Disabled + no reason
-- [ ] Does this disabled control have a visible reason sitting next to it?
-- [ ] Does that text name what the user must do to enable it?
-- [ ] Can a keyboard user reach the control and find out why it is unavailable?
+- [ ] Is the cause apparent before trying the control?
+- [ ] Does the explanation say what can change the state?
+- [ ] Can keyboard and touch users find it?
 - Reasoning: `references/rules/comp-8.md`
 
-## Loading states on buttons (`comp-9`)
+## Acknowledge a pending submission (`comp-9`)
 
 - Do: Spinner + disabled during submit · Don't: Static button allows double-click
-- [ ] Does the button show a spinner while the request is in flight?
-- [ ] Is the button disabled during submission, so a second click cannot fire?
-- [ ] Does the button return to its resting state on failure as well as on success?
+- [ ] Does the user know the request is still pending?
+- [ ] Can a retry create the same order twice?
+- [ ] Can someone recover after a timeout without re-entering the form?
 - Reasoning: `references/rules/comp-9.md`
 
-## Consistent icon size (`comp-10`)
+## Match icon scale within a toolbar (`comp-10`)
 
 - Do: All toolbar icons: 20px · Don't: Mixed 16px, 20px, 24px icons in toolbar
-- [ ] Are all icons in this toolbar rendered at the same size?
-- [ ] Is any icon in this toolbar a different size from the ones beside it?
-- [ ] Does icon size stay consistent across this entire navigation context?
+- [ ] Which actions belong to the same group?
+- [ ] Does one glyph dominate without a reason?
+- [ ] Can the button remain easy to hit even when the drawing is small?
 - Reasoning: `references/rules/comp-10.md`
 
-## Card click area (`comp-11`)
+## Size a card’s primary link (`comp-11`)
 
-- Do: Hit area: 100% of the card · Don't: Hit area: 16% (title text only)
-- [ ] Does clicking anywhere on the card, not just the title, trigger navigation?
-- [ ] Is there a hover state confirming the full card is the target?
-- [ ] Do secondary links inside the card still work independently of the card click?
+- Do: Single-destination card with a card-sized target · Don't: Card looks clickable, only its title responds
+- [ ] Does the visual affordance agree with the clickable area?
+- [ ] Can each secondary action be operated independently?
+- [ ] Can readers select text that they may need to copy?
 - Reasoning: `references/rules/comp-11.md`
 
-## Close affordance on overlays (`comp-12`)
+## Make overlay dismissal discoverable (`comp-12`)
 
 - Do: X button + backdrop close + Esc key · Don't: No close button, only backdrop click
-- [ ] Is there a visible X button on this overlay?
-- [ ] Does clicking the backdrop close the overlay?
-- [ ] Does pressing Escape also close the overlay?
+- [ ] Can a keyboard user discover how to leave?
+- [ ] What happens to an unsaved edit after Escape or a backdrop click?
+- [ ] Where does focus land after dismissal?
 - Reasoning: `references/rules/comp-12.md`
+
+## Make the chart’s question answerable in text (`comp-13`)
+
+- Do: Summarize the trend and offer the monthly counts · Don't: Leave the trend and counts in the bars alone
+- [ ] With the bars hidden, which queue grew over the selected period?
+- [ ] Can a reader find March’s billing count and identify its unit using the table headers?
+- [ ] After changing the quarter, do the plotted values, summary and table still agree?
+- Reasoning: `references/rules/comp-13.md`

@@ -16,8 +16,8 @@ When the matching skill is not installed, stay here. Every rule is in this skill
 ## How to apply a rule
 
 1. Find the rule. Pick the domain in the table below and open its file, or scan the rule index for the id or title.
-2. Apply its Do as written. Durations, ratios, sizes and easing curves are targets, not suggestions.
-3. Check the result against its Don't. Code that matches the Don't is a violation, whatever the intent behind it.
+2. Establish what the example demonstrates. A timing value describes that transition. A contrast criterion has a defined scope, threshold and exceptions.
+3. Apply the rule to the actual task. Reproduce the failure or measure the applicable threshold before recommending a change.
 4. Read the rule's file under `references/rules/` when the case is ambiguous or high-stakes, or when you need the reasoning: why it works, what breaks, how to apply it, and the questions to ask in review.
 5. Cite the rule id and its URL when you explain a change, so the reader can check the decision.
 
@@ -25,7 +25,7 @@ Where the project already has a token or component for the decision, use it. Whe
 
 ## When breaking a rule is right
 
-Axiom UI's tagline is the policy: "Built for consistency. Break rules only after mastering them." A rule gives way when the product's context makes the tradeoff clearly better: an established brand system, a platform convention, or a measured result. When you break one, name the rule, say why, and say what you did instead. Never break a rule silently, and never because following it is inconvenient.
+A platform convention, a language’s reading direction or evidence from the task can justify a different treatment from the example. Document the rule, the evidence and the result. When the decision concerns a standard, use that standard’s own conditions and exceptions to assess conformance.
 
 ## Domains
 

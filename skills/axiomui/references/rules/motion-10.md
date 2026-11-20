@@ -1,32 +1,34 @@
-# Origin-aware popovers
+# Anchor a popover’s motion to its trigger
 
 - ID: motion-10
 - Category: Motion & interaction
 - Tags: Overlays, Transform
 - URL: https://axiomui.nischal.fyi/rules/motion-10
 
-Popovers should scale from their trigger. Center origin is correct for modals, but anchored UI should respect its source.
+If an anchored popover scales, put the transform origin on the edge facing the trigger. Recompute it after a collision changes placement.
 
 - Do: transform-origin: the trigger
 - Don't: transform-origin: center
 
 ## Why it works
 
-A scale animation always has one fixed point, the single pixel that does not move, and the eye finds it for free: it is the only stable reference in a frame where everything else is expanding. Put that point on the trigger and the animation states its own cause — the menu grew out of the button you pressed — with no arrow or highlight needed. Put it at the panel’s center and the fixed point lands in the middle of content still too small to read, so it names nothing, and the link between click and result has to be worked out afterwards from position alone. Modals are the exception only because nothing on screen launched them from a particular place.
+A menu may open below its button in the middle of a page and above it at the bottom. A hardcoded top edge looks plausible in the first case and makes the second menu grow away from its button. The resolved placement gives the animation a stable reference.
+
+- [Radix · Popover placement and transform origin](https://www.radix-ui.com/primitives/docs/components/popover)
+- [CSS Transforms · Transform geometry](https://www.w3.org/TR/css-transforms-1/)
 
 ## What breaks
 
-A popover that scales from center instead of its trigger appears to materialize disconnected from the button that opened it, forcing users to visually search for the connection.
+A flipped panel can slide visually toward its trigger while the placement arrow points the other way. The two cues disagree.
 
 ## How to apply it
 
-1. Set transform-origin to the trigger element’s position.
-2. Reserve center-origin scaling exclusively for modals with no single anchor point.
-3. Calculate origin dynamically if the trigger can appear in different screen positions.
-4. Recheck origin behavior when a popover is repositioned by collision detection near screen edges.
+1. Choose the origin after placement and collision handling.
+2. Use the positioning library’s resolved origin if it provides one.
+3. Check alignment for offset triggers and right-to-left layouts.
 
 ## Review questions
 
-1. Does the popover visually grow out of the element that triggered it?
-2. Does a modal scale from the center of the screen rather than an edge?
-3. Does any anchored menu appear to originate from the wrong location?
+1. Does the origin stay on the correct edge when the menu flips?
+2. Does it line up with an off-center trigger?
+3. Would a simple fade work better for a dialog without an anchor?

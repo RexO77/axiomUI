@@ -20,24 +20,24 @@ through npm or the GitHub skills CLI is a separate network operation.
 
 ## Skills
 
-The three core skills each carry all 105 rules. Domain skills carry focused rules
+The three core skills each carry all 108 rules. Domain skills carry focused rules
 and their own complete local references. This table is generated from the same
 reviewed distribution selection as the machine catalog.
 
 <!-- skills:start -->
 | Skill | Group | Rules | What it covers | Install on its own |
 |---|---|---|---|---|
-| `axiomui` | Core | 105 | Every Axiom UI rule, indexed by domain, with full reasoning one file away. | `npx skills add RexO77/axiomUI --skill axiomui` |
-| `axiomui-website-upgrade` | Core | 105 | A playbook for upgrading a real interface in code, backed by every Axiom UI rule. | `npx skills add RexO77/axiomUI --skill axiomui-website-upgrade` |
-| `axiomui-audit` | Core | 105 | A read-only design review where every finding cites a rule, a location and a fix. | `npx skills add RexO77/axiomUI --skill axiomui-audit` |
-| `axiomui-typography` | Domain | 13 | Casing, tracking, line height, weights, figures and wrapping for interface text. | `npx skills add RexO77/axiomUI --skill axiomui-typography` |
-| `axiomui-layout` | Domain | 11 | Spacing scale, measure, proximity, optical alignment, gutters and z-index. | `npx skills add RexO77/axiomUI --skill axiomui-layout` |
-| `axiomui-color` | Domain | 12 | Palette balance, contrast, semantic status, hover, dark mode and depth. | `npx skills add RexO77/axiomUI --skill axiomui-color` |
-| `axiomui-components` | Domain | 12 | Button hierarchy, overlays, radii, icon buttons, disabled and loading states. | `npx skills add RexO77/axiomUI --skill axiomui-components` |
-| `axiomui-forms` | Domain | 12 | Labels, field sizing, control choice, validation timing, hints and defaults. | `npx skills add RexO77/axiomUI --skill axiomui-forms` |
-| `axiomui-system` | Domain | 13 | Loading, empty and error states, undo, optimistic updates, tokens and breakpoints. | `npx skills add RexO77/axiomUI --skill axiomui-system` |
-| `axiomui-motion` | Domain | 31 | Exact durations, easing and gesture physics for UI motion. | `npx skills add RexO77/axiomUI --skill axiomui-motion` |
-| `axiomui-accessibility` | Domain | 11 | Focus, contrast, target size, keyboard paths, labels and reduced motion. | `npx skills add RexO77/axiomUI --skill axiomui-accessibility` |
+| `axiomui` | Core | 108 | Every Axiom UI rule, indexed by domain, with full reasoning one file away. | `npx skills add RexO77/axiomUI --skill axiomui` |
+| `axiomui-website-upgrade` | Core | 108 | A playbook for upgrading a real interface in code, backed by every Axiom UI rule. | `npx skills add RexO77/axiomUI --skill axiomui-website-upgrade` |
+| `axiomui-audit` | Core | 108 | A read-only design review where every finding cites a rule, a location and a fix. | `npx skills add RexO77/axiomUI --skill axiomui-audit` |
+| `axiomui-typography` | Domain | 14 | Interface text, from labels and tabular figures to long passages and mixed-direction names. | `npx skills add RexO77/axiomUI --skill axiomui-typography` |
+| `axiomui-layout` | Domain | 12 | Grouping, measure, control padding, alignment, gutters and stacking across viewport sizes. | `npx skills add RexO77/axiomUI --skill axiomui-layout` |
+| `axiomui-color` | Domain | 12 | Accent and status roles, text and control contrast, hover feedback, dark themes and elevation. | `npx skills add RexO77/axiomUI --skill axiomui-color` |
+| `axiomui-components` | Domain | 13 | Action hierarchy, overlays, button states, icon labels, card links and chart alternatives. | `npx skills add RexO77/axiomUI --skill axiomui-components` |
+| `axiomui-forms` | Domain | 13 | Field labels, choice controls, validation, reused answers, submission feedback and sign-in codes. | `npx skills add RexO77/axiomUI --skill axiomui-forms` |
+| `axiomui-system` | Domain | 13 | Loading, empty states, recovery, timestamps, keyboard behavior, breakpoints and transitions. | `npx skills add RexO77/axiomUI --skill axiomui-system` |
+| `axiomui-motion` | Domain | 31 | Timing, easing, interruption, gestures, reduced motion and browser animation performance. | `npx skills add RexO77/axiomUI --skill axiomui-motion` |
+| `axiomui-accessibility` | Domain | 13 | Focus, targets, contrast, keyboard access, chart alternatives, authentication and reduced motion. | `npx skills add RexO77/axiomUI --skill axiomui-accessibility` |
 <!-- skills:end -->
 
 ## Commands from a checkout

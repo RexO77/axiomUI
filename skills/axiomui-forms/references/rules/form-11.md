@@ -1,32 +1,34 @@
-# Smart defaults
+# Reuse answers the user has supplied
 
 - ID: form-11
 - Category: Forms & inputs
 - Tags: Efficiency, Forms
 - URL: https://axiomui.nischal.fyi/rules/form-11
 
-Pre-fill fields with the most common answer when possible (e.g., default country from locale, today's date for date pickers).
+When a later booking step needs the same answer, carry it forward or let the person select it. Keep the answer editable when it may have changed. Ask for information the booking cannot supply.
 
-- Do: Country auto-detected from locale
-- Don't: Empty country dropdown (195 options)
+- Do: Country and date reused from this booking
+- Don't: Already supplied country and date requested again
 
 ## Why it works
 
-Every keystroke a user does not have to make is friction removed, and a smart default like country auto-detected from locale replaces a 195-option scroll with a single confirmable guess. This works because most users match the common case, so pre-filling the likely answer turns a search task into a verification task. An empty dropdown with 195 options forces every user to scroll and search even when the answer is predictable.
+The itinerary already holds the booking date. Asking the traveler to recall it on the next screen adds work and invites a conflicting answer. Offer the date for review. A country inferred from the browser language has a different origin and deserves a question.
+
+- [WCAG 2.2 · Redundant entry](https://www.w3.org/WAI/WCAG22/Understanding/redundant-entry.html)
+- [HTML · Autofill field names](https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofill)
 
 ## What breaks
 
-A signup form shows an empty country dropdown with 195 entries, so users scroll or type to search for their own country every single time, even though locale data already knows the answer.
+A wrong prefilled destination can survive review precisely because the form looks complete. Defaulting an effective date to today can also create an unintended commitment.
 
 ## How to apply it
 
-1. Auto-detect and pre-select country from the user’s locale instead of leaving it empty.
-2. Default date pickers to today’s date rather than a blank calendar.
-3. Never leave a long list (195 options here) unselected when a reasonable default is inferable.
-4. Always let the user override the default; never lock the pre-filled value.
+1. For a repeated required answer within one process, prefill it or make the prior answer available to select. WCAG 3.3.7 allows exceptions for essential re-entry, security, and information that has become invalid.
+2. Give browser autofill the correct field metadata as a separate convenience. A browser may have no saved value for the date supplied earlier in this booking.
+3. Ask for a consequential unknown, and let people review a known answer before committing. The repeated-entry criterion does not require storing personal answers between visits.
 
 ## Review questions
 
-1. Is the country field pre-filled based on locale instead of shown empty?
-2. Do date pickers default to today’s date rather than opening blank?
-3. Can the user still change any pre-filled default before submitting?
+1. Where did this answer come from?
+2. Can someone review and change it before submitting?
+3. What happens if the form’s guess is wrong?
