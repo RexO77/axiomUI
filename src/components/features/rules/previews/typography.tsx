@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import { RestaurantReview } from "./reading-examples";
+
 import { CreditCard, FileText, History, Settings, ShieldAlert, Users } from "@/components/ui/icons";
 
 import {
@@ -593,6 +595,8 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
                 </PreviewFrame>
             );
 
+        case "typo-14":
+            return <PreviewFrame className="flex items-center justify-center"><RestaurantReview variant={variant} /></PreviewFrame>;
         default:
             return null;
     }

@@ -3,6 +3,8 @@ import type { Viewport } from "next";
 import type { ReactNode } from "react";
 
 import { CatalogApp } from "@/components/catalog-app";
+// A direct rule prefetches the wall; sharing its stylesheet keeps that warm fetch from issuing an unused CSS preload.
+import "@/components/gallery/gallery.css";
 import { CATALOG_BASE } from "@/lib/navigation/routes";
 
 /*

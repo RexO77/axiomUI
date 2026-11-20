@@ -5,28 +5,29 @@
 - Tags: Intent, Feedback
 - URL: https://axiomui.nischal.fyi/rules/motion-3
 
-Every animation needs a job: orientation (where am I?), feedback (did it work?), explanation, continuity (what changed?), or softening a jarring state change. If you can't name the job, cut the animation.
+Use movement to show where a panel came from, what changed, or which action succeeded. Keep occasional expressive moments proportionate to their importance.
 
 - Do: Drawer slides from its edge
 - Don't: Modal bounces in
 
 ## Why it works
 
-Motion is a channel with a fixed budget of attention. Users learn quickly which movements carry information and which do not, and once they have written the channel off they stop reading the movements that matter. An animation earns its place by doing one of five jobs: orientation (where am I?), feedback (did it work?), explanation, continuity (what changed?), or softening a change that would otherwise be jarring. A drawer sliding from its edge does two of them at once — it says where the panel came from and keeps the page continuous behind it. A bounce does none.
+An edge drawer can teach its relationship to the page in a single opening. The direction and resting position tell the same story. A bounce on a routine dialog adds a second movement after the dialog is already in place. Decide what that second movement conveys.
+
+- [IBM Carbon · Motion principles and timing](https://www.carbondesignsystem.com/building-blocks/foundations/motion/overview)
 
 ## What breaks
 
-A logo that bounces on every load answers none of those questions, and after a week of it the reader has written the whole channel off. The cost lands somewhere else: the shake on a rejected card number is the same channel, and now it goes unread.
+Movement that repeats with every minor update can compete with the item the user is trying to read. Essential feedback also needs a recognizable end state.
 
 ## How to apply it
 
-1. Before animating anything, name the job it does; if none of the five applies, cut it.
-2. Use directional motion for navigation and panels so the movement shows where things came from — a drawer slides from the edge it lives on.
-3. Remove bounce and flourish effects that run on every load regardless of context.
-4. Reserve punchier motion for feedback moments so it stands out from routine transitions.
+1. Describe the change the user should notice.
+2. Match a directional transition to the panel’s actual placement.
+3. Compare the transition with an immediate change and inspect what information disappears.
 
 ## Review questions
 
-1. Can you name the job of every animation on this screen?
-2. Does each panel or view move from the direction it belongs to?
-3. Is any motion present purely for decoration, playing on every load?
+1. Can someone explain where the drawer went?
+2. Does the animation call attention to the right event?
+3. Does the end state communicate the result with reduced motion enabled?

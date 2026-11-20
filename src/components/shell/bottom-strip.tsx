@@ -8,7 +8,7 @@
  *   T  ▦  ◐  ⬚  ⊏  ⚙  ∿                   the rail's categories, in colour
  *
  * The run shows the category you are browsing (the current rule's, until you
- * pick another), so its marks sit several px apart instead of 105 marks
+ * pick another), so its marks sit several px apart instead of 108 marks
  * reading as a barcode. Drag along the run: it magnifies under the finger
  * (`magnifyInto`, into buffers this strip owns) and a card rises with the
  * rule; lift to open it. Drag along the icons: the run above switches

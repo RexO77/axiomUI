@@ -103,6 +103,7 @@
   overflow: clip;
 }
 .cmp-pane + .cmp-pane { box-shadow: inset 1px 0 0 var(--ax-line); }
+.cmp[data-kind="worked"] .cmp-pane { align-items: flex-start; min-height: 0; padding-bottom: 24px; }
 /* A flex box, so the label's line is its own 16px and its text bottom meets
    the duration's (.cmp-pane-ms) on the same line. */
 .cmp-pane-label { position: absolute; top: 16px; left: 16px; z-index: 2; display: flex; }

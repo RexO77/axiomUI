@@ -1,32 +1,33 @@
-# Nested radius formula
+# Align nested corner radii
 
 - ID: comp-3
 - Category: Components & actions
 - Tags: Shape, Polish
 - URL: https://axiomui.nischal.fyi/rules/comp-3
 
-Outer Radius = Inner Radius + Padding. This makes concentric corners look mathematically parallel.
+For circular corners with an even inset, subtract the distance between the two painted edges from the outer radius. An outer radius of 12px and an 8px inset leave an inner radius of 4px.
 
-- Do: Outer 12px = Inner 4px + Padding 8px
-- Don't: Outer 4px = Inner 4px (padding ignored)
+- Do: Outer 12px = Inner 4px + Inset 8px
+- Don't: Outer 4px and inner 4px with an 8px inset
 
 ## Why it works
 
-Concentric corners only read as parallel when the outer radius equals the inner radius plus the padding between them, a geometric nesting rule borrowed from how circles offset from a shared center. Break the formula and the eye detects the mismatch as visual noise even if it cannot name the problem.
+The centers of two circular arcs coincide when their radii differ by the inset. Measure between the edges you want to align. A border can add to the distance between a card’s outer edge and the child’s edge.
+
+- [CSS Backgrounds and Borders · Corner shaping](https://www.w3.org/TR/css-backgrounds-3/#corner-shaping)
 
 ## What breaks
 
-An outer radius of 4px wrapped around an inner radius of 4px with padding between them creates a pinched, uneven gap that looks like a spacing bug rather than an intentional design choice.
+Matching token names alone can leave the diagonal gap around a corner visibly wider or narrower than the straight gutter.
 
 ## How to apply it
 
-1. Calculate the outer radius as inner radius plus padding: 12 = 4 + 8.
-2. Never set outer and inner radius to the same value when padding sits between them.
-3. Recalculate the outer radius any time padding changes on a nested component.
-4. Check card-in-card, tab-in-container, and badge-in-button patterns specifically.
+1. Measure from painted edge to painted edge, including any intervening border.
+2. Subtract the inset and use zero if the result would be negative.
+3. Inspect other corner shapes separately, especially unequal insets and elliptical radii.
 
 ## Review questions
 
-1. Does the outer radius equal inner radius plus the padding between them?
-2. Do the nested corners look concentric rather than pinched?
-3. Was the radius recalculated after any recent padding change?
+1. Which two edges should track each other?
+2. Has the border been included in their separation?
+3. Does the corner still read as an even inset at the smallest component size?

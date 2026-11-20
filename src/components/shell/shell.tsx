@@ -8,8 +8,8 @@
  * shell asks it to move through `onOpenRule`, `onExit` and `onHome`.
  *
  * - Paging replaces, opening pushes (CatalogApp writes history).
- * - The sheet's reading position rides in the rule's history entry as
- *   `{ id, top }`, saved after scrolling settles, and is restored only on
+ * - The sheet and reading panel positions ride in the rule's history entry,
+ *   saved after scrolling settles, and are restored only on
  *   popstate, and only for that rule. Any other rule change starts at the top.
  * - Focus moves to the rule title only when the rule view is entered from the
  *   wall. Paging leaves focus where it is and speaks through the live region
@@ -43,14 +43,14 @@ import { rules } from "@/data/ui-logic";
 import { catalogStores } from "@/lib/catalog/stores";
 import { PHONE_QUERY, useMediaQuery } from "@/lib/media";
 import { deckPosition, sectionJump, stepRule, type Deck, type Direction } from "@/lib/navigation/deck";
-import { currentUrl, saveScroll, scrollToRestore, writeHistory } from "@/lib/navigation/history";
+import { currentUrl, readAxiomState, saveScroll, scrollToRestore, writeHistory, type AxiomScroll } from "@/lib/navigation/history";
 import { shortcutAction } from "@/lib/navigation/keyboard";
 import { memoryStore, useRuleMemory } from "@/lib/navigation/memory";
 import { createRoutes, type ShellView } from "@/lib/navigation/routes";
 
 import { BottomStrip } from "./bottom-strip";
 import { SCROLL_SAVE_MS, shellVars } from "./geometry";
-import { InstallMenuRow, useSkillsDialog } from "./install-row";
+import { InstallMenuRow, useSkillsDialog, type SkillsDialogComponent } from "./install-row";
 import { useModalSession, type ModalKind } from "./modal";
 import { Overlays } from "./overlays";
 import { PhoneBar, usePhoneChrome } from "./phone-bar";
@@ -222,17 +222,30 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
    * and the next change is to another rule, whose id cannot match.
    */
   const popped = useRef<unknown>(undefined);
+  const panelReturn = useRef<AxiomScroll | null>(null);
   const saveTimer = useRef(0);
   useEffect(() => {
     const onPop = () => {
       window.clearTimeout(saveTimer.current);
       popped.current = window.history.state;
+      panelReturn.current = readAxiomState(popped.current)?.scroll ?? null;
     };
     window.addEventListener("popstate", onPop);
     return () => {
       window.removeEventListener("popstate", onPop);
       window.clearTimeout(saveTimer.current);
     };
+  }, []);
+
+  const restorePanel = useCallback((id: string, panel: HTMLElement) => {
+    const entry = panelReturn.current;
+    if (!entry || entry.id !== id) return;
+    panelReturn.current = null;
+    const reading = panel.querySelector<HTMLElement>(".rv-dd[data-panel-rule]");
+    if (entry.panelTop && reading) reading.scrollTop = entry.panelTop;
+    if (entry.relatedId) {
+      panel.querySelector<HTMLElement>(`a[data-related-rule="${CSS.escape(entry.relatedId)}"]`)?.focus({ preventScroll: true });
+    }
   }, []);
 
   /*
@@ -260,7 +273,10 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
     const el = sheet.current;
     const target = state === undefined ? 0 : (scrollToRestore(state, rule.id) ?? 0);
     if (el && el.scrollTop !== target) el.scrollTop = target;
-    if (before.view === "gallery") el?.querySelector<HTMLElement>("[data-rule-title]")?.focus({ preventScroll: true });
+    const saved = readAxiomState(state)?.scroll;
+    if (before.view === "gallery" && !(saved?.id === rule.id && saved.relatedId)) {
+      el?.querySelector<HTMLElement>("[data-rule-title]")?.focus({ preventScroll: true });
+    }
     if (!el || target === 0) return;
     // A rule still laying out may clamp the write: check once, a frame later.
     const frame = requestAnimationFrame(() => {
@@ -269,32 +285,43 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
     return () => cancelAnimationFrame(frame);
   }, [view, rule, currentId]);
 
+  const savePosition = useCallback((relatedId?: string) => {
+    const el = sheet.current;
+    if (!currentId || !el) return;
+    const panel = el.querySelector<HTMLElement>(".rv-dd[data-panel-rule]");
+    if (panel?.dataset.panelRule !== currentId) return;
+    const active = document.activeElement;
+    const focused = active instanceof HTMLElement && el.contains(active) ? active.dataset.relatedRule : undefined;
+    const write = saveScroll(window.history.state, currentId, Math.round(el.scrollTop), Math.round(panel.scrollTop), relatedId ?? focused);
+    writeHistory(write.mode, write.axiom, currentUrl(window.location));
+  }, [currentId]);
+
   const onScroll = (event: UIEvent<HTMLElement>) => {
-    setScrolled(event.currentTarget.scrollTop > 0);
-    onChrome(event.currentTarget);
+    if (event.target === event.currentTarget) {
+      setScrolled(event.currentTarget.scrollTop > 0);
+      onChrome(event.currentTarget);
+    } else if (!(event.target instanceof HTMLElement) || event.target.dataset.panelRule !== currentId) return;
     if (!currentId) return;
-    const id = currentId;
     window.clearTimeout(saveTimer.current);
-    saveTimer.current = window.setTimeout(() => {
-      // Still this rule's entry: popstate and every rule change clear the timer.
-      const el = sheet.current;
-      if (!el) return;
-      const write = saveScroll(window.history.state, id, Math.round(el.scrollTop));
-      writeHistory(write.mode, write.axiom, currentUrl(window.location));
-    }, SCROLL_SAVE_MS);
+    saveTimer.current = window.setTimeout(savePosition, SCROLL_SAVE_MS);
   };
 
   /* Navigation. Opening pushes; paging replaces. */
   const openRule = useCallback(
-    (id: string) => {
+    (id: string, source?: "related") => {
       peek.current?.close();
-      if (id !== currentId) onOpenRule(id, "push");
+      if (id === currentId) return;
+      panelReturn.current = null;
+      window.clearTimeout(saveTimer.current);
+      if (currentId) savePosition(source === "related" ? id : undefined);
+      onOpenRule(id, "push");
     },
-    [currentId, onOpenRule],
+    [currentId, onOpenRule, savePosition],
   );
   const page = useCallback(
     (direction: Direction, category = false) => {
       if (!currentId) return;
+      panelReturn.current = null;
       const target = category ? sectionJump(deck, currentId, direction) : stepRule(deck, currentId, direction);
       if (target) onOpenRule(target.id, "replace");
     },
@@ -357,6 +384,7 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
       ruleId: currentId,
       deck,
       openRule,
+      restorePanel,
       page,
       exit,
       home,
@@ -374,7 +402,7 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
       openPalette,
       openShortcuts,
     }),
-    [view, currentId, deck, openRule, page, exit, home, onClearDeck, hrefFor, phone, scrolled, modKey, inspectorOpen, toggleInspector, singleKeys, inputOrigin, openPalette, openShortcuts],
+    [view, currentId, deck, openRule, restorePanel, page, exit, home, onClearDeck, hrefFor, phone, scrolled, modKey, inspectorOpen, toggleInspector, singleKeys, inputOrigin, openPalette, openShortcuts],
   );
 
   /* The phone menu's list: the rail's sidebar, with the gallery's search dimming what it leaves out. */
@@ -394,9 +422,9 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
    * returns focus when it closes.
    */
   const [skillsDialog, openSkills] = useSkillsDialog();
-  const installFromMenu = useCallback(() => {
+  const installFromMenu = useCallback((dialog: SkillsDialogComponent) => {
     closeModal();
-    window.setTimeout(openSkills, 0);
+    window.setTimeout(() => openSkills(dialog), 0);
   }, [closeModal, openSkills]);
   const homeFromMenu = useCallback(
     (from: InputOrigin) => {
@@ -415,7 +443,7 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
         <PhoneBar routes={routes} menuOpen={modal.kind === "menu"} onMenu={openMenu} />
         {/* The sheet's query container while the rail moves it on the wall (shell.css). */}
         <div className="shell-landing">
-          <main ref={sheet} id="main-content" className="shell-sheet" data-view={view} tabIndex={-1} onScroll={onScroll}>
+          <main ref={sheet} id="main-content" className="shell-sheet" data-view={view} tabIndex={-1} onScrollCapture={onScroll}>
             {children}
           </main>
         </div>

@@ -2,57 +2,57 @@
 
 Compact Do/Don't for every rule in this domain. Each Reasoning line names the file with the full write-up.
 
-## The 4pt grid system (`layout-1`)
+## Use a shared spacing scale (`layout-1`)
 
-Every margin, padding, and height should be divisible by 4. A fixed step means components built by different people still line up, and nobody has to defend a 13px gap.
+Choose named spacing steps for repeated relationships. A 4px base is useful for padding and gaps. Hairlines, optical offsets, and content-driven dimensions can use other values.
 
 - Do: 4px, 8px, 16px, 24px, 32px, 48px
 - Don't: 13px, 5px
 - Reasoning: `references/rules/layout-1.md` · https://axiomui.nischal.fyi/rules/layout-1
 
-## Text width limits (`layout-2`)
+## Set a measure for long-form text (`layout-2`)
 
-Lines of text should run 45-75 characters. Past that the return sweep to the next line gets harder to aim, and readers start losing their place mid-paragraph.
+Limit the width of sustained prose on wide screens. Around 65 characters per line is a useful starting point for English paragraphs. Check the actual text because 1ch measures the width of the zero glyph.
 
-- Do: max-w: 45ch
+- Do: max-width: 45ch
 - Don't: width: 100%
 - Reasoning: `references/rules/layout-2.md` · https://axiomui.nischal.fyi/rules/layout-2
 
-## Group by proximity (`layout-3`)
+## Show which items belong together (`layout-3`)
 
-Items that belong together should sit closer than items that don't. Proximity groups faster than a border can, and it costs no ink.
+Use a smaller gap within a label–field pair and a larger gap between fields. Keep each label programmatically associated with its control.
 
 - Do: Label (gap-2) Input (gap-6) Next Label
 - Don't: Label (gap-4) Input (gap-4) Next Label
 - Reasoning: `references/rules/layout-3.md` · https://axiomui.nischal.fyi/rules/layout-3
 
-## Visual vs mathematical center (`layout-4`)
+## Optically center asymmetric glyphs (`layout-4`)
 
-Icons with lopsided mass — a play triangle, a send arrow — read as off-center when centered by their bounding box. The eye centers visual weight, not the box.
+Center the icon box first. If an asymmetric glyph still looks displaced inside its control, compare a small offset at the intended size. Some icon sets already provide optical compensation.
 
 - Do: Play icon nudged +2px right
 - Don't: Play icon on the geometric center
 - Reasoning: `references/rules/layout-4.md` · https://axiomui.nischal.fyi/rules/layout-4
 
-## Button padding formula (`layout-5`)
+## Size button padding around the label (`layout-5`)
 
-Horizontal padding should be roughly 1.5x to 2x the vertical padding. Text runs sideways, so equal padding on all four sides leaves a label crowded against the left and right edges.
+For a short text button, try more inline padding than block padding. Set the hit area, line height, and space for long labels separately from that visual proportion.
 
 - Do: py-2 px-4 (ratio 2:1)
 - Don't: py-2 px-2 (ratio 1:1)
 - Reasoning: `references/rules/layout-5.md` · https://axiomui.nischal.fyi/rules/layout-5
 
-## Optical alignment of icons (`layout-6`)
+## Anchor a row icon to the text it describes (`layout-6`)
 
-Align an icon beside text to the cap height of that text, not to the full line box. The line box includes the leading above and below the letters, so centering on it drops the icon visually low.
+When an icon introduces a multiline notification, align it to the first line. Centering it in the whole text block moves it down as detail wraps. A single-line action can use centered alignment.
 
-- Do: items-start (icon on the cap height)
-- Don't: items-center (icon on the line box)
+- Do: items-start + 1px top offset
+- Don't: items-center on the whole text block
 - Reasoning: `references/rules/layout-6.md` · https://axiomui.nischal.fyi/rules/layout-6
 
-## The container fallacy (`layout-7`)
+## Choose a boundary that explains the group (`layout-7`)
 
-Don't put every section in a bordered box. Use a background shade or plain space instead: each border is another line competing for attention, and space separates just as well for no ink.
+Use headings and space for related content that reads in sequence. A card surface or border can help when an item stands on its own or takes a distinct action.
 
 - Do: White card on light gray bg
 - Don't: White card with gray border on white bg
@@ -60,32 +60,36 @@ Don't put every section in a bordered box. Use a background shade or plain space
 
 ## Consistent gutters (`layout-8`)
 
-Within one grid, use one gutter for siblings of the same kind. Vary the gap only to show grouping; otherwise mixed gaps feel accidental.
+Keep gutters consistent between equivalent siblings. A grid of independent cards can start with equal gaps on both axes. Use different row and column gaps when the two directions represent different relationships.
 
 - Do: Cards: gap-2 throughout
 - Don't: Rows gap-6, columns gap-2
 - Reasoning: `references/rules/layout-8.md` · https://axiomui.nischal.fyi/rules/layout-8
 
-## Responsive spacing scaling (`layout-9`)
+## Adapt outer spacing to available width (`layout-9`)
 
-Don't ship one spacing scale to every breakpoint. Scale padding and margins down on small screens — a 48px gutter spends an eighth of a 375px viewport on nothing.
+Reconsider large page and card insets when a layout narrows. Preserve the spacing that holds small controls and related text together. Change a token when the content shows why.
 
 - Do: p-3 sm / p-6 lg
 - Don't: p-6 sm / p-6 lg
 - Reasoning: `references/rules/layout-9.md` · https://axiomui.nischal.fyi/rules/layout-9
 
-## Vertical rhythm (`layout-10`)
+## Use spacing to express vertical hierarchy (`layout-10`)
 
-Every section gap should be a whole multiple of one base unit, so the smallest gap becomes a unit the eye can count in. Values off that base read as accidental.
+Give lines within one item, neighboring items, and major sections different spacing roles. Reuse the same role whenever that relationship recurs.
 
 - Do: 8 → 16 → 32px (1x, 2x, 4x of 8)
 - Don't: 8 → 13 → 18px (off the 8px base)
 - Reasoning: `references/rules/layout-10.md` · https://axiomui.nischal.fyi/rules/layout-10
 
-## Z-index scale (`layout-11`)
+## Define stacking order within each context (`layout-11`)
 
-Define a z-index scale (base 0, dropdown 100, sticky 200, modal 300, toast 400) and only use its steps. Arbitrary values turn every new overlay into a bidding war that ends at 9999.
+Give overlay roles an intentional order and identify the stacking context that contains them. A large z-index on a child cannot lift it above a higher sibling context or the browser’s top layer.
 
 - Do: z-dropdown: 100, z-modal: 300
 - Don't: z-index: 9999
 - Reasoning: `references/rules/layout-11.md` · https://axiomui.nischal.fyi/rules/layout-11
+
+## Related rules in other domains
+
+- `typo-14` Keep names and counts together across scripts (`references/typography.md`)

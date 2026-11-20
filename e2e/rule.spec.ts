@@ -34,6 +34,15 @@ const prose = (id: string) => ruleProse(id)!;
 const why = (page: Page) => page.locator('.rv-dd-sec[data-section="why"] .rv-dd-body');
 const breaks = (page: Page) => page.locator('.rv-dd-sec[data-section="breaks"] .rv-dd-body');
 
+async function expectSources(page: Page, id: string) {
+  const sources = prose(id).sources!;
+  const list = why(page).getByRole("list", { name: "Sources" });
+  await expect(list.getByRole("link")).toHaveCount(sources.length);
+  for (const { title, href } of sources) {
+    await expect(list.getByRole("link", { name: title, exact: true })).toHaveAttribute("href", href);
+  }
+}
+
 async function noScript(browser: Browser, width: number) {
   const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width, height: 844 }, baseURL: ORIGIN });
   return { context, page: await context.newPage() };
@@ -65,7 +74,8 @@ test.describe("prose without script", () => {
     const { context, page } = await noScript(browser, 390);
     await page.goto(ruleUrl("typo-1"));
     await expect(why(page)).toBeVisible();
-    await expect(why(page)).toHaveText(shown(prose("typo-1").why));
+    await expect(why(page).locator("p")).toHaveText(shown(prose("typo-1").why));
+    await expectSources(page, "typo-1");
     await expect(breaks(page)).toBeVisible();
     await expect(breaks(page)).toHaveText(shown(prose("typo-1").breaks));
     await expect(page.locator(".rv-dd-toggle")).toHaveCount(0);
@@ -130,7 +140,8 @@ test.describe("paging", () => {
 
     await page.keyboard.press("j");
     await expect(page.locator(sel.ruleTitle)).toHaveText(titleOf(next));
-    await expect(why(page)).toHaveText(shown(prose(next).why));
+    await expect(why(page).locator("p")).toHaveText(shown(prose(next).why));
+    await expectSources(page, next);
     expect(requested.filter((entry) => entry === next)).toHaveLength(1);
   });
 
@@ -153,13 +164,13 @@ test.describe("paging", () => {
     await expect(page.locator(".rv-dd")).toHaveAttribute("data-state", "loading");
     await page.keyboard.press("j");
     await expect(page.locator(sel.ruleTitle)).toHaveText(titleOf(b));
-    await expect(why(page)).toHaveText(shown(prose(b).why));
+    await expect(why(page).locator("p")).toHaveText(shown(prose(b).why));
 
     release();
     await page.waitForResponse((response) => response.url().endsWith(proseUrl(a)));
     await page.waitForTimeout(300);
     await expect(page.locator(sel.ruleTitle)).toHaveText(titleOf(b));
-    await expect(why(page)).toHaveText(shown(prose(b).why));
+    await expect(why(page).locator("p")).toHaveText(shown(prose(b).why));
   });
 
   test("a failed load shows a retry, and the retry loads the prose", async ({ page }) => {
@@ -173,7 +184,7 @@ test.describe("paging", () => {
     await expect(page.locator(".rv-dd")).toHaveAttribute("data-state", "error");
     fail = false;
     await page.getByRole("button", { name: "Try again" }).click();
-    await expect(why(page)).toHaveText(shown(prose(a).why));
+    await expect(why(page).locator("p")).toHaveText(shown(prose(a).why));
   });
 });
 
@@ -216,7 +227,7 @@ test.describe("exits and the copy menu", () => {
   test("Tab out of the copy menu closes it; Esc in it closes only the menu, and J never pages from it", async ({ page }) => {
     const id = "typo-1";
     await openCatalog(page, ruleUrl(id));
-    const trigger = page.locator(".rv-head .rv-split-menu-btn");
+    const trigger = page.locator(".rv-head").getByRole("button", { name: "Copy rule" });
     const menu = page.locator('.rv-head [role="menu"]');
 
     await trigger.click();
@@ -358,6 +369,37 @@ test.describe("motion readouts", () => {
 });
 
 test.describe("copy menu focus", () => {
+  test("Copy rule waits for a format and writes the selected representation", async ({ page }) => {
+    const id = "typo-1";
+    const rule = byId.get(id)!;
+    await openCatalog(page, ruleUrl(id));
+    await page.evaluate(() => {
+      const writes: string[] = [];
+      Object.defineProperty(navigator, "clipboard", {
+        configurable: true,
+        value: {
+          writeText: async (text: string) => { writes.push(text); },
+          readText: async () => writes.join("\n"),
+        },
+      });
+    });
+    const trigger = page.locator(".rv-head").getByRole("button", { name: "Copy rule" });
+    for (const [format, expected] of [
+      ["Copy as plain text", rule.title + " ("],
+      ["Copy as Markdown", "## " + rule.title],
+      ["Copy link", ORIGIN + "/rules/" + id],
+    ]) {
+      const contents = await page.evaluate(() => navigator.clipboard.readText());
+      await trigger.click();
+      await expect(page.getByRole("menuitem", { name: format })).toBeVisible();
+      expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(contents);
+      await page.getByRole("menuitem", { name: format }).click();
+      const changed = await page.evaluate(() => navigator.clipboard.readText());
+      expect(changed.slice(contents.length).trimStart().startsWith(expected)).toBe(true);
+      await expect(trigger).toBeVisible();
+    }
+  });
+
   test("a slow clipboard never pulls focus back after the reader has moved on", async ({ page }) => {
     const WRITE_MS = 1500;
     await openCatalog(page, ruleUrl("typo-1"));
@@ -367,7 +409,7 @@ test.describe("copy menu focus", () => {
         value: { writeText: () => new Promise<void>((resolve) => setTimeout(resolve, ms)) },
       });
     }, WRITE_MS);
-    const trigger = page.locator(".rv-head .rv-split-menu-btn");
+    const trigger = page.locator(".rv-head").getByRole("button", { name: "Copy rule" });
     await trigger.click();
     await page.locator('.rv-head [role="menu"]').getByRole("menuitem", { name: "Copy link" }).click();
     // Back on the trigger as the menu closes, long before the write lands.
@@ -443,7 +485,7 @@ test.describe("deep dive toggle", () => {
     ["closing", 140],
     ["opening", 220],
   ] as const) {
-    test(`a click ${step} it moves the column in one ${ms} ms step and ends exactly on the layout`, async ({ page }) => {
+    test(`a click ${step} it keeps the reading column still during one ${ms} ms step and ends exactly on the layout`, async ({ page }) => {
       await openCatalog(page, ruleUrl("typo-1"));
       const toggle = page.locator(".rv-head").getByRole("button", { name: "Deep dive", exact: true });
       if (step === "opening") {
@@ -486,7 +528,11 @@ test.describe("deep dive toggle", () => {
         cmpY: document.querySelector(".rv-compare")!.getBoundingClientRect().top,
       }));
       expect(layout).toEqual({ title: end.title, cmpY: end.cmpY });
-      expect(Math.abs(end.title - before), "the column really moved").toBeGreaterThan(40);
+      expect(end.title, "the reading column stays anchored").toBe(before);
+      for (const frame of after) {
+        expect(frame.cmpX).toBe(end.cmpX);
+        expect(frame.cmpY).toBe(end.cmpY);
+      }
     });
   }
 
@@ -497,7 +543,7 @@ test.describe("deep dive toggle", () => {
     expect(new Set(await runningIn(page))).toEqual(new Set([140]));
     await expect(page.locator(".rv-ghost"), "the leaving copy is removed when it ends").toHaveCount(0);
     await toggle.click();
-    expect(new Set(await runningIn(page))).toEqual(new Set([220, 140]));
+    expect(new Set(await runningIn(page))).toEqual(new Set([220]));
   });
 
   test("I and Enter on the button toggle it in the same frame, with nothing animating", async ({ page }) => {
@@ -508,7 +554,7 @@ test.describe("deep dive toggle", () => {
     await page.keyboard.press("i");
     expect(await runningIn(page)).toEqual([]);
     const closed = await x();
-    expect(Math.abs(closed - open)).toBeGreaterThan(40);
+    expect(closed).toBe(open);
     await expect(page.locator(".rv-ghost")).toHaveCount(0);
     const toggle = page.locator(".rv-head").getByRole("button", { name: "Deep dive", exact: true });
     await toggle.focus();
@@ -523,7 +569,7 @@ test.describe("deep dive toggle", () => {
     await openCatalog(page, ruleUrl("typo-1"));
     await page.keyboard.press("i");
     const opening = await page.evaluate(async () => {
-      const side = document.querySelector<HTMLElement>(".rv-side")!;
+      const side = document.querySelector<HTMLElement>(".rv-dd")!;
       document.querySelector(".rv-head button[aria-controls]")!
         .dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
       const animation = side.getAnimations().find((item) => !(item instanceof CSSTransition))!;
@@ -556,11 +602,11 @@ test.describe("deep dive toggle", () => {
         const click = () => toggle.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
         if (interrupt) {
           click();
-          const entering = document.querySelector(".rv-side")!.getAnimations().find((item) => !(item instanceof CSSTransition))!;
+          const entering = document.querySelector(".rv-dd")!.getAnimations().find((item) => !(item instanceof CSSTransition))!;
           entering.pause();
           entering.currentTime = 40;
         }
-        const start = document.querySelector(".rv-side")!.getBoundingClientRect().left;
+        const start = document.querySelector(".rv-dd")!.getBoundingClientRect().left;
         click();
         const ghost = document.querySelector(".rv-ghost[data-surface]")!;
         const animation = ghost.getAnimations().find((item) => !(item instanceof CSSTransition))!;
@@ -580,46 +626,75 @@ test.describe("deep dive toggle", () => {
     }
   });
 
-  test("at 1100 moving rows stay behind the partially visible entering deep dive", async ({ page }) => {
-    await page.setViewportSize({ width: 1100, height: 1080 });
-    await openCatalog(page, ruleUrl("typo-1"));
-    await page.keyboard.press("i");
-    await page.locator(".rv-compare").evaluate((el) => {
-      document.querySelector(".shell-sheet")!.scrollTop = el.getBoundingClientRect().bottom - 200;
-    });
-    const frames = await page.evaluate(() => new Promise<{ opacity: number; overlaps: number; covered: boolean }[]>((resolve) => {
-      const panel = document.querySelector(".rv-dd")!;
-      const rows = [...document.querySelectorAll(".rv-ship, .rv-related, .rv-next")];
-      const frames: { opacity: number; overlaps: number; covered: boolean }[] = [];
-      document.querySelector(".rv-head button[aria-controls]")!
-        .dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
-      const tick = () => {
-        const opacity = Number(getComputedStyle(panel).opacity);
-        const box = panel.getBoundingClientRect();
-        let overlaps = 0;
-        let covered = true;
-        for (const row of rows) {
-          const rect = row.getBoundingClientRect();
-          const left = Math.max(box.left, rect.left);
-          const right = Math.min(box.right, rect.right);
-          const top = Math.max(box.top, rect.top, 60);
-          const bottom = Math.min(box.bottom, rect.bottom, innerHeight - 8);
-          if (right <= left || bottom <= top) continue;
-          overlaps++;
-          const hit = document.elementFromPoint((left + right) / 2, (top + bottom) / 2);
-          if (!hit || !panel.contains(hit)) covered = false;
+  for (const width of [1111, 1510]) {
+    test(`form-5 at ${width} keeps Related clear of every deep-dive transition frame`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await openCatalog(page, ruleUrl("form-5"));
+      await page.locator(".shell-sheet").evaluate(async (sheet) => {
+        sheet.scrollTop = 180;
+        await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+      });
+      const result = await page.evaluate(async () => {
+        const button = document.querySelector<HTMLButtonElement>(".rv-head button[aria-controls]")!;
+        const panel = document.getElementById("rule-deep-dive")!;
+        const related = document.querySelector<HTMLElement>(".rv-related")!;
+        const main = document.querySelector<HTMLElement>(".rv-compare")!;
+        const ship = document.querySelector<HTMLElement>(".rv-ship")!;
+        const docked = getComputedStyle(related.parentElement!).display !== "contents";
+        const firstMain = main.getBoundingClientRect();
+        const firstRelated = related.getBoundingClientRect();
+        const sheetTop = document.querySelector(".shell-sheet")!.scrollTop;
+        const samples: { gap: number; relatedShift: number; mainShift: number }[] = [];
+        const reversals: number[] = [];
+        const click = () => button.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
+        const surface = () => document.querySelector<HTMLElement>(".rv-ghost") ?? panel;
+        function record() {
+          const box = surface().getBoundingClientRect();
+          const links = related.getBoundingClientRect();
+          const compare = main.getBoundingClientRect();
+          samples.push({
+            gap: docked ? box.top - links.bottom : Math.min(links.top, ship.getBoundingClientRect().top) - box.bottom,
+            relatedShift: Math.max(Math.abs(links.top - firstRelated.top), Math.abs(links.left - firstRelated.left)),
+            mainShift: Math.max(Math.abs(compare.top - firstMain.top), Math.abs(compare.left - firstMain.left)),
+          });
         }
-        frames.push({ opacity, overlaps, covered });
-        if (panel.getAnimations().some((animation) => animation.playState === "running")) requestAnimationFrame(tick);
-        else resolve(frames);
-      };
-      requestAnimationFrame(tick);
-    }));
-    const partial = frames.filter((frame) => frame.opacity > 0 && frame.opacity < 1);
-    expect(partial.length).toBeGreaterThan(2);
-    expect(frames.some((frame) => frame.overlaps > 0), "sample the crossing rows").toBe(true);
-    expect(partial.every((frame) => frame.covered), "the entering surface paints above every crossing row").toBe(true);
-  });
+        // Record actual painted frames in each direction, then reverse a second
+        // close partway through. Both sides of that interruption must coincide.
+        async function travel(reverse = false) {
+          click();
+          let effect = surface().getAnimations()[0];
+          const started = performance.now();
+          record();
+          while (effect.playState !== "finished" && effect.playState !== "idle") {
+            await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+            if (effect.playState !== "running") break;
+            record();
+            if (reverse && performance.now() - started >= 35) {
+              const before = surface().getBoundingClientRect();
+              click();
+              const after = surface().getBoundingClientRect();
+              reversals.push(Math.max(Math.abs(after.left - before.left), Math.abs(after.top - before.top), Math.abs(after.height - before.height)));
+              effect = surface().getAnimations()[0];
+              reverse = false;
+              record();
+            }
+          }
+        }
+        await travel();
+        await travel();
+        await travel(true);
+        return { docked, samples, reversals, sheetTop };
+      });
+      expect(result.docked).toBe(width === 1510);
+      expect(result.sheetTop).toBeGreaterThan(0);
+      expect(result.samples.length).toBeGreaterThan(6);
+      expect(Math.min(...result.samples.map(frame => frame.gap))).toBeGreaterThanOrEqual(-1);
+      expect(Math.max(...result.samples.map(frame => frame.mainShift))).toBeLessThan(1);
+      if (result.docked) expect(Math.max(...result.samples.map(frame => frame.relatedShift))).toBeLessThan(1);
+      expect(result.reversals).toHaveLength(1);
+      expect(result.reversals[0]).toBeLessThan(1);
+    });
+  }
 
   for (const action of ["click", "I", "Enter"]) {
     test(`the first-visit hint disappears in the same frame as a deep-dive ${action} toggle`, async ({ page }) => {
@@ -755,7 +830,7 @@ test.describe("deep dive toggle", () => {
         return { display: getComputedStyle(side).display, panelX: panel.left, panelY: panel.top, compareRight: comparison.right, compareBottom: comparison.bottom };
       });
       if (to === 1440) {
-        expect(layout.display).toBe("block");
+        expect(layout.display).toBe("flex");
         expect(layout.panelX).toBeGreaterThan(layout.compareRight);
       } else {
         expect(layout.display).toBe("contents");
@@ -787,20 +862,26 @@ test.describe("deep dive toggle", () => {
   });
 
   for (const width of [1440, 1280]) {
-    test(`at ${width} the panel's hairline runs from the header's floor to the sheet's foot, and the floor is drawn`, async ({ page }) => {
+    test(`at ${width} the inset reading card has its own edges and the header floor is visible at rest`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
       await openCatalog(page, ruleUrl("typo-1"));
       const edges = await page.evaluate(() => {
         const head = document.querySelector<HTMLElement>(".rv-head")!;
-        const side = document.querySelector<HTMLElement>(".rv-side")!;
+        const side = document.getElementById("rule-deep-dive")!;
+        const related = document.querySelector<HTMLElement>(".rv-related")!;
         const sheet = document.querySelector<HTMLElement>(".shell-sheet")!.getBoundingClientRect();
         const style = getComputedStyle(head);
         return {
           headBottom: head.getBoundingClientRect().bottom,
           sideTop: side.getBoundingClientRect().top,
+          relatedTop: related.getBoundingClientRect().top,
+          relatedBottom: related.getBoundingClientRect().bottom,
+          relatedRadius: getComputedStyle(related).borderRadius,
+          relatedBorder: getComputedStyle(related).boxShadow,
           sideBottom: side.getBoundingClientRect().bottom,
           sheetBottom: sheet.bottom,
           divider: getComputedStyle(side).boxShadow,
+          radius: getComputedStyle(side).borderRadius,
           floor: style.getPropertyValue("--rv-head-line").trim(),
           line: getComputedStyle(document.documentElement).getPropertyValue("--ax-line").trim(),
           headRight: head.getBoundingClientRect().right,
@@ -808,9 +889,12 @@ test.describe("deep dive toggle", () => {
         };
       });
       expect(edges.divider).toContain("inset");
-      // The divider meets the header's hairline: no gap, no overlap past it.
-      expect(edges.sideTop).toBe(edges.headBottom);
-      expect(edges.sideBottom).toBeGreaterThanOrEqual(edges.sheetBottom - 1);
+      expect(edges.relatedTop - edges.headBottom).toBe(16);
+      expect(edges.sideTop - edges.relatedBottom).toBe(12);
+      expect(edges.relatedRadius).toBe("10px");
+      expect(edges.relatedBorder).toContain("inset");
+      expect(edges.sideBottom).toBeLessThanOrEqual(edges.sheetBottom);
+      expect(edges.radius).toBe("10px");
       expect(edges.floor).toBe(edges.line);
       // The header spans the panel too, so its floor meets the divider in a T.
       expect(edges.headRight).toBeGreaterThanOrEqual(edges.sideRight);

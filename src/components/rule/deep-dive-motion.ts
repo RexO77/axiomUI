@@ -1,34 +1,15 @@
 // design-system: strict
 
 /*
- * Showing and hiding the deep dive with a pointer: one continuous move.
- *
- * The layout changes once, in the frame of the click (`commit` flushes the
- * store change and React's commit synchronously). Everything that moved is
- * measured before and after, then drawn back where it was and eased home by
- * transform, so nothing lays out again while it plays and the last frame is
- * the layout itself. On a sheet of 1160px or more the docked panel slides in
- * from the sheet's right edge as the main column makes room; a closing panel
- * leaves as a frozen, inert copy sliding back out, so the column it gives back
- * fills at once. Below 1160 the dive opens under the comparison: it fades in
- * as the rows under it move down, and fades out as they move up.
- *
- * The timing is the rail drawer's (geometry.ts): OPEN_MS on --ease-drawer in,
- * CLOSE_MS on --ease-out-strong out, so both side panels move alike.
- *
- * Interruptible: a second click reads every element where it is drawn now
- * (a rect includes its running transform), cancels what is playing, and
- * starts from there. A panel turned back mid-exit resumes from its copy's
- * place and opacity.
- *
- * A keyboard toggle (I, or Enter on the button) and reduced motion skip all
- * of this: `animate` is false and the commit is the whole change.
+ * On wide sheets, slide only the deep dive in the reserved right column.
+ * On narrower sheets, reveal its actual footprint below the comparison so
+ * Related and the following rows always sit outside the moving panel.
+ * The real panel is hidden immediately on close for focus and find-in-page.
+ * Its inert visual copy finishes the exit and yields its geometry on reversal.
+ * Keyboard and reduced-motion toggles commit immediately.
  */
 
 import { CLOSE_MS, OPEN_MS } from "@/components/shell/geometry";
-
-/** What keeps its place in the flow and only moves: the header's controls and the main column's blocks. */
-const MOVERS = ".rv-head > :not(.rv-spacer), .rv-main, .rv-ship, .rv-related, .rv-next";
 
 /** Copied from the panel onto its copy, element by element: everything its open layout sets. */
 const FROZEN = [
@@ -44,6 +25,11 @@ const FROZEN = [
   "grid-template-columns",
   "column-gap",
   "box-shadow",
+  "background-color",
+  "border-radius",
+  "overflow-y",
+  "scrollbar-gutter",
+  "border-block-start",
   // html[data-deep="hidden"] matches the copy too once the store has changed.
   "content-visibility",
 ] as const;
@@ -70,7 +56,7 @@ export function cancelDeepDive(root: HTMLElement | null) {
 const docked = (side: HTMLElement) => getComputedStyle(side).display !== "contents";
 
 /** A visual-only copy of `el`, frozen in its current layout, placed at `rect` inside `root`. */
-function ghostOf(el: HTMLElement, rect: DOMRect, root: HTMLElement, surface: boolean): HTMLElement {
+function ghostOf(el: HTMLElement, rect: DOMRect, root: HTMLElement): HTMLElement {
   const copy = el.cloneNode(true) as HTMLElement;
   const from = [el, ...el.querySelectorAll<HTMLElement>("*")];
   const to = [copy, ...copy.querySelectorAll<HTMLElement>("*")];
@@ -81,10 +67,11 @@ function ghostOf(el: HTMLElement, rect: DOMRect, root: HTMLElement, surface: boo
     target.removeAttribute("id");
   });
   copy.removeAttribute("hidden");
+  copy.removeAttribute("data-panel-rule");
   copy.setAttribute("aria-hidden", "true");
   copy.inert = true;
   copy.classList.add("rv-ghost");
-  if (surface) copy.dataset.surface = "";
+  copy.dataset.surface = "";
   const box = root.getBoundingClientRect();
   Object.assign(copy.style, {
     left: `${rect.left - box.left}px`,
@@ -108,91 +95,55 @@ export function toggleDeepDive(root: HTMLElement | null, opening: boolean, commi
   }
 
   const sheet = root.closest<HTMLElement>(".shell-sheet");
+  const wide = docked(side);
   const sheetRight = (sheet ?? root).getBoundingClientRect().right;
-
-  // First: where everything is drawn now, transforms included.
-  const wasDocked = docked(side);
-  const related = root.querySelector<HTMLElement>(".rv-related");
-  const movers = [...root.querySelectorAll<HTMLElement>(MOVERS)];
-  const first = new Map(movers.map((el) => [el, el.getBoundingClientRect()]));
-  const shown = wasDocked ? side : panel;
-  const opacity = Number(getComputedStyle(shown).opacity);
-
-  // A closing panel and, opening a docked one, Related's place in the column: copied before they change.
-  let exit: { ghost: HTMLElement; distance: number } | null = null;
-  if (!opening) {
-    const rect = shown.getBoundingClientRect();
-    exit = { ghost: ghostOf(shown, rect, root, true), distance: sheetRight - rect.left };
-  }
-  const resume = old ? { rect: old.getBoundingClientRect(), opacity: Number(getComputedStyle(old).opacity) } : null;
-  const relatedRect = related && first.get(related);
-  const relatedGhost = opening && !wasDocked && related && relatedRect ? ghostOf(related, relatedRect, root, false) : null;
-
+  // Capture the visible panel or its exiting copy before cancelling a reversal.
+  const visible = old ?? panel;
+  const from = visible.getBoundingClientRect();
+  const fromMargin = getComputedStyle(visible).marginTop;
+  const scrollTop = visible.scrollTop;
+  const ghost = opening ? null : ghostOf(panel, from, root);
   cancelDeepDive(root);
   commit();
 
   const active = { animations: [] as Animation[], ghosts: [] as HTMLElement[], observer: null as ResizeObserver | null };
   transitions.set(root, active);
-  const play = (el: Element, frames: Keyframe[], options: KeyframeAnimationOptions) => {
-    const animation = el.animate(frames, options);
-    active.animations.push(animation);
-    return animation;
-  };
-
-  // Last: the new layout, untransformed. Related changes column when the panel docks or leaves.
-  const isDocked = docked(side);
-  const crossed = wasDocked !== isDocked;
   const timing = opening ? OPEN : CLOSE;
 
-  for (const el of movers) {
-    if (crossed && el === related) continue;
-    const before = first.get(el);
-    if (!before) continue;
-    const after = el.getBoundingClientRect();
-    const dx = before.left - after.left;
-    const dy = before.top - after.top;
-    if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) continue;
-    play(el, [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "none" }], timing);
-  }
-
-  if (opening) {
-    const entering = isDocked ? side : panel;
-    const rest = entering.getBoundingClientRect();
-    if (isDocked) {
-      // From the sheet's edge, or from wherever the leaving copy had got to.
-      const from = resume ? resume.rect.left - rest.left : sheetRight - rest.left;
-      play(
-        entering,
-        [{ transform: `translateX(${from}px)` }, { transform: "none" }],
-        timing,
-      );
-    } else {
-      // Let the rows clear most of the entering surface before its prose appears.
-      const from = resume?.opacity ?? 0;
-      play(entering, [{ opacity: from }, { opacity: from, offset: 0.35, easing: timing.easing }, { opacity: 1 }], { ...timing, easing: "linear" });
-    }
-    // Related's old place in the column fades as the rows under it close up.
-    if (relatedGhost && crossed) {
-      const gone = () => relatedGhost.remove();
-      root.append(relatedGhost);
-      active.ghosts.push(relatedGhost);
-      play(relatedGhost, [{ opacity: 1 }, { opacity: 0 }], CLOSE).finished.then(gone, gone);
-    }
-  } else if (exit) {
-    const { ghost, distance } = exit;
-    root.append(ghost);
+  let surface: HTMLElement;
+  let frames: Keyframe[];
+  if (ghost) {
     active.ghosts.push(ghost);
     leaving.set(root, ghost);
-    // The copy starts at the drawn rect, which already includes any interrupted shift.
-    const out = wasDocked ? [{ transform: "none" }, { transform: `translateX(${distance}px)` }] : [{ opacity }, { opacity: 0 }];
-    const done = () => {
-      ghost.remove();
-      if (leaving.get(root) === ghost) leaving.delete(root);
-    };
-    play(ghost, out, timing).finished.then(done, done);
-    // Related joins the main column again: it fades in where it now sits.
-    if (crossed && related) play(related, [{ opacity: 0 }, { opacity: 1 }], timing);
+    if (wide) {
+      root.append(ghost);
+      frames = [{ transform: "none" }, { transform: `translateX(${sheetRight - from.left}px)` }];
+    } else {
+      // The visual copy keeps its place in the grid while the actual aside
+      // stays discoverable with hidden="until-found". Its siblings follow
+      // the clipped height instead of sliding behind the exiting text.
+      Object.assign(ghost.style, { position: "relative", left: "auto", top: "auto", overflow: "clip", marginTop: fromMargin });
+      panel.after(ghost);
+      frames = [{ height: `${from.height}px`, marginTop: fromMargin }, { height: "0px", marginTop: "0px" }];
+    }
+    ghost.scrollTop = scrollTop;
+    surface = ghost;
+  } else {
+    surface = panel;
+    const rest = panel.getBoundingClientRect();
+    if (wide) {
+      const start = old ? from.left : sheetRight;
+      frames = [{ transform: `translateX(${start - rest.left}px)` }, { transform: "none" }];
+    } else {
+      const margin = getComputedStyle(panel).marginTop;
+      frames = [
+        { height: `${old ? from.height : 0}px`, marginTop: old ? fromMargin : "0px", overflow: "clip" },
+        { height: `${rest.height}px`, marginTop: margin, overflow: "clip" },
+      ];
+    }
+    if (old) panel.scrollTop = scrollTop;
   }
+  active.animations.push(surface.animate(frames, timing));
 
   if (sheet && active.animations.length) {
     const width = sheet.clientWidth;

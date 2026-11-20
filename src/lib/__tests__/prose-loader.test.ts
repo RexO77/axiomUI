@@ -118,6 +118,18 @@ describe("prose loader", () => {
     expect(loader.get("a").status).toBe("loading");
   });
 
+  it("preserves source links on the requested rule and rejects malformed link payloads", async () => {
+    const { fetcher, settle } = controlledFetcher();
+    const loader = createProseLoader(fetcher);
+    const valid = { ...prose("a"), sources: [{ title: "Capitalization", href: "https://learn.microsoft.com/en-us/style-guide/capitalization" }] };
+    loader.show("a");
+    await settle("a", valid);
+    expect(loader.get("a")).toEqual({ status: "ready", prose: valid });
+    loader.show("b");
+    await settle("b", { ...prose("b"), sources: [{ title: "Capitalization", href: "/unknown" }] });
+    expect(loader.get("b").status).toBe("error");
+  });
+
   it("fetches each rule's own file at the site root", () => {
     expect(proseUrl("typo-1")).toBe("/deep-dives/typo-1");
     expect(proseUrl("a b")).toBe("/deep-dives/a%20b");

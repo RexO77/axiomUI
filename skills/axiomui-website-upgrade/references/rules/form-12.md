@@ -1,32 +1,34 @@
-# Success state feedback
+# Confirm the outcome of a submission
 
 - ID: form-12
 - Category: Forms & inputs
 - Tags: Feedback, States
 - URL: https://axiomui.nischal.fyi/rules/form-12
 
-Show positive confirmation after successful submission (not just absence of errors). Users need to know it worked.
+After the service confirms a save, show the outcome where the user can find it. For a completed transaction, include the reference or next step they may need later.
 
 - Do: Green checkmark + “Saved successfully”
-- Don't: Form just resets silently
+- Don't: Saved value stays on screen without confirmation
 
 ## Why it works
 
-The absence of an error is not the same signal as confirmation of success, so a form that just resets silently leaves users to infer success from nothing happening. An explicit green checkmark with Saved successfully closes the loop the user opened by submitting, giving positive proof rather than an inferred guess. This matters most after actions with real consequences, where uncertainty about whether it worked drives repeat submissions.
+An unchanged edit form can look identical before and after a successful save. “Saved successfully” distinguishes those states. A booking may require more, such as the reference needed to make a change.
+
+- [WCAG 2.2 · Status messages](https://www.w3.org/WAI/WCAG22/Understanding/status-messages.html)
+- [GOV.UK · Confirmation pages](https://design-system.service.gov.uk/patterns/confirmation-pages/)
 
 ## What breaks
 
-A settings form resets silently after saving, so the user assumes it failed and clicks submit again, potentially double-processing the update.
+A generic success message shown when a request starts can contradict a later rejection. Clearing the fields early also destroys the information needed to try again.
 
 ## How to apply it
 
-1. Show a green checkmark with the message Saved successfully after a successful submission.
-2. Never let the form just reset silently as the only sign of completion.
-3. Keep the success state visible long enough to register, not a flash reset.
-4. Apply this to any state-changing action, not just full-page form submits.
+1. Distinguish pending, saved and failed states.
+2. Announce a meaningful inline completion message without moving focus unnecessarily.
+3. For a completed transaction, provide a durable confirmation and explain what happens next.
 
 ## Review questions
 
-1. Does a successful submission show explicit confirmation like a checkmark and message?
-2. Is silent form reset ever the only feedback given after submitting?
-3. Does the success message stay visible long enough for the user to notice it?
+1. Was success confirmed by the service?
+2. Can someone perceive the outcome without seeing the icon?
+3. Can they recover the reference or next step later?

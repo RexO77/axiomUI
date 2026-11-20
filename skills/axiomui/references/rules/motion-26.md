@@ -1,32 +1,34 @@
-# Split enter animations
+# Sequence panel content when order explains something
 
 - ID: motion-26
 - Category: Motion & interaction
 - Tags: Entry, Stagger
 - URL: https://axiomui.nischal.fyi/rules/motion-26
 
-Do not animate a whole page or panel as one object when its content has separate meaning. Split title, copy, and actions into short staggered groups.
+Reveal related groups in sequence when the order helps explain a change. Present a routine dialog together when people need to read and act immediately.
 
-- Do: Title, copy, actions staggered 80-100ms
+- Do: Title, copy, actions staggered 90ms
 - Don't: Title, copy, actions in one fade
 
 ## Why it works
 
-A title, supporting copy, and action buttons are semantically separate pieces, so animating an entire panel as one fading block erases that distinction and asks the eye to parse everything at once. Splitting them into staggered groups at 80-100ms apart lets each piece register as its own idea in sequence, mirroring how a reader’s attention naturally moves from heading to body to action. This is the panel-level counterpart to per-item list stagger, applied to content roles instead of repeated items.
+A heading, supporting detail and action can arrive in stages to introduce a new workflow. An experienced user reopening the same confirmation dialog already knows its structure and may want the action immediately. Reading order and labels carry the hierarchy even with animation turned off.
+
+- [WAI-ARIA APG · Modal dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/)
+- [Motion · Staggering animations](https://motion.dev/docs/stagger)
 
 ## What breaks
 
-A modal fades in as one container, the title, body text, and buttons all appear simultaneously, and users report the panel feels like a flash of content rather than something they read.
+An action that receives focus while it is still transparent can leave a keyboard user unable to see where they are. A late title can also arrive after the user starts reading its body.
 
 ## How to apply it
 
-1. Split the panel into title, copy, and action groups with roughly 80-100ms stagger between them.
-2. Never wrap the whole panel in a single fade or scale as though it were one object.
-3. Order the stagger to match reading order: title first, then copy, then actions.
-4. Keep each group’s individual animation short so the full sequence still resolves quickly.
+1. Choose the specific relationship the sequence should communicate.
+2. Keep the title and initially focused control visible on open.
+3. Compare the staged version with a single entrance during repeated use.
 
 ## Review questions
 
-1. Do the title, copy, and actions animate in as separate staggered groups?
-2. Does the stagger order follow natural reading order, top to bottom?
-3. Does the whole panel avoid animating in as one single fading block?
+1. What information does the order reveal?
+2. Can the user see and use the initial focus target immediately?
+3. Does the hierarchy remain clear with every group displayed together?

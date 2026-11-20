@@ -1,32 +1,33 @@
-# Avatars are circles
+# Distinguish people from content
 
 - ID: comp-4
 - Category: Components & actions
 - Tags: Shape, Semantics
 - URL: https://axiomui.nischal.fyi/rules/comp-4
 
-Put people in circles and content in rectangles. The shape becomes a type signal, so a mixed list of avatars and files can be scanned without reading a single label.
+Use a consistent shape for person avatars in mixed lists. A circular portrait beside a rectangular document thumbnail gives readers an extra cue about what each row represents.
 
 - Do: Avatar = circle, file = rectangle
 - Don't: Avatar = square, file = rectangle
 
 ## Why it works
 
-Shape carries meaning before users read a single label: circles read as organic and human, rectangles read as structured content. Putting a person in a circle and a document in a rect lets users sort avatars from files at a glance, relying on shape recognition instead of parsing text.
+A person, a workspace and a file can all have an uploaded image. A consistent crop helps readers distinguish the kinds of items before examining each image. Shape gets its meaning from repeated use within the product.
+
+- [Fluent · Avatar shapes and variations](https://fluent2.microsoft.design/components/web/react/core/avatar/usage)
 
 ## What breaks
 
-A user avatar rendered as a square gets mentally grouped with file thumbnails and folder icons, so users skim past a real person’s profile picture thinking it is just another content tile.
+If a document cover and a profile picture have identical crops and the same generic label, the destination may be unclear even after the image loads.
 
 ## How to apply it
 
-1. Render every user avatar as a circle, with no exceptions for team or group avatars.
-2. Keep content types like documents and projects as squares or rects.
-3. Never crop a user photo into a square shape, even for compact list rows.
-4. Apply the same circle treatment consistently across profile, comment, and mention UI.
+1. Choose separate treatments for the entity types people actually need to distinguish.
+2. Show the person’s name or another meaningful identifier alongside the picture when identity matters.
+3. Keep the fallback for a missing photo recognizable as the same kind of item.
 
 ## Review questions
 
-1. Is every user avatar displayed as a circle?
-2. Are document or project thumbnails shown as squares or rects, not circles?
-3. Is the circle-for-people rule applied consistently across the whole screen?
+1. Can a reader distinguish a person from a file without recognizing the photo?
+2. How does a team avatar differ from an individual in this system?
+3. Does a missing image preserve the same identity cue?

@@ -95,13 +95,15 @@ describe("skill catalog", () => {
     const crossListing = Object.fromEntries(
       domainSkills.filter((skill) => skill.crossListedRuleIds.length > 0).map((skill) => [skill.name, skill])
     );
-    expect(Object.keys(crossListing).sort()).toEqual(["axiomui-accessibility", "axiomui-motion"]);
+    expect(Object.keys(crossListing).sort()).toEqual(["axiomui-accessibility", "axiomui-layout", "axiomui-motion"]);
     for (const skill of Object.values(crossListing)) {
       expect(skill.crossListedNote, skill.name).toBeTruthy();
       for (const id of skill.crossListedRuleIds) {
         expect(rules.find((rule) => rule.id === id)?.category, `${skill.name} ${id}`).not.toBe(skill.categoryId);
       }
     }
+    expect(findSkill("axiomui-layout")?.crossListedRuleIds).toEqual(["typo-14"]);
+    expect(findSkill("axiomui-accessibility")?.crossListedRuleIds).toEqual(expect.arrayContaining(["comp-13", "form-13"]));
     // The motion skill's trigger names transitions and will-change, so it must carry those rules.
     expect(findSkill("axiomui-motion")?.crossListedRuleIds).toEqual(["sys-13", "sys-14"]);
   });

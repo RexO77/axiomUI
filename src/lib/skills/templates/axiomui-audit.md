@@ -11,11 +11,11 @@ Review an interface against Axiom UI's {{ruleCount}} UI design rules and report 
 5. Assign a severity from the scale below.
 6. Report in the format below.
 
-Read a rule's file under `references/rules/` before you report a finding you are unsure of. Its "What breaks" section is the impact statement for the finding.
+Read a rule's file under `references/rules/` before you report a finding you are unsure of. Its "What breaks" section describes a possible failure. Report the impact observed on the reviewed interface and state which effects still need testing.
 
 ## Severity
 
-- **Blocker**: prevents the task, or fails WCAG A/AA.
+- **Blocker**: the task cannot be completed on a supported path, or a verified failure prevents meeting the applicable WCAG A or AA conformance target. Name the criterion and the tested conditions.
 - **Major**: visible friction or inconsistency on the primary path.
 - **Minor**: polish a careful user would notice.
 - **Nit**: a small deviation with no user impact on its own.
@@ -26,11 +26,11 @@ A table sorted by severity, most severe first:
 
 | # | Severity | Rule | Where | Finding | Fix |
 |---|---|---|---|---|---|
-| 1 | Minor | [typo-1](https://axiomui.nischal.fyi/rules/typo-1) | `src/components/signup-form.tsx:42` | The submit button reads "Create New Account" in Title Case. | Use sentence case: "Create new account". |
+| 1 | Minor | [typo-1](https://axiomui.nischal.fyi/rules/typo-1) | `src/components/signup-form.tsx:42` | The English registration form uses sentence case for every action except "Create New Account". The product style guide uses sentence case for ordinary actions. | Rename the button "Create new account". |
 
 - **Rule** is the rule id, linked to its URL.
 - **Where** is `file:line`, or a screen region when there is no source.
-- **Fix** is the rule's Do applied to this case, specific enough to implement without rereading the rule.
+- **Fix** identifies a change that addresses the observed failure and a way to verify it on this surface.
 
 After the table, add two short sections:
 
@@ -40,7 +40,7 @@ After the table, add two short sections:
 ## Guardrails
 
 - One finding per root cause. When one token causes ten violations, report the token once and list the places it affects.
-- No taste as violation. Every finding cites a rule and shows how the code matches its Don't or misses its Do. When no rule covers a concern, leave it out of the table or put it in a short "Observations" note.
+- No taste as violation. Every finding cites a rule and identifies a failure on this surface or a measured failure against an applicable criterion. When no rule covers a concern, leave it out of the table or put it in a short "Observations" note.
 - Do not edit code. When the user wants the fixes made, hand the report to `axiomui-website-upgrade` only if that skill is installed. If it is unavailable, keep this review read-only and provide the report as the checklist for a separate implementation task; do not assume a handoff occurred.
 
 ## Checklists

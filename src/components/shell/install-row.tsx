@@ -25,15 +25,56 @@
  * menu.
  */
 
-import dynamic from "next/dynamic";
+import type { SkillDialogSource } from "@/components/features/skills/skill-bonus";
 import { ArrowRight, Check, Copy, SquareTerminal } from "@/components/ui/icons";
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent, type RefObject } from "react";
 
 import { Tooltip } from "@/components/ui/tooltip";
 import { skillsCliCommand } from "@/lib/skills/catalog";
 
-const loadSkillsDialog = () => import("@/components/features/skills/skill-bonus").then((mod) => mod.SkillBonus);
-const SkillsDialog = dynamic(loadSkillsDialog, { ssr: false });
+export type SkillsDialogComponent = typeof import("@/components/features/skills/skill-bonus").SkillBonus;
+
+let dialogComponent: SkillsDialogComponent | null = null;
+let dialogRequest: Promise<SkillsDialogComponent> | null = null;
+
+function loadSkillsDialog() {
+  dialogRequest ??= import("@/components/features/skills/skill-bonus").then(
+    (module) => (dialogComponent = module.SkillBonus),
+    (error: unknown) => {
+      dialogRequest = null;
+      throw error;
+    },
+  );
+  return dialogRequest;
+}
+
+/** Keep the invoking control available until its destination can take focus. */
+function useBrowseSkills() {
+  const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
+  const attempt = useRef(0);
+  useEffect(() => {
+    void loadSkillsDialog().catch(() => {});
+  }, []);
+  useLayoutEffect(() => () => { attempt.current += 1; }, []);
+
+  function browse(button: HTMLButtonElement, ready: (dialog: SkillsDialogComponent) => void) {
+    if (status === "loading") return;
+    if (dialogComponent) {
+      ready(dialogComponent);
+      return;
+    }
+    // Safari keeps pointer focus on the card unless the pending control claims it.
+    button.focus({ preventScroll: true });
+    const ticket = ++attempt.current;
+    setStatus("loading");
+    void loadSkillsDialog().then((dialog) => {
+      if (ticket === attempt.current) ready(dialog);
+    }, () => {
+      if (ticket === attempt.current) setStatus("error");
+    });
+  }
+  return { status, browse };
+}
 
 /** From the row's right edge to the popover: clear of the rail's 8px gutter, then 8px more. */
 const GAP = 16;
@@ -71,7 +112,7 @@ type PopoverProps = {
   id: string;
   anchor: HTMLElement;
   onClose: (focus: "anchor" | "fallback" | null) => void;
-  onBrowse: () => void;
+  onBrowse: (dialog: SkillsDialogComponent, source: SkillDialogSource) => void;
 };
 
 function InstallPopover({ id, anchor, onClose, onBrowse }: PopoverProps) {
@@ -79,10 +120,7 @@ function InstallPopover({ id, anchor, onClose, onBrowse }: PopoverProps) {
   const uid = useId();
   const [copied, copy] = useCopy(skillsCliCommand);
 
-  // Warm the dialog's chunk, so "Browse the skills" opens it without a wait.
-  useEffect(() => {
-    void loadSkillsDialog().catch(() => {});
-  }, []);
+  const { status, browse } = useBrowseSkills();
 
   useLayoutEffect(() => {
     const el = pop.current;
@@ -96,7 +134,7 @@ function InstallPopover({ id, anchor, onClose, onBrowse }: PopoverProps) {
       const vw = document.documentElement.clientWidth;
       const vh = window.innerHeight;
       const left = Math.max(EDGE, Math.min(row.right + GAP, vw - el.offsetWidth - EDGE));
-      const top = Math.max(EDGE, Math.min(row.bottom - el.offsetHeight, vh - el.offsetHeight - EDGE));
+      const top = Math.max(EDGE, Math.min(row.top + (row.height - el.offsetHeight) / 2, vh - el.offsetHeight - EDGE));
       el.style.translate = `${Math.round(left)}px ${Math.round(top)}px`;
     };
     place();
@@ -152,10 +190,20 @@ function InstallPopover({ id, anchor, onClose, onBrowse }: PopoverProps) {
         </button>
       </div>
       <p>Choose which skills and agents to install. Run it in your project, or add <code>-g</code> for every project.</p>
-      <button type="button" className="install-link" aria-haspopup="dialog" onClick={onBrowse}>
-        Browse the skills
+      <button type="button" className="install-link" aria-haspopup="dialog" aria-disabled={status === "loading" || undefined}
+        onClick={(event) => browse(event.currentTarget, (dialog) => {
+          if (!pop.current || !anchor.getClientRects().length) return;
+          onBrowse(dialog, {
+            bounds: pop.current.getBoundingClientRect(), card: pop.current, anchor, anchorBounds: anchor.getBoundingClientRect(),
+            viewportWidth: window.innerWidth, viewportHeight: window.innerHeight,
+          });
+        })}>
+        {status === "loading" ? "Opening skills…" : status === "error" ? "Retry opening skills" : "Browse the skills"}
         <ArrowRight aria-hidden="true" />
       </button>
+      <span role="status" className="sr-only">
+        {status === "loading" ? "Loading agent skills." : status === "error" ? "Couldn’t load agent skills. Try again." : ""}
+      </span>
       <span role="status" className="sr-only">
         {copied === "copied" ? "Copied" : copied === "failed" ? "Copy failed. Try again." : ""}
       </span>
@@ -169,22 +217,35 @@ function InstallPopover({ id, anchor, onClose, onBrowse }: PopoverProps) {
  * returns focus to whatever held it when it opened.
  */
 export function useSkillsDialog() {
-  const [state, setState] = useState<"unloaded" | "open" | "closed">("unloaded");
-  const onOpenChange = useCallback((open: boolean) => setState(open ? "open" : "closed"), []);
-  const open = useCallback(() => setState("open"), []);
-  const dialog = state === "unloaded" ? null : <SkillsDialog open={state === "open"} onOpenChange={onOpenChange} />;
+  const [session, setSession] = useState<{
+    Dialog: SkillsDialogComponent; source: SkillDialogSource | null; open: boolean;
+  } | null>(null);
+  const onOpenChange = useCallback((open: boolean) => {
+    setSession((current) => current ? { ...current, open } : null);
+  }, []);
+  const open = useCallback((Dialog: SkillsDialogComponent, source: SkillDialogSource | null = null) => {
+    setSession({ Dialog, source, open: true });
+  }, []);
+  const dialog = session ? <session.Dialog open={session.open} source={session.source} onOpenChange={onOpenChange} /> : null;
   return [dialog, open] as const;
 }
 
-/** The phone menu's row for the skills dialog: a full 44px row, its chunk warmed while the menu is open. */
-export function InstallMenuRow({ onOpen }: { onOpen: () => void }) {
-  useEffect(() => {
-    void loadSkillsDialog().catch(() => {});
-  }, []);
+/** Phone keeps its menu open during the first fetch, including after a failed request. */
+export function InstallMenuRow({ onOpen }: { onOpen: (dialog: SkillsDialogComponent) => void }) {
+  const { status, browse } = useBrowseSkills();
   return (
-    <button type="button" className="rail-row" aria-haspopup="dialog" onClick={onOpen}>
+    <button type="button" className="rail-row" aria-haspopup="dialog" aria-disabled={status === "loading" || undefined}
+      onClick={(event) => {
+        const row = event.currentTarget;
+        browse(row, (dialog) => {
+          // The drawer remains mounted for its exit. Dismissal wins over a late import.
+          if (!row.closest(".phone-menu[data-closing]")) onOpen(dialog);
+        });
+      }}>
       <SquareTerminal aria-hidden="true" />
-      <span className="rail-row-label">Install in your agent</span>
+      <span className="rail-row-label" aria-live="polite">
+        {status === "loading" ? "Opening skills…" : status === "error" ? "Retry opening skills" : "Install in your agent"}
+      </span>
     </button>
   );
 }
@@ -205,9 +266,9 @@ export function InstallRow({ expanded, fallback }: { expanded: boolean; fallback
     },
     [fallback],
   );
-  const browse = useCallback(() => {
+  const browse = useCallback((dialog: SkillsDialogComponent, source: SkillDialogSource) => {
     close("anchor");
-    openSkills();
+    openSkills(dialog, source);
   }, [close, openSkills]);
 
   return (
@@ -215,7 +276,7 @@ export function InstallRow({ expanded, fallback }: { expanded: boolean; fallback
       <Tooltip content={<>Install in your agent · <code className="install-tip-code">{skillsCliCommand}</code></>} disabled={expanded || anchor !== null} className="w-full">
         <button ref={button} type="button" className="rail-row" aria-haspopup="dialog" aria-expanded={anchor !== null}
           aria-controls={anchor ? popId : undefined}
-          onClick={(event) => setAnchor((open) => (open ? null : event.currentTarget))}>
+          onClick={() => setAnchor(anchor ? null : button.current)}>
           <SquareTerminal aria-hidden="true" />
           <span className="rail-row-label">
             <span className="sr-only">Install in your agent: </span>

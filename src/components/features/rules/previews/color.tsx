@@ -186,13 +186,15 @@ function SixtyThirtyTen({ variant }: { variant: Variant }) {
     );
 }
 
-// ── color-2 · Never pure black ─────────────────────────────────────
+// ── color-2 · Use the intended text color ─────────────────────────────────────
 // The same white reading card in both panes; only the ink changes. Type is set
 // at 13/11px so the ink has enough area to show its hue, and the ratio is
 // quoted against the white card, so the card stays white in dark mode too.
-function NeverPureBlack({ variant }: { variant: Variant }) {
+const READING_CARD_INK = "text-[#0f172a]";
+
+function TextInk({ variant }: { variant: Variant }) {
     const pureBlack = variant === "dont";
-    const ink = pureBlack ? "text-[#000000]" : "text-[#0f172a]";
+    const ink = pureBlack ? "text-[#000000]" : READING_CARD_INK;
     return (
         <div className="flex h-[118px] flex-col justify-center">
             <div className="rounded-md border border-neutral-200 bg-white p-3 dark:border-neutral-700">
@@ -202,7 +204,7 @@ function NeverPureBlack({ variant }: { variant: Variant }) {
                 </p>
                 <div className="mt-2 flex flex-col gap-0.5 border-t border-neutral-100 pt-1.5 leading-3">
                     <CardNote>{pureBlack ? "#000000 · 21:1 · AAA" : "#0f172a · 17.9:1 · AAA"}</CardNote>
-                    <CardNote>{pureBlack ? "maximum jump, glare on white" : "softer ink, still past AAA"}</CardNote>
+                    <CardNote>{pureBlack ? "literal black · bypasses ink token" : "theme ink · #0f172a"}</CardNote>
                 </div>
             </div>
         </div>
@@ -210,20 +212,20 @@ function NeverPureBlack({ variant }: { variant: Variant }) {
 }
 
 // ── color-3 · Colored shadows ──────────────────────────────────────
-// One indigo promo card, one variable: the hue mixed into its shadow. The card
+// One campaign card, with the offsets, blur and alpha fixed in both panes. The card
 // sits on its own surface panel — neutral-50 light, neutral-800 dark — because
 // a near-black page swallows both shadows and the pair would show nothing.
 function ColoredShadows({ variant }: { variant: Variant }) {
-    const grey = variant === "dont";
+    const neutral = variant === "dont";
     return (
         <div className="flex h-[118px] flex-col rounded-md bg-neutral-50 p-3 dark:bg-neutral-800">
             <div className="flex flex-1 items-center justify-center">
                 <div
                     className="w-40 rounded-md bg-indigo-500 px-3 py-2.5 text-white"
                     style={{
-                        boxShadow: grey
+                        boxShadow: neutral
                             ? "0 6px 16px -4px rgba(0, 0, 0, 0.45), 0 2px 5px rgba(0, 0, 0, 0.3)"
-                            : "0 6px 16px -4px rgba(99, 102, 241, 0.6), 0 2px 5px rgba(99, 102, 241, 0.4)",
+                            : "0 6px 16px -4px rgba(99, 102, 241, 0.45), 0 2px 5px rgba(99, 102, 241, 0.3)",
                     }}
                 >
                     <div className="flex items-center gap-1.5">
@@ -236,8 +238,8 @@ function ColoredShadows({ variant }: { variant: Variant }) {
                 </div>
             </div>
             <div className="flex items-center justify-between gap-2">
-                <Note className="whitespace-nowrap">{grey ? "shadow hue: black" : "shadow hue: indigo-500"}</Note>
-                <Note className="whitespace-nowrap">{grey ? "pasted on" : "lit by itself"}</Note>
+                <Note className="whitespace-nowrap">{neutral ? "shadow hue: black" : "shadow hue: indigo"}</Note>
+                <Note className="whitespace-nowrap">campaign tint: indigo</Note>
             </div>
         </div>
     );
@@ -350,18 +352,18 @@ function BorderColors({ variant }: { variant: Variant }) {
     );
 }
 
-// ── color-6 · Double contrast for borders ──────────────────────────
+// ── color-6 · Essential control edges ──────────────────────────
 // A dialog slice: input + outline button, with a passive divider held at
 // neutral-200 (dark: neutral-800) in BOTH panes as the baseline the interactive
 // border must beat. Each value is labelled beside the line it describes, so the
 // two borders can be compared without leaving the scene. Dark mode drops the
 // faint value a step further (neutral-900) so it stays *below* the divider
 // there too — at neutral-800 it would merely tie and the lesson would vanish.
-function DoubleContrastBorders({ variant }: { variant: Variant }) {
+function ControlEdgeContrast({ variant }: { variant: Variant }) {
     const faint = variant === "dont";
     const interactive = faint
         ? "border-neutral-100 dark:border-neutral-900"
-        : "border-neutral-300 dark:border-neutral-600";
+        : "border-neutral-500 dark:border-neutral-400";
     return (
         <div className="flex h-[118px] flex-col justify-center gap-1">
             <div className="flex items-baseline justify-between gap-2">
@@ -373,7 +375,7 @@ function DoubleContrastBorders({ variant }: { variant: Variant }) {
                     {faint ? (
                         <ThemedValue light="neutral-100" dark="900" />
                     ) : (
-                        <ThemedValue light="neutral-300" dark="600" />
+                        <ThemedValue light="neutral-500" dark="400" />
                     )}
                 </Note>
             </div>
@@ -681,7 +683,7 @@ export const colorPreviews: PreviewRenderer = (ruleId, variant) => {
         case "color-2":
             return (
                 <PreviewFrame>
-                    <NeverPureBlack variant={variant} />
+                    <TextInk variant={variant} />
                 </PreviewFrame>
             );
         case "color-3":
@@ -705,7 +707,7 @@ export const colorPreviews: PreviewRenderer = (ruleId, variant) => {
         case "color-6":
             return (
                 <PreviewFrame>
-                    <DoubleContrastBorders variant={variant} />
+                    <ControlEdgeContrast variant={variant} />
                 </PreviewFrame>
             );
         case "color-8":

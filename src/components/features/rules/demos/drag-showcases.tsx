@@ -111,12 +111,12 @@ function useMirroredDrag(handlers: DragHandlers) {
             latest.current.onCancel();
             return;
         }
-        const s = samples.current;
-        const first = s[0];
-        const last = s[s.length - 1];
-        const dt = last && first ? last.t - first.t : 0;
-        const velocity = dt > 0 ? (last.x - first.x) / dt : 0;
-        latest.current.onRelease(lastDx.current, velocity);
+        // A pause before lifting cancels the flick even if the last move was fast.
+        const releaseX = cancelled ? lastDx.current : e.clientX - startX.current;
+        const first = samples.current.find((sample) => e.timeStamp - sample.t <= 100);
+        const dt = first ? e.timeStamp - first.t : 0;
+        const velocity = first && dt > 0 ? (releaseX - first.x) / dt : 0;
+        latest.current.onRelease(releaseX, velocity);
     };
 
     return {
@@ -150,8 +150,7 @@ function useMirroredDrag(handlers: DragHandlers) {
     };
 }
 
-/** What reduced motion changes on a drag prototype: the hand still drives
- *  the cards (user-driven, WCAG-exempt); only the release lands at once. */
+/** The hand still drives the cards. Reduced motion removes the release animation. */
 const DRAG_REDUCED_NOTE =
     "Reduced motion: the cards still follow your pointer; only the release lands instantly.";
 

@@ -1,32 +1,34 @@
-# Never scale from zero
+# Keep surface entrances near full size
 
 - ID: motion-9
 - Category: Motion & interaction
 - Tags: Entry, Transform
 - URL: https://axiomui.nischal.fyi/rules/motion-9
 
-Elements should not appear from scale(0). Start near full size with opacity so the object feels physically present. Small icons (24px or less) are the exception: they can start as low as scale(0.25).
+When a panel contains text or controls, begin near its reading size. Use a small scale change or fade if the entrance needs emphasis.
 
 - Do: scale(0.95) + opacity 0
 - Don't: scale(0) + opacity 0
 
 ## Why it works
 
-Objects in the physical world do not grow from nothing. Starting a surface at scale(0.95) with opacity 0 keeps it feeling already present and merely becoming visible; scale(0) reads as conjuring it out of a single point, and on a panel-sized element that much travel pulls the eye away from the content the panel exists to show.
+Scaling a menu from zero makes every line pass through sizes too small to read. Starting at 95% of the final size keeps the text close to its resting geometry. On a small status glyph, the same relative change represents much less travel in pixels.
+
+- [CSS Transforms · Transform geometry](https://www.w3.org/TR/css-transforms-1/)
+- [WCAG 2.2 · Animation from interactions](https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions.html)
 
 ## What breaks
 
-An element animating in from scale(0) appears to burst into existence from a single pixel, drawing exaggerated attention instead of feeling like a natural appearance.
+A person can reach for a control before its moving edges align with the visible destination. Oversized scaling also adds motion to a routine action.
 
 ## How to apply it
 
-1. Start surface entrances at scale(0.95) combined with opacity 0.
-2. Never set an initial or keyframe scale value of 0.
-3. Keep the starting scale between roughly 0.9 and 0.97 for panels, popovers, and modals; small icons can travel further, since their pixel change is tiny.
-4. Pair scale with opacity so the object fades in as it settles rather than popping.
+1. Compare the same scale change on the smallest and largest surfaces.
+2. Try opacity alone when text moves noticeably.
+3. Keep the final position and focus cue visible when motion is reduced.
 
 ## Review questions
 
-1. Does the panel appear at nearly full size as it fades in?
-2. Is there any element that visibly grows from a single point or zero size?
-3. Does the entrance feel like a subtle settle rather than a dramatic pop?
+1. Can the user identify the menu as it appears?
+2. How far do its outer edges travel?
+3. Does scaling add information beyond the fade?

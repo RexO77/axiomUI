@@ -1,32 +1,33 @@
-# Visual vs mathematical center
+# Optically center asymmetric glyphs
 
 - ID: layout-4
 - Category: Layout & spacing
 - Tags: Alignment, Icons, Polish
 - URL: https://axiomui.nischal.fyi/rules/layout-4
 
-Icons with lopsided mass — a play triangle, a send arrow — read as off-center when centered by their bounding box. The eye centers visual weight, not the box.
+Center the icon box first. If an asymmetric glyph still looks displaced inside its control, compare a small offset at the intended size. Some icon sets already provide optical compensation.
 
 - Do: Play icon nudged +2px right
 - Don't: Play icon on the geometric center
 
 ## Why it works
 
-A right-pointing play triangle carries most of its area against the flat left edge and tapers to a point on the right, so its centroid sits about a third of the way in from that edge, left of the bounding box’s center. Center the box and the shape reads as sitting left; nudging it 1-2px right puts perceived center back on true center. Typefaces make the same correction when they overshoot round letterforms past the baseline.
+In the play button, the visible mass of a right-facing glyph can sit toward the vertical edge of the triangle. Comparing the centered glyph with a 2px nudge exposes the difference between the SVG box and the marks inside it. Padding built into the icon artwork affects the result.
+
+- [Apple · Create custom symbols](https://developer.apple.com/videos/play/wwdc2021/10250/)
 
 ## What breaks
 
-Center a play icon by its bounding box alone and it reads as off-center inside its button, a defect reviewers will flag even when the CSS math is technically correct.
+Applying the same offset to every icon can make a symmetric pause symbol jump sideways when playback starts. A mirrored arrow can even need a correction in the opposite direction.
 
 ## How to apply it
 
-1. Nudge asymmetric icons 1-2px away from their heavy side: a right-pointing play triangle moves right.
-2. Don’t trust absolute centering, such as margin: auto, as the final check for asymmetric shapes.
-3. Verify alignment by eye, not by inspecting computed box dimensions.
-4. Apply the same correction to any icon with uneven mass: arrows, chevrons, triangles.
+1. Compare the glyph with a centered guide at the actual button size.
+2. Check the paired state, such as play and pause.
+3. Move the artwork inside the control and preserve the hit area.
 
 ## Review questions
 
-1. Does the icon look centered when you squint at it, not just measure it?
-2. Has an asymmetric icon like a play triangle been nudged off mathematical center?
-3. Would swapping in a symmetric icon reveal a now mis-centered container?
+1. Does the artwork appear centered with the guide removed?
+2. Does the control stay visually stable as its icon changes?
+3. Is the offset specific to this glyph and size?

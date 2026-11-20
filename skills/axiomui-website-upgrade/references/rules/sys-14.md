@@ -5,28 +5,29 @@
 - Tags: Motion, Performance, CSS
 - URL: https://axiomui.nischal.fyi/rules/sys-14
 
-will-change is a targeted performance hint, not a default. Use it only for compositor-friendly properties when a real first-frame stutter appears.
+Use will-change only when profiling shows that advance preparation helps a particular element. Name the expected property and release the hint when the need passes.
 
-- Do: will-change: transform, opacity
-- Don't: will-change: all
+- Do: will-change: transform, opacity on one measured card
+- Don't: will-change: transform, opacity on every card
 
 ## Why it works
 
-will-change: transform, opacity is a hint that promotes an element to its own GPU compositor layer ahead of an expected animation, but will-change: all or broad use forces the browser to allocate compositor memory for elements that never need it. It should appear only right before a real, observed first-frame stutter, then get removed.
+A browser may use a hint to prepare for a change before the interaction starts. What it reserves depends on its implementation. A hint is neither a request for a guaranteed GPU layer nor evidence that a slowdown has been fixed.
+
+- [CSS Will Change · The will-change property](https://www.w3.org/TR/css-will-change-1/#will-change)
 
 ## What breaks
 
-will-change: all on the card component means every card in the list gets its own compositor layer, so a few hundred rows spend GPU memory on elements that never animate. The ten-card test page scrolls perfectly; the real list drops frames.
+Putting a valid transform hint on every card can reserve resources for dozens of items that stay still. Some hints can also create a stacking context before the animation begins and change how overlays paint.
 
 ## How to apply it
 
-1. Apply will-change: transform, opacity only to elements about to animate, never will-change: all.
-2. Add it just before the animation starts and remove it once the animation finishes.
-3. Reserve it for confirmed first-frame stutter, not as a default optimization.
-4. Limit compositor-promoted properties to transform and opacity, the compositor-friendly ones.
+1. Compare a representative interaction with and without the hint.
+2. Apply it to the measured element with enough lead time for the browser to prepare.
+3. Remove temporary hints when the interaction settles and recheck stacking and resource use.
 
 ## Review questions
 
-1. Is will-change scoped to transform and opacity rather than set to all?
-2. Is will-change removed from elements once their animation completes?
-3. Was will-change added only after an observed stutter, not applied by default?
+1. Which trace identifies the problem?
+2. Does this hint improve that interaction on the target device?
+3. How many elements retain the hint when idle?

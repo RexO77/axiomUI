@@ -1,32 +1,33 @@
-# Dark mode isn't inverted
+# Design the dark palette by role
 
 - ID: color-8
 - Category: Color & depth
 - Tags: Dark mode, Surfaces, System
 - URL: https://axiomui.nischal.fyi/rules/color-8
 
-Dark mode is not an inverted light theme. Reduce surface contrast, desaturate brand colors, and flip the elevation model so a lighter surface reads as a higher one.
+Define dark-theme colors for text, surfaces, states, and media. Lighter raised surfaces can distinguish layers when dark shadows are subtle. Tune the accent against its surroundings and preserve meaningful image colors.
 
 - Do: bg neutral-900 / card neutral-800 / brand sat 91% → 55%
 - Don't: filter: invert(1) on the whole page
 
 ## Why it works
 
-Dark mode is not photographic negative — it requires flipping the elevation model so lighter surfaces read as closer (gray-900 base, gray-800 card, lighter still for modals), while brand colors need desaturating because fully saturated hues vibrate painfully against dark backgrounds due to simultaneous contrast. Literally inverting filters ignores both of these perceptual shifts.
+In the storage card, the raised panel needs to separate from its page and the usage bar needs to stay legible on its track. Those are two different color decisions. A page-wide inversion would also change the colors of the image preview.
+
+- [Atlassian · Elevation](https://atlassian.design/foundations/elevation)
 
 ## What breaks
 
-Running filter: invert(1) on a page turns photos into film negatives and makes saturated brand blue glow like a highlighter, making the whole UI look broken rather than themed.
+A newly themed panel may look convincing on its own while merging into the page behind it. An inverted thumbnail can misrepresent the file a person is choosing.
 
 ## How to apply it
 
-1. Build a real dark palette: gray-900 background, gray-800 card surfaces.
-2. Desaturate brand colors specifically for dark mode, do not reuse light-mode hex values.
-3. Make elevated surfaces lighter than their base, not darker as in light mode.
-4. Never apply filter: invert(1) to the page as a shortcut.
+1. Compare page, card, and overlay colors as a stack.
+2. Measure text, icons, and meaningful graph elements on their own surfaces.
+3. Inspect photos and illustrative or monochrome assets separately.
 
 ## Review questions
 
-1. Do elevated cards appear lighter than the page background in dark mode?
-2. Are brand colors visibly desaturated compared to the light theme?
-3. Do images and photos render normally, not as inverted negatives?
+1. Are the surface boundaries clear at each level?
+2. Can the usage indicator be read on the dark track?
+3. Is the preview still a faithful representation of the file?

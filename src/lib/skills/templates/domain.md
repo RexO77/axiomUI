@@ -5,8 +5,8 @@
 ## How to use these rules
 
 1. Find the rule that governs the decision in front of you.
-2. Apply its Do as written. Values are targets, not suggestions.
-3. Check the result against its Don't. Code that matches the Don't is a violation, whatever the intent behind it.
+2. Read the rule’s description and compare its example with the task, platform, language and state you are working on.
+3. Test the failure the comparison illustrates. For a standard, verify the applicable requirement and its exceptions. For a design convention, judge the outcome with representative content and input.
 4. Read the file on its Reasoning line when the case is ambiguous or high-stakes, or when you have to justify the choice. Cite the rule id and URL when you explain a change.
 
 Where the project already has a token or component for the decision, use it. When that token contradicts a rule, flag the conflict instead of quietly rewriting the system.

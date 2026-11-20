@@ -161,20 +161,9 @@ function ErrorSignalScene({ variant }: DemoProps) {
 }
 
 // ── a11y-3 · Touch target spacing ───────────────────────────────────
-// Same confirm sheet, same 44px targets, same stray tap: the contact
-// patch is a 44px thumb whose centroid lands 3px past Cancel's trailing
-// edge in both panes. The only variable is the gutter. 8px turns that
-// mis-tap into a no-op; 0px turns it into a delete.
-//
-// Geometry is pinned so the claim is checkable: buttons are 84px wide, so
-// Cancel's trailing edge sits at 84px and the centroid at 87px — inside
-// the 84–92px dead zone when the gutter is 8px, on Delete when it is 0px.
-//
-// The protagonist is the centroid, not the patch. A touch screen resolves
-// the whole 44px contact to one point, so the patch overlapping Delete in
-// the Do pane is harmless; drawing it as a filled disc made the pane look
-// like it contradicted its own note. The patch stays as a faint outline
-// for scale, and the crosshair and dot mark the point that decides.
+// Both panes use 84×44px buttons and the same sample tap, 3px past
+// Cancel. At x=87 the point falls into the 8px gutter or onto Delete.
+// The crosshair marks that point. The surrounding circle is illustrative.
 
 function TargetSpacingScene({ variant }: DemoProps) {
     const isDo = variant === "do";
@@ -210,7 +199,7 @@ function TargetSpacingScene({ variant }: DemoProps) {
                     <span className="h-px w-full bg-blue-500 dark:bg-blue-400" />
                 </span>
                 <Annotation className={ANNOT}>
-                    {isDo ? "8px gutter · centroid → gutter" : "0px gutter · centroid → Delete"}
+                    {isDo ? "8px gutter · tap → gutter" : "0px gutter · tap → Delete"}
                 </Annotation>
             </div>
         </PreviewFrame>

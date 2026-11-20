@@ -1,32 +1,33 @@
-# Border colors
+# Keep decorative dividers quiet
 
 - ID: color-5
 - Category: Color & depth
 - Tags: Contrast, Surfaces
 - URL: https://axiomui.nischal.fyi/rules/color-5
 
-Borders should sit well below text contrast — if your text is neutral-900, your borders belong near neutral-200. A border is structure, not content, and at text contrast it competes with the words it frames.
+Use a subdued border when it only separates rows that already read as distinct. If a line is necessary to identify a control or understand a graphic, give it adequate contrast for that role.
 
 - Do: border: neutral-200
 - Don't: border: neutral-400
 
 ## Why it works
 
-Border weight should track the same contrast step-down as your text hierarchy: if body text sits at neutral-900, a border at neutral-200 stays clearly subordinate, while neutral-400 jumps too many steps and starts competing with content for attention. This is simultaneous contrast at work — a border reads heavier next to light fills than the same value would in isolation.
+The settings summary already positions a label and value on each row. Its rules can be subtle because removing them leaves the rows identifiable. An otherwise unmarked text field has a different job for its outline.
+
+- [WCAG 2.2 · Non-text contrast](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html)
 
 ## What breaks
 
-Neutral-400 borders around every card and input create a grid of heavy lines that visually outweighs the text inside, so the layout reads as a spreadsheet of boxes rather than content.
+Treating all borders as decorative can make inputs disappear. Treating every divider like a control edge can make a dense table look dominated by its grid.
 
 ## How to apply it
 
-1. Set default dividers and card borders to neutral-200.
-2. Never jump to neutral-400 for standard borders — reserve heavier steps for emphasis.
-3. Check border weight relative to your body text color, not in isolation.
-4. Scan the page for any border that draws the eye before the content does.
+1. Remove the line temporarily and identify which information disappears with it.
+2. Use a decorative token for redundant separators.
+3. For essential components or graphical boundaries, measure contrast with the adjacent colors.
 
 ## Review questions
 
-1. Do borders fade into the background rather than framing it heavily?
-2. Is any border darker than neutral-200 without a specific reason?
-3. Does content draw more attention than the dividers around it?
+1. Can a reader still pair each label with its value?
+2. Is this boundary decorative or required to locate something?
+3. Do changes in surface color alter that answer?

@@ -1,32 +1,33 @@
-# De-emphasize with color, not size
+# Keep secondary text legible
 
 - ID: typo-6
 - Category: Typography & text
 - Tags: Hierarchy, Contrast
 - URL: https://axiomui.nischal.fyi/rules/typo-6
 
-To make secondary text recede, lighten its color rather than shrink it below 12px. Color lowers emphasis without lowering legibility; size lowers both.
+Give secondary text a quieter role through position, weight, size, or tone. Keep ordinary informative text at 4.5:1 or higher against its background for WCAG AA.
 
 - Do: text-neutral-500 (14px)
 - Don't: text-neutral-900 (10px)
 
 ## Why it works
 
-Perceived importance and legibility travel on two different channels. Lowering contrast drops an element’s visual weight without touching how resolvable its letterforms are: 14px neutral-500 on white measures about 4.7:1 and still clears the 4.5:1 AA floor, while the same line at 10px in neutral-900 keeps all 17.9:1 of its contrast and strains acuity anyway. Shrink the type instead and you spend legibility on hierarchy you could have had for free.
+The email in the member row is secondary to the name, yet it can be the detail that distinguishes two people. A 14px muted email can support that decision. Both reducing the size and reducing the contrast affect whether the address can be read.
+
+- [WCAG 2.2 · Contrast (minimum)](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)
 
 ## What breaks
 
-A caption dropped to 10px to read as less important lands under the legible floor, so the timestamp or helper line beneath a field gets pinch-zoomed instead of read, and on a phone it is usually skipped entirely.
+The two sample rows vary size and color together. Passing a contrast check cannot tell you whether the smaller address is easy to distinguish, and a comfortable type size cannot rescue insufficient contrast.
 
 ## How to apply it
 
-1. De-emphasize with text-neutral-500 at 14px rather than shrinking neutral-900 to 10px.
-2. Never drop a size below 12px to signal hierarchy.
-3. Re-measure contrast after lightening: neutral-500 on white sits near 4.7:1, while neutral-400 falls to roughly 2.5:1 and fails AA.
-4. Reserve size reduction for genuine label and caption roles, not for emphasis level.
+1. Start with the address at a readable size, then reduce its emphasis one property at a time.
+2. Measure the final text and surface pair in both themes.
+3. Try two people with the same display name and different addresses.
 
 ## Review questions
 
-1. Is secondary text de-emphasized with a lighter color rather than a smaller size?
-2. Does any text on the page fall below 12px?
-3. Does the lightened secondary text still measure 4.5:1 or better against its background?
+1. Can a reader distinguish the people by their addresses?
+2. Does the muted text meet the applicable contrast threshold?
+3. Does the intended order survive zoom and theme changes?

@@ -1,32 +1,34 @@
-# Disabled needs a reason
+# Explain unavailable actions
 
 - ID: comp-8
 - Category: Components & actions
 - Tags: States, Tooltips, Clarity
 - URL: https://axiomui.nischal.fyi/rules/comp-8
 
-Disabled controls without explanation feel broken. Add a tooltip or helper text.
+When someone might reasonably try an unavailable action, explain the prerequisite beside it. A disabled button alone gives no indication of what to do next.
 
 - Do: Disabled + reason under the button
 - Don't: Disabled + no reason
 
 ## Why it works
 
-A disabled control answers no question: it does not say what is missing, and the native disabled attribute also drops the element out of the tab order, so a keyboard or screen-reader user cannot even reach a tooltip hung on it. Visible helper text, or aria-disabled in place of disabled so the control stays focusable, restores the link between the blocked state and the thing the user has to do to clear it.
+A disabled Export button may mean the selection is empty, the user lacks permission, or a request is still running. Each state calls for a different response. Native disabled buttons normally leave the tab sequence, so a tooltip attached only to the button is easy to miss.
+
+- [GOV.UK · Button emphasis and usage](https://design-system.service.gov.uk/components/button/)
+- [WAI-ARIA APG · Focusability of disabled controls](https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/#focusabilityofdisabledcontrols)
 
 ## What breaks
 
-A grayed-out Save with nothing beside it gets clicked three or four times, because the user reads the page as broken rather than guessing that a required field two sections up is still empty, and the ticket that follows reports the save button as dead.
+“Not available” leaves someone hunting through a form. “Select at least one row to export” points to an action they can take.
 
 ## How to apply it
 
-1. Pair every disabled control with visible text naming the unmet condition.
-2. Prefer aria-disabled=true over the disabled attribute when the reason lives in a tooltip, so Tab still reaches it, and guard the handler yourself since aria-disabled does not block activation.
-3. Name the fix, not the state: two fields left to fill, rather than this action is unavailable.
-4. Keep the explanation within a line or two of the control so the connection is unambiguous.
+1. Prefer a persistent explanation at the point of need.
+2. When the user can submit and then correct errors, consider leaving the action available and explaining the errors on submission.
+3. If using aria-disabled to retain focusability, suppress activation in the handler and check every input method.
 
 ## Review questions
 
-1. Does this disabled control have a visible reason sitting next to it?
-2. Does that text name what the user must do to enable it?
-3. Can a keyboard user reach the control and find out why it is unavailable?
+1. Is the cause apparent before trying the control?
+2. Does the explanation say what can change the state?
+3. Can keyboard and touch users find it?

@@ -13,7 +13,7 @@ import { catalogDeck, collectionDeck, searchDeck } from "@/lib/navigation/deck";
 
 /**
  * The wall as the server renders it, read like a browser without script
- * would: one h1, seven h2s, 105 tile links whose names are their titles,
+ * would: one h1, seven h2s, 108 tile links whose names are their titles,
  * section ids that are the bare category ids, and every motion pane inside
  * its island. The filter's gates are checked with a search applied.
  */
@@ -24,6 +24,7 @@ const shell: ShellApi = {
   ruleId: null,
   deck: catalogDeck,
   openRule: noop,
+  restorePanel: noop,
   page: noop,
   exit: noop,
   home: noop,
@@ -103,10 +104,10 @@ describe("the gallery wall, server-rendered", () => {
   const doc = parse(html);
   const tiles = all(doc, (n) => n.tag === "a" && "data-rule-link" in n.attrs);
 
-  it("renders 105 unique tile links, in wall order", () => {
-    expect(tiles).toHaveLength(105);
+  it("renders 108 unique tile links, in wall order", () => {
+    expect(tiles).toHaveLength(108);
     expect(tiles.map((tile) => tile.attrs["data-rule"])).toEqual(railOrder.map((rule) => rule.id));
-    expect(new Set(tiles.map((tile) => tile.attrs.href)).size).toBe(105);
+    expect(new Set(tiles.map((tile) => tile.attrs.href)).size).toBe(108);
     for (const tile of tiles) {
       const id = tile.attrs["data-rule"];
       expect(tile.attrs.href).toBe(`/docs/rules/${id}`);
@@ -175,12 +176,12 @@ describe("the gallery wall, server-rendered", () => {
   });
 
   it("hides what a search leaves out, and keeps the rest in wall order", () => {
-    const deck = searchDeck("toast");
-    const filtered = parse(render({ q: "toast", visible: new Set(deck.rules.map((rule) => rule.id)) }));
+    const deck = searchDeck("border");
+    const filtered = parse(render({ q: "border", visible: new Set(deck.rules.map((rule) => rule.id)) }));
     const shown = all(filtered, (n) => "data-rule-link" in n.attrs && !hiddenUp(n)).map((tile) => tile.attrs["data-rule"]);
-    expect(shown).toEqual(["layout-11", "comp-2", "comp-6", "motion-15"]);
+    expect(shown).toEqual(["layout-7", "a11y-2", "color-5", "color-6", "color-12", "motion-8"]);
     const sections = all(filtered, (n) => n.tag === "section" && !("hidden" in n.attrs)).map((section) => section.attrs.id);
-    expect(sections).toEqual(["layout", "components", "motion"]);
+    expect(sections).toEqual(["layout", "color", "motion"]);
   });
 
   it("shows a collection in its deck's order, in its own groups, each tile once", () => {
@@ -189,7 +190,7 @@ describe("the gallery wall, server-rendered", () => {
       render({ collection: accessibilityCollection.id, visible: new Set(deck.rules.map((rule) => rule.id)) }),
     );
     const links = all(markup, (n) => "data-rule-link" in n.attrs);
-    expect(links).toHaveLength(105);
+    expect(links).toHaveLength(108);
     const shown = links.filter((tile) => !hiddenUp(tile)).map((tile) => tile.attrs["data-rule"]);
     expect(shown).toEqual(deck.rules.map((rule) => rule.id));
     const sections = all(markup, (n) => n.tag === "section" && !("hidden" in n.attrs));

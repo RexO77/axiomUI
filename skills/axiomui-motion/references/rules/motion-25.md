@@ -1,32 +1,33 @@
-# Review motion in slow time
+# Review motion slowly, then at normal speed
 
 - ID: motion-25
 - Category: Motion & interaction
 - Tags: Polish, Timing
 - URL: https://axiomui.nischal.fyi/rules/motion-25
 
-Slow animations down during review to catch abrupt easing, wrong origins, unsynced properties, and awkward color blends.
+Slow playback to inspect a transition frame by frame. Return to normal speed to judge whether it suits the task.
 
 - Do: Inspect at 2x-5x duration
 - Don't: Judge only at full speed
 
 ## Why it works
 
-Motion flaws like a wrong transform-origin, unsynced property timing, or a muddy color blend are often invisible at full speed but obvious once slowed to 2x-5x duration, since human perception can’t parse sub-200ms discrepancies at normal playback. Reviewing in slow time exposes exactly which property lags, which easing curve snaps instead of glides, and where a blend passes through an ugly intermediate hue. This is a review technique, not a shipped behavior.
+Slower playback separates changes that overlap in real time. A discontinuity in opacity can be easy to locate by scrubbing, even when it appears only as a flash during ordinary use. A slowed recording cannot tell you how responsive the shipped interaction feels.
+
+- [Chrome DevTools · Inspecting animations](https://developer.chrome.com/docs/devtools/css/animations)
 
 ## What breaks
 
-An entrance animation has its scale and opacity slightly out of sync, it looks fine at full speed in a quick check, and it ships with a barely-perceptible but bothersome mismatch that only shows up slowed down.
+Fixing every visible difference between two property curves can remove an intentional offset. Designing only at quarter speed can also disguise an entrance that is too long.
 
 ## How to apply it
 
-1. Slow the animation to 2x-5x its normal duration using devtools or a temporary multiplier.
-2. Check transform-origin, easing shape, and property sync at the slowed rate.
-3. Watch color transitions specifically for muddy or unintended intermediate blends.
-4. Never sign off on a new animation having only watched it at full speed.
+1. Compare the endpoints before changing the curves.
+2. Scrub through the frame where a flash or jump appears.
+3. Replay at the intended speed and interrupt the interaction with a second input.
 
 ## Review questions
 
-1. Was this animation reviewed at 2x-5x its normal duration before shipping?
-2. Do all animated properties stay synchronized when played back slowly?
-3. Does any color transition pass through an unintended muddy blend when slowed down?
+1. Which property creates the unexpected frame?
+2. Is an offset deliberate and useful at normal speed?
+3. Does a real input interrupt the sequence cleanly?

@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
+import { ruleSources } from "@/data/rule-sources";
 import { rules } from "@/data/ui-logic";
 import { fullCorpusMarkdown } from "@/lib/rule-corpus";
 import { skillAuthor, skillCatalog } from "@/lib/skills/catalog";
@@ -146,6 +147,10 @@ describe("renderSkillsTree", () => {
       expect(copies.length, rule.id).toBeGreaterThanOrEqual(4);
       expect(new Set(copies).size, rule.id).toBe(1);
       expect(copies[0]).toContain(`https://axiomui.nischal.fyi/rules/${rule.id}`);
+      const why = copies[0].split("## Why it works\n")[1].split("\n## What breaks")[0];
+      expect(why.split("\n").filter((line) => line.startsWith("- [")), rule.id).toEqual(
+        ruleSources[rule.id].map(({ title, href }) => `- [${title}](${href})`),
+      );
     }
   });
 
@@ -198,9 +203,9 @@ describe("renderSkillsTree", () => {
     expect(legacy).toContain("\nname: axiom-website-upgrade\n");
   });
 
-  // typo-1 is "Sentence case is king". Skills that teach it must not break it.
+  // The skills follow the English sentence-case convention they teach in typo-1.
   it("writes every heading in sentence case", () => {
-    const properNouns = new Set([..."Axiom UI".split(" "), "Do", "Don't", "WCAG", "CSS", "Fitts's"]);
+    const properNouns = new Set([..."Axiom UI".split(" "), "Do", "Don't", "WCAG", "CSS", "English", "Fitts's"]);
     const offenders: string[] = [];
     for (const [file, content] of tree) {
       if (!file.endsWith(".md") || file.endsWith("README.md")) {

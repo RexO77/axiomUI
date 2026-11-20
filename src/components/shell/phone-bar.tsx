@@ -5,7 +5,7 @@
  * The phone's top bar (PHONE_QUERY; CSS shows it, so the first paint is
  * already right): Menu, where you are, and Search.
  *
- * On the wall the middle says what the wall shows ("All rules · 105"). On a
+ * On the wall the middle says what the wall shows ("All rules · 108"). On a
  * rule it is Up: back to the wall at this rule's tile, as Esc is. It is a
  * real link to the wall, so it works before hydration and in a new tab, and
  * its name starts with what it shows (WCAG 2.5.3): "Motion · 7 of 29, back to

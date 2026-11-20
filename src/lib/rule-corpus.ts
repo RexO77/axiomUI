@@ -1,3 +1,4 @@
+import { ruleSources } from "@/data/rule-sources";
 import { buildDeepDive } from "@/data/deep-dive-builder";
 import { categories, rules, type Rule } from "@/data/ui-logic";
 import { categoryNameById } from "@/lib/rule-text";
@@ -50,6 +51,10 @@ export function ruleToMarkdown(rule: Rule, { headingLevel, includeId = false }: 
     const whyItMatters = findTextSection(deepDive, "Why it matters");
     if (whyItMatters) {
         blocks.push(`${subheading} Why it works`, whyItMatters);
+        const sources = ruleSources[rule.id];
+        if (sources?.length) {
+            blocks.push(sources.map(({ title, href }) => `- [${title}](${href})`).join("\n"));
+        }
     }
 
     const riskWhenIgnored = findTextSection(deepDive, "Risk when ignored");

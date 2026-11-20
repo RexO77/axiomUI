@@ -1,32 +1,33 @@
-# Double contrast for borders
+# Give essential control edges enough contrast
 
 - ID: color-6
 - Category: Color & depth
 - Tags: Contrast, WCAG, Accessibility
 - URL: https://axiomui.nischal.fyi/rules/color-6
 
-An interactive edge needs more contrast than a passive divider, so inputs and outline buttons should sit a step darker. A border has to be found before it can be clicked.
+When a boundary is needed to identify an enabled control, WCAG AA requires at least 3:1 contrast against its adjacent color. A decorative divider may be quieter. Check the actual pair in each theme.
 
-- Do: input border: neutral-300 · divider: neutral-200
+- Do: input border: neutral-500 · divider: neutral-200
 - Don't: input border: neutral-100 · divider: neutral-200
 
 ## Why it works
 
-An outline button has no fill to separate it from the page, so its border is the only edge cue — neutral-100 sits too close in luminance to a white surface to register, while neutral-300 clears the perceptual threshold needed for double contrast against both the background and the label text. Interactive borders need a stronger step than passive dividers doing decorative separation.
+The blank area where a teammate’s address goes needs to look editable before anyone reaches it. On white, a pale gray input edge can look stronger than a divider and still miss 3:1. The action labeled Cancel may be identifiable from its content and context without a visible border.
+
+- [WCAG 2.2 · Contrast at control boundaries](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html#boundaries)
 
 ## What breaks
 
-An outline button styled with border-neutral-100 nearly disappears on a white card, so users hover past it without realizing it is clickable and abandon the flow looking for the real action.
+Reusing a decorative divider token for a field can leave the reader with a label and an apparently blank page. Making only its focused outline visible helps keyboard navigation after focus arrives and leaves the resting field hard to find.
 
 ## How to apply it
 
-1. Set outline buttons and input fields to border-neutral-300.
-2. Never reuse the subtle neutral-100 divider border on interactive elements.
-3. Verify the border is visible at a glance on both white and off-white surfaces.
-4. Increase to neutral-400+ only if the surface itself is already off-white.
+1. Identify which visual feature makes the resting input recognizable.
+2. Measure that feature against its adjacent surface, including themed variants.
+3. Test focus and selected states separately from the resting control.
 
 ## Review questions
 
-1. Can you spot the outline button’s border without focusing hard?
-2. Is the interactive border visibly darker than passive divider borders?
-3. Does the input field read as clickable/editable at a glance?
+1. Without the border, can a reader still find the field?
+2. Does the required cue reach 3:1 on the adjacent surface?
+3. Are focused and selected controls identifiable by their own cues?

@@ -32,20 +32,17 @@ export function ThreadMeter({
     const recorded = samples.length > 0 && durationMs > 0;
     const stalls = recorded ? samples.filter((s) => s.gapMs > STALL_THRESHOLD_MS) : [];
     const longest = stalls.reduce((m, s) => Math.max(m, s.gapMs), 0);
-    const frozen = stalls.reduce((sum, s) => sum + s.gapMs, 0);
 
     let caption: string;
     if (reduced) caption = "main thread — not sampled while reduced motion is on";
     else if (recording) caption = "main thread — recording…";
     else if (!recorded) caption = "main thread — run it to record";
     else if (mode === "healthy" && stalls.length === 0)
-        caption = "main thread — healthy · the steps come from setInterval, not load";
+        caption = `Callback gaps stayed within ${STALL_THRESHOLD_MS}ms. The timer updates every 80ms.`;
     else if (stalls.length === 0)
-        caption = `main thread — no stall over ${STALL_THRESHOLD_MS}ms on this run`;
+        caption = `No callback gap exceeded ${STALL_THRESHOLD_MS}ms on this run.`;
     else
-        caption = `main thread — longest stall ${Math.round(longest)}ms · frozen ${Math.round(
-            frozen
-        )}ms of ${durationMs}ms`;
+        caption = `${stalls.length} callback gap${stalls.length === 1 ? "" : "s"} over ${STALL_THRESHOLD_MS}ms. Longest gap ${Math.round(longest)}ms.`;
 
     return (
         <div className="mt-3 space-y-1.5">

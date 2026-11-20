@@ -258,7 +258,7 @@ function buttonPadding(variant: Variant) {
 
 // ── layout-6 · Optical alignment of icons ───────────────────────────
 // The same multi-line notification row. Do pins the icon to the first
-// line's cap height; Don't centers it against the whole text block, so
+// line; Don't centers it against the whole text block, so
 // the bell drifts down as the copy wraps. The annotation names the
 // flex property doing it, because the miss is a few pixels wide.
 function iconAlignment(variant: Variant) {
@@ -287,7 +287,7 @@ function iconAlignment(variant: Variant) {
                 </div>
             </div>
             <Annotation className={ANNOT}>
-                {isDo ? "items-start — icon on the cap height" : "items-center — icon on the block"}
+                {isDo ? "items-start + 1px — first line" : "items-center — icon on the block"}
             </Annotation>
         </PreviewFrame>
     );
@@ -427,10 +427,8 @@ function responsiveSpacing(variant: Variant) {
     );
 }
 
-// ── layout-10 · Vertical rhythm ─────────────────────────────────────
-// The same page skeleton; section gaps measured. Every gap in the do pane is
-// a whole multiple of the smallest one, so the eye can count in that unit;
-// the avoid pane's 13 and 18 sit off the 8px base entirely.
+// ── layout-10 · Vertical hierarchy ─────────────────────────────────────
+// The same page skeleton with a more or less pronounced section break.
 function verticalRhythm(variant: Variant) {
     const isDo = variant === "do";
     const gaps = isDo ? [8, 16, 32] : [8, 13, 18];
@@ -446,7 +444,7 @@ function verticalRhythm(variant: Variant) {
                 <TextLine widthClass="w-5/6" />
             </div>
             <Annotation className={ANNOT}>
-                {isDo ? "8, 16, 32 — 1x, 2x, 4x of 8" : "8, 13, 18 — off the 8px base"}
+                {isDo ? "8, 16, 32 — larger section break" : "8, 13, 18 — smaller section break"}
             </Annotation>
         </PreviewFrame>
     );

@@ -1,32 +1,33 @@
-# Skeleton loading
+# Choose a loading state that explains the wait
 
 - ID: sys-1
 - Category: System & logic
 - Tags: Perceived performance, Async, States
 - URL: https://axiomui.nischal.fyi/rules/sys-1
 
-Spinners draw attention to the waiting. Skeletons (gray bars) imply progress and structure.
+Use a skeleton when the incoming layout is predictable. An indeterminate indicator fits an operation whose duration is unknown. Use measured progress when the amount of work completed is available.
 
-- Do: Gray layout pulse
-- Don't: Giant spinning wheel
+- Do: Skeleton shaped like the incoming content
+- Don't: Spinner replaces the whole content area
 
 ## Why it works
 
-Perceived-performance research shows a gray layout pulse mimicking the final content structure reads as progress in motion, while a spinning wheel is an abstract token unrelated to what is loading. Skeletons prime the eye for where text and images will land, cutting perceived wait time even when actual load time is identical.
+Both example panes wait 900ms. One reserves the spaces where the title and content will appear. The other communicates activity alone. The skeleton gives an early map of the page, without measuring the request’s progress.
+
+- [IBM Carbon · Loading patterns](https://www.carbondesignsystem.com/building-blocks/core/patterns/loading)
 
 ## What breaks
 
-A full-screen spinner spends the whole wait saying only that something is happening, so the content lands in one jump at the end and the reader starts over locating what they came for. A 900ms wait spent that way reads as a stall, and some of them reload before it resolves.
+A skeleton shaped like a dense list can be misleading if the result is an empty search. A spinner that replaces the whole page during a background refresh also removes information someone could still use.
 
 ## How to apply it
 
-1. Replace spinners with gray bars matching the shape of each content block, image, title, body.
-2. Pulse the bars at a slow, consistent rate (1.5-2s cycle) so it reads as alive, not stuck.
-3. Match skeleton block dimensions to real content so nothing shifts when it swaps in.
-4. Swap skeleton for content directly, never fade to blank first.
+1. Preserve useful loaded content during refresh.
+2. Reserve space for predictable content and respect reduced-motion preferences.
+3. Give slow or failed operations an accessible status and a recovery path.
 
 ## Review questions
 
-1. Does the loading state show gray bars shaped like the final layout instead of a spinner?
-2. Does the skeleton match the real content dimensions with no layout jump on load?
-3. Is there any full-screen spinner used for initial content loading?
+1. Does the loading treatment accurately describe what is known?
+2. Can someone keep using content that has already loaded?
+3. What appears if the request fails or returns no records?

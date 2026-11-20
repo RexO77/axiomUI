@@ -1,32 +1,34 @@
-# Undo destructive actions
+# Make reversible deletion recoverable
 
 - ID: sys-6
 - Category: System & logic
 - Tags: Safety, Error handling
 - URL: https://axiomui.nischal.fyi/rules/sys-6
 
-Prefer a few seconds of undo over a confirmation dialog. Undo costs nothing when the user meant it, and a dialog gets dismissed reflexively by everyone who did.
+Offer immediate Undo for a reversible removal and keep a discoverable recovery path when the notice expires. Confirm consequential actions that cannot be reliably reversed.
 
-- Do: Deleted → Undo (5s)
+- Do: Moved to Trash with immediate Undo
 - Don't: Deleted → gone, no undo
 
 ## Why it works
 
-Loss aversion means users fear irreversible actions more than they warrant, so a five-second Undo window after Deleted converts a scary permanent action into a safely reversible one. Instant permanent deletion offers no recovery path and leans entirely on a confirmation dialog to prevent mistakes.
+A short Undo notice is convenient for the person who catches a mistake immediately. A Trash folder covers someone who returns later or needs more time to reach the control. Both depend on the service retaining enough state to restore the original item.
+
+- [WCAG 2.2 · Error prevention (legal, financial, data)](https://www.w3.org/WAI/WCAG22/Understanding/error-prevention-legal-financial-data.html)
+- [WCAG 2.2 · Timing adjustable](https://www.w3.org/WAI/WCAG22/Understanding/timing-adjustable.html)
 
 ## What breaks
 
-One stray click on the delete beside Q3-report.pdf takes the file with it, and the toast that follows reads permanently deleted, so the recovery path is a support ticket and whatever the last backup happens to hold.
+A five-second notice as the only recovery route can expire before a keyboard or screen-reader user reaches it. Client-side restoration can also mislead if the server has already erased the item or its permissions.
 
 ## How to apply it
 
-1. Show a Deleted, Undo (5s) toast immediately instead of a confirm-then-delete dialog.
-2. Delay the actual destructive server call until the undo window closes.
-3. Make the undo control large and easy to hit within the toast.
-4. Reserve confirmation dialogs for actions too costly or complex to undo after the fact.
+1. Define what restoration recovers and for how long.
+2. Make Undo keyboard accessible and provide durable recovery when the transient control is missed.
+3. Reserve a confirmation or review step for consequences that cannot be undone.
 
 ## Review questions
 
-1. After deleting, does an Undo option appear for a few seconds before it is final?
-2. Is the destructive action delayed on the server until the undo window passes?
-3. Is the undo control easy to tap within the toast?
+1. Can the item be restored after the notice vanishes?
+2. Do restored content and access match their prior state?
+3. Does the user know when deletion becomes permanent?

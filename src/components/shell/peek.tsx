@@ -18,7 +18,7 @@
  * and its foot sits level with the mark instead. A notch on the card's edge
  * points at the mark either way. It always sits right of the rail, expanded
  * or not, so it never covers the list it previews. Related links in the sheet
- * pass their own rect, and the card sits under (or over) the link instead.
+ * provide their group so the preview leaves every link visible.
  *
  * Off below 900px wide or 560px tall (where 200% zoom lands on a laptop), and
  * for any input that cannot hover. Losing that room mid-delay cancels the
@@ -64,8 +64,8 @@ export function Peek({ handle }: { handle: Ref<PeekHandle> }) {
   /** The rule the pointer is on, shown or waiting to be. */
   const target = useRef<string | null>(null);
   const y = useRef(0);
-  /** Set for links in the sheet: the card sits under or over the link. */
-  const rect = useRef<DOMRect | null>(null);
+  /** Keep the whole group clear while readers move between its links. */
+  const group = useRef<HTMLElement | null>(null);
   /** The card's height, measured when its rule changes and kept by a ResizeObserver: never read per move. */
   const height = useRef(0);
   const openTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -86,18 +86,26 @@ export function Peek({ handle }: { handle: Ref<PeekHandle> }) {
     const h = height.current || FALLBACK_HEIGHT;
     const vh = window.innerHeight;
     const vw = document.documentElement.clientWidth;
-    const link = rect.current;
-    if (link) {
+    if (group.current) {
+      const bounds = group.current.getBoundingClientRect();
       const w = Math.min(WIDTH, vw - 2 * SHEET_INSET);
-      const left = Math.max(SHEET_INSET, Math.min(link.left, vw - w - SHEET_INSET));
-      const below = link.bottom + SHEET_INSET;
-      const top = below + h <= vh - SHEET_INSET ? below : Math.max(SHEET_INSET, link.top - SHEET_INSET - h);
+      const gap = 2 * SHEET_INSET;
+      const beside = bounds.left >= w + gap + SHEET_INSET;
+      const below = bounds.bottom + gap + h <= vh - SHEET_INSET;
+      const above = bounds.top >= h + gap + SHEET_INSET;
+      const room = (beside || above || below) && bounds.bottom > 0 && bounds.top < vh && group.current.isConnected;
+      el.toggleAttribute("data-no-room", !room);
+      if (!room) return;
+      const left = beside ? bounds.left - gap - w : Math.min(Math.max(SHEET_INSET, bounds.left), vw - w - SHEET_INSET);
+      const top = beside ? Math.min(Math.max(SHEET_INSET, bounds.top), vh - h - SHEET_INSET)
+        : below ? bounds.bottom + gap : bounds.top - gap - h;
       el.style.width = `${w}px`;
       el.style.translate = `${left.toFixed(1)}px ${top.toFixed(1)}px`;
       el.dataset.free = "";
       delete el.dataset.flip;
       return;
     }
+    delete el.dataset.noRoom;
     delete el.dataset.free;
     const shell = el.closest<HTMLElement>(".shell");
     const railRight = shell?.hasAttribute("data-wide") || shell?.hasAttribute("data-open") ? RAIL_OPEN : RAIL;
@@ -129,6 +137,16 @@ export function Peek({ handle }: { handle: Ref<PeekHandle> }) {
     });
     observer.observe(el);
     return () => observer.disconnect();
+  }, [place]);
+
+  useEffect(() => {
+    const followGroup = () => { if (open.current && group.current) place(); };
+    document.addEventListener("scroll", followGroup, { capture: true, passive: true });
+    window.addEventListener("resize", followGroup);
+    return () => {
+      document.removeEventListener("scroll", followGroup, true);
+      window.removeEventListener("resize", followGroup);
+    };
   }, [place]);
 
   const setOpen = useCallback((next: boolean) => {
@@ -182,7 +200,7 @@ export function Peek({ handle }: { handle: Ref<PeekHandle> }) {
       hover(id, at, options) {
         if (!allowed.current) return;
         y.current = at;
-        rect.current = options?.rect ?? null;
+        group.current = options?.group ?? null;
         clearTimeout(closeTimer.current);
         closeTimer.current = undefined;
         if (id === null) {
@@ -235,7 +253,7 @@ export function Peek({ handle }: { handle: Ref<PeekHandle> }) {
         target.current = null;
         setOpen(false);
       },
-      isOpen: () => open.current,
+      isOpen: () => open.current && !card.current?.hasAttribute("data-no-room"),
     }),
     [clearTimers, place, setOpen, show],
   );

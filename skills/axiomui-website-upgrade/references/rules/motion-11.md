@@ -1,32 +1,34 @@
-# Subsequent tooltips are instant
+# Share tooltip timing across a toolbar
 
 - ID: motion-11
 - Category: Motion & interaction
 - Tags: Tooltips, Perceived performance
 - URL: https://axiomui.nischal.fyi/rules/motion-11
 
-The first tooltip can wait to avoid accidents. Once a tooltip is open, adjacent tooltips should appear immediately.
+Delay the first hover tooltip while a pointer crosses the toolbar. Once it opens, reveal adjacent tips without another wait. Reset after the pointer leaves the group.
 
 - Do: First tooltip 300ms, then 0ms
 - Don't: Every tooltip 300ms
 
 ## Why it works
 
-The first tooltip in a session can carry a short delay to avoid firing on accidental hover, but once a user is already exploring, skipping that delay for adjacent tooltips respects the established intent and keeps a toolbar feeling continuous rather than stuttering per item.
+Hovering briefly while traveling to another control is different from pausing to read a label. A short warmup handles the first case. A shared cooldown lets someone move between neighboring tools before that delay starts again. Keyboard focus is deliberate and can reveal the tip immediately.
+
+- [React Aria · Tooltip interactions and delays](https://react-aria.adobe.com/Tooltip)
+- [WCAG 2.2 · Content on hover or focus](https://www.w3.org/WAI/WCAG22/Understanding/content-on-hover-or-focus.html)
 
 ## What breaks
 
-Every toolbar icon re-imposing the same hover delay makes scanning a row of tools feel like restarting a wait each time, so users abandon hover exploration and hunt for labels another way.
+Independent delays make a row of unfamiliar icons tedious to inspect. Hiding a tip as soon as the pointer leaves its trigger can also prevent someone from moving over the text to read it.
 
 ## How to apply it
 
-1. Skip the delay for any tooltip triggered shortly after another.
-2. Keep a short shared window, roughly 1 to 1.5 seconds, after the last tooltip closes before resetting to first-open behavior.
-3. Reserve the initial delay only for the very first tooltip in a session.
-4. Test moving quickly across a toolbar to confirm no per-item delay reappears.
+1. Share one warmup state across neighboring triggers.
+2. Provide the information on keyboard focus and allow Escape to dismiss it.
+3. Keep the tip open while the pointer is over the trigger or its content where WCAG hover-content requirements apply.
 
 ## Review questions
 
-1. Does the first tooltip in a session wait briefly before appearing?
-2. Do adjacent tooltips appear instantly once you’re already hovering the toolbar?
-3. Does every toolbar item impose its own separate hover delay?
+1. Does a pass across unopened tools avoid a flash of unwanted tips?
+2. Can someone travel from a trigger onto its tip?
+3. After leaving and returning, does the initial delay reset?

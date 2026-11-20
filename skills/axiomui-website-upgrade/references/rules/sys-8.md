@@ -1,32 +1,34 @@
-# Keyboard navigation
+# Follow the keyboard model for each control
 
 - ID: sys-8
 - Category: System & logic
 - Tags: Keyboard, Navigation, Accessibility
 - URL: https://axiomui.nischal.fyi/rules/sys-8
 
-All interactive elements must be reachable via Tab, activatable via Enter/Space, and dismissible via Escape.
+Make each task operable by keyboard. Use native behavior where available. Tab moves between stops, arrow keys often move within groups, and Escape dismisses a modal dialog.
 
 - Do: Tab → Enter → Esc flow works
 - Don't: Click-only interactions, no keyboard support
 
 ## Why it works
 
-Keyboard accessibility is a parallel input model, not an extra layer on mouse interaction: Tab moves focus, Enter or Space activates, Escape dismisses, mirroring how screen reader and switch-device users navigate exclusively. Click-only interactions with no keyboard path lock these users out of core functionality entirely.
+A button commonly accepts Enter or Space, whereas a link normally follows its destination on Enter. A radio group may be one Tab stop with arrow navigation inside. Matching those expectations gives a person a usable path without making every child a separate stop.
+
+- [WCAG 2.2 · Keyboard access](https://www.w3.org/WAI/WCAG22/Understanding/keyboard.html)
+- [WAI-ARIA APG · Keyboard interface practices](https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/)
 
 ## What breaks
 
-An Archive project? dialog whose buttons sit at tabindex -1 with no Escape handler cannot be reached or dismissed from the keyboard at all: Tab walks straight past both buttons into the page behind, Escape does nothing, and the only exit left is a page reload that discards whatever the user was doing.
+A modal whose actions are missing from the tab sequence can leave the keyboard behind the overlay. Conversely, a long toolbar with a separate stop for every possible child can make repeated navigation expensive.
 
 ## How to apply it
 
-1. Verify every interactive element completes the Tab, Enter, Esc flow, not just click handlers.
-2. Add visible focus rings so keyboard position is never invisible.
-3. Wire Escape to dismiss modals, dropdowns, and popovers consistently.
-4. Trap focus inside open modals so Tab does not leak to background content.
+1. Keep a meaningful focus order and a visible focus indicator.
+2. Implement the keyboard pattern for the actual widget, including arrow keys in composites where specified.
+3. Contain Tab within an open modal, support Escape and restore focus to the opener or a logical successor.
 
 ## Review questions
 
-1. Can every interactive element be reached by pressing Tab alone?
-2. Does pressing Enter or Space activate the focused element?
-3. Does pressing Escape dismiss the current modal or menu?
+1. Can the task be completed end to end without a pointer?
+2. Which keys does this control’s role lead users to expect?
+3. After dismissal, can the person continue from a sensible location?

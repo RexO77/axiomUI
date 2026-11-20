@@ -185,7 +185,7 @@ function categoryReference(categoryId: string): string {
 function checklistReference(categoryId: string): string {
   const blocks = [
     `# ${categoryName(categoryId)} checklist`,
-    "Ask each question of the surface under review. Record a finding only for a concrete violation, with evidence.",
+    "Ask each question of the surface under review. Record the observed failure or unmet requirement and the evidence for it.",
     ...rulesIn(categoryId).map((rule) =>
       [
         `## ${rule.title} (\`${rule.id}\`)`,
@@ -221,7 +221,7 @@ const rulesJsonUrl = `${siteConfig.origin}/rules.json`;
  * indexes every rule and points at the site instead.
  */
 function ruleLookup(singleFile: boolean): string {
-  const backing = `The craft standards above are backed by Axiom UI's ${rules.length} rules, which carry the exact values.`;
+  const backing = `The craft standards above are backed by Axiom UI's ${rules.length} rules, each with an example, implementation notes and review questions.`;
   if (singleFile) {
     return [
       "## Axiom UI rule lookup",
@@ -230,7 +230,7 @@ function ruleLookup(singleFile: boolean): string {
         `- Every rule's Do and Don't, in one JSON file: ${rulesJsonUrl}`,
         `- One rule's full reasoning: ${siteConfig.origin}/rules/<id>, for example ${ruleUrl(rules[0].id)}`,
       ].join("\n"),
-      `Before you change a domain, find its rules in the index below and apply the matching rule's Do. Read the rule's page before you defend a tradeoff or break a rule, and cite the rule id when you report the change. To keep the rule files offline, install the full skill with \`${githubInstallCommand(findSkill("axiomui-website-upgrade")!)}\`.`,
+      `Before you change a domain, find the relevant rule in the index below and check where its example applies. Read the rule's page before you defend a tradeoff or break a rule, and cite the rule id when you report the change. To keep the rule files offline, install the full skill with \`${githubInstallCommand(findSkill("axiomui-website-upgrade")!)}\`.`,
       ...categories.map((category) =>
         [`### ${category.name}`, rulesIn(category.id).map((rule) => `- \`${rule.id}\` ${rule.title}`).join("\n")].join("\n\n")
       ),
@@ -238,7 +238,7 @@ function ruleLookup(singleFile: boolean): string {
   }
   return [
     "## Axiom UI rule lookup",
-    `${backing} Before you change a domain, open its file and apply the matching rule's Do. Read the rule's own file under \`references/rules/\` before you defend a tradeoff or break a rule, and cite the rule id when you report the change.`,
+    `${backing} Before you change a domain, open its file and check where the relevant example applies. Read the rule's own file under \`references/rules/\` before you defend a tradeoff or break a rule, and cite the rule id when you report the change.`,
     `If \`references/\` is missing, this is a single-file copy: read ${rulesJsonUrl} for every rule's Do and Don't, and ${siteConfig.origin}/rules/<id> for one rule's reasoning.`,
     domainTable(categoryFile, "File"),
   ].join("\n\n");

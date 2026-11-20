@@ -2,55 +2,33 @@
 "use client";
 
 import type { CSSProperties, MouseEvent, ReactNode, TransitionEvent } from "react";
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
-import { AlertCircle, ArrowLeft, ArrowRight, ArrowUpRight, Check, Copy, Download, LoaderCircle, X } from "@/components/ui/icons";
+import { ArrowLeft, ArrowRight, ArrowUpRight, Download, LoaderCircle, X } from "@/components/ui/icons";
 
-import {
-  skillCatalog,
-  skillRules,
-  skillsCliCommand,
-  skillsTreeUrl,
-  type SkillSpec,
-} from "@/lib/skills/catalog";
+import { skillsCliCommand } from "@/lib/skills/catalog";
+import { SkillsBrowser } from "./skills-browser";
+import "./skills-browser.css";
 import { IconButton } from "@/components/ui/icon-button";
 import { prefersReducedMotion, useReducedMotion } from "@/lib/media";
-import { cn } from "@/lib/utils";
 import { createViewSwap, type SwapPhase } from "@/lib/view-swap";
 
 const skillPath = "/skills/axiomui-website-upgrade/SKILL.md";
 const skillLoadTimeoutMs = 8000;
 const modalOpenDurationMs = 220; // --motion-medium
-const modalCloseDurationMs = 140; // --motion-fast
-const copyResetMs = 1800;
-
-const coreSkills = skillCatalog.filter((skill) => skill.group === "core");
-const domainSkills = skillCatalog.filter((skill) => skill.group === "domain");
-
-// Keep a full 44px target on touch screens at every viewport width. The
-// global focus-visible treatment and pressable transition own their states.
-const PILL_PRIMARY =
-  "pressable inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-inverse px-4 text-xs font-medium text-on-inverse hover:opacity-90 disabled:pointer-events-none disabled:opacity-50";
-const PILL_SECONDARY =
-  "pressable inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-line-strong px-4 text-xs font-medium text-ink-secondary hover:bg-fill hover:text-ink";
-const TEXT_LINK =
-  "pressable -mx-2 inline-flex min-h-11 items-center gap-1.5 rounded-full px-2 text-sm font-medium text-ink-secondary underline-offset-4 hover:text-ink hover:underline";
-
+const modalCloseDurationMs = 180;
 // The portal needs document.body, which exists only on the client: false while
 // rendering on the server and hydrating, true from then on.
 const subscribeNever = () => () => {};
 const useIsClient = () => useSyncExternalStore(subscribeNever, () => true, () => false);
 
 const FOCUSABLE_SELECTOR =
-  'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  'a[href], button:not([disabled]), select:not([disabled]), input[type="radio"]:checked, summary, [tabindex]:not([tabindex="-1"])';
 
 type LoadState = "idle" | "loading" | "ready" | "error";
-type CopyState = "idle" | "copied" | "error";
 type ModalState = "closed" | "mounted" | "open" | "closing";
 type ModalView = "install" | "preview";
-
-const pillLabels: Record<CopyState, string> = { idle: "Copy", copied: "Copied", error: "Retry" };
 
 type PreviewNode =
   | { type: "heading"; level: 1 | 2 | 3; text: string }
@@ -59,147 +37,38 @@ type PreviewNode =
   | { type: "ordered-list"; items: string[] }
   | { type: "table"; header: string[]; rows: string[][] };
 
-async function copyText(text: string): Promise<boolean> {
-  if (navigator.clipboard && window.isSecureContext) {
-    try {
-      await navigator.clipboard.writeText(text);
-      return true;
-    } catch {
-      // Some browsers deny clipboard access even in a secure context.
-    }
-  }
+export type SkillDialogSource = {
+  bounds: DOMRect;
+  card: HTMLElement;
+  anchor: HTMLElement;
+  anchorBounds: DOMRect;
+  viewportWidth: number;
+  viewportHeight: number;
+};
 
-  const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-  const textarea = document.createElement("textarea");
-  try {
-    textarea.value = text;
-    textarea.readOnly = true;
-    textarea.tabIndex = -1;
-    textarea.style.position = "fixed";
-    textarea.style.top = "0";
-    textarea.style.left = "0";
-    textarea.style.opacity = "0";
-    // Keep fallback focus inside the active dialog's inert boundary.
-    (previous?.closest('[role="dialog"]') ?? document.body).appendChild(textarea);
-    textarea.select();
-    return document.execCommand("copy");
-  } catch {
-    return false;
-  } finally {
-    textarea.remove();
-    if (previous?.isConnected) previous.focus({ preventScroll: true });
-  }
+function visibleBounds(element: HTMLElement | null | undefined) {
+  if (!element?.isConnected || !element.getClientRects().length || getComputedStyle(element).visibility === "hidden") return null;
+  const box = element.getBoundingClientRect();
+  return box.width > 0 && box.height > 0 && box.bottom > 0 && box.right > 0
+    && box.top < window.innerHeight && box.left < window.innerWidth ? box : null;
 }
 
-/**
- * One copy control with its own idle/copied/error state, so pressing one
- * button never flips another. Announces the result through the dialog's
- * single live region.
- */
-function CopyButton({
-  text,
-  label,
-  announce,
-  variant,
-}: {
-  text: string;
-  label: string;
-  announce: (message: string) => void;
-  variant: "pill" | "icon";
-}) {
-  const [state, setState] = useState<CopyState>("idle");
-  const attemptRef = useRef(0);
-  const resetTimerRef = useRef<number | null>(null);
-
-  useEffect(() => () => {
-    attemptRef.current += 1;
-    if (resetTimerRef.current !== null) window.clearTimeout(resetTimerRef.current);
-  }, []);
-
-  async function handleClick() {
-    const attempt = ++attemptRef.current;
-    const ok = await copyText(text);
-    if (attempt !== attemptRef.current) return;
-    if (resetTimerRef.current !== null) window.clearTimeout(resetTimerRef.current);
-    setState(ok ? "copied" : "error");
-    announce(ok ? `Copied: ${text}` : "Copy failed. Try again.");
-    resetTimerRef.current = window.setTimeout(() => {
-      resetTimerRef.current = null;
-      setState("idle");
-    }, copyResetMs);
-  }
-
-  const actionLabel = state === "error" ? label.replace(/^Copy/, "Retry copying") : label;
-
-  if (variant === "icon") {
-    return (
-      <IconButton
-        size="md"
-        label={actionLabel}
-        title={state === "copied" ? "Copied" : state === "error" ? "Copy failed — try again" : text}
-        onClick={() => void handleClick()}
-      >
-        <CopyGlyph copied={state === "copied"} failed={state === "error"} />
-      </IconButton>
-    );
-  }
-
-  return (
-    <button type="button" aria-label={actionLabel} onClick={() => void handleClick()} className={PILL_PRIMARY}>
-      <CopyGlyph copied={state === "copied"} failed={state === "error"} />
-      <span aria-hidden="true" className="grid justify-items-center">
-        {(["idle", "copied", "error"] as const).map((labelState) => (
-          <span
-            key={labelState}
-            className={cn("col-start-1 row-start-1", labelState === state ? "visible" : "invisible")}
-          >
-            {pillLabels[labelState]}
-          </span>
-        ))}
-      </span>
-    </button>
-  );
+function measureReturnTarget(panel: HTMLElement, anchor: HTMLElement) {
+  const trigger = visibleBounds(anchor);
+  panel.dataset.railMotion = trigger ? "anchored" : "local";
+  if (!trigger) return null;
+  const width = panel.offsetWidth;
+  const height = panel.offsetHeight;
+  // The compact card is gone. Return to the button at its current position.
+  panel.style.setProperty("--skill-return-transform",
+    `translate3d(${trigger.left - panel.offsetLeft}px, ${trigger.top - panel.offsetTop}px, 0)`);
+  panel.style.setProperty("--skill-return-scale", `scale(${trigger.width / width}, ${trigger.height / height})`);
+  panel.style.setProperty("--skill-return-clip",
+    `inset(0 ${Math.max(0, width - trigger.width)}px ${Math.max(0, height - trigger.height)}px 0 round var(--radius-control))`);
+  return trigger;
 }
 
-function CommandRow({ command, label, announce }: {
-  command: string;
-  label: string;
-  announce: (message: string) => void;
-}) {
-  // Match the copy pill inside the command row’s 6px inset.
-  return (
-    <div className="flex min-w-0 items-center gap-3 rounded-full bg-sunken pl-4 pr-1.5 py-1.5">
-      <code className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap py-2 text-sm leading-6 text-ink">
-        <span aria-hidden="true" className="select-none text-ink-muted">$ </span>
-        {command}
-      </code>
-      <CopyButton text={command} label={label} announce={announce} variant="pill" />
-    </div>
-  );
-}
-
-function SkillRow({ skill, announce }: { skill: SkillSpec; announce: (message: string) => void }) {
-  const ruleCount = skillRules(skill).length;
-  return (
-    <li className="flex items-start gap-2 py-2 pl-4 pr-1.5 sm:py-2.5">
-      <div className="min-w-0 flex-1 py-1.5 sm:py-1">
-        <p className="flex flex-wrap items-baseline gap-x-2">
-          <code className="text-sm font-medium text-ink">{skill.name}</code>
-          <span className="text-xs tabular-nums text-ink-muted">
-            {ruleCount} {ruleCount === 1 ? "rule" : "rules"}
-          </span>
-        </p>
-        <p className="mt-1 text-pretty text-sm leading-6 text-ink-secondary">{skill.summary}</p>
-      </div>
-      <CopyButton
-        text={`${skillsCliCommand} --skill ${skill.name}`}
-        label={`Copy install command for ${skill.name}`}
-        announce={announce}
-        variant="icon"
-      />
-    </li>
-  );
-}
+const instantDialog = () => prefersReducedMotion() || (typeof document !== "undefined" && document.documentElement.dataset.input === "keyboard");
 
 export type SkillBonusProps = {
   /**
@@ -207,11 +76,13 @@ export type SkillBonusProps = {
    * unset to render the built-in trigger instead.
    */
   open?: boolean;
+  /** Viewport bounds of the rail popover just before it yields to the dialog. */
+  source?: SkillDialogSource | null;
   /** Called with `false` when the dialog closes itself: Esc, the scrim or its close button. */
   onOpenChange?: (open: boolean) => void;
 };
 
-export function SkillBonus({ open, onOpenChange }: SkillBonusProps = {}) {
+export function SkillBonus({ open, source, onOpenChange }: SkillBonusProps = {}) {
   const controlled = open !== undefined;
   const pathname = usePathname();
   const isMounted = useIsClient();
@@ -239,7 +110,7 @@ export function SkillBonus({ open, onOpenChange }: SkillBonusProps = {}) {
     onOpenChangeRef.current = onOpenChange;
   });
 
-  const closeModal = useCallback(() => {
+  const closeModal = useCallback((input?: "keyboard" | { detail: number }) => {
     onOpenChangeRef.current?.(false);
     viewSwap.cancel();
     focusViewHeadingRef.current = false;
@@ -248,7 +119,7 @@ export function SkillBonus({ open, onOpenChange }: SkillBonusProps = {}) {
       announcementTimerRef.current = null;
     }
     setAnnouncement("");
-    if (prefersReducedMotion()) {
+    if (input === "keyboard" || input?.detail === 0 || instantDialog()) {
       setModalState("closed");
       viewSwap.reset("install");
       return;
@@ -286,6 +157,7 @@ export function SkillBonus({ open, onOpenChange }: SkillBonusProps = {}) {
         }
 
         const text = await response.text();
+        if (!stripFrontmatter(text).trim()) throw new Error("The playbook is empty");
 
         if (!active) {
           return;
@@ -313,7 +185,7 @@ export function SkillBonus({ open, onOpenChange }: SkillBonusProps = {}) {
     };
   }, [isPreviewing, skillText, loadAttempt]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!isModalVisible) {
       return;
     }
@@ -350,9 +222,12 @@ export function SkillBonus({ open, onOpenChange }: SkillBonusProps = {}) {
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
+        // A native picker owns its first Escape while its option list is open.
+        if (event.isComposing || (event.target instanceof HTMLSelectElement &&
+          CSS.supports("selector(select:open)") && event.target.matches(":open"))) return;
         event.preventDefault();
         event.stopPropagation();
-        closeModal();
+        closeModal("keyboard");
         return;
       }
 
@@ -366,49 +241,21 @@ export function SkillBonus({ open, onOpenChange }: SkillBonusProps = {}) {
         return;
       }
 
-      const focusable = Array.from(
-        panel.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
-      ).filter((element) => element.offsetParent !== null);
-
-      if (focusable.length === 0) {
-        event.preventDefault();
-        panel.focus();
-        return;
-      }
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
+      const stops = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter((element) => {
+        if (element.offsetParent === null || element.closest("[inert]")) return false;
+        const closed = element.closest("details:not([open])");
+        return !closed || element === closed.querySelector(":scope > summary");
+      });
+      // Safari's default Tab policy can skip buttons and leave the document
+      // from a middle control. Walk the visible controls for every modal Tab.
+      if (event.shiftKey) stops.reverse();
       const active = document.activeElement;
-      const activeInPanel = active instanceof HTMLElement && panel.contains(active);
-
-      // Focus can rest on something outside the tab order: the panel itself,
-      // or a view heading after a view switch. Move from there in DOM order,
-      // so Tab never escapes past the last control of the dialog.
-      if (activeInPanel && !focusable.includes(active)) {
-        event.preventDefault();
-        const following = focusable.filter(
-          (element) => active.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING
-        );
-        const preceding = focusable.filter(
-          (element) => active.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_PRECEDING
-        );
-        (event.shiftKey ? (preceding[preceding.length - 1] ?? last) : (following[0] ?? first)).focus();
-        return;
-      }
-
-      if (event.shiftKey) {
-        if (!activeInPanel || active === first) {
-          event.preventDefault();
-          last.focus();
-        }
-
-        return;
-      }
-
-      if (!activeInPanel || active === last) {
-        event.preventDefault();
-        first.focus();
-      }
+      const direction = event.shiftKey ? Node.DOCUMENT_POSITION_PRECEDING : Node.DOCUMENT_POSITION_FOLLOWING;
+      const next = active && panel.contains(active)
+        ? stops.find((element) => active.compareDocumentPosition(element) & direction)
+        : undefined;
+      event.preventDefault();
+      (next ?? stops[0] ?? panel).focus();
     }
 
     document.body.style.overflow = "hidden";
@@ -433,16 +280,82 @@ export function SkillBonus({ open, onOpenChange }: SkillBonusProps = {}) {
       const focusTargets = [
         returnFocusRef.current,
         ...document.querySelectorAll<HTMLButtonElement>(
-          'button[aria-controls="mobile-menu"], button[aria-controls="desktop-sidebar"]'
+          '.phone-bar button[aria-label="Menu"], .install-row .rail-row, button[aria-controls="mobile-menu"], button[aria-controls="desktop-sidebar"]'
         ),
       ];
-      const returnTarget = focusTargets.find((element) => element?.isConnected
-        && !element.closest("[inert]") && element.getClientRects().length > 0
-        && getComputedStyle(element).visibility !== "hidden");
+      const returnTarget = focusTargets.find((element) => element && !element.closest("[inert]") && visibleBounds(element));
       returnTarget?.focus({ preventScroll: true });
       returnFocusRef.current = null;
     };
   }, [isModalVisible, closeModal]);
+
+  useLayoutEffect(() => {
+    const panel = panelRef.current;
+    if (!panel || !source || !isModalVisible || instantDialog()) return;
+    // Carry the actual compact card through the first frames. Its controls
+    // are only a picture here; the modal owns interaction from its first paint.
+    const picture = source.card.cloneNode(true) as HTMLElement;
+    picture.classList.add("skill-origin-copy");
+    picture.inert = true;
+    picture.setAttribute("aria-hidden", "true");
+    picture.removeAttribute("role");
+    picture.removeAttribute("aria-labelledby");
+    picture.removeAttribute("id");
+    picture.querySelectorAll("[id]").forEach(node => node.removeAttribute("id"));
+    picture.style.width = `${source.bounds.width}px`;
+    picture.style.translate = "none";
+    const discard = (event: globalThis.TransitionEvent) => {
+      if (event.target === picture && event.propertyName === "opacity") picture.remove();
+    };
+    picture.addEventListener("transitionend", discard);
+    panel.appendChild(picture);
+    return () => {
+      picture.removeEventListener("transitionend", discard);
+      picture.remove();
+    };
+  }, [source, isModalVisible]);
+
+  useLayoutEffect(() => {
+    const panel = panelRef.current;
+    if (!panel || !source || !isModalVisible || reducedMotion) return;
+    const measure = () => {
+      const width = panel.offsetWidth;
+      const height = panel.offsetHeight;
+      if (!width || !height) return;
+      const { bounds } = source;
+      const trigger = measureReturnTarget(panel, source.anchor);
+      const fits = trigger && source.viewportWidth === window.innerWidth && source.viewportHeight === window.innerHeight
+        && (["x", "y", "width", "height"] as const).every((side) => Math.abs(trigger[side] - source.anchorBounds[side]) < 1);
+      panel.style.setProperty("--skill-source-transform", fits
+        ? `translate3d(${bounds.left - panel.offsetLeft}px, ${bounds.top - panel.offsetTop}px, 0)` : "none");
+      // Only the visual surface scales. Text and icons move at their native size inside the reveal.
+      panel.style.setProperty("--skill-surface-scale", fits ? `scale(${bounds.width / width}, ${bounds.height / height})` : "none");
+      panel.style.setProperty("--skill-source-clip", fits
+        ? `inset(0 ${Math.max(0, width - bounds.width)}px ${Math.max(0, height - bounds.height)}px 0 round var(--radius-sheet))`
+        : "inset(0 round var(--radius-sheet))");
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(panel);
+    observer.observe(source.anchor);
+    window.addEventListener("resize", measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measure);
+      delete panel.dataset.railMotion;
+      panel.style.removeProperty("--skill-source-transform");
+      panel.style.removeProperty("--skill-surface-scale");
+      panel.style.removeProperty("--skill-source-clip");
+      panel.style.removeProperty("--skill-return-transform");
+      panel.style.removeProperty("--skill-return-scale");
+      panel.style.removeProperty("--skill-return-clip");
+    };
+  }, [source, isModalVisible, reducedMotion]);
+
+  useLayoutEffect(() => {
+    const panel = panelRef.current;
+    if (modalState === "closing" && source && panel) measureReturnTarget(panel, source.anchor);
+  }, [modalState, source]);
 
   useEffect(() => {
     if (modalState !== "mounted") {
@@ -501,7 +414,7 @@ export function SkillBonus({ open, onOpenChange }: SkillBonusProps = {}) {
     setAnnouncement("");
     setLoadState((current) => (current === "error" || (current === "loading" && !skillText) ? "idle" : current));
     viewSwap.reset("install");
-    setModalState(prefersReducedMotion() ? "open" : "mounted");
+    setModalState(instantDialog() ? "open" : "mounted");
   }, [skillText, viewSwap]);
 
   // Controlled: follow `open`, adjusting the dialog's state in the same render
@@ -510,7 +423,7 @@ export function SkillBonus({ open, onOpenChange }: SkillBonusProps = {}) {
   if (controlled && open && modalState === "closed") {
     setAnnouncement("");
     setLoadState((current) => (current === "error" || (current === "loading" && !skillText) ? "idle" : current));
-    setModalState(reducedMotion ? "open" : "mounted");
+    setModalState(reducedMotion || instantDialog() ? "open" : "mounted");
   } else if (controlled && !open && (modalState === "mounted" || modalState === "open")) {
     setAnnouncement("");
     setModalState(reducedMotion ? "closed" : "closing");
@@ -559,100 +472,27 @@ export function SkillBonus({ open, onOpenChange }: SkillBonusProps = {}) {
   };
 
   const closeButton = (
-    <IconButton size="md" label="Close agent skills" onClick={closeModal}>
+    <IconButton size="md" className="skill-close" label="Close agent skills" onClick={closeModal}>
       <X aria-hidden="true" />
     </IconButton>
   );
 
   const installView = (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex shrink-0 items-start justify-between gap-4 px-4 pb-3 pt-5 sm:px-8 sm:pt-7">
-        <div className="min-w-0">
-          <h2
-            id="skill-dialog-title"
-            ref={view === "install" ? viewHeadingRef : undefined}
-            tabIndex={-1}
-            className="text-2xl font-semibold tracking-tight text-ink outline-none sm:text-3xl"
-          >
-            Agent skills
-          </h2>
-          <p className="mt-2 max-w-xl text-pretty text-sm leading-6 text-ink-secondary sm:text-base sm:leading-[26px]">
-            Install Axiom UI&apos;s rules as skills in your coding agent.
-          </p>
-        </div>
-        {closeButton}
-      </div>
-
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-        <div className="px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-3 sm:px-8 sm:pb-10 sm:pt-5">
-          <section aria-labelledby="skill-install-heading">
-            <h3 id="skill-install-heading" className="sr-only">
-              Install
-            </h3>
-            <CommandRow command={skillsCliCommand} label="Copy install command" announce={announce} />
-            <p className="mt-3 text-pretty text-sm leading-6 text-ink-secondary">
-              Choose which skills and agents to install. Run it in your project, or add{" "}
-              <code className="text-sm text-ink">-g</code> for every project.
-            </p>
-          </section>
-
-          <section aria-labelledby="skill-core-heading" className="mt-8 sm:mt-10">
-            <h3 id="skill-core-heading" className="drawer-label text-xs font-semibold text-ink-muted">
-              Core
-            </h3>
-            <p className="mt-1 text-sm leading-6 text-ink-secondary">
-              Each core skill carries every rule. Copy a row&apos;s command to install just that skill.
-            </p>
-            <ul className="mt-3 space-y-2">
-              {coreSkills.map((skill) => (
-                <SkillRow key={skill.name} skill={skill} announce={announce} />
-              ))}
-            </ul>
-          </section>
-
-          <section aria-labelledby="skill-domain-heading" className="mt-8">
-            <h3 id="skill-domain-heading" className="drawer-label text-xs font-semibold text-ink-muted">
-              Domains
-            </h3>
-            <p className="mt-1 text-sm leading-6 text-ink-secondary">
-              Core skills already include these rules. Install one domain on its own for focused triggers.
-            </p>
-            <ul className="mt-3 grid gap-x-6 gap-y-2 sm:grid-cols-2">
-              {domainSkills.map((skill) => (
-                <SkillRow key={skill.name} skill={skill} announce={announce} />
-              ))}
-            </ul>
-          </section>
-
-          <div className="mt-8 flex flex-col items-start gap-y-1 text-sm text-ink-muted sm:flex-row sm:items-center sm:gap-x-5">
-            <p className="mb-1 sm:mb-0 sm:mr-auto">Prefer a single file?</p>
-            <button type="button" onClick={() => showView("preview")} className={TEXT_LINK}>
-              Preview the playbook
-              <ArrowRight aria-hidden="true" className="size-3.5" />
-            </button>
-            <a href={skillPath} download="SKILL.md" className={TEXT_LINK}>
-              Download SKILL.md
-              <Download aria-hidden="true" className="size-3.5" />
-            </a>
-            <a href={skillsTreeUrl} target="_blank" rel="noreferrer" className={TEXT_LINK}>
-              View on GitHub
-              <ArrowUpRight aria-hidden="true" className="size-3.5" />
-            </a>
-          </div>
-        </div>
-      </div>
+    <div className="skill-index-view" hidden={view !== "install"}>
+      <SkillsBrowser closeButton={closeButton} headingRef={view === "install" ? viewHeadingRef : null}
+        onPreview={() => showView("preview")} announce={announce} skillPath={skillPath} />
     </div>
   );
 
   const previewView = (
     <>
-      <div className="flex items-center gap-2 px-3 py-2.5 sm:px-5">
-        <button type="button" onClick={() => showView("install")} className={PILL_SECONDARY}>
+      <div className="skill-toolbar skill-preview-toolbar">
+        <button type="button" onClick={() => showView("install")} className="skill-action">
           <ArrowLeft aria-hidden="true" className="size-3.5" />
           All skills
         </button>
         <div className="ml-auto flex items-center gap-2">
-          <a href={skillPath} download="SKILL.md" className={PILL_SECONDARY}>
+          <a href={skillPath} download="SKILL.md" className="skill-action">
             <Download aria-hidden="true" className="size-3.5" />
             <span className="hidden min-[400px]:inline">Download</span>
             <span className="sr-only min-[400px]:hidden">Download SKILL.md</span>
@@ -661,9 +501,10 @@ export function SkillBonus({ open, onOpenChange }: SkillBonusProps = {}) {
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-        <article className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8 md:px-8 md:py-10">
-          <header className="pb-6 sm:pb-8">
+      <div role="region" aria-labelledby="skill-dialog-title" tabIndex={0}
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain focus-visible:-outline-offset-2">
+        <article className="skill-playbook mx-auto max-w-[72ch] px-5 py-5 sm:px-7 sm:py-6">
+          <header>
             <p className="text-sm font-medium text-ink-muted">
               <code>SKILL.md</code>
             </p>
@@ -692,11 +533,15 @@ export function SkillBonus({ open, onOpenChange }: SkillBonusProps = {}) {
 
           {previewState === "error" ? (
             <div className="flex min-h-48 flex-col items-center justify-center gap-3 text-center text-sm text-ink-muted">
-              <p>Could not load the preview. Try again or open the file directly.</p>
-              <button type="button" className={PILL_SECONDARY} onClick={() => setLoadAttempt((attempt) => attempt + 1)}>
+              <p role="status">Could not load the preview. Try again or open the file directly.</p>
+              <button type="button" className="skill-action" onClick={() => {
+                // Retrying removes this button. Give the reader a stable focus target.
+                viewHeadingRef.current?.focus({ preventScroll: true });
+                setLoadAttempt((attempt) => attempt + 1);
+              }}>
                 Try again
               </button>
-              <a href={skillPath} target="_blank" rel="noreferrer" className={PILL_SECONDARY}>
+              <a href={skillPath} target="_blank" rel="noreferrer" className="skill-action">
                 <ArrowUpRight aria-hidden="true" className="size-4" />
                 Open raw file
               </a>
@@ -704,7 +549,7 @@ export function SkillBonus({ open, onOpenChange }: SkillBonusProps = {}) {
           ) : null}
 
           {previewState === "ready" ? (
-            <div className="mt-6 space-y-6 sm:mt-8 sm:space-y-8">
+            <div className="skill-playbook-copy mt-5">
               {previewNodes.map((node, index) => renderPreviewNode(node, index))}
             </div>
           ) : null}
@@ -718,8 +563,8 @@ export function SkillBonus({ open, onOpenChange }: SkillBonusProps = {}) {
         <div
           ref={modalRootRef}
           data-state={modalState}
-          style={{ "--skill-modal-open-duration": `${reducedMotion ? 0 : modalOpenDurationMs}ms`, "--skill-modal-close-duration": `${reducedMotion ? 0 : modalCloseDurationMs}ms` } as CSSProperties}
-          className="skill-modal-root fixed inset-0 z-[500] flex items-start p-0 sm:px-4 sm:py-4 md:px-6 md:py-6"
+          style={{ "--skill-dock-left": source ? String(source.bounds.left) + "px" : undefined, "--skill-modal-open-duration": `${reducedMotion ? 0 : modalOpenDurationMs}ms`, "--skill-modal-close-duration": `${reducedMotion ? 0 : modalCloseDurationMs}ms` } as CSSProperties}
+          className="skill-modal-root skill-dock fixed inset-0 z-[500]"
         >
           <button
             type="button"
@@ -735,15 +580,14 @@ export function SkillBonus({ open, onOpenChange }: SkillBonusProps = {}) {
             onTransitionEnd={handleSwapEnd}
             role="dialog"
             aria-modal="true"
-            aria-labelledby="skill-dialog-title"
+            aria-labelledby={view === "install" ? "skills-index-title" : "skill-dialog-title"}
             tabIndex={-1}
-            className={cn(
-              "skill-modal-panel relative mx-auto flex h-[100dvh] w-full flex-col overflow-hidden rounded-none bg-surface text-ink shadow-overlay outline-none sm:rounded-card",
-              view === "preview" ? "max-w-5xl sm:h-full" : "max-w-3xl sm:h-auto sm:max-h-full"
-            )}
+            className="skill-modal-panel skill-workspace"
           >
+            <span className="skill-modal-surface" aria-hidden="true" />
             <div className="skill-modal-content flex h-full min-h-0 flex-col">
-              {view === "install" ? installView : previewView}
+              {installView}
+              {view === "preview" ? previewView : null}
               <p aria-live="polite" className="sr-only">
                 {announcement}
               </p>
@@ -777,40 +621,6 @@ export function SkillBonus({ open, onOpenChange }: SkillBonusProps = {}) {
 
       {modal}
     </>
-  );
-}
-
-// Cross-fades the copy/check glyphs instead of hard-swapping them: both stay
-// in the DOM and trade opacity + scale + blur, so rapid re-clicks retarget
-// smoothly (transitions, not keyframes).
-const GLYPH_POSITION = "absolute inset-0 size-4.5";
-
-function CopyGlyph({ copied, failed }: { copied: boolean; failed: boolean }) {
-  const BaseGlyph = failed ? AlertCircle : Copy;
-  const reducedMotion = useReducedMotion();
-  const transition: CSSProperties = {
-    transitionProperty: "opacity, scale, filter",
-    transitionDuration: reducedMotion ? "0ms" : "var(--motion-medium)",
-    transitionTimingFunction: "var(--ease-emphasized)",
-  };
-  return (
-    <span aria-hidden="true" className="relative size-4.5">
-      <BaseGlyph
-        style={transition}
-        className={cn(
-          GLYPH_POSITION,
-          copied ? "scale-[0.25] opacity-0 blur-[4px]" : "scale-100 opacity-100 blur-[0px]",
-          failed && "text-dont"
-        )}
-      />
-      <Check
-        style={transition}
-        className={cn(
-          GLYPH_POSITION,
-          copied ? "scale-100 opacity-100 blur-[0px]" : "scale-[0.25] opacity-0 blur-[4px]"
-        )}
-      />
-    </span>
   );
 }
 
@@ -864,16 +674,12 @@ function renderPreviewNode(node: PreviewNode, index: number) {
 
     if (node.level === 2) {
       return (
-        <section key={`heading-${index}`} className="space-y-4">
-          <h3 className="text-xl font-semibold tracking-tight text-ink sm:text-2xl">{node.text}</h3>
-        </section>
+        <h3 key={`heading-${index}`} className="text-xl font-semibold tracking-tight text-ink sm:text-2xl">{node.text}</h3>
       );
     }
 
     return (
-      <section key={`heading-${index}`} className="space-y-3">
-        <h4 className="text-base font-semibold text-ink">{node.text}</h4>
-      </section>
+      <h4 key={`heading-${index}`} className="text-base font-semibold text-ink">{node.text}</h4>
     );
   }
 

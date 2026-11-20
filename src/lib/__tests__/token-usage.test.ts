@@ -29,10 +29,6 @@ import { describe, expect, it } from "vitest";
 
 /** Tokens whose consumer is a JavaScript constant, each with the test that pins the pair. */
 const JS_TWINS: Record<string, { test: string; reason: string }> = {
-  "--ease-in-out-strong": {
-    test: "src/lib/__tests__/design-system.test.ts",
-    reason: "holds it equal to EASE.inOut in showcase-engine.ts",
-  },
   "--motion-slow": {
     test: "src/lib/__tests__/design-system.test.ts",
     reason: "holds it equal to DUR.slow in showcase-engine.ts, which the motion showcases play",

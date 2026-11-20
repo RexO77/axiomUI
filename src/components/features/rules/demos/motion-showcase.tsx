@@ -285,8 +285,7 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
         const run = nextGeneration();
         setEngaged(true);
 
-        // The tally is evidence of what the user cost themselves — the mount
-        // autoplay is not a user action, so it must not count.
+        // Count deliberate opens only. The mount autoplay is independent of input.
         if (spec.tallyDontMs && counts) {
             setPlays((p) => p + 1);
         }
@@ -460,9 +459,7 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
     const tallySeconds = spec.tallyDontMs ? ((plays * spec.tallyDontMs) / 1000).toFixed(1) : "0.0";
     const tally = spec.tallyDontMs
         ? {
-              text: reduced
-                  ? `×${plays} · would cost ${tallySeconds}s`
-                  : `×${plays} · ${tallySeconds}s waited`,
+              text: `×${plays} · ${tallySeconds}s of motion at 1×`,
               counting: plays > 0,
           }
         : null;

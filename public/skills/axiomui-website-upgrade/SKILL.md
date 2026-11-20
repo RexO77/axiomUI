@@ -16,7 +16,7 @@ Act as a design engineer. Improve the interface by making its intent easier to u
 ## Operating principles
 
 - Inspect the current interface, implementation, and existing design patterns before proposing changes.
-- Identify the page goal, the primary user action, and the information users need first.
+- Identify the task or tasks the surface supports and the information each decision needs.
 - Fix structure before styling, and styling before motion.
 - Prefer the smallest coherent system-level fix over scattered one-off patches.
 - Preserve accepted behavior, content, and interaction choreography unless the request explicitly changes them.
@@ -44,7 +44,7 @@ Act as a design engineer. Improve the interface by making its intent easier to u
 - Feels empty or flat: strengthen hierarchy and grouping before adding borders, shadows, cards, or color.
 - Feels inconsistent: find the shared token or primitive behind mismatched spacing, type, radius, icon size, or state treatment.
 - Feels visually misaligned: inspect baselines, cap height, icon geometry, negative space, and optical centering—not only flex alignment.
-- Feels hard to scan: shorten line length, clarify heading levels, soften secondary copy, and make one next action dominant.
+- Feels hard to scan: check line length, heading roles, secondary-text contrast and the relative emphasis of actions within each task.
 - Feels slow: distinguish actual latency from delayed feedback or sluggish motion. Respond immediately, then animate only when it aids continuity.
 - Feels unsafe or confusing: clarify labels, consequences, validation, recovery, loading, success, empty, and error states.
 - Breaks on mobile: preserve reading order and task priority; recompose the layout instead of merely shrinking desktop UI.
@@ -53,9 +53,9 @@ Act as a design engineer. Improve the interface by making its intent easier to u
 
 ### Hierarchy and typography
 
-- Give each screen one unmistakable primary action.
-- Use sentence case for interface copy unless the product language requires otherwise.
-- Keep body text readable, left-align multi-line copy, and constrain long measures.
+- Give the next action appropriate emphasis within its task group. Independent tasks on a dashboard can each have a primary action.
+- Use sentence case for ordinary English labels when it matches the product’s editorial convention. Preserve names and follow the conventions of each translation.
+- Align paragraphs to the reading start for their language. Check sustained reading, wrapped headings and mixed-script names with representative text.
 - Build hierarchy with size, weight, spacing, and contrast before adding color.
 - De-emphasize secondary text with color before making it uncomfortably small.
 - Balance headings and prevent awkward orphaned words when the stack supports it.
@@ -65,13 +65,13 @@ Act as a design engineer. Improve the interface by making its intent easier to u
 - Use a consistent spacing scale and let proximity explain relationships.
 - Keep repeated gutters and control heights aligned across the same region.
 - Give content enough room inside cards; outer whitespace does not compensate for cramped inner padding.
-- Make nested corners concentric: outer radius should account for the inner radius plus the surrounding inset.
+- For concentric circular corners with an equal inset, subtract the painted-edge inset from the outer radius to obtain the inner radius. Inspect each edge when the insets differ.
 - Avoid wrapping every section in a card. Use whitespace, surface contrast, or dividers only when they clarify structure.
-- Keep borders quieter than content and use depth sparingly.
+- Keep decorative boundaries quiet. Measure an edge against adjacent colors when it identifies a control or a graphic.
 
 ### Components and forms
 
-- Make the whole intended target interactive and keep hit areas comfortably large.
+- Size the primary target for its input method and give independent actions inside a card their own controls.
 - Label ambiguous icons and preserve visible focus states.
 - Use controls that match the decision: radio for one choice, checkbox for many, switch for immediate change.
 - Keep labels visible while typing and validate after meaningful interaction, not on the first keystroke.
@@ -82,9 +82,9 @@ Act as a design engineer. Improve the interface by making its intent easier to u
 
 - Design loading, empty, error, success, disabled, hover, focus, and active states as part of the component.
 - Preserve meaning without color and maintain readable contrast.
-- Ensure keyboard users can reach, operate, and dismiss every control and overlay.
-- Use motion for feedback, orientation, or continuity—not to decorate frequent actions.
-- Prefer responsive, interruptible transitions; specify the animated properties and keep exits quicker than entrances.
+- Follow the keyboard model for each control. Check entry, navigation within composite widgets, and focus after a modal closes.
+- Check whether motion helps explain a change of state. Repeated actions should keep their feedback and content responsive.
+- Specify the properties that transition. Tune entrance and exit separately, then interrupt the transition and check where the element settles.
 - Respect reduced-motion preferences and avoid movement that delays access to content.
 
 ## Decision guardrails
@@ -92,7 +92,7 @@ Act as a design engineer. Improve the interface by making its intent easier to u
 - Do not introduce a new visual language to solve a local inconsistency.
 - Do not add dependencies for effects the current stack can express clearly.
 - Do not hide usability problems behind animation, gradients, blur, or decorative chrome.
-- Do not apply heuristics mechanically. Break a rule when the product context makes the tradeoff clearly better, and explain why.
+- Explain departures from a design convention using the product context. Assess accessibility conformance against the applicable criterion and its stated exceptions.
 - Do not widen a focused request into an unrelated redesign.
 
 ## Verification contract
@@ -122,138 +122,141 @@ Optimize for an interface that feels obvious, calm, responsive, and trustworthy.
 
 ## Axiom UI rule lookup
 
-The craft standards above are backed by Axiom UI's 105 rules, which carry the exact values. This is the single-file copy of the skill, so the rules are online rather than beside it:
+The craft standards above are backed by Axiom UI's 108 rules, each with an example, implementation notes and review questions. This is the single-file copy of the skill, so the rules are online rather than beside it:
 
 - Every rule's Do and Don't, in one JSON file: https://axiomui.nischal.fyi/rules.json
 - One rule's full reasoning: https://axiomui.nischal.fyi/rules/<id>, for example https://axiomui.nischal.fyi/rules/typo-1
 
-Before you change a domain, find its rules in the index below and apply the matching rule's Do. Read the rule's page before you defend a tradeoff or break a rule, and cite the rule id when you report the change. To keep the rule files offline, install the full skill with `npx skills add RexO77/axiomUI --skill axiomui-website-upgrade`.
+Before you change a domain, find the relevant rule in the index below and check where its example applies. Read the rule's page before you defend a tradeoff or break a rule, and cite the rule id when you report the change. To keep the rule files offline, install the full skill with `npx skills add RexO77/axiomUI --skill axiomui-website-upgrade`.
 
 ### Typography & text
 
-- `typo-1` Sentence case is king
+- `typo-1` Use sentence case for English UI labels
 - `typo-2` Letter spacing on caps
-- `typo-3` Line height math (body)
-- `typo-4` Line height math (headings)
-- `typo-5` The 2-font limit
-- `typo-6` De-emphasize with color, not size
-- `typo-7` Numeric alignment
-- `typo-8` Left align body copy
-- `typo-9` Limit font weights
-- `typo-10` Truncation strategy
-- `typo-11` Minimum body size
+- `typo-3` Set body leading for sustained reading
+- `typo-4` Fit leading to wrapped headings
+- `typo-5` Give each typeface a job
+- `typo-6` Keep secondary text legible
+- `typo-7` Align comparable numbers
+- `typo-8` Align paragraphs to the reading start
+- `typo-9` Assign font weights by role
+- `typo-10` Preserve meaning when text overflows
+- `typo-11` Choose a readable body size
 - `typo-12` Balance short headings
-- `typo-13` Pretty wrap UI copy
+- `typo-13` Review wrapping in short descriptions
+- `typo-14` Keep names and counts together across scripts
 
 ### Layout & spacing
 
-- `layout-1` The 4pt grid system
-- `layout-2` Text width limits
-- `layout-3` Group by proximity
-- `layout-4` Visual vs mathematical center
-- `layout-5` Button padding formula
-- `layout-6` Optical alignment of icons
-- `layout-7` The container fallacy
+- `layout-1` Use a shared spacing scale
+- `layout-2` Set a measure for long-form text
+- `layout-3` Show which items belong together
+- `layout-4` Optically center asymmetric glyphs
+- `layout-5` Size button padding around the label
+- `layout-6` Anchor a row icon to the text it describes
+- `layout-7` Choose a boundary that explains the group
 - `layout-8` Consistent gutters
-- `layout-9` Responsive spacing scaling
-- `layout-10` Vertical rhythm
-- `layout-11` Z-index scale
+- `layout-9` Adapt outer spacing to available width
+- `layout-10` Use spacing to express vertical hierarchy
+- `layout-11` Define stacking order within each context
 
 ### Color & depth
 
-- `color-1` 60-30-10 rule
-- `color-2` Never pure black
-- `color-3` Colored shadows
-- `color-4` Semantic colors
-- `color-5` Border colors
-- `color-6` Double contrast for borders
-- `color-7` Hover = same hue
-- `color-8` Dark mode isn't inverted
+- `color-1` Use accent color to mark priority
+- `color-2` Use the intended text color
+- `color-3` Match shadows to their role
+- `color-4` Make status colors dependable
+- `color-5` Keep decorative dividers quiet
+- `color-6` Give essential control edges enough contrast
+- `color-7` Keep hover feedback distinct from a result
+- `color-8` Design the dark palette by role
 - `color-9` Accessible contrast ratios
-- `color-10` Opacity over new colors
-- `color-11` Neutral image outlines
-- `color-12` Shadows can replace borders
+- `color-10` Give state colors a shared source
+- `color-11` Define image edges when they disappear
+- `color-12` Use elevation when a surface is raised
 
 ### Components & actions
 
-- `comp-1` Action hierarchy
-- `comp-2` Destructive actions
-- `comp-3` Nested radius formula
-- `comp-4` Avatars are circles
-- `comp-5` Modal vs drawer
-- `comp-6` Toast vs inline error
-- `comp-7` Icon + label for ambiguous actions
-- `comp-8` Disabled needs a reason
-- `comp-9` Loading states on buttons
-- `comp-10` Consistent icon size
-- `comp-11` Card click area
-- `comp-12` Close affordance on overlays
+- `comp-1` Prioritize the next action
+- `comp-2` Confirm irreversible deletion
+- `comp-3` Align nested corner radii
+- `comp-4` Distinguish people from content
+- `comp-5` Choose a surface for the task
+- `comp-6` Place field errors beside the field
+- `comp-7` Label ambiguous actions
+- `comp-8` Explain unavailable actions
+- `comp-9` Acknowledge a pending submission
+- `comp-10` Match icon scale within a toolbar
+- `comp-11` Size a card’s primary link
+- `comp-12` Make overlay dismissal discoverable
+- `comp-13` Make the chart’s question answerable in text
 
 ### Forms & inputs
 
-- `form-1` Labels top aligned
-- `form-2` No placeholders as labels
-- `form-3` Mark optional, not required
-- `form-4` Input width hints
-- `form-5` Checkbox vs radio
-- `form-6` Dropdown vs radio
-- `form-7` Switch vs checkbox
-- `form-8` Validate on blur
-- `form-9` Format hints
-- `form-10` Single column forms
-- `form-11` Smart defaults
-- `form-12` Success state feedback
+- `form-1` Keep labels close to their fields
+- `form-2` Keep field labels visible
+- `form-3` Make required and optional choices clear
+- `form-4` Match field width to plausible answers
+- `form-5` Match selection controls to the choice
+- `form-6` Expose alternatives worth comparing
+- `form-7` Match the control to when the change takes effect
+- `form-8` Validate when a correction is useful
+- `form-9` Show format constraints before entry
+- `form-10` Give the form one clear reading order
+- `form-11` Reuse answers the user has supplied
+- `form-12` Confirm the outcome of a submission
+- `form-13` Accept a complete sign-in code in one paste
 
 ### System & logic
 
-- `sys-1` Skeleton loading
-- `sys-2` Empty states
-- `sys-3` Click targets (Fitts's law)
-- `sys-4` Date formats
-- `sys-5` Design tokens naming
-- `sys-6` Undo destructive actions
-- `sys-7` Show progress for multi-step
-- `sys-8` Keyboard navigation
-- `sys-9` Optimistic UI updates
-- `sys-10` Graceful degradation
-- `sys-11` Responsive breakpoint strategy
-- `sys-13` Transition only what changes
+- `sys-1` Choose a loading state that explains the wait
+- `sys-2` Explain why a view is empty
+- `sys-3` Size the hit area for the input
+- `sys-4` Choose a timestamp for the question
+- `sys-5` Give shared colors semantic roles
+- `sys-6` Make reversible deletion recoverable
+- `sys-7` Orient people in a multi-step flow
+- `sys-8` Follow the keyboard model for each control
+- `sys-9` Reconcile optimistic changes
+- `sys-10` Recover at the point of failure
+- `sys-11` Set breakpoints where the layout needs them
+- `sys-13` Limit transitions to intended properties
 - `sys-14` Use will-change sparingly
 
 ### Motion & interaction
 
 - `motion-1` Animate by frequency
-- `motion-2` Keyboard actions stay instant
+- `motion-2` Keep keyboard input responsive
 - `motion-3` Purpose before motion
-- `motion-4` Use strong custom easing
-- `motion-5` Never use ease-in for UI
-- `motion-6` Keep UI motion under 300ms
-- `motion-7` Asymmetric enter and exit
-- `motion-8` Press feedback
-- `motion-9` Never scale from zero
-- `motion-10` Origin-aware popovers
-- `motion-11` Subsequent tooltips are instant
-- `motion-12` Use transitions for interruptible UI
-- `motion-13` Use starting styles for entry
-- `motion-14` Animate transform and opacity
-- `motion-15` Use percentage transforms
-- `motion-16` Gate hover motion
-- `motion-17` Reduced motion still has intent
-- `motion-18` Gesture dismissal uses velocity
-- `motion-19` Damp drag boundaries
-- `motion-20` Capture pointer during drag
-- `motion-21` Use CSS under load
-- `motion-22` Use WAAPI for programmatic motion
-- `motion-23` Avoid inheritable motion variables
-- `motion-24` Stagger without blocking
-- `motion-25` Review motion in slow time
-- `motion-26` Split enter animations
-- `motion-27` Subtle exit motion
-- `motion-28` Animate contextual icons
-- `motion-29` Skip default load animation
+- `motion-4` Choose easing for the movement
+- `motion-5` Make the start of an entrance visible
+- `motion-6` Time motion to the task
+- `motion-7` Tune entrance and exit separately
+- `motion-8` Show when a control is pressed
+- `motion-9` Keep surface entrances near full size
+- `motion-10` Anchor a popover’s motion to its trigger
+- `motion-11` Share tooltip timing across a toolbar
+- `motion-12` Retarget interrupted motion from its current position
+- `motion-13` Give new elements a starting style
+- `motion-14` Choose animation properties with layout in mind
+- `motion-15` Size slide exits to the moving element
+- `motion-16` Gate decorative hover motion
+- `motion-17` Preserve feedback with reduced motion
+- `motion-18` Use release direction and speed for swipe dismissal
+- `motion-19` Use drag resistance where overshoot is meaningful
+- `motion-20` Keep a drag attached to its initiating pointer
+- `motion-21` Keep decorative motion independent of busy scripts
+- `motion-22` Use a playback controller for programmatic animation
+- `motion-23` Scope rapidly changing drag styles
+- `motion-24` Limit the total stagger
+- `motion-25` Review motion slowly, then at normal speed
+- `motion-26` Sequence panel content when order explains something
+- `motion-27` Keep routine exits quiet
+- `motion-28` Make icon state changes recognizable
+- `motion-29` Show the initial interface in its ready state
 
 ### Accessibility & inclusivity
 
-- `a11y-1` Focus visible indicators
-- `a11y-2` Color shouldn't be the only signal
-- `a11y-3` Touch target spacing
+- `a11y-1` Keep keyboard focus visible
+- `a11y-2` Carry meaning beyond color
+- `a11y-3` Separate competing touch targets

@@ -15,8 +15,8 @@ import { routes as canonicalRoutes, type CatalogRoutes, type RouteOptions } from
 
 export type AxiomView = "gallery" | "rule";
 
-/** The sheet's reading position for one rule. Restored only on popstate, and only for that rule. */
-export type AxiomScroll = { id: string; top: number };
+/** Older entries carry only the sheet offset. A wide rule can also have a scrolled reading panel. */
+export type AxiomScroll = { id: string; top: number; panelTop?: number; relatedId?: string };
 
 export type AxiomState = Readonly<{
   view: AxiomView;
@@ -39,7 +39,10 @@ function record(value: unknown): value is Record<string, unknown> {
 function readScroll(value: unknown): AxiomScroll | null {
   if (!record(value) || typeof value.id !== "string" || !value.id) return null;
   if (typeof value.top !== "number" || !Number.isFinite(value.top)) return null;
-  return { id: value.id, top: Math.max(0, value.top) };
+  const scroll: AxiomScroll = { id: value.id, top: Math.max(0, value.top) };
+  if (typeof value.panelTop === "number" && Number.isFinite(value.panelTop) && value.panelTop > 0) scroll.panelTop = value.panelTop;
+  if (typeof value.relatedId === "string" && value.relatedId) scroll.relatedId = value.relatedId;
+  return scroll;
 }
 
 /** Our part of an entry, validated. Null when the entry is not ours (a first load, another app). */
@@ -60,7 +63,7 @@ export function historyEntry(axiom: AxiomState): { axiom: AxiomState } {
     axiom: {
       view: axiom.view,
       depth: axiom.view === "rule" ? Math.max(0, Math.trunc(axiom.depth)) : 0,
-      scroll: axiom.scroll ? { id: axiom.scroll.id, top: Math.max(0, axiom.scroll.top) } : null,
+      scroll: readScroll(axiom.scroll),
     },
   };
 }
@@ -126,11 +129,11 @@ export function stepInRule(current: unknown): HistoryWrite {
 }
 
 /** The settle handler: the sheet's live reading position for the rule shown. */
-export function saveScroll(current: unknown, id: string, top: number): HistoryWrite {
+export function saveScroll(current: unknown, id: string, top: number, panelTop?: number, relatedId?: string): HistoryWrite {
   const state = readAxiomState(current);
   return {
     mode: "replace",
-    axiom: { view: "rule", depth: state?.view === "rule" ? state.depth : 0, scroll: { id, top } },
+    axiom: { view: "rule", depth: state?.view === "rule" ? state.depth : 0, scroll: readScroll({ id, top, panelTop, relatedId }) },
   };
 }
 

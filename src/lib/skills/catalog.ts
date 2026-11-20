@@ -51,13 +51,17 @@ export const skillGroupWords = ["core", "domains", "all"] as const;
  * a skill whose trigger covers a topic also carries every rule about it.
  */
 const crossListing: Record<string, { tags: Set<string>; note: string }> = {
+  layout: {
+    tags: new Set(["Bidirectional text"]),
+    note: "Text direction affects where names, separators and counts sit in a localized row.",
+  },
   accessibility: {
     tags: new Set(["Accessibility", "WCAG", "Keyboard"]),
-    note: "These rules are filed under other domains but decide accessibility outcomes. Hold them to the same floor.",
+    note: "These rules cover specific accessibility decisions in other domains. Check the conditions and exceptions in each rule before making a conformance finding.",
   },
   motion: {
     tags: new Set(["Motion"]),
-    note: "These rules are filed under other domains but decide what a transition costs. Apply them to every animation.",
+    note: "These system rules cover property selection and resource hints when implementing motion in CSS.",
   },
 };
 
@@ -69,59 +73,59 @@ type DomainCopy = Pick<SkillSpec, "summary" | "description" | "lead" | "aliases"
  */
 const domainCopy: Record<string, DomainCopy> = {
   typography: {
-    summary: "Casing, tracking, line height, weights, figures and wrapping for interface text.",
+    summary: "Interface text, from labels and tabular figures to long passages and mixed-direction names.",
     description:
-      "Axiom UI's typography rules for interface text, with Do/Don't values and reasoning. Use when choosing or limiting fonts and weights, setting body or heading line-height, adding tracking to uppercase labels, applying sentence case to buttons and headings, de-emphasizing secondary text, aligning numbers with tabular figures, setting a minimum body size, balancing headings, wrapping or truncating text, or reviewing UI code for typography problems.",
-    lead: "Interface text is scanned in fragments: a button, a label, a number in a table, a heading over a card. These rules fix casing, tracking, line height, weight, figures and wrapping so each fragment reads correctly on the first pass. Set every value once, as a token or a shared utility, and apply it everywhere. A typography fix made on one screen is next month's inconsistency.",
+      "Use Axiom UI’s typography guidance to choose typefaces and weights by role, set line height and measure, review casing in English labels, space short uppercase Latin labels, align comparable figures, preserve meaning under truncation, tune heading and paragraph wrapping, or isolate a name in mixed-direction text.",
+    lead: "Start with a real string in the typeface and language that will appear on screen. A two-line heading, an amount that changes and a name beside a review count each expose a different failure. Record the role and the conditions you tested before sharing its type settings across components.",
     aliases: ["typography", "type"],
   },
   layout: {
-    summary: "Spacing scale, measure, proximity, optical alignment, gutters and z-index.",
+    summary: "Grouping, measure, control padding, alignment, gutters and stacking across viewport sizes.",
     description:
-      "Axiom UI's layout and spacing rules, with Do/Don't values and reasoning. Use when choosing a spacing scale or 4pt grid, setting text measure and container widths, grouping elements by proximity, sizing button padding, optically centering icons and content, deciding whether a section needs a card, keeping gutters consistent, scaling spacing across breakpoints, keeping vertical rhythm, defining a z-index scale, or reviewing a layout that feels cramped, loose, or misaligned.",
-    lead: "Spacing carries meaning. Distance tells the reader what belongs together, measure sets how comfortably a paragraph reads, and alignment tells the eye what is related. These rules fix the scale, the gaps and the stacking order so structure comes from whitespace first, and from borders, cards and backgrounds only when whitespace cannot do the job.",
+      "Use Axiom UI’s layout guidance when choosing a spacing scale, setting line measure and container widths, grouping fields and labels, fitting padding around controls, optically aligning glyphs, organizing cards and dividers, setting gutters and breakpoints, reviewing mixed-direction rows, or resolving stacking contexts.",
+    lead: "Compare the distance from a field to its own label with the distance to the next field. Widen the viewport and try the longest label the product supports. Those two checks reveal whether spacing communicates relationships and whether a shared gutter still fits the content.",
     aliases: ["layout", "spacing"],
   },
   color: {
-    summary: "Palette balance, contrast, semantic status, hover, dark mode and depth.",
+    summary: "Accent and status roles, text and control contrast, hover feedback, dark themes and elevation.",
     description:
-      "Axiom UI's color and depth rules, with Do/Don't values and reasoning. Use when building a palette or applying the 60-30-10 balance, picking text and border colors, checking WCAG contrast, mapping semantic status colors, designing hover states, deriving a dark mode, tinting shadows, choosing between shadows and borders, outlining images, or reviewing UI that looks harsh, muddy, flat, or low contrast.",
-    lead: "Color is a budget. Spend it on meaning and on the next action, and let neutral structure carry everything else. These rules set palette balance, contrast floors with their ratios, status semantics, hover behavior, dark mode and depth. Measure contrast instead of judging it by eye, and derive states from the base color instead of hand-picking new ones.",
+      "Use Axiom UI’s color guidance when assigning accent and status roles, checking text or control contrast, designing hover and selected states, adapting a palette to dark surfaces, compositing translucent colors, defining image edges, or choosing borders and shadows for elevation.",
+    lead: "Identify what the color needs to communicate. A divider can be quiet when the rows are already distinct. An outline that identifies the only visible text field needs enough contrast against its surroundings. Measure the actual rendered pair, including the surface beneath a translucent fill.",
     aliases: ["color", "colour"],
   },
   components: {
-    summary: "Button hierarchy, overlays, radii, icon buttons, disabled and loading states.",
+    summary: "Action hierarchy, overlays, button states, icon labels, card links and chart alternatives.",
     description:
-      "Axiom UI's component and action rules, with Do/Don't values and reasoning. Use when setting button hierarchy or styling destructive actions, choosing between a modal and a drawer or a toast and an inline error, computing nested border radii, labeling icon buttons, explaining disabled states, adding loading states to buttons, sizing icons consistently, making whole cards clickable, adding close affordances to overlays, or reviewing component code for interaction consistency.",
-    lead: "Components teach the interaction model, and every screen that breaks the pattern makes the user relearn it. These rules decide which action leads, which container an interruption belongs in, how a control explains itself when it is disabled or busy, and how geometry such as nested radii, icon size and hit area stays consistent. Fix the shared primitive, not the one instance you happened to see.",
+      "Use Axiom UI’s component guidance when prioritizing actions within a task, confirming deletion, nesting corners, representing people and files, choosing inline or overlay surfaces, placing errors, labeling icons, explaining disabled or pending actions, sizing card links, dismissing overlays, or providing chart summaries and accessible data.",
+    lead: "Judge the component in the task that contains it. A project card might open details and also offer an independent Archive action. Give each a distinct target. In a chart, identify whether readers need a trend, an exact value, or both before deciding how much information to show alongside it.",
     aliases: ["components", "comp"],
   },
   forms: {
-    summary: "Labels, field sizing, control choice, validation timing, hints and defaults.",
+    summary: "Field labels, choice controls, validation, reused answers, submission feedback and sign-in codes.",
     description:
-      "Axiom UI's form and input rules, with Do/Don't values and reasoning. Use when building or reviewing forms; placing labels, marking optional fields, sizing inputs to their expected content, choosing between checkboxes, radios, switches, and dropdowns, timing validation, writing format hints, picking smart defaults, laying out single-column forms, or confirming a successful submission.",
-    lead: "Every field is a question that costs the user effort. These rules keep labels visible while typing, size inputs to the answer they expect, match the control to the shape of the choice, and time validation so an error helps the user instead of interrupting them. Then they close the loop with a visible success state.",
+      "Use Axiom UI’s form guidance when placing labels, marking required or optional fields, sizing fields for plausible answers, choosing radios, checkboxes, switches or selects, timing validation, writing format hints, reusing previously entered answers, confirming a submission, or testing paste and autofill for sign-in codes.",
+    lead: "Follow an answer from entry through submission. Check where its label and format are explained, when the user has enough information to correct it, and whether the value survives the next step. A pasted sign-in code beginning with zero is one useful test of the entire path.",
     aliases: ["forms", "form", "inputs"],
   },
   system: {
-    summary: "Loading, empty and error states, undo, optimistic updates, tokens and breakpoints.",
+    summary: "Loading, empty states, recovery, timestamps, keyboard behavior, breakpoints and transitions.",
     description:
-      "Axiom UI's rules for system feedback and product logic, with Do/Don't values and reasoning. Use when designing loading skeletons, empty states, progress for multi-step flows, undo for destructive actions, optimistic updates, or graceful degradation when a request or an image fails, or when settling date formats, design token naming, or a breakpoint strategy.",
-    lead: "System rules govern what the interface does between the user's actions: while it loads, when there is nothing to show, when a request fails, and after a mistake. They also cover the plumbing that keeps behavior predictable across a product, such as token naming, breakpoints, date formats, target sizes and the scope of transitions. Design every state as part of the feature, not as cleanup after it.",
+      "Use Axiom UI’s system guidance when designing loading and empty states, multi-step progress, timeout and retry behavior, undo, optimistic updates, dates and times, semantic color tokens or content-driven breakpoints.",
+    lead: "Trace one action through success, delay and failure. If a saved state appears before the server replies, decide what the reader sees when the request fails or another change has already succeeded. Specify the recovery behavior alongside the optimistic state.",
     aliases: ["system", "states"],
   },
   motion: {
-    summary: "Exact durations, easing and gesture physics for UI motion.",
+    summary: "Timing, easing, interruption, gestures, reduced motion and browser animation performance.",
     description:
-      "Axiom UI's motion and interaction rules, with exact durations, easing curves, and reasoning. Use when adding, tuning, or reviewing UI animation; deciding whether something should animate at all, choosing easing and duration, building enter and exit transitions, press feedback, popovers and tooltips, interruptible transitions, gesture and drag physics, reduced-motion fallbacks, or staggering, or fixing motion that feels slow, janky, or decorative. Covers CSS transitions and which properties to transition, @starting-style, WAAPI, will-change, and transform and opacity performance.",
-    lead: "Motion is feedback and orientation, never decoration. Decide first whether an interaction should animate at all, based on how often it happens and how it was triggered. Only then choose duration, easing, origin and exit timing. The values below are exact. Use them as written unless the project already defines motion tokens, and keep every animation interruptible, cheap to render and meaningful under reduced motion.",
+      "Use Axiom UI’s motion guidance when deciding whether to animate, choosing easing or timing, coordinating entrance and exit, anchoring popovers, handling tooltip delays, redirecting interrupted motion, supporting drag and swipe, reducing motion, or diagnosing dropped frames. It covers CSS transitions, starting styles, the Web Animations API, property selection and will-change.",
+    lead: "Choose a transition for a specific change of state and try it at the speed someone would actually use the control. A repeated shortcut can keep its content ready immediately. A panel can use motion to explain where it came from. Use the example timings to compare treatments, then test interruption, reduced motion and actual frame delivery.",
     aliases: ["motion", "animation"],
   },
   accessibility: {
-    summary: "Focus, contrast, target size, keyboard paths, labels and reduced motion.",
+    summary: "Focus, targets, contrast, keyboard access, chart alternatives, authentication and reduced motion.",
     description:
-      "Axiom UI's accessibility rules plus the related rules from other domains, with Do/Don't values and reasoning. Use when checking focus-visible indicators, color-independent status signals, touch target size and spacing, contrast for text and borders, keyboard navigation and instant keyboard actions, labels instead of placeholders, overlay close affordances, or reduced-motion behavior, and when reviewing UI for WCAG issues.",
-    lead: "Accessibility is not a separate layer added at the end. It is the same interface held to a floor you can measure. This skill gathers Axiom UI's accessibility rules together with the related rules from color, components, forms, system and motion, so one pass covers focus, contrast, target size, keyboard paths, labels and reduced motion. Verify with a keyboard and a contrast checker, not by reading the code.",
+      "Use Axiom UI’s accessibility guidance to check keyboard focus and operation, target size and spacing, text and control contrast, meaning beyond color, field labels, accessible authentication, chart alternatives, modal dismissal and reduced motion. Consult the sources on the linked rule page when checking a conformance claim.",
+    lead: "Follow a task with the input method or presentation the rule addresses. Try a sign-in code from the clipboard, navigate a chart’s data table by its headers, or enlarge text until the layout reflows. For a WCAG finding, identify the applicable success criterion, its level and exceptions, and record what happened on the tested path.",
     aliases: ["accessibility", "a11y"],
   },
 };

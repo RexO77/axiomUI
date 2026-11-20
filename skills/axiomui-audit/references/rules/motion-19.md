@@ -1,32 +1,34 @@
-# Damp drag boundaries
+# Use drag resistance where overshoot is meaningful
 
 - ID: motion-19
 - Category: Motion & interaction
 - Tags: Gestures, Touch
 - URL: https://axiomui.nischal.fyi/rules/motion-19
 
-When users drag past a natural boundary, apply damping or friction instead of a hard stop so the interaction feels physical.
+An elastic edge can show that a surface has reached its limit while the finger continues moving. Clamp controls that represent a fixed valid range.
 
 - Do: Increasing friction past edge
 - Don't: Invisible wall stop
 
 ## Why it works
 
-A hard stop at a drag boundary reads as hitting an invisible wall, breaking the illusion of a physical object. Applying increasing friction or damping past the edge, the same rubber-banding logic behind iOS scroll overscroll, tells the user where the boundary is while still following their finger. The resistance itself becomes the feedback, no separate indicator needed.
+When pulling past the end of a scrollable surface, decreasing movement per pixel of pull can make the boundary tangible. A slider that represents a numerical value has a different job. A thumb beyond its maximum may imply a value the control cannot store.
+
+- [Flutter · Bouncing scroll physics](https://api.flutter.dev/flutter/widgets/BouncingScrollPhysics-class.html)
+- [Flutter · Clamping scroll physics](https://api.flutter.dev/flutter/widgets/ClampingScrollPhysics-class.html)
 
 ## What breaks
 
-A user drags a panel past its edge, the content freezes dead against their finger movement, and the drag feels like it hit a physical wall rather than a UI limit.
+Unbounded overdrag can resemble valid progress. A spring that settles far from the value the application commits makes the control feel inaccurate.
 
 ## How to apply it
 
-1. Apply increasing friction past the edge instead of clamping position outright.
-2. Scale resistance with overdrag distance so it gets harder to pull the further past the boundary.
-3. Never let the dragged element’s position stop updating outright at the limit.
-4. Spring the element back to the boundary on release using the same damped curve.
+1. Choose which bounds belong to the model and which permit a visual overshoot.
+2. Cap visual travel beyond the edge and preserve the valid underlying value.
+3. Give a clear release destination and a reduced-motion settle.
 
 ## Review questions
 
-1. Does dragging past the edge still move slightly, with rising resistance, instead of stopping dead?
-2. Does releasing past the boundary spring the element back smoothly?
-3. Does the resistance feel proportional to how far past the edge the drag goes?
+1. What does movement beyond the edge mean here?
+2. Can someone mistake overshoot for a valid value?
+3. Does releasing or canceling show the correct resting state?

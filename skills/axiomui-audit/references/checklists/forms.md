@@ -1,99 +1,107 @@
 # Forms & inputs checklist
 
-Ask each question of the surface under review. Record a finding only for a concrete violation, with evidence.
+Ask each question of the surface under review. Record the observed failure or unmet requirement and the evidence for it.
 
-## Labels top aligned (`form-1`)
+## Keep labels close to their fields (`form-1`)
 
 - Do: Label above input · Don't: Label left of input
-- [ ] Is every label positioned above its input rather than beside it?
-- [ ] Does a long translated label wrap cleanly without overlapping the input?
-- [ ] Is the label-to-input spacing consistent across all fields on the form?
+- [ ] Can someone match each label to its control at a glance?
+- [ ] Does the full label survive reflow?
+- [ ] Does the accessible name still make sense when read on its own?
 - Reasoning: `references/rules/form-1.md`
 
-## No placeholders as labels (`form-2`)
+## Keep field labels visible (`form-2`)
 
 - Do: Label: Work email / Placeholder: you@company.com · Don't: Label: none / Placeholder: Email address
-- [ ] Does a persistent label stay visible after text is entered?
-- [ ] Is the placeholder used only for an example format, not as the field name?
-- [ ] Would the field’s purpose still be clear if the input were fully typed over?
+- [ ] Can someone identify each filled field?
+- [ ] Can they find its instructions while editing?
+- [ ] Does a screen reader announce the same purpose as the visible label?
 - Reasoning: `references/rules/form-2.md`
 
-## Mark optional, not required (`form-3`)
+## Make required and optional choices clear (`form-3`)
 
 - Do: Full name · Email · Phone (Optional) · Don't: Full name * · Email * · Phone *
-- [ ] Are optional fields the only ones carrying an explicit marker?
-- [ ] Is the form free of asterisks on the majority of required fields?
-- [ ] Can a user tell which fields are optional without reading every label?
+- [ ] Can someone tell which questions may be skipped?
+- [ ] Do announced and visual requirements agree?
+- [ ] Will the service accept a blank optional answer?
 - Reasoning: `references/rules/form-3.md`
 
-## Input width hints (`form-4`)
+## Match field width to plausible answers (`form-4`)
 
-- Do: ZIP: 5-char width / Street: full width · Don't: ZIP: full width / Street: full width
-- [ ] Does the zip code field look noticeably shorter than the address field?
-- [ ] Is any short-answer input stretched to the full width of the form?
-- [ ] Does each input’s width roughly match its expected content length?
+- Do: Short ZIP field / wider street address field · Don't: Five-digit ZIP in a street-width field
+- [ ] Which regions and formats does this form support?
+- [ ] Is a valid longer answer still readable?
+- [ ] Does the backend accept the same formats as the field?
 - Reasoning: `references/rules/form-4.md`
 
-## Checkbox vs radio (`form-5`)
+## Match selection controls to the choice (`form-5`)
 
 - Do: Pick a plan: radios (1 selected) · Don't: Pick a plan: checkboxes (2 selected)
-- [ ] Are mutually exclusive choices like Pick a plan shown as radio buttons, not checkboxes?
-- [ ] Can more than one option be selected where only one choice makes sense?
-- [ ] Does the control’s shape (circle vs square) match how many can be selected?
+- [ ] Can more than one answer be valid?
+- [ ] Can a person leave an optional question unanswered after changing their mind?
+- [ ] Does keyboard selection follow the native control pattern?
 - Reasoning: `references/rules/form-5.md`
 
-## Dropdown vs radio (`form-6`)
+## Expose alternatives worth comparing (`form-6`)
 
-- Do: 3 options = radios (3 of 3 visible) · Don't: 3 options = dropdown (0 of 3 visible)
-- [ ] If a field has fewer than five options, are they shown as radio buttons?
-- [ ] Does choosing an option require an extra click to open a menu first?
-- [ ] Are all available choices visible without any interaction for short lists?
+- Do: Three billing cycles visible together · Don't: Closed select hides the billing cycles
+- [ ] Can someone compare the important differences before choosing?
+- [ ] Does a long list support finding a known answer?
+- [ ] Can the choice be made on a phone and with a keyboard?
 - Reasoning: `references/rules/form-6.md`
 
-## Switch vs checkbox (`form-7`)
+## Match the control to when the change takes effect (`form-7`)
 
 - Do: Dark mode = switch, email updates = checkbox · Don't: Dark mode = switch, email updates = switch
-- [ ] Does every switch on the screen take effect immediately when toggled?
-- [ ] Is a submit-dependent row like Email me product updates presented as a checkbox rather than a switch?
-- [ ] Are there any switches whose effect only applies after a later submit?
+- [ ] Which settings take effect immediately?
+- [ ] Is the save boundary visible?
+- [ ] Does the announced state match the value that will persist?
 - Reasoning: `references/rules/form-7.md`
 
-## Validate on blur (`form-8`)
+## Validate when a correction is useful (`form-8`)
 
-- Do: Error appears after leaving field · Don't: Error flashes on first character
-- [ ] Does the error message wait until the user leaves the field before appearing?
-- [ ] Does typing the first character ever trigger a visible error?
-- [ ] Is validation timing consistent across every field on the form?
+- Do: Error appears after leaving field · Don't: Error appears during incomplete entry
+- [ ] Can someone start an address without an error flash?
+- [ ] Does submitting from the final field still catch a problem?
+- [ ] Does the error clear when the entered address is accepted?
 - Reasoning: `references/rules/form-8.md`
 
-## Format hints (`form-9`)
+## Show format constraints before entry (`form-9`)
 
 - Do: MM / YY hint · Don't: No format hint
-- [ ] Does every strictly formatted field show an example like MM / YY nearby?
-- [ ] Is the hint visible while the user is actively typing, not hidden in a tooltip?
-- [ ] Would a first-time user know the exact expected format without guessing?
+- [ ] Can someone enter a valid answer on their first attempt?
+- [ ] Which variations can be normalized safely?
+- [ ] Does the error show an example that this particular field accepts?
 - Reasoning: `references/rules/form-9.md`
 
-## Single column forms (`form-10`)
+## Give the form one clear reading order (`form-10`)
 
 - Do: Single column, stacked fields · Don't: Two columns of unrelated fields
-- [ ] Are unrelated fields stacked in a single column rather than side by side?
-- [ ] Are only logically paired fields (like First/Last name) placed next to each other?
-- [ ] Does the tab order move straight down without jumping between columns?
+- [ ] Can someone predict the next question?
+- [ ] Does Tab preserve a meaningful order after reflow?
+- [ ] Do the grouped fields belong together in the locales supported?
 - Reasoning: `references/rules/form-10.md`
 
-## Smart defaults (`form-11`)
+## Reuse answers the user has supplied (`form-11`)
 
-- Do: Country auto-detected from locale · Don't: Empty country dropdown (195 options)
-- [ ] Is the country field pre-filled based on locale instead of shown empty?
-- [ ] Do date pickers default to today’s date rather than opening blank?
-- [ ] Can the user still change any pre-filled default before submitting?
+- Do: Country and date reused from this booking · Don't: Already supplied country and date requested again
+- [ ] Where did this answer come from?
+- [ ] Can someone review and change it before submitting?
+- [ ] What happens if the form’s guess is wrong?
 - Reasoning: `references/rules/form-11.md`
 
-## Success state feedback (`form-12`)
+## Confirm the outcome of a submission (`form-12`)
 
-- Do: Green checkmark + “Saved successfully” · Don't: Form just resets silently
-- [ ] Does a successful submission show explicit confirmation like a checkmark and message?
-- [ ] Is silent form reset ever the only feedback given after submitting?
-- [ ] Does the success message stay visible long enough for the user to notice it?
+- Do: Green checkmark + “Saved successfully” · Don't: Saved value stays on screen without confirmation
+- [ ] Was success confirmed by the service?
+- [ ] Can someone perceive the outcome without seeing the icon?
+- [ ] Can they recover the reference or next step later?
 - Reasoning: `references/rules/form-12.md`
+
+## Accept a complete sign-in code in one paste (`form-13`)
+
+- Do: One paste fills all six digits, including the leading zero · Don't: One paste fills only the first box
+- [ ] Can a person paste 012345 once, correct a digit and submit the intended string?
+- [ ] Does signing in with a saved password work before the code step?
+- [ ] If transcription is required on one path, which available path lets someone complete authentication without it?
+- Reasoning: `references/rules/form-13.md`

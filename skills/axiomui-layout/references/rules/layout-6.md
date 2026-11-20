@@ -1,32 +1,34 @@
-# Optical alignment of icons
+# Anchor a row icon to the text it describes
 
 - ID: layout-6
 - Category: Layout & spacing
 - Tags: Alignment, Icons
 - URL: https://axiomui.nischal.fyi/rules/layout-6
 
-Align an icon beside text to the cap height of that text, not to the full line box. The line box includes the leading above and below the letters, so centering on it drops the icon visually low.
+When an icon introduces a multiline notification, align it to the first line. Centering it in the whole text block moves it down as detail wraps. A single-line action can use centered alignment.
 
-- Do: items-start (icon on the cap height)
-- Don't: items-center (icon on the line box)
+- Do: items-start + 1px top offset
+- Don't: items-center on the whole text block
 
 ## Why it works
 
-Line height includes leading above and below the letterforms, but an icon carries no leading of its own, so centering it against full line height sits it a few pixels lower than the text’s cap height. Aligning to cap height instead matches where the letters’ visual mass actually starts.
+The bell introduces “Backup complete”. Its location should remain stable when the supporting detail grows from one to three lines. Aligning the items at the start and tuning the bell against the title gives that relationship a fixed reference.
+
+- [CSS Box Alignment · Aligning items](https://www.w3.org/TR/css-align-3/#align-items-property)
+- [Apple · Create custom symbols](https://developer.apple.com/videos/play/wwdc2021/10250/)
 
 ## What breaks
 
-Flex-center an icon against a label with generous line-height and the icon appears to float slightly below the text, a mismatch obvious in any icon-plus-label button or nav item once you look for it.
+Centering the bell across the entire group can leave it beside a continuation of the description. A top-aligned box can also look high if the icon artwork has unusual internal padding.
 
 ## How to apply it
 
-1. Align icons to the text’s cap height, not the full line-height box.
-2. Don’t assume flex-center, align-items: center, is correct by default — it fails when line-height runs large relative to font size.
-3. Check alignment visually against the top of capital letters, not against computed heights.
-4. Adjust with a small negative margin or transform when auto-centering falls short.
+1. Identify the line the glyph introduces.
+2. Anchor the icon to that first line, then inspect the artwork and font at their real sizes.
+3. Test the row with a long description and larger text.
 
 ## Review questions
 
-1. Does the icon’s optical center line up with the cap height of the adjacent text?
-2. Does the icon look like it’s sitting slightly low or high relative to the label?
-3. Was the alignment verified by eye rather than trusting flex-center alone?
+1. Does the bell still sit beside the title after a wrap?
+2. Does the artwork look aligned inside its SVG box?
+3. Would a single-line version need a different treatment?

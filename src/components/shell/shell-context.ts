@@ -28,7 +28,7 @@ export type InputOrigin = "pointer" | "keyboard";
 /** The rule preview card beside the strip, the sidebar and Related links. */
 export type PeekHandle = {
   /** The pointer or the lens is on a rule (null: a category icon). `y` is the mark's centre. */
-  hover: (ruleId: string | null, y: number, options?: { instant?: boolean; rect?: DOMRect }) => void;
+  hover: (ruleId: string | null, y: number, options?: { instant?: boolean; group?: HTMLElement }) => void;
   leave: () => void;
   close: () => void;
   isOpen: () => boolean;
@@ -45,7 +45,9 @@ export type ShellApi = {
    */
   deck: Deck;
   /** Open a rule from the strip, the sidebar, the palette or Related: one new history entry. */
-  openRule: (id: string) => void;
+  openRule: (id: string, source?: "related") => void;
+  /** Reapply a popped entry after the deferred inspector for that rule has mounted its prose. */
+  restorePanel: (id: string, panel: HTMLElement) => void;
   /** Page within the deck (replaces the entry). `category` jumps to a section's first rule. */
   page: (direction: Direction, category?: boolean) => void;
   /** Back to the wall at this rule's tile: Esc, the crumb, the phone's up button. */

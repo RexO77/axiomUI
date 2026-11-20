@@ -1,32 +1,34 @@
-# Never use ease-in for UI
+# Make the start of an entrance visible
 
 - ID: motion-5
 - Category: Motion & interaction
 - Tags: Easing, Perceived performance
 - URL: https://axiomui.nischal.fyi/rules/motion-5
 
-Ease-in starts slow at the exact moment the user expects feedback. UI entrances and responses should move immediately.
+When movement is the first sign that a menu opened, choose a curve that makes early progress visible. An accelerating exit can suit a panel leaving the screen.
 
 - Do: Menu open: ease-out
 - Don't: Menu open: ease-in
 
 ## Why it works
 
-Ease-in holds near-zero velocity at frame one, the exact instant a user expects visual confirmation their click landed. UI entrances and responses need ease-out so movement starts fast and settles, confirming the action registered immediately.
+Easing changes displacement over time. A slow-starting curve can move a short distance so gradually that its first frames appear still. An immediate change to the trigger or panel can acknowledge the action even if a subsequent element accelerates.
+
+- [CSS Easing · Cubic Bézier curves](https://www.w3.org/TR/css-easing-1/#cubic-bezier-easing-functions)
+- [IBM Carbon · Motion principles and timing](https://www.carbondesignsystem.com/building-blocks/foundations/motion/overview)
 
 ## What breaks
 
-A menu opened with ease-in appears to hang for its first frames before accelerating, so users click again assuming the first press missed, causing duplicate triggers.
+When the release of a busy button and the start of a menu both change imperceptibly, the user has little visible evidence of which state the interface has reached.
 
 ## How to apply it
 
-1. Swap ease-in for ease-out on every UI entrance.
-2. Audit existing dropdown, menu, and toast transitions for lingering ease-in curves.
-3. Treat any curve starting at zero velocity as a bug, not a style choice.
-4. Ease-in is defensible only on an exit, where nothing has to be comprehended as it leaves; it is never right for anything appearing or responding.
+1. Check the first few frames at the actual travel distance.
+2. Acknowledge the action at its source if the destination needs time to appear.
+3. Evaluate entrance and exit curves separately.
 
 ## Review questions
 
-1. Does the menu begin moving immediately when opened, with no slow start?
-2. Do any UI responses appear to hesitate before they begin animating?
-3. Is ease-in absent from all entrance and response animations?
+1. What is the first visible response to the press?
+2. Does the trigger still provide feedback with animation disabled?
+3. Does the exit communicate where the panel is going?

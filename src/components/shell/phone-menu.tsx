@@ -64,6 +64,7 @@ export function PhoneMenu({ session, routes, atHome, onHome, onClose, children, 
       return;
     }
     closing.current = true;
+    el.dataset.closing = "";
     el.style.transition = `transform ${OUT_MS}ms var(--ease-out-strong)`;
     el.style.transform = "translateX(calc(-100% - 16px))";
     if (scrim.current) {

@@ -2,7 +2,7 @@
 
 /*
  * The gallery wall: every rule as a live preview, in the seven rail
- * categories, under one toolbar. A server component. The 105 tiles and their
+ * categories, under one toolbar. A server component. The 108 tiles and their
  * previews are rendered here once and never by the client; the controller
  * around them owns the toolbar, the filter and the keys, and the gates inside
  * hide what a filter leaves out.

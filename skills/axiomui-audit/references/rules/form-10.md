@@ -1,32 +1,34 @@
-# Single column forms
+# Give the form one clear reading order
 
 - ID: form-10
 - Category: Forms & inputs
 - Tags: Forms, Efficiency
 - URL: https://axiomui.nischal.fyi/rules/form-10
 
-Multi-column forms slow completion. Use single column unless fields are logically paired (First/Last name, City/State).
+Stack unrelated questions so the next field is obvious. Group related short fields on one row only when their reading order, focus order and reflow remain clear.
 
 - Do: Single column, stacked fields
 - Don't: Two columns of unrelated fields
 
 ## Why it works
 
-A single column keeps every field on one vertical scanning path, so the eye moves straight down without jumping across columns to figure out what comes next. Even two columns of unrelated fields break that path and force the user to decide, at each row, whether to read left-to-right or top-to-bottom. Logically paired fields, like First and Last name, are the one exception because they read as a single unit rather than separate decisions.
+In a two-column form, someone may scan across rows while Tab moves down the first column. Choosing one clear sequence reduces the need to reconstruct the form’s order. A compact group such as parts of one date can still read as one question.
+
+- [WCAG 2.2 · Focus order](https://www.w3.org/WAI/WCAG22/Understanding/focus-order.html)
+- [W3C Internationalization · Personal names around the world](https://www.w3.org/International/questions/qa-personal-names)
 
 ## What breaks
 
-A three-column form places City next to Password next to Phone, so users lose their place mid-form and skip fields because the reading order is ambiguous.
+A user following the visible sequence may discover a required question several fields later when the keyboard moves somewhere unexpected. Zoom can make that mismatch more disorienting.
 
 ## How to apply it
 
-1. Stack unrelated fields in a single column rather than spreading them across three.
-2. Only pair fields side by side when they are logically linked, like City and State.
-3. Never split unrelated fields like address and payment info into parallel columns.
-4. Check the tab order matches the single top-to-bottom visual path.
+1. Arrange fields in meaningful document order before applying a grid.
+2. Pair fields only when the task and supported locales give the grouping a clear meaning.
+3. Test the sequence at full width, narrow width and with enlarged text.
 
 ## Review questions
 
-1. Are unrelated fields stacked in a single column rather than side by side?
-2. Are only logically paired fields (like First/Last name) placed next to each other?
-3. Does the tab order move straight down without jumping between columns?
+1. Can someone predict the next question?
+2. Does Tab preserve a meaningful order after reflow?
+3. Do the grouped fields belong together in the locales supported?

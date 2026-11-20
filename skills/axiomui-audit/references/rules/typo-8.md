@@ -1,32 +1,33 @@
-# Left align body copy
+# Align paragraphs to the reading start
 
 - ID: typo-8
 - Category: Typography & text
 - Tags: Alignment, Readability
 - URL: https://axiomui.nischal.fyi/rules/typo-8
 
-Center-aligned paragraphs slow scanning: every line starts in a different place, so the eye has to hunt for the next one. Reserve centering for headlines of a line or two.
+Give multiline prose a stable starting edge. For horizontal text, start alignment places English on the left and Arabic on the right. Reserve centering for short, self-contained passages that still work when they wrap.
 
 - Do: Left-aligned paragraph text
 - Don't: Centered multi-line paragraph
 
 ## Why it works
 
-After each line, the eye needs a fixed anchor point to find the start of the next one; a left edge gives it that consistent anchor, while centered text puts the start of every line at a different horizontal position. That forces a fresh search on every return sweep instead of a reflexive jump.
+The changelog heading can sit in the center while its paragraph starts repeatedly at the same edge. As the measure narrows, centering gives each line a different starting point. Logical alignment preserves the intended edge when the paragraph changes direction.
+
+- [GOV.UK · Text alignment](https://design-system.service.gov.uk/styles/font-override-classes/#text-alignment)
 
 ## What breaks
 
-A centered multi-line paragraph forces readers to hunt for where the next line begins each time, so scanning speed drops and users often stop reading before the paragraph ends.
+A two-word empty-state message can grow into a four-line instruction after translation. The centered composition that suited the short phrase now asks the reader to find a new starting point on each line.
 
 ## How to apply it
 
-1. Left-align any paragraph longer than one line.
-2. Reserve centered text for short headlines only, not body copy.
-3. Check marketing and empty-state copy specifically, where centering creeps in.
-4. Convert any centered paragraph over two lines to left alignment.
+1. Use text-align: start for ordinary prose and set the correct language direction.
+2. Review centered content with longer translations.
+3. Check a narrow measure and enlarged text before making an exception.
 
 ## Review questions
 
-1. Is multi-line paragraph text left-aligned?
-2. Is centered text limited to short, one or two line headlines?
-3. Can you find the start of each wrapped line without searching?
+1. Can the reader return to a consistent starting edge?
+2. Does right-to-left text follow its own reading direction?
+3. Is the centered treatment still suitable at its longest length?

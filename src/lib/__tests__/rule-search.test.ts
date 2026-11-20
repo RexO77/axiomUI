@@ -23,14 +23,14 @@ describe("searchRules", () => {
   });
 
   it("AND-matches every term", () => {
-    const hits = searchRules("loading button");
+    const hits = searchRules("pending button");
     expect(hits.length).toBeGreaterThan(0);
     for (const { rule } of hits) {
       const text = [rule.title, rule.desc, rule.do, rule.dont, ...rule.tags].join(" ").toLowerCase();
-      expect(text).toContain("loading");
+      expect(text).toContain("pending");
       expect(text).toMatch(/button/);
     }
-    expect(searchRules("loading button").length).toBeLessThan(searchRules("button").length);
+    expect(searchRules("pending button").length).toBeLessThan(searchRules("button").length);
   });
 
   it("matches at word starts, so a fragment inside a word doesn't count", () => {
@@ -52,10 +52,10 @@ describe("searchRules", () => {
   });
 
   it("ranks title matches first", () => {
-    const hits = searchRules("toast");
-    expect(hits[0].rule.id).toBe("comp-6");
+    const hits = searchRules("focus");
+    expect(hits[0].rule.id).toBe("a11y-1");
     expect(hits[0].reasons[0]).toEqual({ field: "title", label: "In title" });
-    expect(hits.slice(1).every((hit) => !/toast/i.test(hit.rule.title))).toBe(true);
+    expect(hits.slice(1).every((hit) => !/focus/i.test(hit.rule.title))).toBe(true);
   });
 
   it("ranks an exact id first", () => {
@@ -79,7 +79,7 @@ describe("searchRules", () => {
   });
 
   it("among equal matches, ranks the title the query covers most of first", () => {
-    // Both titles hold "contrast"; it is a third of one and a quarter of the other.
+    // The same term covers more of “Accessible contrast ratios” than the longer control-edge title.
     expect(ranked("contrast").slice(0, 2)).toEqual(["color-9", "color-6"]);
     // A tiebreak only: it never lifts a hit over one with a stronger field.
     for (const query of ["contrast", "focus", "toast", "line height", "motion"]) {
@@ -105,6 +105,8 @@ describe("synonyms", () => {
   it.each([
     ["kerning", ["typo-2"]],
     ["leading", ["typo-3", "typo-4"]],
+    ["loading button", ["comp-9"]],
+    ["toast", ["comp-6", "motion-15"]],
     ["line length", ["layout-2"]],
     ["focus ring", ["a11y-1"]],
     ["focus rings", ["a11y-1"]],
@@ -143,7 +145,7 @@ describe("synonyms", () => {
     for (const id of accessibilityCollection.ruleIds) expect(ranked("accessibilities")).toContain(id);
   });
 
-  it("maps a11y and accessibility to the 14-rule collection", () => {
+  it("maps a11y and accessibility to the 16-rule collection", () => {
     expect(ranked("a11y").sort()).toEqual([...accessibilityCollection.ruleIds].sort());
     for (const id of accessibilityCollection.ruleIds) expect(ranked("accessibility")).toContain(id);
   });
@@ -157,7 +159,7 @@ describe("synonyms", () => {
   it("says why a rule matched", () => {
     const reasons = (id: string, query: string) => searchRules(query).find((hit) => hit.rule.id === id)?.reasons ?? [];
     expect(reasons("typo-2", "kerning")).toEqual([{ field: "synonym", label: "Also known as “kerning”" }]);
-    expect(reasons("comp-6", "toast").map((r) => r.label)).toEqual(["In title", "In summary", "In Don't"]);
+    expect(reasons("comp-6", "toast").map((r) => r.label)).toEqual(["In Don't", "Also known as “toast”"]);
     expect(reasons("typo-2", "zzqx")).toEqual([]);
   });
 });

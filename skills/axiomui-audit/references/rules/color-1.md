@@ -1,32 +1,33 @@
-# 60-30-10 rule
+# Use accent color to mark priority
 
 - ID: color-1
 - Category: Color & depth
 - Tags: Hierarchy, Consistency
 - URL: https://axiomui.nischal.fyi/rules/color-1
 
-Split the palette roughly 60% neutral surface and text, 30% secondary structure like borders and subtitles, 10% primary. An accent only reads as an accent while it stays rare.
+Reserve the strongest accent for the action or information that should stand out in its immediate context. The familiar 60-30-10 split is a composition prompt. The page has no required color percentages.
 
 - Do: Mostly whites/grays, splashes of blue
 - Don't: Blue header, blue sidebar, blue buttons
 
 ## Why it works
 
-The 60-30-10 split works because it establishes a clear visual hierarchy before anyone reads a word: the eye scans large neutral fields first, then the 30% secondary layer, then lands on the 10% primary accent last. That ordering mirrors how attention naturally moves from ground to figure. Break the ratio and every element competes for the same weight.
+In the sample, the New report action shares its blue with the header and navigation. Keeping the surrounding chrome neutral makes the button’s fill distinctive. A branded masthead can work just as well if another cue identifies the primary action.
+
+- [Atlassian · Color roles](https://atlassian.design/foundations/color)
 
 ## What breaks
 
-When primary color creeps past 10% into headers and sidebars, users can no longer tell which blue element is the actual call to action versus decoration, so click-through drops on the real button.
+A palette quota can reward the wrong change. Shrinking a warning to hit a target percentage could make the most important information on the screen less visible.
 
 ## How to apply it
 
-1. Audit every screen for blue usage — it should read as rare, not ambient.
-2. Keep backgrounds and body text in the 60% neutral layer.
-3. Move borders and subtitles into the 30% secondary layer.
-4. Reserve primary color for one action per view, not headers or nav.
+1. Identify the decision the page supports.
+2. Compare the action with nearby elements using the same accent.
+3. Check status, navigation, and content on a representative screen before changing the palette.
 
 ## Review questions
 
-1. Does the primary color appear in only one or two places on screen?
-2. Are backgrounds and body text neutral rather than tinted with the brand hue?
-3. Do borders and subtitles form a distinct secondary layer instead of another step of the accent?
+1. Which item should a reader find first?
+2. Where else does its accent appear nearby?
+3. Can the intended action still be identified without color?

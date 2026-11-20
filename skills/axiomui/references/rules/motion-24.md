@@ -1,32 +1,33 @@
-# Stagger without blocking
+# Limit the total stagger
 
 - ID: motion-24
 - Category: Motion & interaction
 - Tags: Stagger, Timing
 - URL: https://axiomui.nischal.fyi/rules/motion-24
 
-Stagger grouped entrances only when it improves rhythm, and keep delays short so interaction is never blocked.
+When a short sequence helps people follow a group of arrivals, budget for the last useful item. Cap or remove delays as the group grows.
 
-- Do: 30-80ms between items
+- Do: 60ms between three row starts
 - Don't: 220ms between items
 
 ## Why it works
 
-Staggered entrances help users chunk a group of items as one related unit arriving together, a known cognitive benefit of sequential reveal. But that benefit only holds if delays stay in the 30-80ms range per item; push much beyond that and the stagger becomes a cascade the user has to sit through before anything is usable. Short per-item delays keep the rhythm perceptible without blocking interaction.
+Three rows with a 220ms entrance and 60ms between starts finish in 340ms. At 220ms between starts, the last finishes at 660ms. Extending either pattern to a long list changes when later items can be seen, even if the first row feels responsive.
+
+- [Motion · Staggering animations](https://motion.dev/docs/stagger)
 
 ## What breaks
 
-A list of ten items staggers in at 200ms per item, the user tries to click the fifth item while it is still animating, and the interface reads as sluggish and unresponsive for over a second.
+A search result can already accept clicks while its opacity is zero. Keyboard focus can also advance to a row that has not become visible.
 
 ## How to apply it
 
-1. Set stagger delay between 30ms and 80ms per item, never open-ended cascades.
-2. Cap total stagger duration so the last item is interactive well under a second.
-3. Only stagger grouped entrances where the rhythm actually reads as related, not every list.
-4. Allow pointer and keyboard interaction on already-revealed items before the stagger finishes.
+1. Compute the last finish as item duration plus the interval times the number of gaps.
+2. Limit the animated group or start remaining items together.
+3. Ensure a focused or actionable item is visible immediately.
 
 ## Review questions
 
-1. Is the delay between staggered items within roughly 30-80ms rather than a long cascade?
-2. Can the user interact with earlier items while later ones are still animating in?
-3. Does the stagger actually improve the sense of a related group, not just delay the UI?
+1. How long does the last useful item take to appear?
+2. What happens when the list has thirty items?
+3. Can someone tab to or click an invisible result?

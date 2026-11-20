@@ -1,32 +1,34 @@
-# Checkbox vs radio
+# Match selection controls to the choice
 
 - ID: form-5
 - Category: Forms & inputs
 - Tags: Semantics, Forms
 - URL: https://axiomui.nischal.fyi/rules/form-5
 
-A radio group means pick exactly one; checkboxes mean pick any number. The control's shape is the only promise the user gets before they click, so breaking it costs them a retry.
+Use a radio group for one choice among alternatives and checkboxes for independent selections. A required radio group needs one answer by submission and can start unanswered.
 
 - Do: Pick a plan: radios (1 selected)
 - Don't: Pick a plan: checkboxes (2 selected)
 
 ## Why it works
 
-Radio buttons and checkboxes carry different built-in signifiers: a circle means one exclusive choice, a square means any number of independent choices. Pick a plan is a mutually exclusive decision, so it needs the circle. Swapping in checkboxes contradicts decades of learned convention and forces users to re-derive the selection rule from scratch instead of recognizing it instantly.
+Selecting Pro should replace Starter because one subscription has one plan. Independent add-ons have different behavior: choosing storage need not change the support option.
+
+- [GOV.UK · Radio buttons](https://design-system.service.gov.uk/components/radios/)
+- [GOV.UK · Checkboxes](https://design-system.service.gov.uk/components/checkboxes/)
 
 ## What breaks
 
-Checkboxes under Pick a plan let a user leave both Pro and Business ticked, so the form either silently keeps whichever it read last or posts a two-plan state the billing code has no price for.
+Two checked plans leave the purchaser unable to predict the charge. Silently unchecking a neighboring checkbox also makes an independent-looking choice behave unexpectedly.
 
 ## How to apply it
 
-1. Use radio buttons for Pick a plan, since only one plan can be active at a time.
-2. Reserve checkboxes for choices where multiple selections are valid simultaneously.
-3. Never let two checkbox options in the same group behave as mutually exclusive.
-4. Audit any checkbox group that only ever allows one item checked; convert it to radios.
+1. Name the group and give each option a distinct label.
+2. Put native radios with the same purpose in the same named group.
+3. For an optional choice that must be clearable, provide a meaningful None option or another clear reset.
 
 ## Review questions
 
-1. Are mutually exclusive choices like Pick a plan shown as radio buttons, not checkboxes?
-2. Can more than one option be selected where only one choice makes sense?
-3. Does the control’s shape (circle vs square) match how many can be selected?
+1. Can more than one answer be valid?
+2. Can a person leave an optional question unanswered after changing their mind?
+3. Does keyboard selection follow the native control pattern?

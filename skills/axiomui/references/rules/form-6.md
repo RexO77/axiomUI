@@ -1,32 +1,34 @@
-# Dropdown vs radio
+# Expose alternatives worth comparing
 
 - ID: form-6
 - Category: Forms & inputs
 - Tags: Efficiency, Forms
 - URL: https://axiomui.nischal.fyi/rules/form-6
 
-With fewer than five options, show them all as radio buttons instead of hiding them in a dropdown. A dropdown costs a click and hides the shape of the choice until you open it.
+Show a short set of meaningful alternatives directly when space permits. A select works well when someone knows the answer they are looking for and displaying the full list would overwhelm the page.
 
-- Do: 3 options = radios (3 of 3 visible)
-- Don't: 3 options = dropdown (0 of 3 visible)
+- Do: Three billing cycles visible together
+- Don't: Closed select hides the billing cycles
 
 ## Why it works
 
-A dropdown hides its options behind a click, so choosing among them takes two interactions and forces recall of what was inside before the user opened it. Radio buttons for a small set expose every option in one glance, turning the decision into simple recognition. Below roughly five options, the extra click a dropdown demands outweighs the space it saves.
+Monthly, yearly and every two years are easier to compare when all three billing cycles are in view. The benefit comes from seeing alternatives or descriptions together. A count of four or five by itself says little about the task.
+
+- [GOV.UK · Select menus](https://design-system.service.gov.uk/components/select/)
+- [GOV.UK · Radio buttons](https://design-system.service.gov.uk/components/radios/)
 
 ## What breaks
 
-A three-option dropdown adds an unnecessary click and hides the choices from view, so users have to open the menu just to see what they can even pick.
+A collapsed select can hide a meaningful price or eligibility difference. Dozens of expanded radio rows can make a familiar item arduous to locate.
 
 ## How to apply it
 
-1. Render fewer than five options as radio buttons instead of a dropdown.
-2. Reserve dropdowns for long option lists where showing everything would overwhelm the layout.
-3. Count the actual number of choices before picking the control, not just habit.
-4. Watch for the extra click a dropdown adds and eliminate it below the five-option threshold.
+1. Consider option length, explanatory detail and available vertical space.
+2. Use a native select for an appropriate compact list and consider search for a long familiar vocabulary.
+3. Preserve keyboard use, focus visibility and a clear group label.
 
 ## Review questions
 
-1. If a field has fewer than five options, are they shown as radio buttons?
-2. Does choosing an option require an extra click to open a menu first?
-3. Are all available choices visible without any interaction for short lists?
+1. Can someone compare the important differences before choosing?
+2. Does a long list support finding a known answer?
+3. Can the choice be made on a phone and with a keyboard?

@@ -1,32 +1,34 @@
-# Toast vs inline error
+# Place field errors beside the field
 
 - ID: comp-6
 - Category: Components & actions
 - Tags: Error handling, Feedback
 - URL: https://axiomui.nischal.fyi/rules/comp-6
 
-Toasts are for system-level news (saved, disconnected); inline errors are for a field the user has to fix. An error has to appear where the fix happens, because a toast is gone before they get there.
+Identify the field and explain how to fix it where the user can make the change. After submission, a linked error summary can also help people find several errors.
 
 - Do: Invalid email = inline, under the field
 - Don't: Invalid email = toast, far from the field
 
 ## Why it works
 
-Toasts float above the whole screen and fit system-level updates like a save confirmation, but that same detachment from any specific element makes them useless for pointing at one wrong field. Inline errors sit right where the mistake lives, so the fix location and the error message are never more than a glance apart.
+A notice at the top can say a form failed. The message beside Work email can tell someone that the domain is missing. These serve different purposes and can work together.
+
+- [GOV.UK · Error messages](https://design-system.service.gov.uk/components/error-message/)
+- [GOV.UK · Error summaries](https://design-system.service.gov.uk/components/error-summary/)
 
 ## What breaks
 
-Showing an invalid email error as a toast leaves users staring at a form with no visible red flag, so they resubmit blind and the same toast reappears without ever revealing which field is wrong.
+A disappearing notice leaves someone who needs more time with the same rejected value and no explanation. A network outage described as a field error sends them looking for a correction they cannot make.
 
 ## How to apply it
 
-1. Use a toast for system-level updates like a network error or a Saved confirmation.
-2. Use an inline error directly beneath the field for issues like an invalid email.
-3. Never route field-specific validation errors through the toast system.
-4. Keep inline errors visible until the specific field is corrected.
+1. Preserve the value and put the specific correction by the field.
+2. Associate the message with the control, for example with aria-describedby.
+3. Keep a persistent service-level message when a system failure prevents progress.
 
 ## Review questions
 
-1. Do system-level updates like save confirmations appear as toasts?
-2. Does the invalid email error show inline, next to the field itself?
-3. Is any field-specific error message sitting far from its field?
+1. Can someone find the field from the summary?
+2. Does the message explain a correction the user can actually make?
+3. Can someone returning to the field still read the error?

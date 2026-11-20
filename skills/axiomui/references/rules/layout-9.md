@@ -1,32 +1,33 @@
-# Responsive spacing scaling
+# Adapt outer spacing to available width
 
 - ID: layout-9
 - Category: Layout & spacing
 - Tags: Spacing, Responsive, Mobile
 - URL: https://axiomui.nischal.fyi/rules/layout-9
 
-Don't ship one spacing scale to every breakpoint. Scale padding and margins down on small screens — a 48px gutter spends an eighth of a 375px viewport on nothing.
+Reconsider large page and card insets when a layout narrows. Preserve the spacing that holds small controls and related text together. Change a token when the content shows why.
 
 - Do: p-3 sm / p-6 lg
 - Don't: p-6 sm / p-6 lg
 
 ## Why it works
 
-Padding that stays fixed while the viewport shrinks eats a growing share of available width, so p-6 on a 1440px screen and the same p-6 on a 375px phone aren’t equivalent — 24px each side is 48px of gutter, a thirtieth of the desktop width and an eighth of the phone’s. Scaling padding down per breakpoint, p-6 at lg down to p-4 at md down to p-3 at sm, holds the proportion roughly constant instead of the pixel value.
+A card with 24px padding on both sides spends 48px of its width before the first word is set. In a narrow slot, using 12px on each side gives the copy another 24px. The same change can be unnecessary inside a compact form field.
+
+- [GOV.UK · Spacing](https://design-system.service.gov.uk/styles/spacing/)
 
 ## What breaks
 
-Ship p-6 at every breakpoint and on a small phone the content area shrinks to a narrow column squeezed between two thick padding bands, forcing text to wrap awkwardly or truncate.
+Holding on to a wide gutter can push an action onto a second line. Scaling every gap down indiscriminately can crowd touch targets or erase a group boundary.
 
 ## How to apply it
 
-1. Scale padding down per breakpoint: p-6 at lg, p-4 at md, p-3 at sm.
-2. Never hardcode one padding value, like p-6, across every breakpoint.
-3. Reduce margins alongside padding, not just container padding, for full proportional scaling.
-4. Check the smallest supported viewport first — that’s where fixed spacing does the most damage.
+1. Compare the content area at the narrowest and widest widths.
+2. Use responsive tokens for large insets and static ones for stable internal relationships.
+3. Check the card inside a narrow desktop column as well as on a phone.
 
 ## Review questions
 
-1. Does padding visibly shrink from desktop to tablet to mobile breakpoints?
-2. Is any padding or margin value identical at every breakpoint?
-3. Does content on the smallest screen retain a reasonable amount of usable width?
+1. Which gutter costs useful reading space?
+2. Do interactive targets retain enough size and separation?
+3. Does the layout work when a card narrows independently of the viewport?

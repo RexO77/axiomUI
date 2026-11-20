@@ -81,7 +81,6 @@
   /* Elevation. The site is flat except for these. */
   --ax-scrim: rgb(0 0 0 / 0.2);
   /* A surface floating free over content, like the skills dialog. */
-  --ax-shadow-overlay: 0 12px 34px rgba(0, 0, 0, 0.1);
   --ax-shadow-inset: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
   /* A keycap's edge: line-strong when the shortcut is live, line when it is
      off. Inset, so the key keeps its size either way. */
@@ -143,7 +142,6 @@
   --ax-dont-ink: #fecdd3;
 
   --ax-scrim: rgb(0 0 0 / 0.5);
-  --ax-shadow-overlay: 0 14px 42px rgba(0, 0, 0, 0.35);
   --ax-shadow-inset: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
   --ax-shadow-keycap: inset 0 0 0 1px var(--ax-line-strong);
   --ax-shadow-keycap-off: inset 0 0 0 1px var(--ax-line);
@@ -187,7 +185,6 @@
 
   --color-scrim: var(--ax-scrim);
 
-  --shadow-overlay: var(--ax-shadow-overlay);
   --shadow-sheet: var(--ax-shadow-sheet);
   --shadow-item: var(--ax-shadow-item);
   --shadow-popover: var(--ax-shadow-popover);
@@ -218,12 +215,10 @@
   --radius-frame: 10px;
   --radius-field: 16px;
   --radius-well: 20px;
-  --radius-card: 28px;
 
   --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out-strong: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
-  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
 
   /* What a bare `transition-colors` (no duration-*, no ease-*) runs at. */
   --default-transition-duration: 140ms;
@@ -360,18 +355,11 @@
     transform: scale(0.96);
   }
 
-  /* Small metadata headings (the skill modal's section labels) that should
-     read as labels, not titles: the base heading rule sets every h1-h6 in the
-     serif display face, so this puts them back in the body sans. */
-  .drawer-label {
-    font-family: --theme(--font-sans);
-  }
-
   .skill-modal-root {
     /* Defaults match the component's inline values (skill-bonus.tsx) — the
        inline style is the source of truth; keep these in sync. */
-    --skill-modal-open-duration: 220ms;
-    --skill-modal-close-duration: 140ms;
+    --skill-modal-open-duration: var(--motion-medium);
+    --skill-modal-close-duration: var(--motion-fast);
   }
 
   .skill-modal-scrim {
@@ -383,7 +371,7 @@
 
   .skill-modal-panel {
     opacity: 0;
-    transform: translate3d(0, 28px, 0) scale(0.985);
+    transform: var(--skill-source-transform, translate3d(0, 28px, 0) scale(0.985));
     transform-origin: center top;
     will-change: transform, opacity;
     transition:
@@ -391,13 +379,45 @@
       transform var(--skill-modal-close-duration) var(--ease-out-strong);
   }
 
+  .skill-modal-panel[data-rail-motion="anchored"] { opacity: 1; }
+
+  .skill-modal-surface {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--ax-surface);
+    box-shadow: var(--ax-shadow-popover);
+    transform-origin: top left;
+    transform: var(--skill-surface-scale, none);
+    transition: transform var(--skill-modal-close-duration) var(--ease-out-strong);
+    pointer-events: none;
+  }
+
+  .skill-modal-panel[data-rail-motion="local"],
+  .skill-modal-panel[data-rail-motion="local"] .skill-modal-surface { transform: none; }
+
+  /* Commit the measured starting box before the first animated frame. */
+  .skill-modal-root[data-state="mounted"] :is(.skill-modal-panel, .skill-modal-surface, .skill-modal-content) {
+    transition: none;
+  }
+
   .skill-modal-content {
+    position: relative;
+    border-radius: inherit;
+    overflow: hidden;
     opacity: 0;
-    transform: translate3d(0, 10px, 0);
-    will-change: transform, opacity;
-    transition:
-      opacity var(--skill-modal-close-duration) var(--ease-out-strong),
-      transform var(--skill-modal-close-duration) var(--ease-out-strong);
+    will-change: opacity;
+    transition: opacity var(--skill-modal-close-duration) var(--ease-out-strong);
+  }
+
+  .skill-modal-panel[data-rail-motion="anchored"] .skill-modal-content {
+    clip-path: var(--skill-source-clip);
+    transition-property: clip-path, opacity;
+  }
+
+  .skill-modal-root[data-state="open"] .skill-modal-surface {
+    transform: none;
+    transition-duration: var(--skill-modal-open-duration);
   }
 
   .skill-modal-root[data-state="open"] .skill-modal-scrim {
@@ -415,10 +435,14 @@
 
   .skill-modal-root[data-state="open"] .skill-modal-content {
     opacity: 1;
-    transform: translate3d(0, 0, 0);
+    transition-duration: calc(var(--skill-modal-open-duration) - 36ms);
     transition-delay: 36ms;
-    transition-duration: var(--skill-modal-open-duration);
-    transition-timing-function: var(--ease-out-strong);
+  }
+
+  .skill-modal-root[data-state="open"] .skill-modal-panel[data-rail-motion="anchored"] .skill-modal-content {
+    clip-path: inset(0 round var(--radius-sheet));
+    transition-duration: var(--skill-modal-open-duration), calc(var(--skill-modal-open-duration) - 36ms);
+    transition-delay: 0ms, 36ms;
   }
 
   /* Fade the whole surface before changing its width, including its shadow. */
@@ -481,6 +505,7 @@
 
     .skill-modal-scrim,
     .skill-modal-panel,
+    .skill-modal-surface,
     .skill-modal-content {
       transition: none;
       opacity: 1;

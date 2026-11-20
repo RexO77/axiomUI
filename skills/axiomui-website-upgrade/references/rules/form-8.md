@@ -1,32 +1,33 @@
-# Validate on blur
+# Validate when a correction is useful
 
 - ID: form-8
 - Category: Forms & inputs
 - Tags: Validation, Timing, Error handling
 - URL: https://axiomui.nischal.fyi/rules/form-8
 
-Inline validation should fire when the user leaves a field, not on every keystroke. Nobody types a valid email on the first character, so per-keystroke validation shows an error for the whole time it is being fixed.
+Let people finish an entry before showing a format error. Submission is a dependable checkpoint. Use a field-exit check when early correction helps, and clear an existing error as soon as the value is accepted.
 
 - Do: Error appears after leaving field
-- Don't: Error flashes on first character
+- Don't: Error appears during incomplete entry
 
 ## Why it works
 
-Validating on every keystroke interrupts a user mid-thought, flashing an error while they have only typed the first character of a valid entry. Waiting until the field loses focus, on blur, respects the fact that a partial input is not yet a wrong input. This timing distinguishes between still-composing and finished, which is the actual moment an error becomes meaningful.
+An incomplete email such as “maya@” is expected halfway through typing. Treating that intermediate state as a failure produces a message the user cannot resolve except by continuing the entry they already intended to make.
+
+- [GOV.UK · Form validation](https://design-system.service.gov.uk/patterns/validation/)
 
 ## What breaks
 
-An email field flashes an invalid error the instant a user types the letter j, so they see red before they have had a chance to finish typing their own address.
+A form that validates only on blur can miss submission from the final field. A message that keeps returning on every key can interrupt someone who is already correcting the problem.
 
 ## How to apply it
 
-1. Trigger validation errors only after the user leaves the field (on blur).
-2. Never fire an error message on the first character typed.
-3. Allow real-time positive feedback (like a checkmark) once the field is valid, but keep negative feedback deferred.
-4. Test by typing slowly into a required field and confirming no error appears mid-entry.
+1. Validate on submission, including on the server.
+2. Reserve field-exit validation for complete-looking entries where the feedback is worth the interruption.
+3. Keep errors associated with the input and avoid repeating live announcements for each keystroke.
 
 ## Review questions
 
-1. Does the error message wait until the user leaves the field before appearing?
-2. Does typing the first character ever trigger a visible error?
-3. Is validation timing consistent across every field on the form?
+1. Can someone start an address without an error flash?
+2. Does submitting from the final field still catch a problem?
+3. Does the error clear when the entered address is accepted?

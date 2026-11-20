@@ -5,28 +5,29 @@
 - Tags: Contrast, WCAG, Accessibility
 - URL: https://axiomui.nischal.fyi/rules/color-9
 
-Text must meet WCAG AA contrast (4.5:1 for body, 3:1 for large text). Don't eyeball it — check it.
+For WCAG AA, ordinary text needs at least 4.5:1 contrast. Large text qualifies at 3:1. Measure unrounded values against the actual background, including overlays and images behind the text.
 
 - Do: #737373 on #ffffff (4.7:1)
 - Don't: #aaaaaa on #ffffff (2.3:1)
 
 ## Why it works
 
-WCAG AA sets a measurable floor — 4.5:1 for body text, 3:1 for large text — because below those ratios a meaningful share of users with low vision cannot resolve the letterforms at all. AAA raises the same two numbers to 7:1 and 4.5:1, so an AA pass is the floor and not the ceiling. #aaa on #fff measures about 2.3:1, barely over half the AA minimum: that is a failed measurement, not a debatable style choice.
+On white, #737373 is about 4.74:1. The helper text passes at its regular size. The other sample, #aaaaaa, is about 2.32:1. The labels round these measurements for display. A measured 4.49:1 still fails the 4.5:1 threshold.
+
+- [WCAG 2.2 · Contrast (minimum)](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)
 
 ## What breaks
 
-Body copy set in #aaa on #fff measures about 2.3:1, so readers with even mild vision impairment squint at it or skip it, and any automated audit flags the page against 1.4.3 Contrast (Minimum).
+Assuming that every gray in a palette has a fixed rating misses the second color in the calculation. A pair that passes on white can fail on a tinted input or a lighter part of a photo.
 
 ## How to apply it
 
-1. Measure every text and background pairing with a contrast checker; target 4.5:1 or better for body copy.
-2. Use the 3:1 allowance only for genuinely large text: 24px/18pt regular, or 18.66px/14pt bold.
-3. Replace guessed grays with checked ones: on white you need roughly #767676 or darker to clear 4.5:1.
-4. Re-measure whenever a text or background token changes, in both themes.
+1. Measure the final foreground and background colors, accounting for transparency.
+2. Use the large-text allowance at 18pt regular or 14pt bold and above, or equivalent sizes for CJK fonts.
+3. Check helper text, placeholders, and active state labels. Incidental text and logotypes have specific exceptions.
 
 ## Review questions
 
-1. Has every text color on this screen been measured rather than eyeballed?
-2. Does body text measure at least 4.5:1 against the background it actually sits on?
-3. Is any text leaning on the 3:1 allowance while sitting below 24px regular or 18.66px bold?
+1. What measured pair supports the verdict?
+2. If large-text thresholds are used, what size and weight qualify it?
+3. Does it pass at the least contrasting background behind the letters?
