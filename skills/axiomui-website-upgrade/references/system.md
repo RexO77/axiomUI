@@ -34,12 +34,12 @@ Use relative time when recency matters and a localized date or time when someone
 - Don't: Activity: yyyy-mm-ddThh:mm:ssZ
 - Reasoning: `references/rules/sys-4.md` · https://axiomui.nischal.fyi/rules/sys-4
 
-## Give shared colors semantic roles (`sys-5`)
+## Reference colors by role, not by value (`sys-5`)
 
-Let components request a role such as accent or warning. Map that role to a palette value for each theme when several components share the same intent.
+Have components ask for a role such as text, surface or warning, and resolve each role per theme. A literal value picked on the light theme stays put when the surface turns dark, and two features that share a hex by coincidence change together when one is restyled.
 
-- Do: blue-500 (palette) → accent (alias) → component
-- Don't: $button-blue → component
+- Do: var(--text) → #f5f5f5 on #262626 (13.9:1)
+- Don't: #0f172a on #262626 (1.2:1)
 - Reasoning: `references/rules/sys-5.md` · https://axiomui.nischal.fyi/rules/sys-5
 
 ## Make reversible deletion recoverable (`sys-6`)
@@ -82,12 +82,12 @@ When part of a view fails, preserve the content that still works. Identify the u
 - Don't: Broken image icon / blank screen
 - Reasoning: `references/rules/sys-10.md` · https://axiomui.nischal.fyi/rules/sys-10
 
-## Set breakpoints where the layout needs them (`sys-11`)
+## Keep the task usable at 320 CSS pixels (`sys-11`)
 
-Resize the content until it no longer works, then choose a reflow that solves the failure. The example uses 640px and 1024px. A different interface may need different thresholds or none.
+Narrow the viewport to 320 CSS pixels, or zoom a 1280px window to 400%, and complete the page’s main task. Content should reflow without sideways scrolling. A wide table, map or code block may scroll inside its own region.
 
-- Do: 2 breakpoints: 640px / 1024px (3 tiers)
-- Don't: 8 breakpoints, one per device
+- Do: 320px: fields stack · Continue in view
+- Don't: 320px: min-width 512px · Continue off-screen
 - Reasoning: `references/rules/sys-11.md` · https://axiomui.nischal.fyi/rules/sys-11
 
 ## Limit transitions to intended properties (`sys-13`)
@@ -98,10 +98,18 @@ List the properties that should animate in a state change. A broad transition ca
 - Don't: transition: all 150ms ease-out
 - Reasoning: `references/rules/sys-13.md` · https://axiomui.nischal.fyi/rules/sys-13
 
-## Use will-change sparingly (`sys-14`)
+## Return people to the result they opened (`sys-15`)
 
-Use will-change only when profiling shows that advance preparation helps a particular element. Name the expected property and release the hint when the need passes.
+When someone opens an item from a searched, filtered or scrolled list, Back should bring them to the same query, filters, sort and scroll position, with the item they opened in view. A refresh or a pasted link should restore the same view.
 
-- Do: will-change: transform, opacity on one measured card
-- Don't: will-change: transform, opacity on every card
-- Reasoning: `references/rules/sys-14.md` · https://axiomui.nischal.fyi/rules/sys-14
+- Do: Back → Overdue · sorted by due date · row 37
+- Don't: Back → All invoices · top of the list
+- Reasoning: `references/rules/sys-15.md` · https://axiomui.nischal.fyi/rules/sys-15
+
+## Keep errors and the only recovery action on screen (`sys-16`)
+
+A success message whose result is visible elsewhere can time out. A failure, or a message that holds the only Undo or Retry, stays until the person acts on it or closes it. Pause any timer while the message is hovered, focused or in a hidden tab.
+
+- Do: Upload failed · Retry stays until dismissed
+- Don't: Upload failed · Retry closes after 5s
+- Reasoning: `references/rules/sys-16.md` · https://axiomui.nischal.fyi/rules/sys-16

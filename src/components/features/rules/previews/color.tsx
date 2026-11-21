@@ -10,7 +10,6 @@ import {
     Send,
     Trash2,
     X,
-    Zap,
 } from "@/components/ui/icons";
 
 import {
@@ -24,10 +23,11 @@ import {
 } from "@/components/features/rules/preview-primitives";
 import { cn } from "@/lib/utils";
 
-// Craft-pass previews for color-1..color-6, color-8..color-12 (color-7 is a
-// motion showcase and stays with the motion system). Every pair is a controlled
-// experiment: the same scene in both panes, with only the rule's variable
-// changed. Color rules use the exact hues the rule discusses, so raw hex values
+// Craft-pass previews for color-1, color-4, color-6 and color-8..color-12
+// (color-7 is a motion showcase and stays with the motion system; color-2,
+// color-3 and color-5 were folded into sys-5, color-12 and color-6). Every
+// pair is a controlled experiment: the same scene in both panes, with only the
+// rule's variable changed. Color rules use the exact hues the rule discusses, so raw hex values
 // appear here deliberately — the hex IS the content.
 
 const NOTE = "font-mono text-[10px] tabular-nums text-pretty";
@@ -57,12 +57,6 @@ function Note({
 // expiry. It belongs to the scene, so it never becomes an <Annotation>.
 function Meta({ children }: { children: ReactNode }) {
     return <span className={cn(NOTE, PRODUCT_MUTED)}>{children}</span>;
-}
-
-// Evidence annotation pinned to a white card that stays white in dark mode
-// (contrast math only holds against the surface it quotes).
-function CardNote({ children, className }: { children: ReactNode; className?: string }) {
-    return <Annotation className={cn(NOTE, "text-neutral-500", className)}>{children}</Annotation>;
 }
 
 // A label that names a palette step has to name the step actually painted,
@@ -186,65 +180,6 @@ function SixtyThirtyTen({ variant }: { variant: Variant }) {
     );
 }
 
-// ── color-2 · Use the intended text color ─────────────────────────────────────
-// The same white reading card in both panes; only the ink changes. Type is set
-// at 13/11px so the ink has enough area to show its hue, and the ratio is
-// quoted against the white card, so the card stays white in dark mode too.
-const READING_CARD_INK = "text-[#0f172a]";
-
-function TextInk({ variant }: { variant: Variant }) {
-    const pureBlack = variant === "dont";
-    const ink = pureBlack ? "text-[#000000]" : READING_CARD_INK;
-    return (
-        <div className="flex h-[118px] flex-col justify-center">
-            <div className="rounded-md border border-neutral-200 bg-white p-3 dark:border-neutral-700">
-                <p className={cn("text-[13px] font-semibold leading-4", ink)}>Release notes</p>
-                <p className={cn("mt-1 text-[11px] leading-4", ink)}>
-                    Sync now runs offline, and search indexes twice as fast
-                </p>
-                <div className="mt-2 flex flex-col gap-0.5 border-t border-neutral-100 pt-1.5 leading-3">
-                    <CardNote>{pureBlack ? "#000000 · 21:1 · AAA" : "#0f172a · 17.9:1 · AAA"}</CardNote>
-                    <CardNote>{pureBlack ? "literal black · bypasses ink token" : "theme ink · #0f172a"}</CardNote>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-// ── color-3 · Colored shadows ──────────────────────────────────────
-// One campaign card, with the offsets, blur and alpha fixed in both panes. The card
-// sits on its own surface panel — neutral-50 light, neutral-800 dark — because
-// a near-black page swallows both shadows and the pair would show nothing.
-function ColoredShadows({ variant }: { variant: Variant }) {
-    const neutral = variant === "dont";
-    return (
-        <div className="flex h-[118px] flex-col rounded-md bg-neutral-50 p-3 dark:bg-neutral-800">
-            <div className="flex flex-1 items-center justify-center">
-                <div
-                    className="w-40 rounded-md bg-indigo-500 px-3 py-2.5 text-white"
-                    style={{
-                        boxShadow: neutral
-                            ? "0 6px 16px -4px rgba(0, 0, 0, 0.45), 0 2px 5px rgba(0, 0, 0, 0.3)"
-                            : "0 6px 16px -4px rgba(99, 102, 241, 0.45), 0 2px 5px rgba(99, 102, 241, 0.3)",
-                    }}
-                >
-                    <div className="flex items-center gap-1.5">
-                        <Zap aria-hidden className="size-3.5 stroke-[1.5]" />
-                        <span className="text-[11px] font-semibold">Upgrade to Pro</span>
-                    </div>
-                    {/* White, not indigo-100: on indigo-500 the tint is 3.7:1. Size and weight
-                        carry the step down from the heading instead. */}
-                    <p className="mt-0.5 text-[10px] tabular-nums text-white">$12/mo · billed yearly</p>
-                </div>
-            </div>
-            <div className="flex items-center justify-between gap-2">
-                <Note className="whitespace-nowrap">{neutral ? "shadow hue: black" : "shadow hue: indigo"}</Note>
-                <Note className="whitespace-nowrap">campaign tint: indigo</Note>
-            </div>
-        </div>
-    );
-}
-
 // ── color-4 · Semantic colors ──────────────────────────────────────
 // One feed card. Delete stays red in both panes; the Like icon either keeps
 // brand blue (Do) or hijacks the same red as the destructive action (Don't).
@@ -302,51 +237,6 @@ function SemanticColors({ variant }: { variant: Variant }) {
                     )}
                 </Note>
                 <Note>{hijacked ? "same red as Delete" : "red means Delete"}</Note>
-            </div>
-        </div>
-    );
-}
-
-// ── color-5 · Border colors ────────────────────────────────────────
-// One settings card, three rows. Only the border/divider value changes; at
-// neutral-400 the lines outweigh the text they frame.
-function BorderColors({ variant }: { variant: Variant }) {
-    const heavy = variant === "dont";
-    const line = heavy
-        ? "border-neutral-400 dark:border-neutral-500"
-        : "border-neutral-200 dark:border-neutral-800";
-    const rows: Array<[string, string]> = [
-        ["Notifications", "On"],
-        ["Members", "12"],
-        ["Billing", "Pro"],
-    ];
-    return (
-        <div className="flex h-[118px] flex-col justify-center gap-2">
-            <div className={cn("overflow-hidden rounded-md border", line)}>
-                {rows.map(([label, value], i) => (
-                    <div
-                        key={label}
-                        className={cn("flex items-center justify-between border-t px-3 py-1.5", line, {
-                            "border-t-0": i === 0,
-                        })}
-                    >
-                        <span className="text-[11px] font-medium text-neutral-800 dark:text-neutral-100">
-                            {label}
-                        </span>
-                        <Meta>{value}</Meta>
-                    </div>
-                ))}
-            </div>
-            <div className="flex items-center justify-between gap-2">
-                <Note className="whitespace-nowrap">
-                    border:{" "}
-                    {heavy ? (
-                        <ThemedValue light="neutral-400" dark="500" />
-                    ) : (
-                        <ThemedValue light="neutral-200" dark="800" />
-                    )}
-                </Note>
-                <Note className="whitespace-nowrap">{heavy ? "lines shout" : "lines recede"}</Note>
             </div>
         </div>
     );
@@ -680,28 +570,10 @@ export const colorPreviews: PreviewRenderer = (ruleId, variant) => {
                     <SixtyThirtyTen variant={variant} />
                 </PreviewFrame>
             );
-        case "color-2":
-            return (
-                <PreviewFrame>
-                    <TextInk variant={variant} />
-                </PreviewFrame>
-            );
-        case "color-3":
-            return (
-                <PreviewFrame>
-                    <ColoredShadows variant={variant} />
-                </PreviewFrame>
-            );
         case "color-4":
             return (
                 <PreviewFrame>
                     <SemanticColors variant={variant} />
-                </PreviewFrame>
-            );
-        case "color-5":
-            return (
-                <PreviewFrame>
-                    <BorderColors variant={variant} />
                 </PreviewFrame>
             );
         case "color-6":

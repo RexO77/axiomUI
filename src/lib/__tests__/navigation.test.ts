@@ -94,12 +94,12 @@ describe("decks follow the wall", () => {
   });
 
   it("sorts search hits into wall order, not relevance order", () => {
-    expect(ids(searchDeck("border"))).toEqual(["layout-7", "a11y-2", "color-5", "color-6", "color-12", "motion-8"]);
+    expect(ids(searchDeck("border"))).toEqual(["layout-7", "a11y-2", "color-6", "color-12", "motion-8"]);
     const relevance = searchRules("border").map((hit) => hit.rule.id);
     expect(relevance).not.toEqual(ids(searchDeck("border")));
     expect([...relevance].sort()).toEqual([...ids(searchDeck("border"))].sort());
     const deck = searchDeck("border");
-    expect(deckPosition(deck, "color-5")).toMatchObject({ index: 3, total: 6, label: "3 of 6" });
+    expect(deckPosition(deck, "color-6")).toMatchObject({ index: 3, total: 5, label: "3 of 5" });
     expect(stepRule(deck, "layout-7", 1)?.id).toBe("a11y-2");
   });
 
@@ -107,8 +107,8 @@ describe("decks follow the wall", () => {
     const deck = searchDeck("border");
     expect(sectionJump(deck, "layout-7", 1)?.id).toBe("a11y-2");
     expect(sectionJump(deck, "a11y-2", 1)?.id).toBe("motion-8");
-    expect(sectionJump(deck, "color-5", 1)?.id).toBe("motion-8");
-    expect(sectionJump(deck, "color-5", -1)?.id).toBe("layout-7");
+    expect(sectionJump(deck, "color-6", 1)?.id).toBe("motion-8");
+    expect(sectionJump(deck, "color-6", -1)?.id).toBe("layout-7");
     expect(sectionJump(deck, "a11y-2", -1)?.id).toBe("layout-7");
     expect(sectionJump(deck, "layout-7", -1)).toBeNull();
     expect(sectionJump(deck, "motion-8", 1)).toBeNull();

@@ -1,6 +1,6 @@
 ---
 name: axiomui-layout
-description: Use Axiom UI’s layout guidance when choosing a spacing scale, setting line measure and container widths, grouping fields and labels, fitting padding around controls, optically aligning glyphs, organizing cards and dividers, setting gutters and breakpoints, reviewing mixed-direction rows, or resolving stacking contexts.
+description: Use Axiom UI’s layout guidance when choosing a spacing scale, setting line measure and container widths, grouping fields and labels, fitting padding around controls, optically aligning glyphs, choosing cards, dividers or space as a group boundary, adapting gutters and reflowing at narrow widths, keeping anchors and focus clear of sticky headers, reserving space for images and embeds, keeping a subject in each crop, reviewing mixed-direction rows, or resolving stacking contexts.
 license: MIT
 metadata:
   author: Nischal Skanda
@@ -11,7 +11,7 @@ metadata:
 
 # Axiom UI: Layout & spacing
 
-Compare the distance from a field to its own label with the distance to the next field. Widen the viewport and try the longest label the product supports. Those two checks reveal whether spacing communicates relationships and whether a shared gutter still fits the content.
+Compare the distance from a field to its own label with the distance to the next field. Narrow the viewport to 320px with the longest label the product supports, then reload on a throttled connection and follow an in-page link under the sticky header. Those checks reveal whether spacing communicates relationships, whether the layout still fits, and whether media and fixed bars push content out of view.
 
 ## How to use these rules
 
@@ -36,7 +36,7 @@ Choose named spacing steps for repeated relationships. A 4px base is useful for 
 
 Limit the width of sustained prose on wide screens. Around 65 characters per line is a useful starting point for English paragraphs. Check the actual text because 1ch measures the width of the zero glyph.
 
-- Do: max-width: 45ch
+- Do: max-width: 52ch
 - Don't: width: 100%
 - Reasoning: `references/rules/layout-2.md` · https://axiomui.nischal.fyi/rules/layout-2
 
@@ -80,14 +80,6 @@ Use headings and space for related content that reads in sequence. A card surfac
 - Don't: White card with gray border on white bg
 - Reasoning: `references/rules/layout-7.md` · https://axiomui.nischal.fyi/rules/layout-7
 
-### Consistent gutters (`layout-8`)
-
-Keep gutters consistent between equivalent siblings. A grid of independent cards can start with equal gaps on both axes. Use different row and column gaps when the two directions represent different relationships.
-
-- Do: Cards: gap-2 throughout
-- Don't: Rows gap-6, columns gap-2
-- Reasoning: `references/rules/layout-8.md` · https://axiomui.nischal.fyi/rules/layout-8
-
 ### Adapt outer spacing to available width (`layout-9`)
 
 Reconsider large page and card insets when a layout narrows. Preserve the spacing that holds small controls and related text together. Change a token when the content shows why.
@@ -100,21 +92,45 @@ Reconsider large page and card insets when a layout narrows. Preserve the spacin
 
 Give lines within one item, neighboring items, and major sections different spacing roles. Reuse the same role whenever that relationship recurs.
 
-- Do: 8 → 16 → 32px (1x, 2x, 4x of 8)
-- Don't: 8 → 13 → 18px (off the 8px base)
+- Do: 8px / 16px / 32px section break
+- Don't: 8px / 16px / 16px section break
 - Reasoning: `references/rules/layout-10.md` · https://axiomui.nischal.fyi/rules/layout-10
 
 ### Define stacking order within each context (`layout-11`)
 
 Give overlay roles an intentional order and identify the stacking context that contains them. A large z-index on a child cannot lift it above a higher sibling context or the browser’s top layer.
 
-- Do: z-dropdown: 100, z-modal: 300
-- Don't: z-index: 9999
+- Do: z-index: 9999 outside the transform, above Activity
+- Don't: z-index: 9999 inside the transform, behind Activity
 - Reasoning: `references/rules/layout-11.md` · https://axiomui.nischal.fyi/rules/layout-11
+
+### Keep scroll and focus targets clear of sticky headers (`layout-12`)
+
+Account for the height of sticky headers and footers in the scroll container. After an anchor jump or keyboard focus, the entire target should be visible.
+
+- Do: scroll-padding-top: 64px
+- Don't: scroll-padding-top: 0px
+- Reasoning: `references/rules/layout-12.md` · https://axiomui.nischal.fyi/rules/layout-12
+
+### Reserve space for media before it loads (`layout-13`)
+
+Give images, videos, and embeds dimensions or an aspect ratio before they load. Reserve that space on the first render so nearby controls stay where people expect them.
+
+- Do: aspect-ratio: 2 / 1 before load
+- Don't: 0px reserved before load
+- Reasoning: `references/rules/layout-13.md` · https://axiomui.nischal.fyi/rules/layout-13
+
+### Keep the subject in the crop at every ratio (`layout-14`)
+
+When an image fills frames of different proportions, check the crop at each ratio. Set a focal point or supply another crop so the subject stays in frame.
+
+- Do: object-position: right center · latch in both crops
+- Don't: object-position: center · latch cropped out
+- Reasoning: `references/rules/layout-14.md` · https://axiomui.nischal.fyi/rules/layout-14
 
 ## Cross-listed from other domains
 
-Text direction affects where names, separators and counts sit in a localized row.
+Text direction affects where names, separators and counts sit in a localized row. Reflow at narrow widths decides where the layout recomposes.
 
 ### Keep names and counts together across scripts (`typo-14`)
 
@@ -124,6 +140,15 @@ A name inserted into a translated sentence can run in either direction. Isolate 
 - Do: Isolate the restaurant name before its review count
 - Don't: Insert the name directly before the dash and count
 - Reasoning: `references/rules/typo-14.md` · https://axiomui.nischal.fyi/rules/typo-14
+
+### Keep the task usable at 320 CSS pixels (`sys-11`)
+
+Narrow the viewport to 320 CSS pixels, or zoom a 1280px window to 400%, and complete the page’s main task. Content should reflow without sideways scrolling. A wide table, map or code block may scroll inside its own region.
+
+- From: System & logic
+- Do: 320px: fields stack · Continue in view
+- Don't: 320px: min-width 512px · Continue off-screen
+- Reasoning: `references/rules/sys-11.md` · https://axiomui.nischal.fyi/rules/sys-11
 
 ## Related
 

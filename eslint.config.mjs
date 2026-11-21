@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Git-ignored local verification captures and scratch scripts.
+    "output/**",
   ]),
 ]);
 

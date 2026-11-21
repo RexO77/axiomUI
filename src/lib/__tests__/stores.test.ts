@@ -88,9 +88,9 @@ describe("catalog stores", () => {
     browser.otherTab(DEEP_DIVE_KEY, "hidden");
     expect(onDeep).toHaveBeenCalledOnce();
     expect(stores.deepDive.get()).toBe(false);
-    browser.otherTab(MEMORY_KEY, JSON.stringify({ visited: ["color-2"] }));
+    browser.otherTab(MEMORY_KEY, JSON.stringify({ visited: ["color-4"] }));
     expect(onVisited).toHaveBeenCalledOnce();
-    expect([...stores.visited.get()]).toEqual(["color-2"]);
+    expect([...stores.visited.get()]).toEqual(["color-4"]);
     browser.otherTab("unrelated", "1");
     expect(onDeep).toHaveBeenCalledOnce();
     stopDeep();
@@ -213,12 +213,12 @@ describe("several readers of one store", () => {
     const stop = memory.subscribe(() => {});
     memory.setPrefs({ zoom: 2 });
     stop();
-    browser.otherTab(MEMORY_KEY, JSON.stringify({ visited: ["color-2"], prefs: { zoom: 2, compareMode: "flip" } }));
+    browser.otherTab(MEMORY_KEY, JSON.stringify({ visited: ["color-4"], prefs: { zoom: 2, compareMode: "flip" } }));
     const listener = vi.fn();
     const again = memory.subscribe(listener);
     memory.setPrefs({ singleKeys: false });
     const stored = JSON.parse(browser.data.get(MEMORY_KEY) ?? "{}");
-    expect(stored.visited).toEqual(["color-2"]);
+    expect(stored.visited).toEqual(["color-4"]);
     expect(stored.prefs).toMatchObject({ compareMode: "flip", zoom: 2, singleKeys: false });
     again();
 

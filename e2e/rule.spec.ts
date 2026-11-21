@@ -346,7 +346,13 @@ test.describe("motion gestures", () => {
     await play.focus();
     await page.keyboard.press("k");
     await expect(page.locator(".cmp-canvas")).toHaveAttribute("data-live", "true");
-    await page.waitForTimeout(200);
+    await expect(page.locator(".cmp-pane-ms")).toHaveText(["0ms · focus", "180ms · focus"]);
+    const query = page.locator(".cmp-pane input[data-anim=query]");
+    await expect(query.first()).toHaveValue("op");
+    await expect(query.first()).toHaveCSS("opacity", "1");
+    await expect(query.last()).toHaveValue("");
+    await expect(query.last()).toHaveCSS("opacity", "0");
+    await expect(play).toBeFocused();
     expect(await readCatalog(page)).toMatchObject({ view: "rule", url: ruleUrl("motion-2"), title: titleOf("motion-2") });
   });
 });

@@ -1,6 +1,6 @@
 ---
 name: axiomui-motion
-description: Use Axiom UI’s motion guidance when deciding whether to animate, choosing easing or timing, coordinating entrance and exit, anchoring popovers, handling tooltip delays, redirecting interrupted motion, supporting drag and swipe, reducing motion, or diagnosing dropped frames. It covers CSS transitions, starting styles, the Web Animations API, property selection and will-change.
+description: Use Axiom UI’s motion guidance when deciding whether to animate, choosing easing or timing, coordinating entrance and exit, anchoring popovers, handling tooltip delays, redirecting interrupted motion, supporting drag and swipe with a click or tap alternative, pausing motion that runs on its own, reducing motion, or diagnosing dropped frames. It covers CSS transitions, starting styles, the Web Animations API, property selection and will-change.
 license: MIT
 metadata:
   author: Nischal Skanda
@@ -11,7 +11,7 @@ metadata:
 
 # Axiom UI: Motion & interaction
 
-Choose a transition for a specific change of state and try it at the speed someone would actually use the control. A repeated shortcut can keep its content ready immediately. A panel can use motion to explain where it came from. Use the example timings to compare treatments, then test interruption, reduced motion and actual frame delivery.
+Choose a transition for a specific change of state and try it at the speed someone would actually use the control. A repeated shortcut can keep its content ready immediately. A panel can use motion to explain where it came from. To review a transition, play it at 10% or 25% speed in the browser's animation tools (the Animations panel in Chrome DevTools) to check its origin, path and easing, then judge it again at full speed, where timing is felt. Then test interruption, reduced motion and actual frame delivery.
 
 ## How to use these rules
 
@@ -36,8 +36,8 @@ Watch a frequent action several times in succession. Shorten its entrance when i
 
 When a shortcut opens a command palette, move focus into the field and accept the next keystroke while the panel settles.
 
-- Do: Keyboard panel: 0ms
-- Don't: Keyboard panel: 240ms
+- Do: Focus on open. First keystrokes land.
+- Don't: Focus after entrance. First keystrokes are lost.
 - Reasoning: `references/rules/motion-2.md` · https://axiomui.nischal.fyi/rules/motion-2
 
 ### Purpose before motion (`motion-3`)
@@ -55,14 +55,6 @@ For an entrance, compare how much ground each curve covers before the content ne
 - Do: cubic-bezier(0.23, 1, 0.32, 1)
 - Don't: ease — cubic-bezier(0.25, 0.1, 0.25, 1)
 - Reasoning: `references/rules/motion-4.md` · https://axiomui.nischal.fyi/rules/motion-4
-
-### Make the start of an entrance visible (`motion-5`)
-
-When movement is the first sign that a menu opened, choose a curve that makes early progress visible. An accelerating exit can suit a panel leaving the screen.
-
-- Do: Menu open: ease-out
-- Don't: Menu open: ease-in
-- Reasoning: `references/rules/motion-5.md` · https://axiomui.nischal.fyi/rules/motion-5
 
 ### Time motion to the task (`motion-6`)
 
@@ -170,18 +162,18 @@ For a reversible swipe dismissal, consider a short, deliberate flick as well as 
 
 ### Use drag resistance where overshoot is meaningful (`motion-19`)
 
-An elastic edge can show that a surface has reached its limit while the finger continues moving. Clamp controls that represent a fixed valid range.
+When a custom dragged surface reaches a meaningful limit, use bounded resistance to signal the edge. Never re-implement native scroll bounce. Clamp controls that represent a fixed valid range.
 
-- Do: Increasing friction past edge
-- Don't: Invisible wall stop
+- Do: Card yields less as the pull increases
+- Don't: Card stops abruptly at the limit
 - Reasoning: `references/rules/motion-19.md` · https://axiomui.nischal.fyi/rules/motion-19
 
 ### Keep a drag attached to its initiating pointer (`motion-20`)
 
-For an element-local drag, capture the initiating pointer and track its ID. Clean up on release, cancellation and loss of capture.
+Keep a drag following the pointer that started it as it leaves the handle. End the drag when that pointer releases or the gesture is canceled.
 
-- Do: setPointerCapture on drag start
-- Don't: No pointer capture on drag start
+- Do: Tracks outside the handle until release or cancel
+- Don't: Stops tracking outside the drag surface
 - Reasoning: `references/rules/motion-20.md` · https://axiomui.nischal.fyi/rules/motion-20
 
 ### Keep decorative motion independent of busy scripts (`motion-21`)
@@ -192,22 +184,6 @@ For fixed movement between two states, try a CSS transform transition. Once a br
 - Don't: Tab indicator: rAF + style writes
 - Reasoning: `references/rules/motion-21.md` · https://axiomui.nischal.fyi/rules/motion-21
 
-### Use a playback controller for programmatic animation (`motion-22`)
-
-Use element.animate() when code needs to start, pause or reverse a known sequence. Let the browser interpolate between keyframes.
-
-- Do: element.animate() on transform
-- Don't: setInterval transform every 80ms
-- Reasoning: `references/rules/motion-22.md` · https://axiomui.nischal.fyi/rules/motion-22
-
-### Scope rapidly changing drag styles (`motion-23`)
-
-Update a drag value near the element that consumes it. If a changing custom property is inherited from a large ancestor, measure how much style work reaches its descendants.
-
-- Do: element.style.transform
-- Don't: Parent --swipe-amount variable
-- Reasoning: `references/rules/motion-23.md` · https://axiomui.nischal.fyi/rules/motion-23
-
 ### Limit the total stagger (`motion-24`)
 
 When a short sequence helps people follow a group of arrivals, budget for the last useful item. Cap or remove delays as the group grows.
@@ -216,49 +192,25 @@ When a short sequence helps people follow a group of arrivals, budget for the la
 - Don't: 220ms between items
 - Reasoning: `references/rules/motion-24.md` · https://axiomui.nischal.fyi/rules/motion-24
 
-### Review motion slowly, then at normal speed (`motion-25`)
-
-Slow playback to inspect a transition frame by frame. Return to normal speed to judge whether it suits the task.
-
-- Do: Inspect at 2x-5x duration
-- Don't: Judge only at full speed
-- Reasoning: `references/rules/motion-25.md` · https://axiomui.nischal.fyi/rules/motion-25
-
-### Sequence panel content when order explains something (`motion-26`)
-
-Reveal related groups in sequence when the order helps explain a change. Present a routine dialog together when people need to read and act immediately.
-
-- Do: Title, copy, actions staggered 90ms
-- Don't: Title, copy, actions in one fade
-- Reasoning: `references/rules/motion-26.md` · https://axiomui.nischal.fyi/rules/motion-26
-
-### Keep routine exits quiet (`motion-27`)
-
-Use a short fade or small movement when a dismissed item has no destination to explain. A longer directional exit can help when the item returns to a known place.
-
-- Do: opacity 0 + translateY(-12px) at 150ms
-- Don't: translateY(-100%) scale(0.5) at 400ms
-- Reasoning: `references/rules/motion-27.md` · https://axiomui.nischal.fyi/rules/motion-27
-
 ### Make icon state changes recognizable (`motion-28`)
 
-When an icon changes meaning, keep the result recognizable at rest. A short crossfade can help connect the two shapes. Use scale or blur only when the small glyph remains legible.
+When an icon changes meaning, keep the incoming glyph recognizable as it appears and at rest. Swap it instantly or use a brief transition that preserves its shape.
 
-- Do: scale 0.25 → 1, opacity 0 → 1, blur 4px → 0
-- Don't: display: none to display: block
+- Do: Incoming glyph stays sharp as it appears
+- Don't: Blur obscures the incoming glyph
 - Reasoning: `references/rules/motion-28.md` · https://axiomui.nischal.fyi/rules/motion-28
 
 ### Show the initial interface in its ready state (`motion-29`)
 
 Render controls that are already available in their usable state. Reserve an entrance for a later change the user needs to notice.
 
-- Do: AnimatePresence initial={false}
-- Don't: AnimatePresence initial={true}
+- Do: Ready controls render in place on first paint
+- Don't: Ready controls fade and slide into place on load
 - Reasoning: `references/rules/motion-29.md` · https://axiomui.nischal.fyi/rules/motion-29
 
 ## Cross-listed from other domains
 
-These system rules cover property selection and resource hints when implementing motion in CSS.
+These rules from other domains cover which properties a transition animates, a pause control for motion that runs on its own, and a click or tap path for every drag.
 
 ### Limit transitions to intended properties (`sys-13`)
 
@@ -269,14 +221,23 @@ List the properties that should animate in a state change. A broad transition ca
 - Don't: transition: all 150ms ease-out
 - Reasoning: `references/rules/sys-13.md` · https://axiomui.nischal.fyi/rules/sys-13
 
-### Use will-change sparingly (`sys-14`)
+### Offer a click or tap path for every drag (`a11y-4`)
 
-Use will-change only when profiling shows that advance preparation helps a particular element. Name the expected property and release the hint when the need passes.
+Offer clicks or taps for tasks such as reordering a list, moving cards between columns or setting a slider. A drag can be required when the drawn path itself is essential to the task.
 
-- From: System & logic
-- Do: will-change: transform, opacity on one measured card
-- Don't: will-change: transform, opacity on every card
-- Reasoning: `references/rules/sys-14.md` · https://axiomui.nischal.fyi/rules/sys-14
+- From: Accessibility & inclusivity
+- Do: Drag handle + Move up / Move down
+- Don't: Drag handle only
+- Reasoning: `references/rules/a11y-4.md` · https://axiomui.nischal.fyi/rules/a11y-4
+
+### Let people pause what moves or updates on its own (`a11y-6`)
+
+For nonessential content presented alongside other content, offer a way to pause, stop or hide automatic movement, blinking or scrolling that lasts more than five seconds. For automatic updates, offer a control at any interval. Adjusting the update frequency also works.
+
+- From: Accessibility & inclusivity
+- Do: Testimonial strip with Pause
+- Don't: Quote changes every 4s · no control
+- Reasoning: `references/rules/a11y-6.md` · https://axiomui.nischal.fyi/rules/a11y-6
 
 ## Related
 

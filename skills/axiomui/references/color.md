@@ -10,22 +10,6 @@ Reserve the strongest accent for the action or information that should stand out
 - Don't: Blue header, blue sidebar, blue buttons
 - Reasoning: `references/rules/color-1.md` · https://axiomui.nischal.fyi/rules/color-1
 
-## Use the intended text color (`color-2`)
-
-Choose an ink color for each theme and check it against its surface. Black and near-black can both give excellent contrast on white. Reuse the chosen text token so adjacent screens follow the same palette.
-
-- Do: #0f172a on #ffffff (17.9:1)
-- Don't: #000000 on #ffffff (21:1)
-- Reasoning: `references/rules/color-2.md` · https://axiomui.nischal.fyi/rules/color-2
-
-## Match shadows to their role (`color-3`)
-
-Choose the shadow tint as part of the surface style. A branded promotion can use an accent-tinted shadow, while a neutral elevation token can serve reusable cards and menus.
-
-- Do: Campaign shadow: indigo tint
-- Don't: Same campaign card: black shadow
-- Reasoning: `references/rules/color-3.md` · https://axiomui.nischal.fyi/rules/color-3
-
 ## Make status colors dependable (`color-4`)
 
 Give status roles a consistent meaning in context and pair them with labels or recognizable symbols. A red heart can express affection. Reserve a distinct treatment for a destructive command shown beside it.
@@ -33,14 +17,6 @@ Give status roles a consistent meaning in context and pair them with labels or r
 - Do: Like icon: blue-500
 - Don't: Like icon: rose-500
 - Reasoning: `references/rules/color-4.md` · https://axiomui.nischal.fyi/rules/color-4
-
-## Keep decorative dividers quiet (`color-5`)
-
-Use a subdued border when it only separates rows that already read as distinct. If a line is necessary to identify a control or understand a graphic, give it adequate contrast for that role.
-
-- Do: border: neutral-200
-- Don't: border: neutral-400
-- Reasoning: `references/rules/color-5.md` · https://axiomui.nischal.fyi/rules/color-5
 
 ## Give essential control edges enough contrast (`color-6`)
 

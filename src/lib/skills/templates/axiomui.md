@@ -7,8 +7,8 @@ Axiom UI is a library of {{ruleCount}} UI design rules across {{categoryCount}} 
 This skill is the rule library. The other Axiom UI skills each add a procedure for one job, and each applies only if it is installed:
 
 - Building new UI and choosing a value or a treatment: stay here. Find the rule and apply it.
-- Changing an existing interface in code: use `axiomui-website-upgrade`. It adds the upgrade loop, the craft standards and a verification contract.
-- Reviewing without editing: use `axiomui-audit`. It adds per-domain checklists, a severity scale and a report format.
+- Changing an existing interface in code: use `axiomui-website-upgrade`. It adds page-job entry lists, a detection sweep, an elevate pass and a verification contract.
+- Reviewing without editing: use `axiomui-audit`. It adds the detection sweep, per-domain checklists, a severity scale and a report format.
 - Working mostly in one domain: use that domain's skill ({{domainSkills}}). It carries the domain's rules inline, with sharper triggers.
 
 When the matching skill is not installed, stay here. Every rule is in this skill.

@@ -1,6 +1,6 @@
 ---
 name: axiomui-typography
-description: Use Axiom UI’s typography guidance to choose typefaces and weights by role, set line height and measure, review casing in English labels, space short uppercase Latin labels, align comparable figures, preserve meaning under truncation, tune heading and paragraph wrapping, or isolate a name in mixed-direction text.
+description: Use Axiom UI’s typography guidance to choose typefaces and weights by role, set line height and measure, review casing in English labels, space short uppercase Latin labels, tighten display headings without crowding letters, choose heading levels by outline, align comparable figures, preserve meaning under truncation, tune heading and paragraph wrapping, or isolate a name in mixed-direction text.
 license: MIT
 metadata:
   author: Nischal Skanda
@@ -36,7 +36,7 @@ Use sentence case for ordinary English labels and headings. Keep the spelling of
 
 For a short uppercase Latin label, compare the font’s default spacing with a small positive adjustment. Judge the result at its displayed size.
 
-- Do: tracking-wider (0.05em)
+- Do: Short caps · +0.025em tracking
 - Don't: tracking-normal (0em)
 - Reasoning: `references/rules/typo-2.md` · https://axiomui.nischal.fyi/rules/typo-2
 
@@ -64,12 +64,12 @@ Start with one family for product headings and body text. Add another family whe
 - Don't: Arial headings + Verdana body
 - Reasoning: `references/rules/typo-5.md` · https://axiomui.nischal.fyi/rules/typo-5
 
-### Keep secondary text legible (`typo-6`)
+### Keep secondary text at a readable size (`typo-6`)
 
-Give secondary text a quieter role through position, weight, size, or tone. Keep ordinary informative text at 4.5:1 or higher against its background for WCAG AA.
+Size secondary text for the task it supports. An email below a member’s name still needs to be easy to read when it helps someone choose the right person.
 
-- Do: text-neutral-500 (14px)
-- Don't: text-neutral-900 (10px)
+- Do: 14px member email
+- Don't: 10px member email
 - Reasoning: `references/rules/typo-6.md` · https://axiomui.nischal.fyi/rules/typo-6
 
 ### Align comparable numbers (`typo-7`)
@@ -135,6 +135,36 @@ A name inserted into a translated sentence can run in either direction. Isolate 
 - Do: Isolate the restaurant name before its review count
 - Don't: Insert the name directly before the dash and count
 - Reasoning: `references/rules/typo-14.md` · https://axiomui.nischal.fyi/rules/typo-14
+
+### Tighten display tracking only until letters crowd (`typo-15`)
+
+When tightening a display headline, check the gaps between neighboring glyphs at the shipped font, weight, and size. An em-based adjustment moves the letters farther as the type gets larger. Stop while the closest pairs still have a visible gap.
+
+- Do: 38px semibold · tracking -0.015em
+- Don't: 38px semibold · tracking -0.05em
+- Reasoning: `references/rules/typo-15.md` · https://axiomui.nischal.fyi/rules/typo-15
+
+## Cross-listed from other domains
+
+Line measure and heading levels are filed under layout and accessibility, but they are set alongside size, leading and weight.
+
+### Set a measure for long-form text (`layout-2`)
+
+Limit the width of sustained prose on wide screens. Around 65 characters per line is a useful starting point for English paragraphs. Check the actual text because 1ch measures the width of the zero glyph.
+
+- From: Layout & spacing
+- Do: max-width: 52ch
+- Don't: width: 100%
+- Reasoning: `references/rules/layout-2.md` · https://axiomui.nischal.fyi/rules/layout-2
+
+### Choose heading levels by outline, not size (`a11y-5`)
+
+Choose heading levels from the page's section hierarchy. Style the headings independently so the visual sizes and the screen reader's heading list can both reflect the design.
+
+- From: Accessibility & inclusivity
+- Do: h1 Settings → h2 Billing → h3 Invoices
+- Don't: h1 Settings → h4 Billing → h4 Invoices
+- Reasoning: `references/rules/a11y-5.md` · https://axiomui.nischal.fyi/rules/a11y-5
 
 ## Related
 

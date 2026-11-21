@@ -27,7 +27,7 @@ function deferOn(
 }
 
 /* ─────────────────────────────────────────────────────────
- * DRAG SHOWCASE STORYBOARD (motion-18 / 19 / 20 / 23)
+ * DRAG SHOWCASE STORYBOARD (motion-18 / 19 / 20)
  *
  *    rest   both panes show the same resting prototype
  *    drag   ONE pointer drives BOTH panes simultaneously —
@@ -63,8 +63,6 @@ export function DragShowcase({ ruleId }: { ruleId: string }) {
             return <DampedBoundary />;
         case "motion-20":
             return <PointerCaptureSlider />;
-        case "motion-23":
-            return <SwipeCost />;
         default:
             return null;
     }
@@ -451,9 +449,8 @@ function VelocityDismiss() {
 
 /* ── motion-19 · Damp drag boundaries ───────────────────────────────── */
 
-/** The rubber band UIScrollView uses: the first pixel past the edge moves the
- *  card RUBBER_BAND px, and every pixel after moves it less, approaching
- *  `room` and never reaching it. Resistance grows the farther you pull. */
+/** Each additional pixel of pull moves the card less, so overshoot approaches
+ *  `room` without reaching it. */
 const RUBBER_BAND = 0.55;
 
 function rubberBand(over: number, room: number) {
@@ -535,7 +532,7 @@ function DampedBoundary() {
         <DragSurface
             {...surface}
             readoutRef={readout}
-            hint="Drag past the edge and let go — one card is physical, one is a clamp"
+            hint="Pull both cards past the marked limit, then let go."
         >
             <PaneChrome variant="do" caption={spec.do.caption}>
                 <DragCard cardRef={doCard} railRef={rail} wallRef={wall} showWall />
@@ -688,284 +685,6 @@ function PointerCaptureSlider() {
             </PaneChrome>
             <PaneChrome variant="dont" caption={spec.dont.caption}>
                 <SliderPane knobRef={dontKnob} chipRef={dontChip} capture={false} />
-            </PaneChrome>
-        </DragSurface>
-    );
-}
-
-/* ── motion-23 · Avoid inheritable motion variables ─────────────────── */
-
-/*
- * Both panes hold the same list: the card you drag, then SWIPE_ROWS rows
- * under it, clipped by the stage. Only the write differs. The Don't pane sets
- * --swipe-amount on the list, where descendants inherit it. The Do pane
- * writes the card's transform directly. The meters time each write and
- * the subsequent computed-style reads in this browser.
- */
-const SWIPE_ROWS = 300;
-/** Frames in the rolling mean: long enough to steady the 0.1ms timer, short
- *  enough to follow the drag. */
-const SWIPE_WINDOW = 20;
-
-function SwipeCard({
-    cardRef,
-    viaVariable,
-}: {
-    cardRef: RefObject<HTMLDivElement | null>;
-    viaVariable: boolean;
-}) {
-    return (
-        <div
-            ref={cardRef}
-            className="relative flex h-14 shrink-0 flex-col justify-center rounded-lg border border-blue-500 bg-white bg-[linear-gradient(rgb(59_130_246/0.1),rgb(59_130_246/0.1))] p-2 shadow-sm dark:border-blue-400 dark:bg-neutral-900 dark:bg-[linear-gradient(rgb(96_165_250/0.1),rgb(96_165_250/0.1))]"
-            style={viaVariable ? { transform: "translateX(var(--swipe-amount, 0px))" } : undefined}
-        >
-            <span className="mb-1 text-xs font-semibold leading-none tracking-tight text-blue-700 dark:text-blue-300">
-                Message
-            </span>
-            <MiniLine widthClass="w-3/4" className="mb-1 h-1 !bg-blue-500/40" />
-            <MiniLine widthClass="w-1/2" className="h-1 !bg-blue-500/40" />
-            <DragGrip />
-        </div>
-    );
-}
-
-function SwipeList({
-    listRef,
-    cardRef,
-    lastRowRef,
-    viaVariable,
-}: {
-    listRef?: RefObject<HTMLDivElement | null>;
-    cardRef: RefObject<HTMLDivElement | null>;
-    lastRowRef: RefObject<HTMLDivElement | null>;
-    viaVariable: boolean;
-}) {
-    return (
-        <div className="h-36 overflow-hidden rounded-[16px] border border-dashed border-neutral-300 bg-neutral-50/80 p-2 dark:border-neutral-700 dark:bg-neutral-900/50">
-            <div ref={listRef} className="flex flex-col gap-1.5">
-                <SwipeCard cardRef={cardRef} viaVariable={viaVariable} />
-                {/* A few inbox rows show through the stage; the rest are clipped. */}
-                <div
-                    aria-hidden="true"
-                    className="flex flex-col gap-1.5 [mask-image:linear-gradient(to_bottom,black,transparent)]"
-                >
-                    {Array.from({ length: SWIPE_ROWS }, (_, i) => (
-                        <div
-                            key={i}
-                            ref={i === SWIPE_ROWS - 1 ? lastRowRef : undefined}
-                            className="flex h-5 shrink-0 items-center gap-1.5 rounded-lg bg-white px-2 dark:bg-neutral-900"
-                        >
-                            <span className="size-2 shrink-0 rounded-full bg-neutral-200 dark:bg-neutral-700" />
-                            <span className="h-1 w-1/2 rounded-full bg-neutral-200 dark:bg-neutral-800" />
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </div>
-    );
-}
-
-/** The per-pane receipt, in the slot the timed showcases use for their bars. */
-function StyleMeter({
-    fillRef,
-    labelRef,
-}: {
-    fillRef: RefObject<HTMLDivElement | null>;
-    labelRef: RefObject<HTMLSpanElement | null>;
-}) {
-    return (
-        <div className="flex items-center gap-2">
-            <div className="h-1 min-w-6 flex-1 overflow-hidden rounded-full bg-fill-strong dark:bg-fill">
-                <div
-                    ref={fillRef}
-                    className="h-full origin-left rounded-full bg-ink-faint"
-                    style={{ transform: "scaleX(0)" }}
-                />
-            </div>
-            <span className="flex shrink-0 items-baseline gap-1 text-xs font-medium tabular-nums text-ink-muted">
-                style
-                {/* Fixed width: a changing digit count must not resize the track. */}
-                <span ref={labelRef} className="inline-block min-w-12">
-                    —
-                </span>
-            </span>
-        </div>
-    );
-}
-
-function translateXOf(el: HTMLElement | null) {
-    if (!el) return 0;
-    const t = getComputedStyle(el).transform;
-    return t === "none" ? 0 : new DOMMatrixReadOnly(t).m41;
-}
-
-const mean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
-const formatMs = (ms: number) => `${ms.toFixed(ms >= 10 ? 1 : 2)}ms`;
-
-function SwipeCost() {
-    const spec = showcaseSpecs["motion-23"];
-    const doCard = useRef<HTMLDivElement | null>(null);
-    const dontCard = useRef<HTMLDivElement | null>(null);
-    const dontList = useRef<HTMLDivElement | null>(null);
-    const doLastRow = useRef<HTMLDivElement | null>(null);
-    const dontLastRow = useRef<HTMLDivElement | null>(null);
-    const doFill = useRef<HTMLDivElement | null>(null);
-    const dontFill = useRef<HTMLDivElement | null>(null);
-    const doLabel = useRef<HTMLSpanElement | null>(null);
-    const dontLabel = useRef<HTMLSpanElement | null>(null);
-    const readout = useRef<HTMLSpanElement | null>(null);
-    const status = useRef<HTMLSpanElement | null>(null);
-    const dragging = useRef(false);
-    const base = useRef(0);
-    const travel = useRef(120);
-    const lastX = useRef<number | null>(null);
-    const samples = useRef<{ do: number[]; dont: number[] }>({ do: [], dont: [] });
-    const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
-
-    useEffect(() => {
-        const pending = timers.current;
-        return () => pending.forEach(clearTimeout);
-    }, []);
-
-    const writeReadout = (text: string) => {
-        if (readout.current) readout.current.textContent = text;
-    };
-
-    /** Time one write through to a forced style read, in either pane. Both
-     *  panes probe the same two elements, so the probe can't favour one. */
-    const timed = (write: () => void, card: HTMLElement | null, lastRow: HTMLElement | null) => {
-        const t0 = performance.now();
-        write();
-        if (card) void getComputedStyle(card).transform;
-        if (lastRow) void getComputedStyle(lastRow).transform;
-        return performance.now() - t0;
-    };
-
-    const setDontX = (x: number) => {
-        dontList.current?.style.setProperty("--swipe-amount", `${x}px`);
-    };
-
-    const showMeters = () => {
-        const doMs = mean(samples.current.do);
-        const dontMs = mean(samples.current.dont);
-        // One scale for both bars: the larger cost fills its track.
-        const scale = Math.max(doMs, dontMs, 0.001);
-        if (doFill.current) doFill.current.style.transform = `scaleX(${doMs / scale})`;
-        if (dontFill.current) dontFill.current.style.transform = `scaleX(${dontMs / scale})`;
-        if (doLabel.current) doLabel.current.textContent = formatMs(doMs);
-        if (dontLabel.current) dontLabel.current.textContent = formatMs(dontMs);
-        // The 0.1ms timer can round the Do to zero; a ratio would be infinite.
-        writeReadout(
-            doMs >= 0.01
-                ? `Don’t: ${Math.round(dontMs / doMs)}× the Do’s style work a frame`
-                : `Don’t: ${formatMs(dontMs)} a frame · Do: under 0.01ms`
-        );
-    };
-
-    const announceMeasurement = () => {
-        if (!status.current || samples.current.do.length === 0) return;
-        status.current.textContent =
-            `Measured style work per sample. Do: ${formatMs(mean(samples.current.do))}. ` +
-            `Don’t: ${formatMs(mean(samples.current.dont))}.`;
-    };
-
-    const begin = () => {
-        timers.current.forEach(clearTimeout);
-        timers.current.length = 0;
-        if (status.current) status.current.textContent = "";
-        // Catch a card that is still springing home where it is: both
-        // panes run the same spring, so the Do card speaks for both.
-        base.current = translateXOf(doCard.current);
-        setCardX(doCard.current, base.current, false);
-        if (dontCard.current) dontCard.current.style.transition = "none";
-        setDontX(base.current);
-        const list = dontList.current;
-        if (list) travel.current = list.clientWidth * 0.7;
-        lastX.current = null;
-        samples.current = { do: [], dont: [] };
-    };
-
-    const sampleFrame = (dx: number) => {
-        const x = Math.min(Math.max(base.current + dx, -travel.current), travel.current);
-        // A clamped frame writes nothing new, so it has nothing to time.
-        if (x === lastX.current) return;
-        lastX.current = x;
-        // Flush setup and the previous meter updates before either timed write.
-        if (doCard.current) void getComputedStyle(doCard.current).transform;
-        if (dontCard.current) void getComputedStyle(dontCard.current).transform;
-        const doMs = timed(
-            () => setCardX(doCard.current, x, false),
-            doCard.current,
-            doLastRow.current
-        );
-        const dontMs = timed(() => setDontX(x), dontCard.current, dontLastRow.current);
-        const s = samples.current;
-        s.do = [...s.do.slice(1 - SWIPE_WINDOW), doMs];
-        s.dont = [...s.dont.slice(1 - SWIPE_WINDOW), dontMs];
-        showMeters();
-    };
-
-    const settle = () => {
-        dragging.current = false;
-        // The same spring as motion-18's snap-back, on each pane's own
-        // property: the card's transform, or the list's variable.
-        setCardX(doCard.current, 0, true, { durationMs: 350, easing: SPRING_SOFT });
-        if (dontCard.current) {
-            dontCard.current.style.transition = `transform 350ms ${SPRING_SOFT}`;
-        }
-        setDontX(0);
-        // The meters hold their last reading; only the comparison clears.
-        deferOn(timers, () => writeReadout(""), 2500);
-    };
-
-    const stepCards = () => {
-        if (dragging.current) return;
-        begin();
-        const destination = Math.abs(base.current) > 1 ? 0 : travel.current * 0.65;
-        sampleFrame(destination - base.current);
-        announceMeasurement();
-    };
-
-    const surface = useMirroredDrag({
-        onStart: () => {
-            dragging.current = true;
-            begin();
-        },
-        onFrame: sampleFrame,
-        onRelease: () => {
-            settle();
-            announceMeasurement();
-        },
-        onCancel: settle,
-    });
-
-    return (
-        <DragSurface
-            {...surface}
-            readoutRef={readout}
-            statusRef={status}
-            control={{ label: "Step both cards", onClick: stepCards, icon: false }}
-            hint="Drag either card or step both cards to compare the measured style work."
-        >
-            <PaneChrome
-                variant="do"
-                caption={spec.do.caption}
-                bar={<StyleMeter fillRef={doFill} labelRef={doLabel} />}
-            >
-                <SwipeList cardRef={doCard} lastRowRef={doLastRow} viaVariable={false} />
-            </PaneChrome>
-            <PaneChrome
-                variant="dont"
-                caption={spec.dont.caption}
-                bar={<StyleMeter fillRef={dontFill} labelRef={dontLabel} />}
-            >
-                <SwipeList
-                    listRef={dontList}
-                    cardRef={dontCard}
-                    lastRowRef={dontLastRow}
-                    viaVariable
-                />
             </PaneChrome>
         </DragSurface>
     );

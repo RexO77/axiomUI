@@ -5,14 +5,14 @@
 - Tags: Icons, States
 - URL: https://axiomui.nischal.fyi/rules/motion-28
 
-When an icon changes meaning, keep the result recognizable at rest. A short crossfade can help connect the two shapes. Use scale or blur only when the small glyph remains legible.
+When an icon changes meaning, keep the incoming glyph recognizable as it appears and at rest. Swap it instantly or use a brief transition that preserves its shape.
 
-- Do: scale 0.25 → 1, opacity 0 → 1, blur 4px → 0
-- Don't: display: none to display: block
+- Do: Incoming glyph stays sharp as it appears
+- Don't: Blur obscures the incoming glyph
 
 ## Why it works
 
-Two glyphs in one stable slot can communicate a state change without shifting the label or the pointer target. A transition can show that one replaces the other, but the durable evidence is the resulting state. Someone who looks back after the animation finishes should still know what happened.
+Two glyphs in one stable slot can communicate a state change without shifting the label or pointer target. In the matched crossfades, the sharp check is recognizable sooner than the blurred one. The final state still needs to make sense to someone who looks back after the transition.
 
 - [WCAG 2.2 · Status messages](https://www.w3.org/WAI/WCAG22/Understanding/status-messages.html)
 - [WCAG 2.2 · Animation from interactions](https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions.html)
@@ -23,7 +23,7 @@ An icon can animate beautifully and still leave an assistive-technology user una
 
 ## How to apply it
 
-1. Keep both glyphs inside one fixed-size slot.
+1. Keep both glyphs inside one fixed-size slot. Swap instantly if the state is already clear, or use a short crossfade that keeps the incoming glyph legible at its actual size.
 2. Give the resulting control or status an appropriate accessible name, state or announcement.
 3. Test rapid reversals, the smallest rendered size and an immediate reduced-motion swap.
 

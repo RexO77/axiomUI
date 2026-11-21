@@ -25,7 +25,7 @@ When the same 16px separates every row, a label between two fields can appear to
 
 1. Give labels and their fields a shared group container.
 2. Keep hints and errors within the group for the affected field.
-3. Try a multiline label and inspect the space before the next field.
+3. A gap implies a group. Keep gaps equal between equivalent siblings, then check that a multiline label still reads with its own field.
 
 ## Review questions
 

@@ -119,9 +119,8 @@ describe("Tailwind classes named in rule values exist", () => {
  *    rather than naming a track value.
  *
  * 2. Rules whose deep dive is a bespoke prototype are exempt. Their captions
- *    describe the prototype's real timings — motion-22's 80ms is
- *    `setInterval(..., 80)` in load-showcase.tsx, motion-19's 450ms is
- *    `durationMs: 450` in drag-showcases.tsx — while the grid `tracks` are a
+ *    describe the prototype's real timings. For motion-19, the 450ms return
+ *    is in drag-showcases.tsx, while the grid `tracks` are a
  *    simplified stand-in on a different clock. Checking those against the grid
  *    track flags correct captions, so it is worse than not checking them.
  */
@@ -132,7 +131,6 @@ const PROTOTYPE_DRIVEN = new Set([
   "motion-19", // drag-showcases
   "motion-20", // drag-showcases
   "motion-21", // load-showcase
-  "motion-22", // load-showcase
 ]);
 
 /** The spec-facts half of a caption: everything before the em dash. */
@@ -154,7 +152,7 @@ describe("showcase captions state durations the panes actually run", () => {
 
         // The showcase ships a 1× / ½× / ¼× speed control, so a caption may
         // legitimately cite the shipped-speed equivalent of what the pane runs
-        // ("220ms stretched to 880ms"). Those are durations the reader can
+        // at a different playback speed. Those are durations the reader can
         // actually observe, so they count as honest.
         const RATES = [1, 0.5, 0.25];
         const add = (ms: number) => {
@@ -192,6 +190,65 @@ describe("showcase captions state durations the panes actually run", () => {
     }
 
     expect(stale, stale.join("\n")).toEqual([]);
+  });
+});
+
+// ── Layout measurements ─────────────────────────────────────────────
+
+describe("layout claims match the pane geometry", () => {
+  it("layout-2 sets the stated measure on the reading column", () => {
+    const rule = rules.find(({ id }) => id === "layout-2")!;
+    const width = /max-width: (\d+ch)/.exec(rule.do)?.[1];
+    const pane = renderToStaticMarkup(getStaticRulePreview(rule.id, "do"));
+    expect(width).toBeDefined();
+    expect(pane).toMatch(new RegExp(`data-text-column=""[^>]*style="max-width:${width}"`));
+    expect(paneText(rule.id, "do")).toContain(`${width} cap`);
+  });
+
+  it.each(["do", "dont"] as const)("layout-10 keeps the first two gaps fixed in %s", (variant) => {
+    const rule = rules.find(({ id }) => id === "layout-10")!;
+    const pane = renderToStaticMarkup(getStaticRulePreview(rule.id, variant));
+    const heights = [...pane.matchAll(/style="height:(\d+px)"/g)].map(([, height]) => height);
+    expect(heights).toEqual(["8px", "16px", variant === "do" ? "32px" : "16px"]);
+    expect(rule[variant]).toBe(`${heights.join(" / ")} section break`);
+  });
+
+  it.each(["do", "dont"] as const)("layout-11 keeps the same menu z-index in %s", (variant) => {
+    const rule = rules.find(({ id }) => id === "layout-11")!;
+    const pane = renderToStaticMarkup(getStaticRulePreview(rule.id, variant));
+    expect(pane).toMatch(/data-stacking-menu=""[^>]*style="z-index:9999"/);
+    expect(rule[variant]).toContain("z-index: 9999");
+    expect(paneText(rule.id, variant)).toContain("z-index: 9999");
+  });
+
+  it.each(["do", "dont"] as const)("layout-12 sets the stated inset against a 64px header in %s", (variant) => {
+    const rule = rules.find(({ id }) => id === "layout-12")!;
+    const inset = variant === "do" ? "64px" : "0px";
+    const pane = renderToStaticMarkup(getStaticRulePreview(rule.id, variant));
+    expect(rule[variant]).toBe(`scroll-padding-top: ${inset}`);
+    expect(pane).toMatch(/data-sticky-header=""[^>]*style="height:64px"/);
+    expect(pane).toContain(`style="scroll-padding-top:${variant === "do" ? inset : "0"}"`);
+    expect(paneText(rule.id, variant)).toContain(`${inset} inset`);
+  });
+
+  it("layout-13 reserves the loaded aspect ratio from the start in the Do pane", () => {
+    const rule = rules.find(({ id }) => id === "layout-13")!;
+    const ratio = /aspect-ratio: (\d+ \/ \d+)/.exec(rule.do)?.[1];
+    const reserved = renderToStaticMarkup(getStaticRulePreview(rule.id, "do"));
+    const unreserved = renderToStaticMarkup(getStaticRulePreview(rule.id, "dont"));
+    expect(ratio).toBeDefined();
+    expect(reserved.match(/style="aspect-ratio:[^"]+"/g)).toEqual(Array(2).fill(`style="aspect-ratio:${ratio}"`));
+    expect(unreserved.match(/style="aspect-ratio:[^"]+"/g)).toEqual([`style="aspect-ratio:${ratio}"`]);
+  });
+
+  it.each(["do", "dont"] as const)("layout-14 uses the stated focal point on both crops in %s", (variant) => {
+    const rule = rules.find(({ id }) => id === "layout-14")!;
+    const position = /^object-position: (.+) ·/.exec(rule[variant])?.[1];
+    const pane = renderToStaticMarkup(getStaticRulePreview(rule.id, variant));
+    expect(position).toBeDefined();
+    expect(pane.match(/style="aspect-ratio:[^"]+"/g)).toEqual(['style="aspect-ratio:2 / 1"', 'style="aspect-ratio:3 / 4"']);
+    const positions = [...pane.matchAll(/style="[^">]*object-position:([^;"]+)/g)].map(([, value]) => value);
+    expect(positions).toEqual([position, position]);
   });
 });
 
@@ -390,6 +447,70 @@ function paneText(ruleId: string, variant: "do" | "dont"): string {
     .replace(/\s+/g, " ");
 }
 
+it("a11y-4 starts Book room one place below the illustrated tap destination", () => {
+  const node = getStaticRulePreview("a11y-4", "do");
+  const rows = [...renderToStaticMarkup(node).matchAll(/<li\b[^>]*>(.*?)<\/li>/g)];
+  const start = rows.findIndex(([, row]) => row.includes("Book room")) + 1;
+  expect(start).toBe(2);
+  expect(rows[start - 1][1]).toContain("Move up");
+  expect(paneText("a11y-4", "do")).toContain(`Book room moves from ${start} to ${start - 1}`);
+});
+
+it("a11y-5 captions match the settings page heading levels", () => {
+  const rule = rules.find(({ id }) => id === "a11y-5")!;
+  for (const variant of ["do", "dont"] as const) {
+    const markup = renderToStaticMarkup(getStaticRulePreview(rule.id, variant));
+    const headings = [...markup.matchAll(/data-heading-level="(h[1-6])"[^>]*>([^<]+)</g)];
+    expect(headings.map(([, level, text]) => `${level} ${text}`).join(" → ")).toBe(rule[variant]);
+    for (const [, level, text] of headings) expect(paneText(rule.id, variant)).toContain(`${level} ${text}`);
+  }
+});
+
+it("a11y-6 states the same update interval in the caption and the static strip", () => {
+  const rule = rules.find(({ id }) => id === "a11y-6")!;
+  const caption = rule.dont.match(/Quote changes every \d+s/)?.[0];
+  expect(caption).toBeDefined();
+  expect(paneText(rule.id, "dont")).toContain(caption);
+});
+
+describe("typography captions match the displayed values", () => {
+  it.each(["do", "dont"] as const)("shows the stated caps tracking on the %s label", (variant) => {
+    const caption = rules.find(({ id }) => id === "typo-2")![variant];
+    const tracking = caption.match(/\+?(?:\d*\.)?\d+em/)?.[0];
+    expect(tracking).toBeDefined();
+    const cssValue = tracking?.replace(/^\+/, "");
+    const trackingClass = cssValue === "0em" ? "tracking-normal" : `tracking-[${cssValue}]`;
+    const markup = renderToStaticMarkup(getStaticRulePreview("typo-2", variant));
+    expect(markup.match(/<span class="([^"]+)">Account<\/span>/)?.[1]).toContain(trackingClass);
+    expect(paneText("typo-2", variant)).toContain(tracking);
+  });
+
+  it.each(["do", "dont"] as const)("uses the stated size for the %s member email", (variant) => {
+    const caption = rules.find(({ id }) => id === "typo-6")![variant];
+    const size = caption.match(/\d+px/)?.[0];
+    expect(size).toBeDefined();
+    const markup = renderToStaticMarkup(getStaticRulePreview("typo-6", variant));
+    const classes = markup.match(/<p class="([^"]+)">amara@lumen\.co<\/p>/)?.[1];
+    expect(classes).toContain(`text-[${size}]`);
+    expect(classes).toContain("text-neutral-500 dark:text-neutral-400");
+    expect(paneText("typo-6", variant)).toContain(size);
+  });
+
+  it.each(["do", "dont"] as const)("renders the stated display tracking on the %s headline", (variant) => {
+    const caption = rules.find(({ id }) => id === "typo-15")![variant];
+    const size = caption.match(/\d+px/)?.[0];
+    const tracking = caption.match(/-\d+\.\d+em/)?.[0];
+    expect(size).toBeDefined();
+    expect(tracking).toBeDefined();
+    const markup = renderToStaticMarkup(getStaticRulePreview("typo-15", variant));
+    const headline = markup.match(/<p\b[^>]*>/)?.[0];
+    expect(headline).toContain(`text-[${size}]`);
+    expect(headline).toContain("font-semibold");
+    expect(headline).toContain(`letter-spacing:${tracking}`);
+    expect(paneText("typo-15", variant)).toContain(tracking);
+  });
+});
+
 /** Text inside curly or straight quotes: the captions' way of naming a UI label. */
 const QUOTED_LABEL = /[“"‘']([^”"’']+)[”"’']/g;
 
@@ -416,6 +537,63 @@ describe("labels a caption quotes appear in the pane it captions", () => {
         for (const label of labels) {
           if (!text.includes(label.trim())) {
             missing.push(`${rule.id}.${variant}: caption names "${label}", pane shows "${text.trim()}"`);
+          }
+        }
+      }
+    }
+
+    expect(missing, missing.join("\n")).toEqual([]);
+  });
+});
+
+// ── Claimed values are on screen ────────────────────────────────────
+
+/**
+ * A ratio is only true for the ink the pane actually paints. sys-5 quotes
+ * `#0f172a on #262626 (1.2:1)` beside a card whose ink is set by a class; if
+ * the card drifted to another hex, the recomputed ratio above would still
+ * pass while the pane showed something else. So every foreground a static
+ * rule's caption measures must appear in that pane's markup (as an arbitrary
+ * class such as `text-[#0f172a]` or as a quoted value).
+ */
+describe("contrast claims measure the ink the pane paints", () => {
+  it("every '#fg on #bg' foreground in a static caption is in its pane", () => {
+    const missing: string[] = [];
+
+    for (const rule of rules.filter((candidate) => !hasShowcase(candidate.id))) {
+      for (const variant of ["do", "dont"] as const) {
+        const node = getStaticRulePreview(rule.id, variant);
+        const markup = node ? renderToStaticMarkup(node).toLowerCase() : "";
+        for (const [, fg] of rule[variant].matchAll(CONTRAST_CLAIM)) {
+          if (!markup.includes(`#${fg.toLowerCase()}`)) {
+            missing.push(`${rule.id}.${variant}: caption measures #${fg}, pane never paints it`);
+          }
+        }
+      }
+    }
+
+    expect(missing, missing.join("\n")).toEqual([]);
+  });
+});
+
+/**
+ * sys-16 contrasts a toast that closes after 5s with the same screen at 6s.
+ * A caption's timeout and the pane's clock are read side by side, so every
+ * whole-second duration a static rule's caption states must be printed in its
+ * pane, or the two can drift apart unnoticed.
+ */
+const SECONDS_CLAIM = /\b(\d+(?:\.\d+)?)s\b/g;
+
+describe("stated seconds appear in the pane", () => {
+  it("every Ns in a static rule's do/dont is rendered by that pane", () => {
+    const missing: string[] = [];
+
+    for (const rule of rules.filter((candidate) => !hasShowcase(candidate.id))) {
+      for (const variant of ["do", "dont"] as const) {
+        const text = paneText(rule.id, variant);
+        for (const [claim] of rule[variant].matchAll(SECONDS_CLAIM)) {
+          if (!text.includes(claim)) {
+            missing.push(`${rule.id}.${variant}: caption says ${claim}, pane shows "${text.trim()}"`);
           }
         }
       }

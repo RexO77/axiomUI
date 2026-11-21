@@ -14,7 +14,7 @@ Use sentence case for ordinary English labels and headings. Keep the spelling of
 
 For a short uppercase Latin label, compare the font’s default spacing with a small positive adjustment. Judge the result at its displayed size.
 
-- Do: tracking-wider (0.05em)
+- Do: Short caps · +0.025em tracking
 - Don't: tracking-normal (0em)
 - Reasoning: `references/rules/typo-2.md` · https://axiomui.nischal.fyi/rules/typo-2
 
@@ -42,12 +42,12 @@ Start with one family for product headings and body text. Add another family whe
 - Don't: Arial headings + Verdana body
 - Reasoning: `references/rules/typo-5.md` · https://axiomui.nischal.fyi/rules/typo-5
 
-## Keep secondary text legible (`typo-6`)
+## Keep secondary text at a readable size (`typo-6`)
 
-Give secondary text a quieter role through position, weight, size, or tone. Keep ordinary informative text at 4.5:1 or higher against its background for WCAG AA.
+Size secondary text for the task it supports. An email below a member’s name still needs to be easy to read when it helps someone choose the right person.
 
-- Do: text-neutral-500 (14px)
-- Don't: text-neutral-900 (10px)
+- Do: 14px member email
+- Don't: 10px member email
 - Reasoning: `references/rules/typo-6.md` · https://axiomui.nischal.fyi/rules/typo-6
 
 ## Align comparable numbers (`typo-7`)
@@ -113,3 +113,16 @@ A name inserted into a translated sentence can run in either direction. Isolate 
 - Do: Isolate the restaurant name before its review count
 - Don't: Insert the name directly before the dash and count
 - Reasoning: `references/rules/typo-14.md` · https://axiomui.nischal.fyi/rules/typo-14
+
+## Tighten display tracking only until letters crowd (`typo-15`)
+
+When tightening a display headline, check the gaps between neighboring glyphs at the shipped font, weight, and size. An em-based adjustment moves the letters farther as the type gets larger. Stop while the closest pairs still have a visible gap.
+
+- Do: 38px semibold · tracking -0.015em
+- Don't: 38px semibold · tracking -0.05em
+- Reasoning: `references/rules/typo-15.md` · https://axiomui.nischal.fyi/rules/typo-15
+
+## Related rules in other domains
+
+- `layout-2` Set a measure for long-form text (`references/layout.md`)
+- `a11y-5` Choose heading levels by outline, not size (`references/accessibility.md`)

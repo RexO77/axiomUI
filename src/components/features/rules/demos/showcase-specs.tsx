@@ -5,7 +5,6 @@ import { EasingGraph } from "@/components/features/rules/demos/easing-graph";
 import { MotionRail, ProtagonistChip } from "@/components/features/rules/demos/protagonist";
 import {
     ButtonScene,
-    CardRevealScene,
     EdgePanelScene,
     GrowBoxScene,
     IconSwapScene,
@@ -57,9 +56,6 @@ export type PaneSpec = {
     readoutEasing?: string;
     /** A second fact printed beside the readout, e.g. "synced 700ms". */
     readoutTag?: string;
-    /** Always plays at 1×, whatever the speed control says. motion-25 bakes
-     *  its review speed into the durations, so the control would double it. */
-    pinRate?: true;
 };
 
 export type ShowcaseSpec = {
@@ -101,22 +97,58 @@ const t = (target: string, keyframes: Keyframe[], durationMs: number, extra?: Pa
 const railX = (fraction: number) =>
     fraction === 0 ? "translateX(0)" : `translateX(calc((100cqw - 100%) * ${fraction}))`;
 
-/** motion-25: toast with a planted opacity pop — obvious at review speed. */
-const flawedToast = (durationMs: number): Track[] => [
-    t(
-        "panel",
-        [
-            { opacity: 0, transform: "translateY(150%)" },
-            { opacity: 0.55, transform: "translateY(140%)", offset: 0.02 },
-            { opacity: 1, transform: "translateY(0)" },
-        ],
-        durationMs
-    ),
-];
+const PALETTE_ENTRANCE_MS = 180;
+const PALETTE_TYPE_MS = 90;
 
-/** motion-28: an icon fully present, and one gone without moving or blurring. */
-const SHOWN: Keyframe = { opacity: 1, transform: "scale(1)", filter: "blur(0px)" };
-const HIDDEN_IN_PLACE: Keyframe = { opacity: 0, transform: "scale(1)", filter: "blur(0px)" };
+/** The same keystrokes arrive in both panes. Only the focused field receives them. */
+function paletteFocusPane(focusMs: number, caption: string): PaneSpec {
+    const receivesQuery = focusMs <= PALETTE_TYPE_MS;
+    return {
+        caption: `${focusMs}ms to focus · ${PALETTE_ENTRANCE_MS}ms entrance — ${caption}`,
+        scene: () => <PaletteScene query={receivesQuery ? "op" : ""} />,
+        readoutMs: focusMs,
+        readoutTag: "focus",
+        tracks: [
+            t("panel", kf.riseIn(8), PALETTE_ENTRANCE_MS),
+            t("key", kf.keyPress(), PALETTE_TYPE_MS),
+            t("focus", kf.fadeIn(), 0, { delayMs: focusMs }),
+            ...(receivesQuery ? [
+                t("query", kf.fadeIn(), 0, { delayMs: PALETTE_TYPE_MS }),
+                t("placeholder", kf.crossfade(false), 0, { delayMs: PALETTE_TYPE_MS }),
+                t("caret", [{ transform: "translateX(0)" }, { transform: "translateX(2ch)" }], 0, { delayMs: PALETTE_TYPE_MS }),
+            ] : []),
+        ],
+        exitTracks: [
+            t("panel", kf.crossfade(false), DUR.fast),
+            t("focus", kf.crossfade(false), 0, { delayMs: DUR.fast }),
+            ...(receivesQuery ? [
+                t("query", kf.crossfade(false), 0, { delayMs: DUR.fast }),
+                t("placeholder", kf.fadeIn(), 0, { delayMs: DUR.fast }),
+                t("caret", [{ transform: "translateX(2ch)" }, { transform: "translateX(0)" }], 0, { delayMs: DUR.fast }),
+            ] : []),
+        ],
+    };
+}
+
+const ICON_SWAP_MS = 300;
+
+/** Match the opacity curve and duration. Only the incoming glyph's blur varies. */
+function iconSwap(outgoing: string, incoming: string, blurPx: number): Track[] {
+    const timing = { easing: EASE.inOut };
+    return [
+        t(outgoing, [
+            { opacity: 1, filter: "blur(0px)" },
+            { opacity: 0, filter: "blur(0px)", offset: 0.45 },
+            { opacity: 0, filter: "blur(0px)" },
+        ], ICON_SWAP_MS, timing),
+        t(incoming, [
+            { opacity: 0, filter: `blur(${blurPx}px)` },
+            // A reversal takes its first frame from the outgoing glyph's current style.
+            { opacity: 0.25, filter: `blur(${blurPx * 0.75}px)`, offset: 0.25 },
+            { opacity: 1, filter: "blur(0px)" },
+        ], ICON_SWAP_MS, timing),
+    ];
+}
 
 /** motion-10: the origin pip shows while the menu grows, then gets out of the
  *  way 150ms after it lands. The centre origin sits over "Duplicate", so a
@@ -141,31 +173,6 @@ const menuFromOriginExit = (fromScale: number): Track[] => [
     ),
     t("origin-dot", [{ opacity: 0 }, { opacity: 0 }], 0),
 ];
-
-/** motion-23's grid stand-in: a card dragged most of the way along its rail.
- *  The deep dive is a real drag prototype (drag-showcases.tsx). */
-const SWIPE: Keyframe[] = [{ transform: railX(0) }, { transform: railX(0.8) }];
-const SWIPE_BACK: Keyframe[] = [{ transform: railX(0.8) }, { transform: railX(0) }];
-/** The same ease-out path, held between irregular frames: progress only
- *  updates at 14%, 22%, 41%, 50%, 68% and 84% of the timeline, and sits still
- *  in between. That is what a drag looks like when style work exceeds the
- *  frame budget and the browser starts dropping frames. */
-const SWIPE_SAMPLES = [
-    [0, 0],
-    [0.14, 0.528],
-    [0.22, 0.723],
-    [0.41, 0.931],
-    [0.50, 0.966],
-    [0.68, 0.994],
-    [0.84, 1],
-    [1, 1],
-] as const;
-const droppedSwipe = (from: number, to: number): Keyframe[] =>
-    SWIPE_SAMPLES.map(([offset, progress]) => ({
-        offset,
-        transform: railX(from + (to - from) * progress),
-        easing: "steps(1, end)",
-    }));
 
 /** Easing demo: labeled chip on a rail + curve as one instrument.
  *  The printed curve label is derived from the control points, so a pane can
@@ -213,36 +220,13 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         },
     },
 
-    /* motion-2 · Keyboard actions stay instant — real K keystroke; the kbd
-     * chip in both palettes depresses so keystroke and response read as one. */
+    /* motion-2 · A shared palette entrance with immediate or delayed focus. */
     "motion-2": {
         trigger: "action",
         control: "Press K",
         hotkey: "k",
-        // The readout counts the panel, which is the lesson; the key press
-        // is the same 90ms on both sides. keyPress ends where it starts, so
-        // settle-back only closes the panel and never presses the key again.
-        do: {
-            caption: "panel 0ms · keypress 90ms — the result is the feedback",
-            scene: () => <PaletteScene />,
-            readoutMs: 0,
-            readoutTag: "key 90ms",
-            tracks: [
-                t("panel", kf.fadeIn(), 0),
-                t("key", kf.keyPress(), 90),
-            ],
-            exitTracks: [t("panel", kf.crossfade(false), DUR.fast)],
-        },
-        dont: {
-            caption: "Panel 240ms · keypress 90ms",
-            scene: () => <PaletteScene />,
-            readoutMs: 240,
-            tracks: [
-                t("panel", kf.riseIn(8), 240),
-                t("key", kf.keyPress(), 90),
-            ],
-            exitTracks: [t("panel", kf.crossfade(false), DUR.fast)],
-        },
+        do: paletteFocusPane(0, "“op” appears in the field"),
+        dont: paletteFocusPane(PALETTE_ENTRANCE_MS, "the first keystrokes are lost"),
     },
 
     /* motion-3 · Purpose before motion — panel slides from its edge (spatial
@@ -313,49 +297,6 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
                     [{ transform: "translateY(0%)" }, { transform: "translateY(-100%)" }],
                     DUR.slow,
                     { easing: EASE.browserDefault }
-                ),
-            ],
-        },
-    },
-
-    /* motion-5 · Never use ease-in for UI. */
-    "motion-5": {
-        trigger: "replay",
-        hint: "Compare how far each marker travels during the first 100ms.",
-        do: {
-            caption: "ease-out · 220ms — responds the instant you ask",
-            scene: () => easingScene(0.23, 1, 0.32, 1, "Menu"),
-            tracks: [
-                t("panel", kf.race(), DUR.medium),
-                t(
-                    "dot-x",
-                    [{ transform: "translateX(0%)" }, { transform: "translateX(100%)" }],
-                    DUR.medium,
-                    { easing: EASE.linear }
-                ),
-                t(
-                    "dot-y",
-                    [{ transform: "translateY(0%)" }, { transform: "translateY(-100%)" }],
-                    DUR.medium
-                ),
-            ],
-        },
-        dont: {
-            caption: "Ease-in · 220ms — accelerates from a slow start",
-            scene: () => easingScene(0.55, 0, 1, 0.45, "Menu"),
-            tracks: [
-                t("panel", kf.race(), DUR.medium, { easing: EASE.in }),
-                t(
-                    "dot-x",
-                    [{ transform: "translateX(0%)" }, { transform: "translateX(100%)" }],
-                    DUR.medium,
-                    { easing: EASE.linear }
-                ),
-                t(
-                    "dot-y",
-                    [{ transform: "translateY(0%)" }, { transform: "translateY(-100%)" }],
-                    DUR.medium,
-                    { easing: EASE.in }
                 ),
             ],
         },
@@ -710,12 +651,12 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
     "motion-20": {
         trigger: "drag",
         do: {
-            caption: "Captured pointer — the knob continues outside the frame",
+            caption: "The knob follows outside the frame until release or cancel",
             scene: () => <SliderScene />,
             tracks: [t("knob", [{ transform: railX(0) }, { transform: railX(1) }], 500)],
         },
         dont: {
-            caption: "Simulated uncaptured mouse — the knob stops at the border",
+            caption: "The knob freezes outside the frame mid-drag",
             scene: () => <SliderScene />,
             tracks: [
                 t(
@@ -746,42 +687,6 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         },
     },
 
-    /* motion-22 · Use WAAPI for programmatic motion — real setInterval vs animate. */
-    "motion-22": {
-        trigger: "load",
-        do: {
-            caption: "element.animate() — browser interpolates the transform",
-            scene: () => <RaceScene label="WAAPI" />,
-            tracks: [t("panel", kf.race(), DUR.medium)],
-        },
-        dont: {
-            caption: "setInterval every 80ms — animation by flipbook",
-            scene: () => <RaceScene label="setInterval" />,
-            tracks: [t("panel", kf.race(), DUR.medium, { easing: "steps(8, end)" })],
-        },
-    },
-
-    /* motion-23 · Avoid inheritable motion variables — the deep dive is a real
-     * drag prototype (drag-showcases.tsx) that reads these captions and the
-     * hint. The grid simulates one swipe: the same card on the same path, with
-     * the Don't's frames dropped. */
-    "motion-23": {
-        trigger: "drag",
-        hint: "Drag either card to compare the time for a style write and computed-style reads.",
-        do: {
-            caption: "Write element.style.transform on the card",
-            scene: () => <RailCardScene />,
-            tracks: [t("card", SWIPE, 600)],
-            exitTracks: [t("card", SWIPE_BACK, DUR.slow)],
-        },
-        dont: {
-            caption: "Update the inherited --swipe-amount on the list",
-            scene: () => <RailCardScene />,
-            tracks: [t("card", droppedSwipe(0, 0.8), 600, { easing: EASE.linear })],
-            exitTracks: [t("card", droppedSwipe(0.8, 0), DUR.slow, { easing: EASE.linear })],
-        },
-    },
-
     /* motion-24 · Stagger without blocking — 60ms steps vs a 220ms cascade.
      * Caption math: 220ms + 2 steps × stagger = when the last row lands. */
     "motion-24": {
@@ -799,133 +704,24 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         },
     },
 
-    /* motion-25 · Review in Slow Time — same flawed toast at review vs 1×.
-     * Durations are baked (not the speed control): 880ms ≈ 220ms × 4. */
-    "motion-25": {
-        trigger: "replay",
-        hint: "Watch the opacity at the start of the same toast entrance at both speeds.",
-        do: {
-            caption: "220ms stretched to 880ms — inspect the opacity jump",
-            scene: () => <ToastScene />,
-            tracks: flawedToast(880),
-            pinRate: true,
-        },
-        dont: {
-            caption: "220ms at normal speed — the same opacity jump",
-            scene: () => <ToastScene />,
-            tracks: flawedToast(220),
-            pinRate: true,
-        },
-    },
-
-    /* motion-26 · Split enter animations — a composed card whose header, body
-     * and actions arrive as three beats vs one undifferentiated fade. */
-    "motion-26": {
-        trigger: "replay",
-        hint: "Follow the heading, copy and action, then compare when the action becomes visible.",
-        do: {
-            caption: "title, body, actions — three beats, 90ms apart",
-            scene: () => <CardRevealScene mode="parts" />,
-            tracks: [
-                t("whole", kf.fadeIn(), DUR.fast),
-                t("part", kf.riseIn(8), DUR.medium, { staggerMs: 90 }),
-            ],
-        },
-        dont: {
-            caption: "title, body, actions together — one fade, no beats",
-            scene: () => <CardRevealScene mode="whole" />,
-            tracks: [t("whole", kf.fadeIn(), DUR.slow)],
-        },
-    },
-
-    /* motion-27 · Subtle exit motion — a short fixed offset preserves context;
-     * the exaggerated comparison shrinks and flies away. */
-    "motion-27": {
-        trigger: "replay",
-        hint: "Watch where your eye goes — the exit shouldn't compete with what's next",
-        do: {
-            caption: "-12px + fade · 150ms — a short lift",
-            scene: () => <ButtonScene label="Dismiss" variant="secondary" />,
-            tracks: [t("panel", kf.dropOut(-12), 150)],
-        },
-        dont: {
-            caption: "-100% + scale(0.5) · 400ms — travels a full height",
-            scene: () => <ButtonScene label="Dismiss" variant="secondary" />,
-            tracks: [
-                t(
-                    "panel",
-                    [
-                        { opacity: 1, transform: "translateY(0) scale(1)" },
-                        { opacity: 0, transform: "translateY(-100%) scale(0.5)" },
-                    ],
-                    400,
-                    { easing: EASE.in },
-                ),
-            ],
-        },
-    },
-
-    /* motion-28 · Animate contextual icons — keep both icons mounted and
-     * cross-fade with the prescribed scale/opacity/blur combination. */
+    /* motion-28 · Identical crossfades, with and without blur on arrival. */
     "motion-28": {
         trigger: "toggle",
         control: "Change state",
         controlEngaged: "Change back",
-        hint: "Replay at ¼× and watch the two glyphs share the same position.",
-        hintReduced: "Change state and compare the final glyphs.",
+        hint: "Switch to ¼× to compare when each incoming glyph becomes recognizable.",
+        hintReduced: "Change state to see the incoming glyph at rest.",
         do: {
-            caption: "Scale + fade + blur · 300ms — overlapping glyphs",
+            caption: `${ICON_SWAP_MS}ms crossfade — the incoming glyph stays sharp`,
             scene: () => <IconSwapScene />,
-            tracks: [
-                t(
-                    "icon-out",
-                    [
-                        { opacity: 1, transform: "scale(1)", filter: "blur(0px)" },
-                        { opacity: 0, transform: "scale(0.25)", filter: "blur(4px)" },
-                    ],
-                    300,
-                ),
-                t(
-                    "icon-in",
-                    [
-                        { opacity: 0, transform: "scale(0.25)", filter: "blur(4px)" },
-                        { opacity: 1, transform: "scale(1)", filter: "blur(0px)" },
-                    ],
-                    300,
-                ),
-            ],
-            exitTracks: [
-                t(
-                    "icon-out",
-                    [
-                        { opacity: 0, transform: "scale(0.25)", filter: "blur(4px)" },
-                        { opacity: 1, transform: "scale(1)", filter: "blur(0px)" },
-                    ],
-                    300,
-                ),
-                t(
-                    "icon-in",
-                    [
-                        { opacity: 1, transform: "scale(1)", filter: "blur(0px)" },
-                        { opacity: 0, transform: "scale(0.25)", filter: "blur(4px)" },
-                    ],
-                    300,
-                ),
-            ],
+            tracks: iconSwap("icon-out", "icon-in", 0),
+            exitTracks: iconSwap("icon-in", "icon-out", 0),
         },
         dont: {
-            caption: "Instant swap · 0ms",
+            caption: `${ICON_SWAP_MS}ms crossfade — blur obscures the incoming glyph`,
             scene: () => <IconSwapScene />,
-            // Same scene as the do pane, so the incoming icon rests at
-            // scale(0.25) + blur. Key the whole state or the swap shows a speck.
-            tracks: [
-                t("icon-out", [SHOWN, HIDDEN_IN_PLACE], 0),
-                t("icon-in", [HIDDEN_IN_PLACE, SHOWN], 0),
-            ],
-            exitTracks: [
-                t("icon-out", [HIDDEN_IN_PLACE, SHOWN], 0),
-                t("icon-in", [SHOWN, HIDDEN_IN_PLACE], 0),
-            ],
+            tracks: iconSwap("icon-out", "icon-in", 4),
+            exitTracks: iconSwap("icon-in", "icon-out", 4),
         },
     },
 

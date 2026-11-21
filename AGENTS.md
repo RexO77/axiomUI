@@ -43,8 +43,8 @@
   from the checkout and a real package tarball on Node 18.17.0 and 20, using throwaway homes.
   Run `node packages/axiomui/test/smoke.mjs` after changing package behavior; an optional
   bin path argument exercises an extracted tarball. Regenerate skills first.
-- `npm run check` (`scripts/check-deep-dives.mjs`) asserts all 108 rules have authored
-  deep-dive prose. It must print `108/108`.
+- `npm run check` (`scripts/check-deep-dives.mjs`) asserts every rule has authored
+  deep-dive prose. Both numbers it prints must match.
 - `src/data/__tests__/consistency.test.ts` checks *claims*, not syntax: stated contrast ratios
   are recomputed, Tailwind classes are validated against the real scale, and showcase captions
   are checked against the durations and scale values their panes actually run. A rule's
@@ -71,3 +71,13 @@
 ## Configuration & Security Notes
 - Store secrets in `.env.local` (not committed). Client-exposed vars must be prefixed with `NEXT_PUBLIC_`.
 - Keep `public/` assets web-safe and optimized (SVG/WEBP preferred for large images).
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

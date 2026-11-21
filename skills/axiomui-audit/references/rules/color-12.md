@@ -25,7 +25,8 @@ Forced-color modes suppress box shadows. If a shadow is the sole cue that a fiel
 
 1. Decide whether the surface is raised, flat, or selected.
 2. Use the corresponding elevation token and examine it on each theme surface.
-3. Supply a visible system-color border or outline in forced colors when the boundary carries meaning.
+3. A shadow tinted with the surface’s own hue, such as indigo under an indigo promotion, is optional art direction for a one-off branded surface. Keep reusable cards, menus and dialogs on the neutral elevation token, where a colored glow can read as focus or a special state.
+4. Supply a visible system-color border or outline in forced colors when the boundary carries meaning.
 
 ## Review questions
 

@@ -7,25 +7,25 @@
 
 For a short uppercase Latin label, compare the font’s default spacing with a small positive adjustment. Judge the result at its displayed size.
 
-- Do: tracking-wider (0.05em)
+- Do: Short caps · +0.025em tracking
 - Don't: tracking-normal (0em)
 
 ## Why it works
 
-The difference between 0 and 0.05em accumulates across the letters of a long navigation label. Extra space can separate crowded strokes. A face with generous sidebearings can already have enough room.
+A small amount of extra space gives the uppercase Account label more separation between strokes. A face with generous sidebearings can already have enough room.
 
-- [USWDS · Typesetting guidance](https://designsystem.digital.gov/components/typography/)
-- [WCAG 2.2 · Text spacing](https://www.w3.org/WAI/WCAG22/Understanding/text-spacing.html)
+- [USWDS · Letterspacing tokens](https://designsystem.digital.gov/design-tokens/typesetting/letterspacing/)
+- [WCAG 2.2 · Text spacing overrides and clipping](https://www.w3.org/WAI/WCAG22/Understanding/text-spacing.html)
 
 ## What breaks
 
-A tracking value copied from a larger heading can push a small label onto a second line. Applying the same treatment across scripts can interfere with expected spacing and joining.
+A tracking value copied from a larger heading can push a small label onto a second line. A fixed-width, single-line label can clip when someone increases text spacing.
 
 ## How to apply it
 
-1. Compare the same label at its actual weight and size with 0 and 0.05em tracking.
+1. Compare the font’s default spacing with USWDS’s 0.025em token for short caps at the actual weight and size.
 2. Check the longest localized label at the narrowest supported width.
-3. Allow reader spacing overrides to expand the label without clipping it.
+3. Apply the WCAG 1.4.12 text-spacing overrides and check that the label can expand without clipping.
 
 ## Review questions
 

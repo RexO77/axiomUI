@@ -6,11 +6,12 @@ export const ruleSources: Readonly<Record<string, readonly RuleSource[]>> = {
     { title: "Microsoft Writing Style Guide · Capitalization", href: "https://learn.microsoft.com/en-us/style-guide/capitalization" },
   ],
   "typo-2": [
-    { title: "USWDS · Typesetting guidance", href: "https://designsystem.digital.gov/components/typography/" },
-    { title: "WCAG 2.2 · Text spacing", href: "https://www.w3.org/WAI/WCAG22/Understanding/text-spacing.html" },
+    { title: "USWDS · Letterspacing tokens", href: "https://designsystem.digital.gov/design-tokens/typesetting/letterspacing/" },
+    { title: "WCAG 2.2 · Text spacing overrides and clipping", href: "https://www.w3.org/WAI/WCAG22/Understanding/text-spacing.html" },
   ],
   "typo-3": [
-    { title: "WCAG 2.2 · Text spacing", href: "https://www.w3.org/WAI/WCAG22/Understanding/text-spacing.html" },
+    { title: "WCAG 2.2 · Visual presentation (1.4.8)", href: "https://www.w3.org/WAI/WCAG22/Understanding/visual-presentation.html" },
+    { title: "WCAG 2.2 · Text spacing overrides and clipping (1.4.12)", href: "https://www.w3.org/WAI/WCAG22/Understanding/text-spacing.html" },
     { title: "USWDS · Line height", href: "https://designsystem.digital.gov/design-tokens/typesetting/line-height/" },
   ],
   "typo-4": [
@@ -20,7 +21,7 @@ export const ruleSources: Readonly<Record<string, readonly RuleSource[]>> = {
     { title: "USWDS · Font families", href: "https://designsystem.digital.gov/design-tokens/typesetting/font-family/" },
   ],
   "typo-6": [
-    { title: "WCAG 2.2 · Contrast (minimum)", href: "https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html" },
+    { title: "USWDS · Typesetting and optical size", href: "https://designsystem.digital.gov/design-tokens/typesetting/overview/" },
   ],
   "typo-7": [
     { title: "GOV.UK · Tables with numeric columns", href: "https://design-system.service.gov.uk/components/table/" },
@@ -51,12 +52,16 @@ export const ruleSources: Readonly<Record<string, readonly RuleSource[]>> = {
     { title: "W3C Internationalization · Inline bidirectional text", href: "https://www.w3.org/International/articles/inline-bidi-markup/" },
     { title: "W3C Internationalization · Document direction", href: "https://www.w3.org/International/questions/qa-html-dir" },
   ],
+  "typo-15": [
+    { title: "USWDS · Letterspacing tokens", href: "https://designsystem.digital.gov/design-tokens/typesetting/letterspacing/" },
+    { title: "CSS Text · Letter spacing", href: "https://www.w3.org/TR/css-text-3/#letter-spacing-property" },
+  ],
 
   "layout-1": [
     { title: "USWDS · Spacing units", href: "https://designsystem.digital.gov/design-tokens/spacing-units/" },
   ],
   "layout-2": [
-    { title: "USWDS · Typesetting guidance", href: "https://designsystem.digital.gov/components/typography/" },
+    { title: "USWDS · Measure (line length)", href: "https://designsystem.digital.gov/design-tokens/typesetting/measure/" },
     { title: "CSS Values · Font-relative lengths", href: "https://www.w3.org/TR/css-values-4/#ch" },
   ],
   "layout-3": [
@@ -77,10 +82,6 @@ export const ruleSources: Readonly<Record<string, readonly RuleSource[]>> = {
   "layout-7": [
     { title: "USWDS · Cards", href: "https://designsystem.digital.gov/components/card/" },
   ],
-  "layout-8": [
-    { title: "CSS Box Alignment · Gaps between boxes", href: "https://www.w3.org/TR/css-align-3/#gaps" },
-    { title: "IBM Carbon · Spacing", href: "https://www.carbondesignsystem.com/building-blocks/foundations/spacing/overview" },
-  ],
   "layout-9": [
     { title: "GOV.UK · Spacing", href: "https://design-system.service.gov.uk/styles/spacing/" },
   ],
@@ -89,25 +90,28 @@ export const ruleSources: Readonly<Record<string, readonly RuleSource[]>> = {
   ],
   "layout-11": [
     { title: "CSS · Stacking contexts", href: "https://www.w3.org/TR/CSS2/visuren.html#z-index" },
+    { title: "CSS Transforms · Transform rendering model", href: "https://www.w3.org/TR/css-transforms-1/#transform-rendering" },
     { title: "CSS Positioned Layout · The top layer", href: "https://www.w3.org/TR/css-position-4/#top-layer" },
+  ],
+  "layout-12": [
+    { title: "WCAG 2.2 · Focus not obscured (minimum)", href: "https://www.w3.org/WAI/WCAG22/Understanding/focus-not-obscured-minimum.html" },
+    { title: "WCAG technique C43 · scroll-padding", href: "https://www.w3.org/WAI/WCAG22/Techniques/css/C43" },
+  ],
+  "layout-13": [
+    { title: "web.dev · Optimize Cumulative Layout Shift", href: "https://web.dev/articles/optimize-cls" },
+    { title: "HTML · Dimension attributes", href: "https://html.spec.whatwg.org/multipage/embedded-content-other.html#dimension-attributes" },
+  ],
+  "layout-14": [
+    { title: "HTML · Art direction with the picture element", href: "https://html.spec.whatwg.org/multipage/images.html#art-direction" },
+    { title: "CSS Images 3 · object-position", href: "https://www.w3.org/TR/css-images-3/#the-object-position" },
   ],
 
   "color-1": [
     { title: "Atlassian · Color roles", href: "https://atlassian.design/foundations/color" },
   ],
-  "color-2": [
-    { title: "WCAG 2.2 · Contrast (enhanced)", href: "https://www.w3.org/WAI/WCAG22/Understanding/contrast-enhanced.html" },
-  ],
-  "color-3": [
-    { title: "CSS Backgrounds and Borders · Shadow layers", href: "https://www.w3.org/TR/css-backgrounds-3/#shadow-layers" },
-    { title: "Atlassian · Elevation", href: "https://atlassian.design/foundations/elevation" },
-  ],
   "color-4": [
     { title: "WCAG 2.2 · Use of color", href: "https://www.w3.org/WAI/WCAG22/Understanding/use-of-color.html" },
     { title: "Atlassian · Color roles", href: "https://atlassian.design/foundations/color" },
-  ],
-  "color-5": [
-    { title: "WCAG 2.2 · Non-text contrast", href: "https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html" },
   ],
   "color-6": [
     { title: "WCAG 2.2 · Contrast at control boundaries", href: "https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html#boundaries" },
@@ -182,6 +186,14 @@ export const ruleSources: Readonly<Record<string, readonly RuleSource[]>> = {
     { title: "W3C WAI · Complex images", href: "https://www.w3.org/WAI/tutorials/images/complex/" },
     { title: "USWDS · Data visualizations", href: "https://designsystem.digital.gov/components/data-visualizations/" },
   ],
+  "comp-14": [
+    { title: "HTML · The a element", href: "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-a-element" },
+    { title: "WAI-ARIA APG · Link pattern", href: "https://www.w3.org/WAI/ARIA/apg/patterns/link/" },
+    { title: "WAI-ARIA APG · Button pattern", href: "https://www.w3.org/WAI/ARIA/apg/patterns/button/" },
+  ],
+  "comp-15": [
+    { title: "Nielsen Norman Group · Photos as web content", href: "https://www.nngroup.com/articles/photos-as-web-content/" },
+  ],
 
   "form-1": [
     { title: "W3C WAI · Labeling form controls", href: "https://www.w3.org/WAI/tutorials/forms/labels/" },
@@ -217,8 +229,8 @@ export const ruleSources: Readonly<Record<string, readonly RuleSource[]>> = {
     { title: "GOV.UK · Date inputs", href: "https://design-system.service.gov.uk/components/date-input/" },
   ],
   "form-10": [
+    { title: "WCAG 2.2 · Meaningful sequence (1.3.2)", href: "https://www.w3.org/WAI/WCAG22/Understanding/meaningful-sequence.html" },
     { title: "WCAG 2.2 · Focus order", href: "https://www.w3.org/WAI/WCAG22/Understanding/focus-order.html" },
-    { title: "W3C Internationalization · Personal names around the world", href: "https://www.w3.org/International/questions/qa-personal-names" },
   ],
   "form-11": [
     { title: "WCAG 2.2 · Redundant entry", href: "https://www.w3.org/WAI/WCAG22/Understanding/redundant-entry.html" },
@@ -231,6 +243,15 @@ export const ruleSources: Readonly<Record<string, readonly RuleSource[]>> = {
   "form-13": [
     { title: "WCAG 2.2 · Accessible authentication (minimum)", href: "https://www.w3.org/WAI/WCAG22/Understanding/accessible-authentication-minimum.html" },
     { title: "W3C WAI · Failure to accept a complete code", href: "https://www.w3.org/WAI/WCAG22/Techniques/failures/F109" },
+  ],
+  "form-14": [
+    { title: "WCAG 2.2 · Identify input purpose", href: "https://www.w3.org/WAI/WCAG22/Understanding/identify-input-purpose.html" },
+    { title: "HTML · Input modalities: inputmode", href: "https://html.spec.whatwg.org/multipage/interaction.html#input-modalities:-the-inputmode-attribute" },
+    { title: "GOV.UK · Email addresses", href: "https://design-system.service.gov.uk/patterns/email-addresses/" },
+  ],
+  "form-15": [
+    { title: "GOV.UK · Validation pattern", href: "https://design-system.service.gov.uk/patterns/validation/" },
+    { title: "React · Preserving form values after an Action", href: "https://react.dev/reference/react-dom/components/form#preserving-form-values-after-an-action" },
   ],
 
   "sys-1": [
@@ -249,6 +270,7 @@ export const ruleSources: Readonly<Record<string, readonly RuleSource[]>> = {
   ],
   "sys-5": [
     { title: "Design Tokens Community Group · Aliases and references", href: "https://www.designtokens.org/tr/2025.10/format/#aliases-references" },
+    { title: "WCAG 2.2 · Contrast (minimum)", href: "https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html" },
   ],
   "sys-6": [
     { title: "WCAG 2.2 · Error prevention (legal, financial, data)", href: "https://www.w3.org/WAI/WCAG22/Understanding/error-prevention-legal-financial-data.html" },
@@ -269,15 +291,22 @@ export const ruleSources: Readonly<Record<string, readonly RuleSource[]>> = {
     { title: "Stripe · Idempotent requests", href: "https://docs.stripe.com/api/idempotent_requests" },
   ],
   "sys-11": [
-    { title: "web.dev · Media queries", href: "https://web.dev/learn/design/media-queries" },
     { title: "WCAG 2.2 · Reflow", href: "https://www.w3.org/WAI/WCAG22/Understanding/reflow.html" },
+    { title: "WCAG 2.2 · Resize text", href: "https://www.w3.org/WAI/WCAG22/Understanding/resize-text.html" },
+    { title: "web.dev · Media queries", href: "https://web.dev/learn/design/media-queries" },
   ],
   "sys-13": [
     { title: "CSS Transitions · Starting a transition", href: "https://www.w3.org/TR/css-transitions-1/#starting" },
     { title: "CSS Transitions · Selecting properties to transition", href: "https://www.w3.org/TR/css-transitions-1/#transition-property-property" },
   ],
-  "sys-14": [
-    { title: "CSS Will Change · The will-change property", href: "https://www.w3.org/TR/css-will-change-1/#will-change" },
+  "sys-15": [
+    { title: "Baymard Institute · Return users to the same place in the list", href: "https://baymard.com/research-articles/return-same-place" },
+    { title: "WHATWG HTML · The History interface", href: "https://html.spec.whatwg.org/multipage/nav-history-apis.html#the-history-interface" },
+    { title: "MDN · History.scrollRestoration", href: "https://developer.mozilla.org/en-US/docs/Web/API/History/scrollRestoration" },
+  ],
+  "sys-16": [
+    { title: "WCAG 2.2 · Timing adjustable", href: "https://www.w3.org/WAI/WCAG22/Understanding/timing-adjustable.html" },
+    { title: "IBM Carbon · Notification dismissal", href: "https://www.carbondesignsystem.com/building-blocks/core/components/notification/guidelines" },
   ],
 
   "a11y-1": [
@@ -291,6 +320,26 @@ export const ruleSources: Readonly<Record<string, readonly RuleSource[]>> = {
   ],
   "a11y-3": [
     { title: "WCAG 2.2 · Target spacing", href: "https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html#spacing" },
+  ],
+  "a11y-4": [
+    { title: "WCAG 2.2 · Dragging movements", href: "https://www.w3.org/WAI/WCAG22/Understanding/dragging-movements.html" },
+  ],
+  "a11y-5": [
+    { title: "W3C WAI · Headings", href: "https://www.w3.org/WAI/tutorials/page-structure/headings/" },
+    { title: "WCAG 2.2 · Info and relationships", href: "https://www.w3.org/WAI/WCAG22/Understanding/info-and-relationships.html" },
+  ],
+  "a11y-6": [
+    { title: "WCAG 2.2 · Pause, stop, hide", href: "https://www.w3.org/WAI/WCAG22/Understanding/pause-stop-hide.html" },
+    { title: "WAI-ARIA APG · Carousel pattern", href: "https://www.w3.org/WAI/ARIA/apg/patterns/carousel/" },
+  ],
+  "a11y-7": [
+    { title: "WCAG failure F73 · Links identified by color alone", href: "https://www.w3.org/WAI/WCAG22/Techniques/failures/F73" },
+    { title: "WCAG technique G183 · Contrast with surrounding text", href: "https://www.w3.org/WAI/WCAG22/Techniques/general/G183" },
+    { title: "GOV.UK · Links", href: "https://design-system.service.gov.uk/styles/links/" },
+  ],
+  "a11y-8": [
+    { title: "WAI-ARIA APG · Modal dialog pattern", href: "https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/" },
+    { title: "WCAG 2.2 · Focus order", href: "https://www.w3.org/WAI/WCAG22/Understanding/focus-order.html" },
   ],
 
   "motion-1": [
@@ -308,12 +357,9 @@ export const ruleSources: Readonly<Record<string, readonly RuleSource[]>> = {
     { title: "CSS Easing · Cubic Bézier curves", href: "https://www.w3.org/TR/css-easing-1/#cubic-bezier-easing-functions" },
     { title: "IBM Carbon · Motion principles and timing", href: "https://www.carbondesignsystem.com/building-blocks/foundations/motion/overview" },
   ],
-  "motion-5": [
-    { title: "CSS Easing · Cubic Bézier curves", href: "https://www.w3.org/TR/css-easing-1/#cubic-bezier-easing-functions" },
-    { title: "IBM Carbon · Motion principles and timing", href: "https://www.carbondesignsystem.com/building-blocks/foundations/motion/overview" },
-  ],
   "motion-6": [
     { title: "IBM Carbon · Motion principles and timing", href: "https://www.carbondesignsystem.com/building-blocks/foundations/motion/overview" },
+    { title: "Chrome DevTools · Inspecting animations", href: "https://developer.chrome.com/docs/devtools/css/animations" },
   ],
   "motion-7": [
     { title: "IBM Carbon · Motion principles and timing", href: "https://www.carbondesignsystem.com/building-blocks/foundations/motion/overview" },
@@ -345,7 +391,8 @@ export const ruleSources: Readonly<Record<string, readonly RuleSource[]>> = {
   ],
   "motion-14": [
     { title: "web.dev · Animation performance and profiling", href: "https://web.dev/articles/animations-guide" },
-    { title: "CSS Transforms · Transform geometry", href: "https://www.w3.org/TR/css-transforms-1/" },
+    { title: "CSS Custom Properties · Inheritance and substitution", href: "https://www.w3.org/TR/css-variables-1/" },
+    { title: "CSS Will Change · The will-change property", href: "https://www.w3.org/TR/css-will-change-1/#will-change" },
   ],
   "motion-15": [
     { title: "CSS Transforms · Transform geometry", href: "https://www.w3.org/TR/css-transforms-1/" },
@@ -354,6 +401,7 @@ export const ruleSources: Readonly<Record<string, readonly RuleSource[]>> = {
     { title: "Media Queries · Hover and pointer capabilities", href: "https://www.w3.org/TR/mediaqueries-4/#mf-interaction" },
   ],
   "motion-17": [
+    { title: "Media Queries Level 5 · Reduced motion preference", href: "https://www.w3.org/TR/mediaqueries-5/#prefers-reduced-motion" },
     { title: "WCAG 2.2 · Animation from interactions", href: "https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions.html" },
     { title: "WCAG 2.2 · Status messages", href: "https://www.w3.org/WAI/WCAG22/Understanding/status-messages.html" },
   ],
@@ -363,8 +411,8 @@ export const ruleSources: Readonly<Record<string, readonly RuleSource[]>> = {
     { title: "WCAG 2.2 · Pointer cancellation", href: "https://www.w3.org/WAI/WCAG22/Understanding/pointer-cancellation.html" },
   ],
   "motion-19": [
-    { title: "Flutter · Bouncing scroll physics", href: "https://api.flutter.dev/flutter/widgets/BouncingScrollPhysics-class.html" },
-    { title: "Flutter · Clamping scroll physics", href: "https://api.flutter.dev/flutter/widgets/ClampingScrollPhysics-class.html" },
+    { title: "Motion · Elastic drag constraints", href: "https://motion.dev/docs/react-drag#elastic-constraints" },
+    { title: "CSS Overscroll Behavior · Scroll boundary default actions", href: "https://www.w3.org/TR/css-overscroll-1/#scroll-chaining" },
   ],
   "motion-20": [
     { title: "Pointer Events · Pointer capture", href: "https://www.w3.org/TR/pointerevents3/#pointer-capture" },
@@ -375,26 +423,9 @@ export const ruleSources: Readonly<Record<string, readonly RuleSource[]>> = {
     { title: "W3C · Web Animations timing and playback", href: "https://www.w3.org/TR/web-animations-1/" },
     { title: "web.dev · Interaction latency and presentation delay", href: "https://web.dev/articles/optimize-inp" },
   ],
-  "motion-22": [
-    { title: "W3C · Web Animations timing and playback", href: "https://www.w3.org/TR/web-animations-1/" },
-    { title: "web.dev · Animation performance and profiling", href: "https://web.dev/articles/animations-guide" },
-  ],
-  "motion-23": [
-    { title: "CSS Custom Properties · Inheritance and substitution", href: "https://www.w3.org/TR/css-variables-1/" },
-    { title: "CSS Properties and Values API · Registered properties", href: "https://www.w3.org/TR/css-properties-values-api-1/" },
-  ],
   "motion-24": [
     { title: "Motion · Staggering animations", href: "https://motion.dev/docs/stagger" },
-  ],
-  "motion-25": [
-    { title: "Chrome DevTools · Inspecting animations", href: "https://developer.chrome.com/docs/devtools/css/animations" },
-  ],
-  "motion-26": [
     { title: "WAI-ARIA APG · Modal dialog pattern", href: "https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/" },
-    { title: "Motion · Staggering animations", href: "https://motion.dev/docs/stagger" },
-  ],
-  "motion-27": [
-    { title: "IBM Carbon · Motion principles and timing", href: "https://www.carbondesignsystem.com/building-blocks/foundations/motion/overview" },
   ],
   "motion-28": [
     { title: "WCAG 2.2 · Status messages", href: "https://www.w3.org/WAI/WCAG22/Understanding/status-messages.html" },

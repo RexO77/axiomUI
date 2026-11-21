@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import { TicketChart } from "./reading-examples";
 
-import { Archive, ArrowDown, FileText, Share2, Trash2, X } from "@/components/ui/icons";
+import { Archive, ArrowDown, Check, FileText, MousePointer2, Share2, Trash2, X } from "@/components/ui/icons";
 
 import {
     Annotation,
@@ -14,7 +14,7 @@ import {
 } from "@/components/features/rules/preview-primitives";
 import { cn } from "@/lib/utils";
 
-// Craft-pass previews for comp-1..comp-8 and comp-10..comp-12.
+// Craft-pass previews for comp-1..comp-8 and comp-10..comp-15.
 // comp-9 is a motion showcase and never reaches this module.
 // Every pair is the same product moment with one component decision
 // flipped; evidence is annotated in mono tabular-nums.
@@ -582,6 +582,164 @@ function closeAffordance(variant: Variant) {
     );
 }
 
+// ── comp-14 · Links navigate, buttons act ───────────────────────────
+// The same invoice row and the same "View invoice" control, painted
+// identically, right-clicked in both panes. The one variable is the element
+// underneath. A real link gets the browser's link menu and puts its address
+// in the status bar; a div that calls router.push gets the page menu and no
+// address, because the browser never learns it is a destination.
+const LINK_MENU = ["Open link in new tab", "Open link in new window", "Copy link address"];
+const PAGE_MENU = ["Back", "Reload", "Save page as…"];
+
+function linksNavigate(variant: Variant) {
+    const isDo = variant === "do";
+    const items = isDo ? LINK_MENU : PAGE_MENU;
+    return (
+        <PreviewFrame className="flex flex-col justify-center gap-2">
+            <Annotation className={ANNOT}>
+                {isDo ? "<a href> · link menu · URL shown" : "<div onClick> · page menu · no URL"}
+            </Annotation>
+            {/* The browser window, drawn in the flow at a fixed height so the
+                menu and the status bar sit inside it in every context. */}
+            <div className="relative h-[112px] overflow-hidden rounded-[8px] border border-neutral-200 bg-neutral-50 p-1.5 dark:border-neutral-800 dark:bg-neutral-900">
+                <div className="flex items-center justify-between gap-2 rounded-[6px] border border-neutral-200 bg-white p-1.5 dark:border-neutral-700 dark:bg-neutral-950">
+                    <div className="min-w-0 pl-1">
+                        <span className="block truncate text-[10px] font-semibold text-neutral-800 dark:text-neutral-100">
+                            INV-1042 · Northwind
+                        </span>
+                        <span className={PRODUCT_FINE}>$1,240.00 · due Aug 14</span>
+                    </div>
+                    <span className={cn(BTN_SECONDARY, BTN_SM, "relative shrink-0")}>
+                        View invoice
+                        <MousePointer2
+                            aria-hidden="true"
+                            size={12}
+                            className="absolute -bottom-2 left-1/2 fill-neutral-800 stroke-white stroke-[1.5] dark:fill-neutral-100 dark:stroke-neutral-900"
+                        />
+                    </span>
+                </div>
+                {/* The context menu opens at the pointer, under the control. */}
+                <div className="absolute right-3 top-[50px] w-[132px] rounded-[6px] border border-neutral-200 bg-white p-0.5 shadow-[0_4px_12px_rgb(0_0_0/0.08)] dark:border-neutral-700 dark:bg-neutral-800 dark:shadow-[0_4px_12px_rgb(0_0_0/0.5)]">
+                    {items.map((item) => (
+                        <span
+                            key={item}
+                            className="block truncate rounded-[4px] px-1.5 py-[3px] text-[9px] leading-3 text-neutral-700 dark:text-neutral-200"
+                        >
+                            {item}
+                        </span>
+                    ))}
+                </div>
+                {/* The status bar: bottom-left, flush with the window edge. It
+                    only appears while the pointer is over a real link. */}
+                {isDo ? (
+                    <span className="absolute bottom-0 left-0 rounded-tr-[6px] border-r border-t border-neutral-200 bg-white px-1.5 py-0.5 font-mono text-[9px] leading-3 text-neutral-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
+                        acme.app/invoices/1042
+                    </span>
+                ) : null}
+            </div>
+        </PreviewFrame>
+    );
+}
+
+// ── comp-15 · The image proves the headline ─────────────────────────
+// The same hero: identical headline, subline and frame. Only the picture in
+// the frame changes. Do crops the product at the moment the headline
+// promises, the failing deploy flagged against the checkout errors it
+// caused. Don't fills the same frame with floating avatars, a green check
+// and two soft blobs, which would fit any product's headline equally well.
+const DEPLOYS = [
+    { id: "#419", service: "billing", time: "14:20", bad: false },
+    { id: "#418", service: "checkout", time: "14:02", bad: true },
+    { id: "#417", service: "search", time: "13:40", bad: false },
+];
+
+function productCrop() {
+    return (
+        <div className="flex h-full flex-col bg-white p-1.5 dark:bg-neutral-900">
+            <div className="flex items-baseline justify-between px-1 pb-1">
+                <span className="text-[9px] font-semibold text-neutral-700 dark:text-neutral-200">Deploys</span>
+                <span className={PRODUCT_FINE}>checkout errors</span>
+            </div>
+            <div className="space-y-0.5">
+                {DEPLOYS.map((deploy) => (
+                    <div
+                        key={deploy.id}
+                        className={cn(
+                            "flex items-center gap-1.5 rounded-[4px] px-1 py-[3px] text-[9px] leading-3",
+                            deploy.bad
+                                ? "bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-300 dark:bg-rose-950 dark:text-rose-300 dark:ring-rose-800"
+                                : "text-neutral-600 dark:text-neutral-300"
+                        )}
+                    >
+                        <span className="w-6 font-semibold tabular-nums">{deploy.id}</span>
+                        <span className="min-w-0 flex-1 truncate">{deploy.service}</span>
+                        <span className="tabular-nums">{deploy.time}</span>
+                        <span
+                            className={cn(
+                                "w-[52px] shrink-0 text-right font-semibold tabular-nums",
+                                deploy.bad ? "" : "text-neutral-500 dark:text-neutral-400"
+                            )}
+                        >
+                            {deploy.bad ? "5xx ↑ 38%" : "—"}
+                        </span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+// Two blurred discs, three floating portraits and a success badge: the stock
+// hero kit. None of it names a deploy, a service or an error.
+function decorativeHero() {
+    return (
+        <div className="relative h-full overflow-hidden bg-white dark:bg-neutral-900">
+            <span className="absolute -left-4 -top-6 size-20 rounded-full bg-blue-300/50 blur-xl dark:bg-blue-500/30" />
+            <span className="absolute -bottom-8 right-2 size-20 rounded-full bg-violet-300/50 blur-xl dark:bg-violet-500/30" />
+            {[
+                { initials: "MC", className: "left-[18%] top-3 bg-amber-200 text-amber-900" },
+                { initials: "AR", className: "left-[42%] top-7 bg-sky-200 text-sky-900" },
+                { initials: "SK", className: "left-[64%] top-2 bg-rose-200 text-rose-900" },
+            ].map((avatar) => (
+                <span
+                    key={avatar.initials}
+                    className={cn(
+                        "absolute flex size-6 items-center justify-center rounded-full text-[8px] font-semibold shadow-[0_2px_6px_rgb(0_0_0/0.12)] ring-2 ring-white dark:ring-neutral-900",
+                        avatar.className
+                    )}
+                >
+                    {avatar.initials}
+                </span>
+            ))}
+            <span className="absolute bottom-3 left-[34%] flex size-6 items-center justify-center rounded-full bg-emerald-500 text-white shadow-[0_2px_6px_rgb(0_0_0/0.12)]">
+                <Check aria-hidden="true" size={12} strokeWidth={2.5} />
+            </span>
+        </div>
+    );
+}
+
+function headlineProof(variant: Variant) {
+    const isDo = variant === "do";
+    return (
+        <PreviewFrame className="flex flex-col gap-2">
+            <div>
+                <span className="block text-[12px] font-semibold leading-4 text-neutral-900 dark:text-neutral-50">
+                    Find the deploy that broke checkout
+                </span>
+                <span className={cn("mt-0.5 block text-[9px]", PRODUCT_MUTED)}>
+                    Errors matched to the change that caused them
+                </span>
+            </div>
+            <div className="h-[84px] overflow-hidden rounded-[8px] border border-neutral-200 dark:border-neutral-800">
+                {isDo ? productCrop() : decorativeHero()}
+            </div>
+            <Annotation className={ANNOT}>
+                {isDo ? "points to: deploy #418 · checkout 5xx ↑ 38%" : "points to: nothing the headline names"}
+            </Annotation>
+        </PreviewFrame>
+    );
+}
+
 // ── Dispatcher ──────────────────────────────────────────────────────
 
 export const componentPreviews: PreviewRenderer = (ruleId, variant): ReactNode | null => {
@@ -610,6 +768,10 @@ export const componentPreviews: PreviewRenderer = (ruleId, variant): ReactNode |
             return closeAffordance(variant);
         case "comp-13":
             return <PreviewFrame className="flex items-center justify-center"><TicketChart variant={variant} /></PreviewFrame>;
+        case "comp-14":
+            return linksNavigate(variant);
+        case "comp-15":
+            return headlineProof(variant);
         default:
             return null;
     }

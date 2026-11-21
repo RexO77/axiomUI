@@ -1,11 +1,13 @@
+import Image from "next/image";
 import type { ReactNode } from "react";
 
-import { Bell, Play } from "@/components/ui/icons";
+import { Bell, ChevronDown, Play } from "@/components/ui/icons";
 
 import {
     Annotation,
     ANNOTATION_INK,
     ANNOTATION_INK_ON_FILL,
+    MiniButton,
     PRODUCT_MUTED,
     PreviewFrame,
     type PreviewRenderer,
@@ -13,10 +15,8 @@ import {
 } from "@/components/features/rules/preview-primitives";
 import { cn } from "@/lib/utils";
 
-// Craft-pass previews for layout-1..layout-11. Every pair is the same
-// scene with one spacing/alignment variable flipped; measurements are
-// drawn as accent ticks with mono tabular-nums values, and each pair
-// closes on the numeric verdict rather than narrating the lesson.
+// Layout previews show the same scene with one layout decision changed.
+// Measurements use accent ticks with mono tabular-nums values.
 // Every number on screen is a value the pane actually renders — an
 // annotation that cannot be checked against the pixels is worse than
 // no annotation at all.
@@ -120,10 +120,12 @@ function fourPtGrid(variant: Variant) {
 }
 
 // ── layout-2 · Text width limits ────────────────────────────────────
-// Both examples model a 95ch page. Cap Do at 45ch; let Don't fill the page.
-// The viewport pans this page without shrinking its 13px/20px type.
+// Both examples model a 95ch page. Cap Do at 52ch and let Don't fill the page.
+// Scale the sample type in smaller panes so the whole 52ch column is visible.
 function textWidth(variant: Variant) {
     const isDo = variant === "do";
+    const pageWidth = "95ch";
+    const columnWidth = isDo ? "52ch" : pageWidth;
     return (
         <PreviewFrame className="flex flex-col justify-center gap-2.5">
             <div className="flex items-baseline justify-between gap-3">
@@ -131,13 +133,14 @@ function textWidth(variant: Variant) {
                     Introducing workspaces
                 </span>
                 <Annotation className={cn("shrink-0", FINE, TICK_TEXT)}>
-                    {isDo ? "45ch" : "95ch"}
+                    {columnWidth}
                 </Annotation>
             </div>
             {/* Keep the aria-hidden illustration out of the scroll-container tab order. */}
-            <div tabIndex={-1} className="w-full min-w-0 overflow-x-auto overscroll-x-contain">
-                <div className="text-[13px] leading-[20px]" style={{ width: "95ch" }}>
-                    <div data-text-column="" className={cn("w-full", isDo && "max-w-[45ch]")}>
+            <div tabIndex={-1} className="@container w-full min-w-0 overflow-x-auto overscroll-x-contain">
+                {/* In Manrope, 52ch is about 31.7em. Size the text to fit that measure. */}
+                <div className="text-[clamp(8px,3.125cqi,13px)] leading-[1.54]" style={{ width: pageWidth }}>
+                    <div data-text-column="" className="w-full" style={{ maxWidth: isDo ? columnWidth : undefined }}>
                         <div aria-hidden="true" className="h-1 border-x border-t border-blue-500 dark:border-blue-400" />
                         <div className="mt-1 min-h-[14.3em] text-neutral-600 dark:text-neutral-300">
                             <p>
@@ -159,7 +162,7 @@ function textWidth(variant: Variant) {
                 </div>
             </div>
             <Annotation className={ANNOT}>
-                {isDo ? "45ch cap · 95ch page" : "100% width · 95ch page"}
+                {isDo ? `${columnWidth} cap` : "100% width"} · {pageWidth} page
             </Annotation>
         </PreviewFrame>
     );
@@ -366,33 +369,6 @@ function containerFallacy(variant: Variant) {
     );
 }
 
-// ── layout-8 · Consistent gutters ───────────────────────────────────
-// The same 2×2 card grid; only the row gutter changes. Both ticks stay
-// accented in both panes — they are the measurement, and dimming the
-// offending value would send the eye away from the defect.
-function gutters(variant: Variant) {
-    const isDo = variant === "do";
-    const rowGap = isDo ? 8 : 24;
-    const cell = "h-9 rounded-md bg-neutral-200/80 dark:bg-neutral-800";
-    return (
-        <PreviewFrame className="flex flex-col items-center justify-center gap-2.5">
-            <div className="flex items-center gap-4">
-                <div className="grid w-36 grid-cols-2" style={{ columnGap: 8, rowGap }}>
-                    <div className={cell} />
-                    <div className={cell} />
-                    <div className={cell} />
-                    <div className={cell} />
-                </div>
-                <div className="flex flex-col gap-1">
-                    <Annotation className={cn(FINE, TICK_TEXT)}>x·8</Annotation>
-                    <Annotation className={cn(FINE, TICK_TEXT)}>y·{rowGap}</Annotation>
-                </div>
-            </div>
-            <Annotation className={ANNOT}>{isDo ? "8 / 8 — one gutter" : "8 / 24 — two gutters"}</Annotation>
-        </PreviewFrame>
-    );
-}
-
 // ── layout-9 · Responsive spacing scaling ───────────────────────────
 // The same card at two viewports; only the small viewport's padding
 // changes. Padding that scales down keeps the phone honest; desktop
@@ -431,69 +407,159 @@ function responsiveSpacing(variant: Variant) {
 // The same page skeleton with a more or less pronounced section break.
 function verticalRhythm(variant: Variant) {
     const isDo = variant === "do";
-    const gaps = isDo ? [8, 16, 32] : [8, 13, 18];
+    const sectionGap = isDo ? 32 : 16;
     return (
         <PreviewFrame className="flex flex-col items-center justify-center gap-2.5">
             <div className="w-44">
                 <TextLine widthClass="w-1/2" tone="title" />
-                <MeasuredGap px={gaps[0]} className="-mr-8" />
+                <MeasuredGap px={8} className="-mr-8" />
                 <TextLine widthClass="w-full" />
-                <MeasuredGap px={gaps[1]} className="-mr-8" />
+                <MeasuredGap px={16} className="-mr-8" />
                 <TextLine widthClass="w-full" />
-                <MeasuredGap px={gaps[2]} className="-mr-8" />
-                <TextLine widthClass="w-5/6" />
+                <MeasuredGap px={sectionGap} className="-mr-8" />
+                <TextLine widthClass="w-2/5" tone="title" />
             </div>
             <Annotation className={ANNOT}>
-                {isDo ? "8, 16, 32 — larger section break" : "8, 13, 18 — smaller section break"}
+                Section break · {sectionGap}px
             </Annotation>
         </PreviewFrame>
     );
 }
 
-// ── layout-11 · Z-index scale ───────────────────────────────────────
-// The same three layers with the same three names in both panes; only
-// the z-index values change. Renaming the layers between panes would
-// have made the reader compare vocabularies instead of numbers.
-const Z_LAYERS = ["base", "dropdown", "modal"];
-
-function zIndexScale(variant: Variant) {
+// ── layout-11 · Stacking contexts ────────────────────────────────────
+// The menu keeps its coordinates and z-index when moved out of the transform.
+function stackingContext(variant: Variant) {
     const isDo = variant === "do";
-    const values = isDo ? ["0", "100", "300"] : ["1", "999", "9999"];
-    const topIndex = Z_LAYERS.length - 1;
+    const menuZ = 9999;
+    const menu = (
+        <div
+            data-stacking-menu=""
+            className="absolute left-1 top-9 grid w-32 gap-1.5 rounded-md border border-blue-500 bg-white px-2 py-2 text-[10px] font-medium shadow-sm dark:border-blue-400 dark:bg-neutral-900"
+            style={{ zIndex: menuZ }}
+        >
+            <span>Copy link</span>
+            <span>Download report</span>
+        </div>
+    );
     return (
         <PreviewFrame className="flex flex-col items-center justify-center gap-2.5">
-            <div className="relative h-20 w-44">
-                {Z_LAYERS.map((name, index) => {
-                    const isTop = index === topIndex;
-                    return (
-                        <div
-                            key={name}
-                            className={cn(
-                                // Labels ride the top edge: each layer shows only its top 20px
-                                // above the next, so a centred label was sliced in half.
-                                "absolute flex h-9 items-start justify-between rounded-md border bg-white px-2 pt-1.5 leading-none dark:bg-neutral-900",
-                                isTop
-                                    ? "border-blue-500 dark:border-blue-400"
-                                    : "border-neutral-200 dark:border-neutral-700"
-                            )}
-                            style={{
-                                left: index * 14,
-                                right: (topIndex - index) * 14,
-                                top: index * 20,
-                                zIndex: index,
-                            }}
-                        >
-                            <span className="text-[9px] font-medium text-neutral-500 dark:text-neutral-400">
-                                {name}
-                            </span>
-                            <Annotation className={cn(FINE, isTop ? TICK_TEXT : FINE_MUTED)}>z·{values[index]}</Annotation>
-                        </div>
-                    );
-                })}
+            <div className="relative isolate h-24 w-full max-w-56">
+                <div
+                    data-transformed-panel=""
+                    className="absolute inset-y-0 left-0 w-36 rounded-md bg-white ring-1 ring-neutral-200 ring-inset dark:bg-neutral-950 dark:ring-neutral-800"
+                    style={{ transform: "translateY(0)" }}
+                >
+                    <span className="absolute left-1 top-1 inline-flex h-6 items-center gap-1 rounded border border-neutral-200 px-2 text-[10px] font-semibold dark:border-neutral-700">
+                        Export <ChevronDown size={11} />
+                    </span>
+                    {!isDo && menu}
+                </div>
+                <div data-stacking-sibling="" className="absolute inset-y-0 left-[76px] right-0 z-[1] rounded-md border border-neutral-200 bg-neutral-100 p-2 dark:border-neutral-700 dark:bg-neutral-800">
+                    <span className="block text-right text-[10px] font-semibold">Activity</span>
+                    <div className="ml-auto mt-2 w-2/3 space-y-2">
+                        <TextLine widthClass="w-full" tone="title" />
+                        <TextLine widthClass="w-3/4" tone="title" />
+                    </div>
+                </div>
+                {isDo && menu}
             </div>
-            {/* Both stacks paint the same; only the values differ, so a tile keeps them. */}
-            <Annotation className={ANNOT} keep>
-                {isDo ? "0 · 100 · 300 — steps of 100" : "1 · 999 · 9999 — no room above"}
+            <Annotation className={ANNOT}>
+                z-index: {menuZ} · {isDo ? "outside the transform" : "inside the transform"}
+            </Annotation>
+        </PreviewFrame>
+    );
+}
+
+// ── layout-12 · Sticky header clearance ──────────────────────────────
+// A frozen post-Tab view. The mock field lands at the scroll inset in each pane.
+function stickyHeaderClearance(variant: Variant) {
+    const headerHeight = 64;
+    const scrollInset = variant === "do" ? headerHeight : 0;
+    return (
+        <PreviewFrame className="flex flex-col items-center justify-center gap-2.5">
+            <div className="relative isolate h-28 w-full max-w-56 overflow-hidden rounded-md ring-1 ring-neutral-200 dark:ring-neutral-800" style={{ scrollPaddingTop: scrollInset }}>
+                <div data-scroll-target="" className="absolute inset-x-0 px-3 pt-1.5" style={{ top: scrollInset }}>
+                    <span className="block text-[10px] font-semibold leading-3">Work email</span>
+                    <div className="mt-1 flex h-6 items-center rounded px-2 text-[10px] outline-2 -outline-offset-2 outline-blue-500 dark:outline-blue-400">
+                        alex@example.com
+                    </div>
+                    <div className="mt-5 text-[10px] font-semibold">Time zone</div>
+                    <TextLine widthClass="mt-1 w-16" />
+                </div>
+                <div data-sticky-header="" className="sticky top-0 z-10 flex flex-col justify-center gap-1 border-b border-neutral-200 bg-neutral-100 px-3 dark:border-neutral-700 dark:bg-neutral-800" style={{ height: headerHeight }}>
+                    <span className="text-[11px] font-semibold">Account settings</span>
+                    <span className={cn("text-[10px]", ANNOTATION_INK_ON_FILL)}>Profile · Notifications</span>
+                    <Annotation className={cn("absolute right-2 top-2", FINE, ANNOTATION_INK_ON_FILL)}>{headerHeight}px</Annotation>
+                </div>
+            </div>
+            <Annotation className={ANNOT}>Tab to Work email · {scrollInset}px inset</Annotation>
+        </PreviewFrame>
+    );
+}
+
+// ── layout-13 · Space for media ─────────────────────────────────────
+// The ghost records the button position before the image dimensions arrived.
+function reserveMediaSpace(variant: Variant) {
+    const isDo = variant === "do";
+    const imageRatio = "2 / 1";
+    return (
+        <PreviewFrame className="flex flex-col items-center justify-center gap-2.5">
+            <div className="relative isolate flex w-full max-w-40 flex-col items-start gap-2">
+                <div className="grid w-full place-items-center rounded-md border border-neutral-200 bg-neutral-100 text-[10px] font-medium dark:border-neutral-700 dark:bg-neutral-800" style={{ aspectRatio: imageRatio }}>
+                    <span className={cn("mt-4", ANNOTATION_INK_ON_FILL)}>Loading cabin photo…</span>
+                </div>
+                <div className="absolute inset-x-0 top-0 z-[1] flex flex-col items-start gap-2">
+                    <div data-reserved-media="" className="w-full" style={{ aspectRatio: isDo ? imageRatio : undefined }} />
+                    <MiniButton label="View details" variant="secondary" className="border-dashed bg-white opacity-75 dark:bg-neutral-900" />
+                </div>
+                <MiniButton label="View details" variant="primary" className="relative z-[2]" />
+            </div>
+            <Annotation className={ANNOT}>
+                {isDo ? "Reserved image space · button stays put" : "Dashed outline · previous button position"}
+            </Annotation>
+        </PreviewFrame>
+    );
+}
+
+// ── layout-14 · Crop focal point ─────────────────────────────────────
+// The brass latch is deliberately outside the narrow center crop.
+const CABIN_IMAGE = `data:image/svg+xml,${encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="120" viewBox="0 0 240 120">
+    <path fill="#294554" d="M0 0h240v120H0z"/>
+    <path fill="#355565" d="M0 16h240v14H0zm0 28h240v14H0zm0 28h240v14H0zm0 28h240v14H0z"/>
+    <path fill="#496e7b" d="M0 16h240v2H0zm0 28h240v2H0zm0 28h240v2H0zm0 28h240v2H0z"/>
+    <path fill="#172b35" d="M169 8h68v112h-68z"/>
+    <path fill="#225b68" d="M174 13h58v107h-58z"/>
+    <path fill="#1b4a56" d="M180 19h46v32h-46zm0 63h46v32h-46z"/>
+    <rect x="210" y="56" width="14" height="22" rx="3" fill="#a06c36"/>
+    <rect x="198" y="63" width="24" height="7" rx="3.5" fill="#ffd17a"/>
+    <circle cx="217" cy="74" r="1.5" fill="#493521"/>
+</svg>`)}`;
+
+function focalCrop(variant: Variant) {
+    const position = variant === "do" ? "right center" : "center";
+    return (
+        <PreviewFrame className="flex flex-col items-center justify-center gap-2.5">
+            <div className="grid w-full max-w-56 grid-cols-[8fr_3fr] gap-3">
+                {["2 / 1", "3 / 4"].map((ratio) => (
+                    <div key={ratio} className="flex min-w-0 flex-col gap-1">
+                        <div className="overflow-hidden rounded-md" style={{ aspectRatio: ratio }}>
+                            <Image
+                                src={CABIN_IMAGE}
+                                alt=""
+                                width={240}
+                                height={120}
+                                unoptimized
+                                className="size-full object-cover"
+                                style={{ objectPosition: position }}
+                            />
+                        </div>
+                        <Annotation className={cn(FINE, FINE_MUTED)}>{ratio.replace(" / ", ":")}</Annotation>
+                    </div>
+                ))}
+            </div>
+            <Annotation className={ANNOT}>
+                object-position: {position}
             </Annotation>
         </PreviewFrame>
     );
@@ -517,14 +583,18 @@ export const layoutPreviews: PreviewRenderer = (ruleId, variant): ReactNode | nu
             return iconAlignment(variant);
         case "layout-7":
             return containerFallacy(variant);
-        case "layout-8":
-            return gutters(variant);
         case "layout-9":
             return responsiveSpacing(variant);
         case "layout-10":
             return verticalRhythm(variant);
         case "layout-11":
-            return zIndexScale(variant);
+            return stackingContext(variant);
+        case "layout-12":
+            return stickyHeaderClearance(variant);
+        case "layout-13":
+            return reserveMediaSpace(variant);
+        case "layout-14":
+            return focalCrop(variant);
         default:
             return null;
     }

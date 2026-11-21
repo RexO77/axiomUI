@@ -40,7 +40,7 @@ describe("category display data", () => {
 
   it("leaves ui-logic untouched: the a11y rules keep their category, so skills and llms.txt don't shift", () => {
     expect(categories.map((c) => c.id)).toContain("accessibility");
-    for (const id of ["a11y-1", "a11y-2", "a11y-3"]) {
+    for (const id of ["a11y-1", "a11y-2", "a11y-3", "a11y-4", "a11y-5", "a11y-6", "a11y-7", "a11y-8"]) {
       expect(rules.find((rule) => rule.id === id)?.category).toBe("accessibility");
     }
   });
@@ -67,7 +67,16 @@ describe("rail view", () => {
     for (const rule of rules) {
       expect(railCategoryOf(rule), rule.id).toBe(railHome[rule.id] ?? rule.category);
     }
-    expect(railHome).toEqual({ "a11y-1": "system", "a11y-3": "system", "a11y-2": "color" });
+    expect(railHome).toEqual({
+      "a11y-1": "system",
+      "a11y-3": "system",
+      "a11y-2": "color",
+      "a11y-4": "motion",
+      "a11y-5": "typography",
+      "a11y-6": "motion",
+      "a11y-7": "color",
+      "a11y-8": "components",
+    });
   });
 
   it("uses the full name as the title and the short name as the label", () => {
@@ -80,13 +89,13 @@ describe("rail view", () => {
 
   it("counts honestly after re-homing", () => {
     expect(Object.fromEntries(railCategories.map((c) => [c.id, c.rules.length]))).toEqual({
-      typography: 14,
-      layout: 11,
-      color: 13,
-      components: 13,
-      forms: 13,
-      system: 15,
-      motion: 29,
+      typography: 16,
+      layout: 13,
+      color: 11,
+      components: 16,
+      forms: 15,
+      system: 16,
+      motion: 25,
     });
   });
 
@@ -97,25 +106,19 @@ describe("rail view", () => {
         .groups.map((g) => [g.label, g.rules.map((r) => r.id)]);
 
     expect(groups("motion")).toEqual([
-      ["Intent and input preferences", ["motion-3", "motion-1", "motion-2", "motion-17", "motion-16"]],
-      ["Timing and feedback", ["motion-6", "motion-5", "motion-4", "motion-8", "motion-11", "motion-25"]],
-      [
-        "Entrances, exits and continuity",
-        ["motion-29", "motion-9", "motion-10", "motion-7", "motion-27", "motion-24", "motion-26", "motion-28"],
-      ],
-      ["Animation implementation", ["motion-14", "motion-12", "motion-13", "motion-15", "motion-21", "motion-22"]],
-      ["Direct manipulation", ["motion-18", "motion-19", "motion-20", "motion-23"]],
+      ["Intent and input preferences", ["motion-3", "motion-1", "motion-2", "motion-17", "a11y-6", "motion-16"]],
+      ["Timing and feedback", ["motion-6", "motion-4", "motion-8", "motion-11"]],
+      ["Entrances, exits and continuity", ["motion-29", "motion-9", "motion-10", "motion-7", "motion-24", "motion-28"]],
+      ["Animation implementation", ["motion-14", "motion-12", "motion-13", "motion-15", "motion-21"]],
+      ["Direct manipulation", ["motion-18", "a11y-4", "motion-19", "motion-20"]],
     ]);
     expect(groups("typography")).toEqual([
-      ["Type foundations", ["typo-5", "typo-9", "typo-11", "typo-6", "typo-1", "typo-2"]],
-      ["Reading and wrapping", ["typo-3", "typo-4", "typo-8", "typo-14", "typo-7", "typo-10", "typo-12", "typo-13"]],
+      ["Type foundations", ["typo-5", "typo-9", "a11y-5", "typo-11", "typo-6", "typo-1", "typo-2"]],
+      ["Reading and wrapping", ["typo-3", "typo-4", "typo-15", "typo-8", "typo-14", "typo-7", "typo-10", "typo-12", "typo-13"]],
     ]);
     expect(groups("system")).toEqual([
-      ["State, progress and recovery", ["sys-2", "sys-1", "sys-7", "sys-4", "sys-9", "sys-10", "sys-6"]],
-      [
-        "Interaction infrastructure",
-        ["sys-5", "sys-11", "sys-3", "a11y-3", "sys-8", "a11y-1", "sys-13", "sys-14"],
-      ],
+      ["State, progress and recovery", ["sys-2", "sys-1", "sys-7", "sys-15", "sys-4", "sys-9", "sys-10", "sys-16", "sys-6"]],
+      ["Interaction infrastructure", ["sys-5", "sys-11", "sys-3", "a11y-3", "sys-8", "a11y-1", "sys-13"]],
     ]);
   });
 
@@ -127,20 +130,26 @@ describe("rail view", () => {
     }
   });
 
+  // Layout and Color keep catalog numbering (retired ids leave gaps). Components
+  // and Forms place each addition beside the rule it extends.
   it.each([
-    ["layout", "layout", 11],
-    ["color", "color", 12],
-    ["components", "comp", 13],
-    ["forms", "form", 13],
-  ] as const)("keeps %s in its catalog numbering order", (categoryId, prefix, total) => {
+    ["layout", ["layout-1", "layout-2", "layout-3", "layout-4", "layout-5", "layout-6", "layout-7", "layout-9", "layout-10", "layout-11", "layout-12", "layout-13", "layout-14"]],
+    ["color", ["color-1", "color-4", "color-6", "color-7", "color-8", "color-9", "color-10", "color-11", "color-12"]],
+    ["components", ["comp-1", "comp-15", "comp-2", "comp-3", "comp-4", "comp-5", "comp-6", "comp-7", "comp-8", "comp-9", "comp-10", "comp-11", "comp-14", "comp-12", "comp-13"]],
+    ["forms", ["form-1", "form-2", "form-3", "form-4", "form-14", "form-5", "form-6", "form-7", "form-8", "form-15", "form-9", "form-10", "form-11", "form-12", "form-13"]],
+  ] as const)("keeps %s in its editorial order", (categoryId, expected) => {
     const category = railCategories.find((entry) => entry.id === categoryId)!;
-    expect(category.rules.filter((rule) => rule.category === categoryId).map((rule) => rule.id))
-      .toEqual(Array.from({ length: total }, (_, index) => `${prefix}-${index + 1}`));
+    expect(category.rules.filter((rule) => rule.category === categoryId).map((rule) => rule.id)).toEqual(expected);
   });
 
   it("inserts re-homed accessibility rules beside the rules they extend", () => {
     expect(railPosition("a11y-2").prev?.id).toBe("color-4");
-    expect(railPosition("a11y-2").next?.id).toBe("color-5");
+    expect(railPosition("a11y-2").next?.id).toBe("a11y-7");
+    expect(railPosition("a11y-7").next?.id).toBe("color-6");
+    expect(railPosition("a11y-5").prev?.id).toBe("typo-9");
+    expect(railPosition("a11y-8").prev?.id).toBe("comp-12");
+    expect(railPosition("a11y-6").prev?.id).toBe("motion-17");
+    expect(railPosition("a11y-4").prev?.id).toBe("motion-18");
     expect(railPosition("a11y-3").prev?.id).toBe("sys-3");
     expect(railPosition("a11y-3").next?.id).toBe("sys-8");
     expect(railPosition("a11y-1").prev?.id).toBe("sys-8");
@@ -153,20 +162,21 @@ describe("rail view", () => {
   });
 
   it("gives a position inside the category that never wraps", () => {
-    expect(railPosition("motion-3")).toMatchObject({ category: "motion", index: 1, total: 29, prev: null });
+    expect(railPosition("motion-3")).toMatchObject({ category: "motion", index: 1, total: 25, prev: null });
     expect(railPosition("motion-3").next?.id).toBe("motion-1");
-    expect(railPosition("motion-23")).toMatchObject({ index: 29, total: 29, next: null });
-    expect(railPosition("a11y-1")).toMatchObject({ category: "system", total: 15 });
+    expect(railPosition("motion-20")).toMatchObject({ index: 25, total: 25, next: null });
+    expect(railPosition("a11y-1")).toMatchObject({ category: "system", total: 16 });
     expect(railPosition("a11y-1").prev?.id).toBe("sys-8");
     expect(() => railPosition("sys-12")).toThrow();
+    expect(() => railPosition("motion-23")).toThrow();
   });
 });
 
 describe("collections", () => {
-  it("makes Accessibility a 16-rule collection across categories, holding all three a11y rules", () => {
-    expect(accessibilityCollection.ruleIds).toHaveLength(16);
-    expect(new Set(accessibilityCollection.ruleIds).size).toBe(16);
-    for (const id of ["a11y-1", "a11y-2", "a11y-3"]) {
+  it("makes Accessibility a 24-rule collection across categories, holding every a11y rule", () => {
+    expect(accessibilityCollection.ruleIds).toHaveLength(24);
+    expect(new Set(accessibilityCollection.ruleIds).size).toBe(24);
+    for (const id of rules.filter((rule) => rule.category === "accessibility").map((rule) => rule.id)) {
       expect(accessibilityCollection.ruleIds).toContain(id);
     }
     const spans = new Set(accessibilityCollection.ruleIds.map((id) => railCategoryOf(id)));
@@ -175,7 +185,7 @@ describe("collections", () => {
 
   it("holds Live demos to the showcase registry, so it cannot drift from the demos", () => {
     expect([...liveDemoCollection.ruleIds].sort()).toEqual([...Object.keys(showcaseSpecs), "typo-14", "comp-13", "form-13"].sort());
-    expect(liveDemoCollection.ruleIds).toHaveLength(36);
+    expect(liveDemoCollection.ruleIds).toHaveLength(30);
     for (const rule of rules) {
       expect(hasLiveDemo(rule.id), rule.id).toBe(rule.id in showcaseSpecs || ["typo-14", "comp-13", "form-13"].includes(rule.id));
     }
@@ -202,10 +212,11 @@ describe("compare kind", () => {
   it("pins the editorial split, so a change to it is a deliberate edit here", () => {
     expect([...structuralRuleIds].sort()).toEqual(
       [
-        "comp-2", "comp-5", "comp-6", "comp-7", "comp-13",
-        "form-1", "form-6", "form-10", "form-13",
-        "sys-1", "sys-2", "sys-5", "sys-6", "sys-7", "sys-10", "sys-11",
+        "comp-2", "comp-5", "comp-6", "comp-7", "comp-13", "comp-15",
+        "form-1", "form-6", "form-10", "form-13", "form-14",
+        "sys-1", "sys-2", "sys-6", "sys-7", "sys-10", "sys-11", "sys-16",
         "motion-1", "motion-3", "motion-14",
+        "a11y-4", "a11y-6",
       ].sort(),
     );
     expect(alignedRuleIds.size).toBe(89);

@@ -56,11 +56,12 @@ const ANNOTATION_INKS = [ANNOTATION_INK, ANNOTATION_INK_ON_FILL].map(tokens);
 const PRODUCT_TEXT_IN_ANNOTATION_FACE: Record<string, string[]> = {
   "typo-10": ["1.8 MB", "4.2 MB"],
   "color-4": ["2h"],
-  "color-5": ["On", "12", "Pro"],
   "color-12": ["Expires 04/28", "Expires 11/26"],
   "comp-2": ["updated 2h ago", "this can’t be undone"],
   "comp-4": ["owner", "2.4 MB"],
   "comp-8": ["Aug 1–31"],
+  "comp-14": ["$1,240.00 · due Aug 14"],
+  "comp-15": ["checkout errors"],
   "form-5": ["$0/mo", "$12/mo", "$24/mo"],
   // An empty field's placeholder; main lifted it from neutral-400 to PRODUCT_MUTED.
   "form-11": ["dd/mm/yyyy"],
@@ -68,13 +69,14 @@ const PRODUCT_TEXT_IN_ANNOTATION_FACE: Record<string, string[]> = {
   "sys-6": ["4.6 MB", "12.1 MB", "88.4 MB"],
   "sys-7": ["Step 2 of 4"],
   "sys-10": ["4 min read", "Aug 10"],
+  "sys-16": ["12.1 MB", "88.4 MB"],
   "a11y-1": ["Tab"],
 };
 
 // Panes whose Do and Don't paint alike once their annotations are hidden, so
 // a tile has to keep one label. Each was checked by rendering both panes with
 // `[data-annotation]:not([data-keep]) { display: none }` and diffing pixels.
-const KEEPS = ["color-10", "color-11", "layout-11", "layout-4"];
+const KEEPS = ["color-10", "color-11", "layout-4"];
 
 describe("rule previews", () => {
   // RulePreview has no generic fallback: a static rule without an authored

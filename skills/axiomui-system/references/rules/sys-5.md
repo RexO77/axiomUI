@@ -1,33 +1,34 @@
-# Give shared colors semantic roles
+# Reference colors by role, not by value
 
 - ID: sys-5
 - Category: System & logic
-- Tags: System, Semantics
+- Tags: System, Semantics, Dark mode, Contrast
 - URL: https://axiomui.nischal.fyi/rules/sys-5
 
-Let components request a role such as accent or warning. Map that role to a palette value for each theme when several components share the same intent.
+Have components ask for a role such as text, surface or warning, and resolve each role per theme. A literal value picked on the light theme stays put when the surface turns dark, and two features that share a hex by coincidence change together when one is restyled.
 
-- Do: blue-500 (palette) → accent (alias) → component
-- Don't: $button-blue → component
+- Do: var(--text) → #f5f5f5 on #262626 (13.9:1)
+- Don't: #0f172a on #262626 (1.2:1)
 
 ## Why it works
 
-A Save button and an overdue invoice can happen to share a hue today. Their meanings can diverge in the next theme. A named role allows each to change independently even when both point at the same palette entry.
+The invoice card asks for the text role, which resolves to #f5f5f5 on the dark theme and measures 13.9:1 on its #262626 surface. The same card with the light theme’s #0f172a written into it keeps that ink after the switch and measures 1.2:1, so the invoice number all but vanishes. Roles also keep features apart: a Save button and an overdue warning can share a blue today and still change separately in the next theme.
 
 - [Design Tokens Community Group · Aliases and references](https://www.designtokens.org/tr/2025.10/format/#aliases-references)
+- [WCAG 2.2 · Contrast (minimum)](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)
 
 ## What breaks
 
-Reusing a button-specific color token for a warning quietly couples the two features. A brand update to the button then changes the warning’s meaning and contrast.
+A literal hex looks right on the theme it was picked on and fails on the next one, usually discovered by a user in dark mode. Reusing a button-specific token for a warning couples the two, so a brand update to the button changes the warning’s meaning and contrast as well.
 
 ## How to apply it
 
-1. Identify roles that need independent control across themes.
-2. Use aliases where the design system needs that indirection, rather than requiring three layers for every value.
-3. Check the resolved foreground and background pairs in each supported theme.
+1. Define roles for text, muted text, surfaces, borders and states, and give each a value per theme. Components ask for the role. Use aliases where the system needs that indirection rather than three layers for every value.
+2. To find literal colors in components, search outside the token files: `grep -rnE "#[0-9a-fA-F]{3,8}\b|rgb\(|hsl\(|text-\[#|bg-\[#" src/components`. Each match either becomes a role or is a deliberate fixed color, such as a brand logo, with a comment saying so.
+3. Render each screen in every supported theme and measure the resolved text and surface pairs. Check that a deliberately high-contrast palette and forced colors still show every boundary.
 
 ## Review questions
 
-1. What intent does this component request?
-2. Can the warning change without changing the action?
-3. Do aliases resolve to legible pairs in every theme?
+1. Switch the theme. Does any text or icon keep its light-theme color?
+2. Which role does this component request, and can the warning change without the action changing with it?
+3. Do the resolved pairs clear 4.5:1 for text in every theme?

@@ -6,7 +6,7 @@ import {
   showcaseSpecs,
 } from "@/components/features/rules/demos/showcase-specs";
 import { rules } from "@/data/ui-logic";
-import { finishPane, paneIsLive, playPane, settlePane, type Track } from "@/lib/showcase-engine";
+import { finishPane, paneIsLive, playPane, settlePane, tracksDurationMs, type Track } from "@/lib/showcase-engine";
 
 const TRIGGERS = new Set([
   "replay",
@@ -66,6 +66,47 @@ describe("showcase specs", () => {
       }
     }
   });
+
+  it("motion-2 matches the entrance and only delivers early typing to the focused input", () => {
+    const { do: immediate, dont: delayed } = showcaseSpecs["motion-2"];
+    const [panel, key] = immediate.tracks;
+    expect(panel.target).toBe("panel");
+    expect(panel.durationMs).toBeGreaterThan(0);
+    expect(key.target).toBe("key");
+    expect(delayed.tracks.slice(0, 2)).toEqual([panel, key]);
+    expect(immediate.tracks.find((track) => track.target === "focus")?.delayMs).toBe(0);
+    expect(delayed.tracks.find((track) => track.target === "focus")?.delayMs).toBe(panel.durationMs);
+    const typed = immediate.tracks.find((track) => track.target === "query");
+    expect(typed?.delayMs).toBeGreaterThan(0);
+    expect(typed?.delayMs).toBeLessThan(panel.durationMs);
+    expect(delayed.tracks.some((track) => track.target === "query")).toBe(false);
+    for (const pane of [immediate, delayed]) {
+      const markup = renderToStaticMarkup(createElement("div", null, pane.scene()));
+      expect(markup).toMatch(/<input[^>]*data-anim="query"[^>]*inert=""[^>]*>/);
+      expect(markup).toContain('data-anim="caret"');
+    }
+  });
+
+  it("motion-28 varies only the incoming glyph's blur in either direction", () => {
+    const { do: sharp, dont: blurred } = showcaseSpecs["motion-28"];
+    for (const [clear, soft] of [[sharp.tracks, blurred.tracks], [sharp.exitTracks!, blurred.exitTracks!]]) {
+      expect(tracksDurationMs(clear)).toBe(tracksDurationMs(soft));
+      expect(clear[0]).toEqual(soft[0]);
+      expect(clear[1].keyframes).toEqual([
+        { opacity: 0, filter: "blur(0px)" },
+        { opacity: 0.25, filter: "blur(0px)", offset: 0.25 },
+        { opacity: 1, filter: "blur(0px)" },
+      ]);
+      expect(soft[1]).toEqual({
+        ...clear[1],
+        keyframes: [
+          { opacity: 0, filter: "blur(4px)" },
+          { opacity: 0.25, filter: "blur(3px)", offset: 0.25 },
+          { opacity: 1, filter: "blur(0px)" },
+        ],
+      });
+    }
+  });
 });
 
 // ── Rest styles the tracks must own ─────────────────────────────────
@@ -123,11 +164,6 @@ function keyedProps(tracks: Track[]): Map<string, Set<string>> {
 }
 
 describe("tracks key every rest style they animate", () => {
-  /**
-   * motion-28's don't pane shared the do pane's scene, where the incoming icon
-   * rests at `scale(0.25)` + `blur(4px)`, but its tracks keyed only opacity.
-   * The swap faded in a blurred speck instead of the check.
-   */
   it("a track that animates a hidden node keys every state property the node rests with", () => {
     const missing: string[] = [];
 
@@ -154,12 +190,6 @@ describe("tracks key every rest style they animate", () => {
     }
 
     expect(missing, missing.join("\n")).toEqual([]);
-  });
-
-  it("motion-28's don't pane swaps to a full-size, sharp icon", () => {
-    const [, iconIn] = showcaseSpecs["motion-28"].dont.tracks;
-    expect(iconIn.target).toBe("icon-in");
-    expect(iconIn.keyframes.at(-1)).toEqual({ opacity: 1, transform: "scale(1)", filter: "blur(0px)" });
   });
 });
 
@@ -192,7 +222,7 @@ describe("showcase copy", () => {
 
   /**
    * The speed control only renders on timed playthroughs with full motion:
-   * gestures, fully pinned specs and reduced motion all hide it. A hint that
+   * gestures and reduced motion hide it. A hint that
    * says "switch to ¼×" must therefore belong to a spec that can show the
    * control, and carry a reduced-motion wording that doesn't mention a rate.
    */
@@ -201,11 +231,10 @@ describe("showcase copy", () => {
     const broken: string[] = [];
     for (const [id, spec] of Object.entries(showcaseSpecs)) {
       const isGesture = spec.trigger === "press" || spec.trigger === "hover";
-      const pinned = Boolean(spec.do.pinRate && spec.dont.pinRate);
       // Hotkey specs replace the per-rule hint with the hotkey line.
       const shownHint = isGesture || !spec.hotkey ? spec.hint : undefined;
       if (shownHint && RATE.test(shownHint)) {
-        if (isGesture || pinned) broken.push(`${id}: hint names a rate, but the speed control never renders`);
+        if (isGesture) broken.push(`${id}: hint names a rate, but the speed control never renders`);
         else if (!spec.hintReduced) broken.push(`${id}: hint names a rate, but has no hintReduced`);
       }
       if (spec.hintReduced && RATE.test(spec.hintReduced)) {

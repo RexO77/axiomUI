@@ -51,7 +51,7 @@ describe("showcase readouts agree with their captions", () => {
   it("a caption that states durations includes the number the readout counts to", () => {
     const wrong: string[] = [];
     for (const { id, variant, spec, pane } of panes()) {
-      // A stagger step ("three beats, 90ms apart") is spacing, not a length
+      // A stagger step ("60ms steps") is spacing, not a length
       // the counter could reach, so it doesn't count as a stated duration.
       const steps = new Set(pane.tracks.map((track) => track.staggerMs));
       const stated = statedMs(pane.caption).filter((ms) => !steps.has(ms));
@@ -103,12 +103,17 @@ describe("showcase readouts agree with their captions", () => {
     }
   });
 
-  it("a spec whose panes all ignore the speed control pins both of them", () => {
-    // motion-25 bakes review speed into its durations. If only one pane were
-    // pinned, the other would still follow a control the page has hidden.
-    for (const [id, spec] of Object.entries(showcaseSpecs)) {
-      if (!spec.do.pinRate && !spec.dont.pinRate) continue;
-      expect(Boolean(spec.do.pinRate && spec.dont.pinRate), id).toBe(true);
+  it("motion-2 counts to focus and motion-28 shows the same timing both ways", () => {
+    for (const variant of VARIANTS) {
+      const focusPane = showcaseSpecs["motion-2"][variant];
+      const focus = focusPane.tracks.find((track) => track.target === "focus");
+      expect(focus).toBeDefined();
+      expect(paneReadout(focusPane)).toEqual({ ms: focus!.delayMs, easing: EASE.linear });
+      expect(focusPane.readoutTag).toBe("focus");
+
+      const iconPane = showcaseSpecs["motion-28"][variant];
+      expect(paneReadout(iconPane, "enter").ms).toBe(300);
+      expect(paneReadout(iconPane, "exit").ms).toBe(300);
     }
   });
 });

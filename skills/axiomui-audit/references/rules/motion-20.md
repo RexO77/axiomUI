@@ -5,10 +5,10 @@
 - Tags: Gestures, Touch
 - URL: https://axiomui.nischal.fyi/rules/motion-20
 
-For an element-local drag, capture the initiating pointer and track its ID. Clean up on release, cancellation and loss of capture.
+Keep a drag following the pointer that started it as it leaves the handle. End the drag when that pointer releases or the gesture is canceled.
 
-- Do: setPointerCapture on drag start
-- Don't: No pointer capture on drag start
+- Do: Tracks outside the handle until release or cancel
+- Don't: Stops tracking outside the drag surface
 
 ## Why it works
 
@@ -23,7 +23,7 @@ If a second contact overwrites the active pointer or a canceled drag follows the
 
 ## How to apply it
 
-1. Record the active pointerId and capture it when the drag starts.
+1. Record the active pointerId and call setPointerCapture(pointerId) on the drag element when the drag starts.
 2. Choose touch-action to preserve the page gestures the control does not own.
 3. Handle pointerup, pointercancel and lostpointercapture with idempotent cleanup.
 4. For a slider, let a tap on the track set the value as well. Check the keyboard path and the single-pointer path separately.

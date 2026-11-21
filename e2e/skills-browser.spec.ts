@@ -1,7 +1,7 @@
 import { expect, openCatalog, ruleUrl, test } from "./helpers";
 
 test("the skills rail uses arrow keys and keeps the selected task when returning from the playbook", async ({ page }) => {
-  await openCatalog(page, ruleUrl("motion-25"));
+  await openCatalog(page, ruleUrl("motion-6"));
   await page.getByRole("button", { name: /^Install in your agent/ }).click();
   await page.getByRole("button", { name: "Browse the skills" }).click();
   const dialog = page.getByRole("dialog", { name: "Agent skills" });
@@ -16,7 +16,7 @@ test("the skills rail uses arrow keys and keeps the selected task when returning
   await dialog.getByRole("button", { name: "Global", exact: true }).click();
   await dialog.getByRole("button", { name: "Preview the playbook" }).click();
   const playbook = page.getByRole("dialog", { name: "Website playbook" });
-  await expect(playbook.getByRole("heading", { name: "Operating principles" })).toBeVisible();
+  await expect(playbook.getByRole("heading", { name: "Step 1: Frame" })).toBeVisible();
   await playbook.getByRole("button", { name: "All skills" }).click();
   await expect(choice).toBeVisible();
   await expect(dialog.getByRole("radio", { name: "Design audit" })).toBeChecked();
@@ -26,7 +26,7 @@ test("the skills rail uses arrow keys and keeps the selected task when returning
 
 test("a phone can pick a domain and read its command without horizontal scrolling", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 640 });
-  await openCatalog(page, ruleUrl("motion-25"));
+  await openCatalog(page, ruleUrl("motion-6"));
   await page.getByRole("button", { name: "Menu", exact: true }).click();
   await page.getByRole("button", { name: "Install in your agent", exact: true }).click();
   const dialog = page.getByRole("dialog", { name: "Agent skills" });
@@ -41,13 +41,13 @@ test("a phone can pick a domain and read its command without horizontal scrollin
 });
 
 test("the playbook can be read from the keyboard with its toolbar in reach", async ({ page }) => {
-  await openCatalog(page, ruleUrl("motion-25"));
+  await openCatalog(page, ruleUrl("motion-6"));
   await page.getByRole("button", { name: /^Install in your agent/ }).click();
   await page.getByRole("button", { name: "Browse the skills" }).click();
   await page.getByRole("button", { name: "Preview the playbook" }).click();
   const dialog = page.getByRole("dialog", { name: "Website playbook" });
   const reader = dialog.getByRole("region", { name: "Website playbook" });
-  await expect(reader.getByRole("heading", { name: "Operating principles" })).toBeVisible();
+  await expect(reader.getByRole("heading", { name: "Step 1: Frame" })).toBeVisible();
   const close = dialog.getByRole("button", { name: "Close agent skills" });
   await close.press("Tab");
   await expect(reader).toBeFocused();
@@ -68,13 +68,13 @@ test("retrying a failed playbook keeps focus in the reader", async ({ page }) =>
   const preview = page.getByRole("dialog", { name: "Website playbook" });
   await expect(preview.getByRole("status")).toContainText("Could not load the preview");
   await preview.getByRole("button", { name: "Try again" }).press("Enter");
-  await expect(preview.getByRole("heading", { name: "Operating principles" })).toBeVisible();
+  await expect(preview.getByRole("heading", { name: "Step 1: Frame" })).toBeVisible();
   await expect(preview.getByRole("heading", { name: "Website playbook" })).toBeFocused();
 });
 
 test("the phone shows each core example before its install command and identifies the playbook download", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 640 });
-  await openCatalog(page, ruleUrl("motion-25"));
+  await openCatalog(page, ruleUrl("motion-6"));
   await page.getByRole("button", { name: "Menu", exact: true }).click();
   await page.getByRole("button", { name: "Install in your agent", exact: true }).click();
   const dialog = page.getByRole("dialog", { name: "Agent skills" });

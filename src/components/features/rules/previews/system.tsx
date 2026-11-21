@@ -2,19 +2,16 @@ import type { ReactNode } from "react";
 
 import {
     AlertTriangle,
+    ArrowLeft,
     CornerUpLeft,
     Download,
     FileText,
     FolderPlus,
     ImageOff,
-    Monitor,
     MousePointer2,
-    MoveRight,
     Plus,
     RotateCw,
     Search,
-    Smartphone,
-    Tablet,
     Trash2,
     X,
 } from "@/components/ui/icons";
@@ -29,13 +26,16 @@ import {
 } from "@/components/features/rules/preview-primitives";
 import { cn } from "@/lib/utils";
 
-// Craft-pass previews for sys-2..sys-8 and sys-10..sys-14.
+// Craft-pass previews for sys-2..sys-8, sys-10, sys-11, sys-13, sys-15 and sys-16.
 // sys-1 and sys-9 are motion showcases and never reach this module.
 
 // ── Local vocabulary ────────────────────────────────────────────────
 
 // Evidence annotation: mono, tabular, muted. Numbers only earn ink here.
-const ANNOT = `font-mono text-[10px] tabular-nums ${ANNOTATION_INK}`;
+// ANNOT_BASE carries no colour, for a scene that paints its own surface and
+// has to state its own ink (cn() cannot override a colour already in ANNOT).
+const ANNOT_BASE = "font-mono text-[10px] tabular-nums";
+const ANNOT = `${ANNOT_BASE} ${ANNOTATION_INK}`;
 // Fine annotation (axis labels, kbd meanings) — 8–9px is reserved for these.
 const FINE = `font-mono text-[8px] tabular-nums ${ANNOTATION_INK}`;
 // The product's own copy in the same faces (a file size, a step counter, an
@@ -173,104 +173,33 @@ function dateFormats(variant: Variant) {
     );
 }
 
-// ── sys-5 · Design tokens naming ────────────────────────────────────
-// Same pipeline from palette to component. Do routes each role through its
-// own alias, so the warning gets amber from `warning` while Save gets blue
-// from `accent`; Don't bakes the role into the name, so the warning banner
-// inherits button blue.
-type Hue = "blue" | "amber";
+// ── sys-5 · Colors by role ──────────────────────────────────────────
+// The same invoice card, shown after the theme has switched to dark. The
+// panel paints its own dark surfaces in both site themes, because the quoted
+// ratios are measured against #262626 and only hold there. It stays in the
+// flow (no absolute canvas) so it keeps its size where a compare stage or a
+// tile strips the frame's padding. The one variable is where the card's ink
+// comes from: Do asks for the text role, which resolves to #f5f5f5 on this
+// theme; Don't hard-codes the light theme's #0f172a, which measures 1.2:1
+// here and all but disappears.
+const ROLE_INK = "text-[#f5f5f5]";
+const LITERAL_INK = "text-[#0f172a]";
 
-const SWATCH: Record<Hue, string> = {
-    blue: "bg-blue-500",
-    amber: "bg-amber-500",
-};
-
-// Opaque steps on purpose: a translucent border over a translucent fill on a
-// rounded chip rasterised with yellow corner pixels in headless Chromium.
-const WARNING_CHIP: Record<Hue, string> = {
-    blue: "border-blue-200 bg-blue-50 text-blue-600 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-400",
-    amber: "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300",
-};
-
-function TokenChip({ swatch, label }: { swatch?: Hue; label: string }) {
+function colorRoles(variant: Variant) {
+    const isDo = variant === "do";
+    const ink = isDo ? ROLE_INK : LITERAL_INK;
     return (
-        <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-sm border border-neutral-200 bg-neutral-50 px-1 py-1 font-mono text-[9px] leading-none text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300">
-            {swatch ? <span aria-hidden className={cn("size-2 rounded-[2px]", SWATCH[swatch])} /> : null}
-            {label}
-        </span>
-    );
-}
-
-function WarningChip({ tone }: { tone: Hue }) {
-    return (
-        <span
-            className={cn(
-                "inline-flex items-center gap-1 whitespace-nowrap rounded-sm border px-1 py-1 font-mono text-[9px] leading-none",
-                WARNING_CHIP[tone]
-            )}
-        >
-            <AlertTriangle aria-hidden className="size-2.5 stroke-[1.5]" />
-            Payment overdue
-        </span>
-    );
-}
-
-// The fill is the swatch it claims, blue-500 (blue-400 dark), so the chain on
-// screen is literal. White on blue-500 falls below 4.5:1; the label
-// is neutral-950 instead, 5.3:1 light and 7.5:1 dark.
-function SaveChip() {
-    return (
-        <span className="inline-flex items-center whitespace-nowrap rounded-sm border border-transparent bg-blue-500 px-2 py-1 text-[9px] font-semibold leading-none text-neutral-950 dark:bg-blue-400">
-            Save
-        </span>
-    );
-}
-
-function Arrow() {
-    return <MoveRight aria-hidden className="size-2.5 shrink-0 stroke-[1.5] text-neutral-300 dark:text-neutral-600" />;
-}
-
-function tokenNaming(variant: Variant) {
-    if (variant === "do") {
-        return (
-            <PreviewFrame className="flex flex-col items-center justify-center gap-2">
-                <div className="grid grid-cols-[auto_auto_auto_auto_auto] items-center justify-items-start gap-x-1 gap-y-1.5">
-                    <TokenChip swatch="blue" label="blue-500" />
-                    <Arrow />
-                    <TokenChip label="accent" />
-                    <Arrow />
-                    <SaveChip />
-                    <TokenChip swatch="amber" label="amber-500" />
-                    <Arrow />
-                    <TokenChip label="warning" />
-                    <Arrow />
-                    <WarningChip tone="amber" />
-                    <Annotation className={FINE}>palette</Annotation>
-                    <span />
-                    <Annotation className={FINE}>alias</Annotation>
-                    <span />
-                    <Annotation className={FINE}>component</Annotation>
+        <PreviewFrame className="flex flex-col justify-center">
+            <div className="flex flex-col gap-2 rounded-[8px] bg-[#171717] p-3">
+                <Annotation className={cn(ANNOT_BASE, "text-neutral-400")}>theme: dark</Annotation>
+                <div className="rounded-md border border-neutral-700 bg-[#262626] p-2.5">
+                    <span className={cn("block text-[11px] font-semibold", ink)}>Invoice INV-1042</span>
+                    <span className={cn("mt-0.5 block text-[10px]", ink)}>Northwind · $1,240.00 due Aug 14</span>
                 </div>
-                <Annotation className={ANNOT}>each role owns its alias</Annotation>
-            </PreviewFrame>
-        );
-    }
-    return (
-        <PreviewFrame className="flex flex-col items-center justify-center gap-2">
-            <div className="flex items-center gap-1.5">
-                <TokenChip swatch="blue" label="$button-blue" />
-                <div className="flex flex-col items-start gap-1.5">
-                    <span className="flex items-center gap-1.5">
-                        <Arrow />
-                        <SaveChip />
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                        <Arrow />
-                        <WarningChip tone="blue" />
-                    </span>
-                </div>
+                <Annotation className={cn(ANNOT_BASE, "text-neutral-400")}>
+                    {isDo ? "color: text role → #f5f5f5 · 13.9:1" : "color: #0f172a (light theme ink) · 1.2:1"}
+                </Annotation>
             </div>
-            <Annotation className={ANNOT}>warning inherits button blue</Annotation>
         </PreviewFrame>
     );
 }
@@ -446,64 +375,60 @@ function gracefulDegradation(variant: Variant) {
     );
 }
 
-// ── sys-11 · Responsive breakpoint strategy ─────────────────────────
-// Same 0–1280px viewport ruler. Do: two accent ticks carve three device
-// zones, the middle one a landscape tablet so it can't be mistaken for the
-// phone. Don't: eight device-specific ticks crowd mid-ruler — the crowding is
-// the lesson, so the labels alternate above and below the ruler and every
-// value stays legible instead of overprinting.
-function breakpoints(variant: Variant) {
-    const doTicks = [
-        { value: 640, at: 50 },
-        { value: 1024, at: 80 },
-    ];
-    const dontTicks = [320, 375, 414, 480, 568, 667, 768, 812].map((value) => ({
-        value,
-        at: (value / 1280) * 100,
-    }));
-    const ticks = variant === "do" ? doTicks : dontTicks;
+// ── sys-11 · Reflow at 320 CSS pixels ───────────────────────────────
+// The same checkout step in a 320 CSS px viewport, drawn at 140px so the
+// ratio holds: the Don't content is 512 / 320 = 1.6 times the frame. Do
+// stacks the two fields and keeps Continue inside the viewport. Don't keeps a
+// two-column row with a 512px minimum, so the page scrolls sideways and
+// Continue sits past the right edge. The scrollbar thumb is drawn at the same
+// ratio (frame / content) so the overflow reads before the numbers do.
+const REFLOW_VIEWPORT = 320;
+const REFLOW_MIN_WIDTH = 512;
+const REFLOW_FRAME_PX = 140;
+
+function ReflowField({ label }: { label: string }) {
     return (
-        <PreviewFrame className="flex flex-col justify-center gap-1">
-            <div className="relative mt-4 mb-3.5 h-10 w-full rounded-md border border-neutral-200 dark:border-neutral-800">
-                {variant === "do" ? (
-                    <div className="absolute inset-0 flex">
-                        <span className="flex w-1/2 items-center justify-center">
-                            <Smartphone aria-hidden className="size-3.5 stroke-[1.5] text-neutral-400 dark:text-neutral-500" />
-                        </span>
-                        <span className="flex w-[30%] items-center justify-center">
-                            <Tablet aria-hidden className="size-4 rotate-90 stroke-[1.5] text-neutral-400 dark:text-neutral-500" />
-                        </span>
-                        <span className="flex flex-1 items-center justify-center">
-                            <Monitor aria-hidden className="size-3.5 stroke-[1.5] text-neutral-400 dark:text-neutral-500" />
+        <div className="min-w-0 flex-1 space-y-0.5">
+            <span className={cn("block text-[8px] font-medium", PRODUCT_MUTED)}>{label}</span>
+            <div className="h-4 rounded-[3px] border border-neutral-300 bg-white dark:border-neutral-700 dark:bg-neutral-900" />
+        </div>
+    );
+}
+
+function reflow(variant: Variant) {
+    const isDo = variant === "do";
+    const contentPx = isDo ? REFLOW_FRAME_PX : (REFLOW_FRAME_PX * REFLOW_MIN_WIDTH) / REFLOW_VIEWPORT;
+    const thumbPct = (REFLOW_FRAME_PX / contentPx) * 100;
+    return (
+        <PreviewFrame className="flex flex-col items-center justify-center gap-2">
+            <div
+                className="relative overflow-hidden rounded-md border border-neutral-300 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-950"
+                style={{ width: REFLOW_FRAME_PX }}
+            >
+                <div className="space-y-1.5 p-2" style={{ width: contentPx }}>
+                    <span className="block text-[10px] font-semibold text-neutral-800 dark:text-neutral-100">Delivery address</span>
+                    <div className={cn("flex gap-1.5", isDo ? "flex-col" : "flex-row")}>
+                        <ReflowField label="Street" />
+                        <ReflowField label="Postcode" />
+                    </div>
+                    <div className="flex items-center justify-between gap-1.5 pt-0.5">
+                        <span className={cn("text-[9px]", PRODUCT_MUTED)}>Back</span>
+                        <span className="rounded-[4px] bg-neutral-900 px-2 py-1 text-[9px] font-semibold text-white dark:bg-neutral-100 dark:text-neutral-900">
+                            Continue
                         </span>
                     </div>
-                ) : null}
-                {ticks.map((tick, index) => {
-                    const below = variant === "dont" && index % 2 === 1;
-                    return (
-                        <span
-                            key={tick.value}
-                            className={cn("absolute", below ? "-bottom-1 top-0" : "-top-1 bottom-0")}
-                            style={{ left: `${tick.at}%` }}
-                        >
-                            <span aria-hidden className="absolute inset-y-0 w-px bg-blue-500/70 dark:bg-blue-400/70" />
-                            <Annotation
-                                className={cn(
-                                    FINE,
-                                    "absolute -translate-x-1/2 leading-none",
-                                    below ? "-bottom-2.5" : "-top-2.5"
-                                )}
-                            >
-                                {tick.value}
-                            </Annotation>
-                        </span>
-                    );
-                })}
+                </div>
+                {isDo ? null : (
+                    <div aria-hidden className="h-1 bg-neutral-200 dark:bg-neutral-800">
+                        <div className="h-full rounded-full bg-neutral-400 dark:bg-neutral-500" style={{ width: `${thumbPct}%` }} />
+                    </div>
+                )}
             </div>
-            <div className="flex justify-between">
-                <Annotation className={FINE}>0</Annotation>
-                <Annotation className={FINE}>1280px</Annotation>
-            </div>
+            <Annotation className={ANNOT}>
+                {isDo
+                    ? `scrollWidth ${REFLOW_VIEWPORT} = viewport ${REFLOW_VIEWPORT}`
+                    : `scrollWidth ${REFLOW_MIN_WIDTH} > viewport ${REFLOW_VIEWPORT}`}
+            </Annotation>
         </PreviewFrame>
     );
 }
@@ -554,49 +479,104 @@ function transitionScope(variant: Variant) {
     );
 }
 
-// ── sys-14 · Use will-change sparingly ──────────────────────────────
-// Same card row. The evidence is scope, not an invented compositor-layer
-// count: one measured target versus a blanket hint on every card.
-function HintCard({ accent = false }: { accent?: boolean }) {
+// ── sys-15 · Back returns to the result ─────────────────────────────
+// The same invoice list, the moment after Back is pressed from INV-1037.
+// The one variable is whether the view came back with it: Do restores the
+// Overdue filter, the due-date sort and row 37 in view, with that state
+// readable in the address bar; Don't rebuilds the default list from the top.
+const OVERDUE_ROWS = [
+    { row: 36, name: "Contoso", amount: "$860.00" },
+    { row: 37, name: "Northwind", amount: "$1,240.00", opened: true },
+    { row: 38, name: "Fabrikam", amount: "$415.50" },
+];
+const DEFAULT_ROWS = [
+    { row: 1, name: "Acme Corp", amount: "$2,300.00" },
+    { row: 2, name: "Globex", amount: "$96.00" },
+    { row: 3, name: "Initech", amount: "$1,780.00" },
+];
+
+function returnToResult(variant: Variant) {
+    const isDo = variant === "do";
+    const rows = isDo ? OVERDUE_ROWS : DEFAULT_ROWS;
     return (
-        <span className="relative inline-block">
-            <span
-                className={cn(
-                    "relative block w-14 space-y-1 rounded-md border bg-white p-1.5 dark:bg-neutral-950",
-                    accent
-                        ? "border-blue-500/70 dark:border-blue-400/70"
-                        : "border-neutral-200 dark:border-neutral-800"
-                )}
-            >
-                <span className="block h-1 w-8 rounded-full bg-neutral-200 dark:bg-neutral-700" />
-                <span className="block h-1 w-6 rounded-full bg-neutral-200 dark:bg-neutral-800" />
-            </span>
-        </span>
+        <PreviewFrame className="flex flex-col justify-center gap-1.5">
+            <div className="flex items-center gap-1.5">
+                <span className="flex size-4 shrink-0 items-center justify-center rounded-sm bg-neutral-100 dark:bg-neutral-800">
+                    <ArrowLeft aria-hidden className="size-2.5 stroke-[2] text-neutral-600 dark:text-neutral-300" />
+                </span>
+                <span className="min-w-0 flex-1 truncate rounded-sm border border-neutral-200 px-1.5 py-0.5 font-mono text-[9px] leading-3 text-neutral-600 dark:border-neutral-700 dark:text-neutral-300">
+                    {isDo ? "/invoices?status=overdue&sort=due" : "/invoices"}
+                </span>
+            </div>
+            <div className="rounded-md border border-neutral-200 dark:border-neutral-800">
+                <div className="flex items-center justify-between gap-2 border-b border-neutral-200 px-2 py-1 dark:border-neutral-800">
+                    <span className="rounded-sm bg-neutral-100 px-1.5 py-px text-[9px] font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
+                        {isDo ? "Overdue" : "All invoices"}
+                    </span>
+                    <span className={cn("text-[9px]", PRODUCT_MUTED)}>
+                        {isDo ? "Sort: due date" : "Sort: newest"}
+                    </span>
+                </div>
+                <div className="p-1">
+                    {rows.map((row) => (
+                        <div
+                            key={row.row}
+                            className={cn(
+                                "flex items-center gap-2 rounded-sm px-1 py-[3px] text-[10px] leading-3",
+                                "opened" in row && row.opened
+                                    ? "bg-blue-50 text-neutral-800 ring-1 ring-inset ring-blue-300 dark:bg-blue-950 dark:text-neutral-100 dark:ring-blue-800"
+                                    : "text-neutral-700 dark:text-neutral-200"
+                            )}
+                        >
+                            <span className={cn("w-4 text-right text-[9px] tabular-nums", PRODUCT_MUTED)}>{row.row}</span>
+                            <span className="min-w-0 flex-1 truncate">{row.name}</span>
+                            <span className="tabular-nums">{row.amount}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+            <Annotation className={ANNOT}>
+                {isDo ? "Back → row 37 · filter and sort kept" : "Back → row 1 · filter and sort lost"}
+            </Annotation>
+        </PreviewFrame>
     );
 }
 
-function willChange(variant: Variant) {
+// ── sys-16 · Errors stay until handled ──────────────────────────────
+// The same upload screen six seconds after the upload failed. The toast is
+// the only place Retry exists. Do keeps it on screen until the person acts on
+// it or closes it; Don't let a 5s timer take it, so the corner is empty and
+// the dashed outline marks where the only recovery path used to be.
+function persistentError(variant: Variant) {
+    const isDo = variant === "do";
     return (
-        <PreviewFrame className="flex flex-col justify-center gap-3">
-            <CodeChip>will-change: transform, opacity</CodeChip>
-            <div className="flex items-end gap-4 pt-1">
-                {variant === "do" ? (
-                    <>
-                        <HintCard />
-                        <HintCard accent />
-                        <HintCard />
-                    </>
-                ) : (
-                    <>
-                        <HintCard accent />
-                        <HintCard accent />
-                        <HintCard accent />
-                    </>
-                )}
+        <PreviewFrame className="flex flex-col justify-between gap-2">
+            <div className="space-y-1.5">
+                <div className="flex items-baseline justify-between">
+                    <span className="text-[10px] font-semibold text-neutral-700 dark:text-neutral-200">Files</span>
+                    <Annotation className={ANNOT}>t = 6s</Annotation>
+                </div>
+                <FileRow name="Roadmap.fig" meta="12.1 MB" />
+                <FileRow name="Assets.zip" meta="88.4 MB" />
             </div>
-            <Annotation className={ANNOT}>
-                {variant === "do" ? "1 measured target" : "blanket hint on every card"}
-            </Annotation>
+            <div className="flex flex-col items-end gap-1">
+                {isDo ? (
+                    <div className="flex h-7 w-[184px] items-center gap-2 rounded-md bg-neutral-900 px-2.5 dark:border dark:border-neutral-700 dark:bg-neutral-800">
+                        <AlertTriangle aria-hidden className="size-3 shrink-0 stroke-[1.5] text-rose-400" />
+                        <span className="min-w-0 flex-1 truncate text-[10px] leading-none text-white">Upload failed</span>
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold leading-none text-blue-400">
+                            <RotateCw aria-hidden className="size-2.5 stroke-[2]" />
+                            Retry
+                        </span>
+                        <X aria-hidden className="size-2.5 shrink-0 stroke-[2] text-neutral-400" />
+                    </div>
+                ) : (
+                    <div className="h-7 w-[184px] rounded-md border border-dashed border-neutral-300 dark:border-neutral-700" />
+                )}
+                <Annotation className={ANNOT}>
+                    {isDo ? "still here · waits for Retry or ✕" : "closed at 5s · Retry gone"}
+                </Annotation>
+            </div>
         </PreviewFrame>
     );
 }
@@ -607,14 +587,15 @@ const scenes: Record<string, (variant: Variant) => ReactNode> = {
     "sys-2": emptyStates,
     "sys-3": tapTargets,
     "sys-4": dateFormats,
-    "sys-5": tokenNaming,
+    "sys-5": colorRoles,
     "sys-6": undoDelete,
     "sys-7": multiStepProgress,
     "sys-8": keyboardNav,
     "sys-10": gracefulDegradation,
-    "sys-11": breakpoints,
+    "sys-11": reflow,
     "sys-13": transitionScope,
-    "sys-14": willChange,
+    "sys-15": returnToResult,
+    "sys-16": persistentError,
 };
 
 export const systemPreviews: PreviewRenderer = (ruleId, variant) =>

@@ -105,3 +105,19 @@ Identify what the chart shows and describe the comparison readers need. When the
 - Do: Summarize the trend and offer the monthly counts
 - Don't: Leave the trend and counts in the bars alone
 - Reasoning: `references/rules/comp-13.md` · https://axiomui.nischal.fyi/rules/comp-13
+
+## Navigate with links, act with buttons (`comp-14`)
+
+If activating a control takes someone to another URL, make it a link with an href, however it is styled. The browser then offers Open in new tab and Copy link, and shows the address before the click. Keep buttons for actions that change something on the current page.
+
+- Do: <a href="/invoices/1042">View invoice</a>
+- Don't: <div onClick={() => router.push(…)}>
+- Reasoning: `references/rules/comp-14.md` · https://axiomui.nischal.fyi/rules/comp-14
+
+## Show the product doing what the headline promises (`comp-15`)
+
+When a page makes a product claim, show the product delivering it: a crop of the real interface or output at the moment the headline describes. A reader should be able to point at the proof in the image without reading further. Decorative art that would fit any product's headline proves nothing.
+
+- Do: Headline + deploy #418 flagged in the product
+- Don't: Headline + floating avatars and a green check
+- Reasoning: `references/rules/comp-15.md` · https://axiomui.nischal.fyi/rules/comp-15

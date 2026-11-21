@@ -58,8 +58,6 @@ const HELD_MS = 600_000;
 const REST_DEFAULTS: Record<string, string> = { opacity: "1", transform: "none", filter: "none" };
 const META = new Set(["offset", "easing", "composite"]);
 
-const paneRate = (pane: PaneSpec, rate: number) => (pane.pinRate ? 1 : rate);
-
 export type Phase = "enter" | "exit";
 
 /** A pane's timing readout for the phase that is playing: a dismiss reads its exit, not its entrance. */
@@ -144,8 +142,7 @@ function Body({ spec, rule }: { spec: ShowcaseSpec; rule: Rule }) {
   const isPress = trigger === "press";
   const isHover = trigger === "hover";
   const gesture = isPress || isHover;
-  const pinned = Boolean(spec.do.pinRate && spec.dont.pinRate);
-  const showSpeed = !gesture && !reduced && !pinned;
+  const showSpeed = !gesture && !reduced;
   // A gesture has no speed control: it plays at full speed, as the reader's hand does.
   const speed = gesture ? 1 : Number(rate);
 
@@ -175,7 +172,7 @@ function Body({ spec, rule }: { spec: ShowcaseSpec; rule: Rule }) {
         easing: readout.easing,
         fill: "forwards",
       });
-      animation.playbackRate = paneRate(pane, speed);
+      animation.playbackRate = speed;
       barAnims.current.add(animation);
       animation.oncancel = () => barAnims.current.delete(animation);
       animation.onfinish = () => {
@@ -212,20 +209,20 @@ function Body({ spec, rule }: { spec: ShowcaseSpec; rule: Rule }) {
       if (run !== generation.current) return;
       for (const { el, pane, skip } of panes()) {
         if (!el || skip) continue;
-        playPane(el, pane.tracks, { rate: paneRate(pane, speed), reduced, fromKeyframes });
+        playPane(el, pane.tracks, { rate: speed, reduced, fromKeyframes });
       }
       runBars("enter");
-      const wall = (pane: PaneSpec) => tracksDurationMs(pane.tracks) / paneRate(pane, speed);
+      const wall = (pane: PaneSpec) => tracksDurationMs(pane.tracks) / speed;
       const longest = Math.max(skipDo.current ? 0 : wall(spec.do), wall(spec.dont));
       const canSettle = !reduced && spec.settle !== false && (trigger === "replay" || trigger === "action");
-      const hold = longest + SETTLE_HOLD_MS / (pinned ? 1 : speed);
+      const hold = longest + SETTLE_HOLD_MS / speed;
       markLive(reduced ? 0 : canSettle ? hold + DUR.fast / speed : gesture || trigger === "toggle" ? HELD_MS : longest);
       if (!canSettle) return;
       settleTimer.current = setTimeout(() => {
         if (run !== generation.current) return;
         for (const { el, pane, skip } of panes()) {
           if (!el || skip) continue;
-          void settlePane(el, pane.exitTracks ?? restTracks(pane, el), { rate: paneRate(pane, speed), reduced });
+          void settlePane(el, pane.exitTracks ?? restTracks(pane, el), { rate: speed, reduced });
         }
         clearBars();
         setEngaged(false);
@@ -252,7 +249,7 @@ function Body({ spec, rule }: { spec: ShowcaseSpec; rule: Rule }) {
     generation.current++;
     for (const { el, pane, skip } of panes()) {
       if (!el || skip || !pane.exitTracks) continue;
-      playPane(el, pane.exitTracks, { rate: paneRate(pane, speed), reduced });
+      playPane(el, pane.exitTracks, { rate: speed, reduced });
     }
     runBars("exit");
     setPhase("exit");

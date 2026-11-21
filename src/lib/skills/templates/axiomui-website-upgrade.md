@@ -1,112 +1,85 @@
 # Website upgrade playbook
 
-Act as a design engineer. Improve the interface by making its intent easier to understand and its behavior easier to trust. Treat polish as the accumulated result of correct hierarchy, spacing, alignment, states, and interaction—not decoration.
+Change an existing interface in code until it is correct, then until it is specific to its product. Work through the five steps in order; each ends on a done-when check. Rule ids such as `a11y-1` point into Axiom UI's rules; the rule lookup at the end says where each one's full reference lives. Open rules when a step sends you to them, not all at once.
 
-## Operating principles
+## Step 1: Frame
 
-- Inspect the current interface, implementation, and existing design patterns before proposing changes.
-- Identify the task or tasks the surface supports and the information each decision needs.
-- Fix structure before styling, and styling before motion.
-- Prefer the smallest coherent system-level fix over scattered one-off patches.
-- Preserve accepted behavior, content, and interaction choreography unless the request explicitly changes them.
-- Use optical judgment alongside measurements. Mathematical alignment can still look wrong.
-- Do not stop at critique when the user asked for implementation and the code is available.
+1. Name the page's job and take its entry list from the table below. A page that mixes jobs takes the list for each region. When the request names a symptom instead ("feels cramped", "looks off on my phone"), start from the symptom list.
+2. Capture the first screen at 1440×900 and at 390×844 before any edit. For each, write what a visitor sees, understands and can do first, and the vertical position of the main heading, the primary action and the first section heading. Step 4 compares against this baseline.
+3. For a marketing or product page, name the headline's proof object before fixing anything: the screen, record or output of this product that shows the headline's claim coming true (for a monitoring tool, the alert that caught the outage; for a scheduler, the conflict it resolved). Build it from data the page already has. Step 3 makes room for it and step 4 checks it.
+4. Write what must stay unchanged: content, brand, accepted flows. A flow that fails on a supported path, such as a code field that rejects paste or a submit button disabled with no reason, is in scope to fix; say so in the report. A request about one component or one symptom keeps the work to that region. Moving existing content to show the proof object is allowed. Brand means the brand's hue, type and voice; a gradient, glow or eyebrow wrapped around them is template chrome, not brand.
 
-## Improvement loop
+| Page job | Signs | Entry list |
+|---|---|---|
+| Marketing or product page | Hero, feature sections, pricing, sign-up | `comp-15` `comp-1` `typo-15` `typo-12` `layout-1` `layout-10` `layout-13` `layout-14` `comp-14` `comp-12` `sys-3` `motion-16` `a11y-7` `motion-29` `a11y-6` |
+| Working tool or dashboard | Tables, filters, forms, saved state | `sys-15` `sys-16` `sys-1` `sys-2` `sys-10` `comp-9` `comp-8` `comp-1` `typo-7` `sys-8` `a11y-8` `form-15` |
+| Article or docs | Long prose, headings, in-page links | `layout-2` `typo-3` `typo-11` `typo-6` `a11y-5` `a11y-7` `layout-12` `typo-8` `typo-13` |
 
-1. Frame the task.
-   State the visible problem, the affected surface, and what must remain unchanged.
-2. Trace the cause.
-   Inspect the real component, styles, tokens, responsive rules, states, and interaction path. Do not redesign from a screenshot alone when the implementation is available.
-3. Choose the highest-leverage correction.
-   Resolve hierarchy and product logic first, then layout, typography, components, states, accessibility, and motion.
-4. Implement cohesively.
-   Reuse existing components and tokens. If the problem repeats, correct the shared primitive rather than patching every instance.
-5. Verify in context.
-   Exercise the changed UI at relevant viewport sizes and interaction states. Compare the result to the original symptom.
-6. Report precisely.
-   Describe every material change, why it improved the interface, what was verified, and what remains uncertain.
+Symptom list:
 
-## Diagnose by symptom
+- Crowded: `layout-3` `layout-10` `layout-5` `comp-1`
+- Flat or empty: `typo-9` `layout-10` `color-1` `color-12`
+- Inconsistent: `layout-1` `typo-5` `comp-10` `color-10` `sys-5`
+- Misaligned: `layout-4` `layout-6` `comp-3` `typo-7`
+- Hard to scan: `layout-2` `typo-3` `typo-6` `a11y-5`
+- Slow: `motion-1` `motion-6` `motion-29` `comp-9` `sys-1`
+- Unsafe or confusing: `comp-2` `sys-6` `sys-16` `form-8` `form-15` `comp-8`
+- Breaks on mobile: `sys-11` `layout-9` `layout-14` `typo-10` `sys-3`
 
-- Feels crowded: reduce competing emphasis, group by proximity, restore inner padding, and increase separation between unrelated regions.
-- Feels empty or flat: strengthen hierarchy and grouping before adding borders, shadows, cards, or color.
-- Feels inconsistent: find the shared token or primitive behind mismatched spacing, type, radius, icon size, or state treatment.
-- Feels visually misaligned: inspect baselines, cap height, icon geometry, negative space, and optical centering—not only flex alignment.
-- Feels hard to scan: check line length, heading roles, secondary-text contrast and the relative emphasis of actions within each task.
-- Feels slow: distinguish actual latency from delayed feedback or sluggish motion. Respond immediately, then animate only when it aids continuity.
-- Feels unsafe or confusing: clarify labels, consequences, validation, recovery, loading, success, empty, and error states.
-- Breaks on mobile: preserve reading order and task priority; recompose the layout instead of merely shrinking desktop UI.
+Done when the job (or symptom) is named, both baseline captures and their notes exist, the proof object is named (marketing and product pages), and the keep-list is written.
 
-## Craft standards
+## Step 2: Sweep
 
-### Hierarchy and typography
+{{sweep}}
 
-- Give the next action appropriate emphasis within its task group. Independent tasks on a dashboard can each have a primary action.
-- Use sentence case for ordinary English labels when it matches the product’s editorial convention. Preserve names and follow the conventions of each translation.
-- Align paragraphs to the reading start for their language. Check sustained reading, wrapped headings and mixed-script names with representative text.
-- Build hierarchy with size, weight, spacing, and contrast before adding color.
-- De-emphasize secondary text with color before making it uncomfortably small.
-- Balance headings and prevent awkward orphaned words when the stack supports it.
+Then check each rule on the entry list against the page, using its Do and Don't.
 
-### Layout and surfaces
+Done when every detection has been searched, every match is confirmed or dropped, and every entry-list rule is marked passing or failing with the observation.
 
-- Use a consistent spacing scale and let proximity explain relationships.
-- Keep repeated gutters and control heights aligned across the same region.
-- Give content enough room inside cards; outer whitespace does not compensate for cramped inner padding.
-- For concentric circular corners with an equal inset, subtract the painted-edge inset from the outer radius to obtain the inner radius. Inspect each edge when the insets differ.
-- Avoid wrapping every section in a card. Use whitespace, surface contrast, or dividers only when they clarify structure.
-- Keep decorative boundaries quiet. Measure an edge against adjacent colors when it identifies a control or a graphic.
+## Step 3: Fix
 
-### Components and forms
+Fix in this order: structure (hierarchy, reading order, the proof object's place on the first screen, links and buttons, headings, reflow), then states (loading, empty, error, recovery, focus), then type and spacing, then motion. When one token or component causes several failures, fix it once at the source.
 
-- Size the primary target for its input method and give independent actions inside a card their own controls.
-- Label ambiguous icons and preserve visible focus states.
-- Use controls that match the decision: radio for one choice, checkbox for many, switch for immediate change.
-- Keep labels visible while typing and validate after meaningful interaction, not on the first keystroke.
-- Prevent duplicate async actions and show immediate, local feedback.
-- Make destructive actions deliberate, explain consequences, and offer recovery when practical.
+Open the rule's full reference before you change code when any of these hold:
 
-### States, accessibility, and motion
+- the fix sets a value the rule's Do and Don't do not already state (a duration, a ratio, a size, a breakpoint);
+- the rule's description names a condition or exception ("when", "unless", "only", "beside other content");
+- you are about to keep a violation as a deliberate exception;
+- the finding is an accessibility conformance claim.
 
-- Design loading, empty, error, success, disabled, hover, focus, and active states as part of the component.
-- Preserve meaning without color and maintain readable contrast.
-- Follow the keyboard model for each control. Check entry, navigation within composite widgets, and focus after a modal closes.
-- Check whether motion helps explain a change of state. Repeated actions should keep their feedback and content responsive.
-- Specify the properties that transition. Tune entrance and exit separately, then interrupt the transition and check where the element settles.
-- Respect reduced-motion preferences and avoid movement that delays access to content.
+Otherwise the Do and Don't are enough. Reuse the project's tokens and components, and add no dependency for an effect the stack can already express; when a token contradicts a rule, flag the conflict instead of quietly rewriting the system.
 
-## Decision guardrails
+Done when every confirmed failure is fixed or recorded as a deliberate exception with its reason, and its confirming test from step 2 now passes.
 
-- Do not introduce a new visual language to solve a local inconsistency.
-- Do not add dependencies for effects the current stack can express clearly.
-- Do not hide usability problems behind animation, gradients, blur, or decorative chrome.
-- Explain departures from a design convention using the product context. Assess accessibility conformance against the applicable criterion and its stated exceptions.
-- Do not widen a focused request into an unrelated redesign.
+## Step 4: Elevate
 
-## Verification contract
+Correct is the floor. This pass makes the page belong to its product. Run all four checks on marketing and product pages, and the first-screen check on every page.
 
-Before calling the work complete:
+1. First screen. Capture both sizes again and compare with the baseline. The visitor must see, understand and be able to do at least as much as before. Anything that was on the first screen at 390×844 (main heading, primary action, the evidence for the claim) stays there; if an edit pushed it down, recompose or revert that edit.
+2. Evidence over decoration (`comp-15`). Point at the evidence for the headline. When it is floating avatars, abstract gradients or a generic dashboard, replace it with the product's own interface or output doing what the headline claims. A chart there carries the labels needed to read it (`comp-13`).
+3. One distinctive detail. Find one thing only this product has (its real data, its vocabulary, its output, a signature interaction) and let it carry the first screen in place of template chrome such as eyebrow pills, numbered feature cards and icon grids.
+4. Counterexample test, for every element you call generic or distinctive: swap in a competitor's name, reorder the numbered cards, remove the eyebrow. Keep what changes meaning when altered; cut or replace what does not. A generic element becomes a finding only through a rule; otherwise list it under observations.
 
-1. Recheck the exact symptom that triggered the change.
-2. Inspect desktop and mobile layouts at realistic widths.
-3. Exercise keyboard flow and relevant hover, focus, active, loading, empty, success, and error states.
-4. Check content extremes such as long labels, wrapping text, and dense data where relevant.
-5. Respect reduced motion and confirm overlays can be dismissed.
-6. Run the repository's focused checks and inspect the final diff for accidental scope.
+Done when the after-captures exist, the first-screen comparison is one line per size, and every flagged element has passed or failed the counterexample test.
 
-For visual work, source inspection and a successful build are not sufficient. Verify the rendered interface.
+## Step 5: Verify
 
-## Reporting format
+Look at the rendered interface; source inspection and a passing build are not verification.
 
-Present implemented changes in a markdown table with Before, After, and Why columns. Include every material change, not only highlights.
+1. Rerun every confirming test from step 2 on the final build.
+2. Check 1440px, 390px and 320 CSS px (`sys-11`), with the longest real labels and densest data.
+3. Tab through each changed flow: focus stays visible (`a11y-1`), overlays close on Escape and return focus (`a11y-8`).
+4. Trigger loading, empty, error and success states where the page has them.
+5. If the page animates, review each changed transition at 10% or 25% speed in the browser's animation tools (the Animations panel in Chrome DevTools), checking its origin, path and easing, then judge it again at full speed, where timing is felt. Repeat with reduced motion on (`motion-17`).
+6. Run the repository's checks, if it has any, and read the final diff for accidental scope.
 
-Then state:
+## Report
 
-- the viewports and interactions verified,
-- the checks run,
-- any deliberate exceptions or remaining risks.
+A markdown table with Before, After, Why and Rule columns, one row per material change. Then:
 
-Optimize for an interface that feels obvious, calm, responsive, and trustworthy. The best details should disappear into use.
+- the first-screen comparison at both sizes,
+- the viewports and interactions verified, and the checks run,
+- deliberate exceptions with their reasons,
+- observations no rule covers, and remaining risks.
 
 {{ruleLookup}}

@@ -47,21 +47,28 @@ export const skillsCliCommand = `npx skills add ${skillsRepo}`;
 export const skillGroupWords = ["core", "domains", "all"] as const;
 
 /**
- * Tags that pull a rule filed under another category into a domain skill, so
- * a skill whose trigger covers a topic also carries every rule about it.
+ * Tags, and named rules a tag cannot reach, that pull a rule filed under
+ * another category into a domain skill, so a skill whose trigger covers a
+ * topic also carries every rule about it.
  */
-const crossListing: Record<string, { tags: Set<string>; note: string }> = {
+const crossListing: Record<string, { tags: Set<string>; ruleIds?: string[]; note: string }> = {
+  typography: {
+    tags: new Set(["Headings", "Readability"]),
+    note: "Line measure and heading levels are filed under layout and accessibility, but they are set alongside size, leading and weight.",
+  },
   layout: {
     tags: new Set(["Bidirectional text"]),
-    note: "Text direction affects where names, separators and counts sit in a localized row.",
+    ruleIds: ["sys-11"],
+    note: "Text direction affects where names, separators and counts sit in a localized row. Reflow at narrow widths decides where the layout recomposes.",
   },
   accessibility: {
     tags: new Set(["Accessibility", "WCAG", "Keyboard"]),
+    ruleIds: ["sys-11"],
     note: "These rules cover specific accessibility decisions in other domains. Check the conditions and exceptions in each rule before making a conformance finding.",
   },
   motion: {
-    tags: new Set(["Motion"]),
-    note: "These system rules cover property selection and resource hints when implementing motion in CSS.",
+    tags: new Set(["Motion", "Gestures"]),
+    note: "These rules from other domains cover which properties a transition animates, a pause control for motion that runs on its own, and a click or tap path for every drag.",
   },
 };
 
@@ -73,17 +80,17 @@ type DomainCopy = Pick<SkillSpec, "summary" | "description" | "lead" | "aliases"
  */
 const domainCopy: Record<string, DomainCopy> = {
   typography: {
-    summary: "Interface text, from labels and tabular figures to long passages and mixed-direction names.",
+    summary: "Interface text, from labels and display headings to long passages and mixed-direction names.",
     description:
-      "Use Axiom UI’s typography guidance to choose typefaces and weights by role, set line height and measure, review casing in English labels, space short uppercase Latin labels, align comparable figures, preserve meaning under truncation, tune heading and paragraph wrapping, or isolate a name in mixed-direction text.",
+      "Use Axiom UI’s typography guidance to choose typefaces and weights by role, set line height and measure, review casing in English labels, space short uppercase Latin labels, tighten display headings without crowding letters, choose heading levels by outline, align comparable figures, preserve meaning under truncation, tune heading and paragraph wrapping, or isolate a name in mixed-direction text.",
     lead: "Start with a real string in the typeface and language that will appear on screen. A two-line heading, an amount that changes and a name beside a review count each expose a different failure. Record the role and the conditions you tested before sharing its type settings across components.",
     aliases: ["typography", "type"],
   },
   layout: {
-    summary: "Grouping, measure, control padding, alignment, gutters and stacking across viewport sizes.",
+    summary: "Grouping, measure, padding, alignment, sticky headers, media space, crops and reflow.",
     description:
-      "Use Axiom UI’s layout guidance when choosing a spacing scale, setting line measure and container widths, grouping fields and labels, fitting padding around controls, optically aligning glyphs, organizing cards and dividers, setting gutters and breakpoints, reviewing mixed-direction rows, or resolving stacking contexts.",
-    lead: "Compare the distance from a field to its own label with the distance to the next field. Widen the viewport and try the longest label the product supports. Those two checks reveal whether spacing communicates relationships and whether a shared gutter still fits the content.",
+      "Use Axiom UI’s layout guidance when choosing a spacing scale, setting line measure and container widths, grouping fields and labels, fitting padding around controls, optically aligning glyphs, choosing cards, dividers or space as a group boundary, adapting gutters and reflowing at narrow widths, keeping anchors and focus clear of sticky headers, reserving space for images and embeds, keeping a subject in each crop, reviewing mixed-direction rows, or resolving stacking contexts.",
+    lead: "Compare the distance from a field to its own label with the distance to the next field. Narrow the viewport to 320px with the longest label the product supports, then reload on a throttled connection and follow an in-page link under the sticky header. Those checks reveal whether spacing communicates relationships, whether the layout still fits, and whether media and fixed bars push content out of view.",
     aliases: ["layout", "spacing"],
   },
   color: {
@@ -94,38 +101,38 @@ const domainCopy: Record<string, DomainCopy> = {
     aliases: ["color", "colour"],
   },
   components: {
-    summary: "Action hierarchy, overlays, button states, icon labels, card links and chart alternatives.",
+    summary: "Action hierarchy, links and buttons, product evidence, overlays, button states and charts.",
     description:
-      "Use Axiom UI’s component guidance when prioritizing actions within a task, confirming deletion, nesting corners, representing people and files, choosing inline or overlay surfaces, placing errors, labeling icons, explaining disabled or pending actions, sizing card links, dismissing overlays, or providing chart summaries and accessible data.",
-    lead: "Judge the component in the task that contains it. A project card might open details and also offer an independent Archive action. Give each a distinct target. In a chart, identify whether readers need a trend, an exact value, or both before deciding how much information to show alongside it.",
+      "Use Axiom UI’s component guidance when prioritizing actions within a task, choosing a link or a button, pairing a headline with evidence from the product, confirming deletion, nesting corners, representing people and files, choosing inline or overlay surfaces, placing errors, labeling icons, explaining disabled or pending actions, sizing card links, dismissing overlays, or providing chart summaries and accessible data.",
+    lead: "Judge the component in the task that contains it. A project card might open details, a link to another URL, and also offer an independent Archive action, a button. Give each a distinct target. In a chart, identify whether readers need a trend, an exact value, or both before deciding how much information to show alongside it.",
     aliases: ["components", "comp"],
   },
   forms: {
-    summary: "Field labels, choice controls, validation, reused answers, submission feedback and sign-in codes.",
+    summary: "Labels, input purpose, choice controls, validation, kept answers, submission and sign-in codes.",
     description:
-      "Use Axiom UI’s form guidance when placing labels, marking required or optional fields, sizing fields for plausible answers, choosing radios, checkboxes, switches or selects, timing validation, writing format hints, reusing previously entered answers, confirming a submission, or testing paste and autofill for sign-in codes.",
-    lead: "Follow an answer from entry through submission. Check where its label and format are explained, when the user has enough information to correct it, and whether the value survives the next step. A pasted sign-in code beginning with zero is one useful test of the entire path.",
+      "Use Axiom UI’s form guidance when placing labels, marking required or optional fields, sizing fields for plausible answers, declaring input type, keyboard and autocomplete, choosing radios, checkboxes, switches or selects, timing validation, keeping answers after a failed submission, writing format hints, reusing previously entered answers, confirming a submission, or testing paste and autofill for sign-in codes.",
+    lead: "Follow an answer from entry through submission. Check which keyboard and autofill the field offers, where its label and format are explained, when the user has enough information to correct it, and whether every answer survives a rejected submission and the next step. A pasted sign-in code beginning with zero is one useful test of the entire path.",
     aliases: ["forms", "form", "inputs"],
   },
   system: {
-    summary: "Loading, empty states, recovery, timestamps, keyboard behavior, breakpoints and transitions.",
+    summary: "Loading, empty and error states, recovery, back to results, targets, keyboard, reflow, transitions.",
     description:
-      "Use Axiom UI’s system guidance when designing loading and empty states, multi-step progress, timeout and retry behavior, undo, optimistic updates, dates and times, semantic color tokens or content-driven breakpoints.",
-    lead: "Trace one action through success, delay and failure. If a saved state appears before the server replies, decide what the reader sees when the request fails or another change has already succeeded. Specify the recovery behavior alongside the optimistic state.",
+      "Use Axiom UI’s system guidance when designing loading and empty states, multi-step progress, timeout and retry behavior, undo, optimistic updates, keeping an error and its only recovery action on screen, returning people to the result they opened, dates and times, semantic color tokens, hit areas for touch and pointer, keyboard behavior within controls, reflow at narrow widths, or which properties a transition animates.",
+    lead: "Trace one action through success, delay and failure. If a saved state appears before the server replies, decide what the reader sees when the request fails or another change has already succeeded, and keep the failure and its Retry on screen until someone acts. Then open an item from a filtered list and press Back: the same filters and position should return.",
     aliases: ["system", "states"],
   },
   motion: {
     summary: "Timing, easing, interruption, gestures, reduced motion and browser animation performance.",
     description:
-      "Use Axiom UI’s motion guidance when deciding whether to animate, choosing easing or timing, coordinating entrance and exit, anchoring popovers, handling tooltip delays, redirecting interrupted motion, supporting drag and swipe, reducing motion, or diagnosing dropped frames. It covers CSS transitions, starting styles, the Web Animations API, property selection and will-change.",
-    lead: "Choose a transition for a specific change of state and try it at the speed someone would actually use the control. A repeated shortcut can keep its content ready immediately. A panel can use motion to explain where it came from. Use the example timings to compare treatments, then test interruption, reduced motion and actual frame delivery.",
+      "Use Axiom UI’s motion guidance when deciding whether to animate, choosing easing or timing, coordinating entrance and exit, anchoring popovers, handling tooltip delays, redirecting interrupted motion, supporting drag and swipe with a click or tap alternative, pausing motion that runs on its own, reducing motion, or diagnosing dropped frames. It covers CSS transitions, starting styles, the Web Animations API, property selection and will-change.",
+    lead: "Choose a transition for a specific change of state and try it at the speed someone would actually use the control. A repeated shortcut can keep its content ready immediately. A panel can use motion to explain where it came from. To review a transition, play it at 10% or 25% speed in the browser's animation tools (the Animations panel in Chrome DevTools) to check its origin, path and easing, then judge it again at full speed, where timing is felt. Then test interruption, reduced motion and actual frame delivery.",
     aliases: ["motion", "animation"],
   },
   accessibility: {
-    summary: "Focus, targets, contrast, keyboard access, chart alternatives, authentication and reduced motion.",
+    summary: "Focus and its return, targets, contrast, links, headings, drag alternatives, pausing and reflow.",
     description:
-      "Use Axiom UI’s accessibility guidance to check keyboard focus and operation, target size and spacing, text and control contrast, meaning beyond color, field labels, accessible authentication, chart alternatives, modal dismissal and reduced motion. Consult the sources on the linked rule page when checking a conformance claim.",
-    lead: "Follow a task with the input method or presentation the rule addresses. Try a sign-in code from the clipboard, navigate a chart’s data table by its headers, or enlarge text until the layout reflows. For a WCAG finding, identify the applicable success criterion, its level and exceptions, and record what happened on the tested path.",
+      "Use Axiom UI’s accessibility guidance to check keyboard focus, its visibility and its return when an overlay closes, target size and spacing, text and control contrast, meaning beyond color, underlined links in running text, heading levels, a click path for every drag, pausing content that moves on its own, field labels and input purpose, accessible authentication, chart alternatives, modal dismissal, reflow at 320 CSS px and reduced motion. Consult the sources on the linked rule page when checking a conformance claim.",
+    lead: "Follow a task with the input method or presentation the rule addresses. Close a dialog with Escape and note where focus lands, reorder a list without dragging, paste a sign-in code from the clipboard, or zoom to 400% at 1280px wide and check that nothing scrolls sideways. For a WCAG finding, identify the applicable success criterion, its level and exceptions, and record what happened on the tested path.",
     aliases: ["accessibility", "a11y"],
   },
 };
@@ -139,8 +146,12 @@ function crossListedFor(categoryId: string): string[] {
   if (!listing) {
     return [];
   }
+  const named = new Set(listing.ruleIds ?? []);
   return rules
-    .filter((rule) => rule.category !== categoryId && rule.tags.some((tag) => listing.tags.has(tag)))
+    .filter(
+      (rule) =>
+        rule.category !== categoryId && (named.has(rule.id) || rule.tags.some((tag) => listing.tags.has(tag)))
+    )
     .map((rule) => rule.id);
 }
 
@@ -166,7 +177,7 @@ const coreSkills: SkillSpec[] = [
     title: "Website upgrade playbook",
     summary: "A playbook for upgrading a real interface in code, backed by every Axiom UI rule.",
     description:
-      "Changes an existing website, landing page, dashboard, SaaS product, or design system in code, using Axiom UI's rules as the standard. Use when an existing interface feels cluttered, flat, inconsistent, cramped, visually misaligned, unresponsive, hard to scan, or insufficiently polished; when asked to refine, fix, or polish its hierarchy, typography, spacing, components, forms, states, accessibility, responsive behavior, or motion; or when a critique should end in implemented changes. For a review without edits, use axiomui-audit only if it is installed; otherwise review with the included rules. For values while building new UI, use axiomui only if it is installed; otherwise consult the included rule library.",
+      "Changes an existing website, landing page, dashboard, SaaS product, or design system in code, using Axiom UI's rules as the standard. Use when an existing interface feels sloppy, generic, cluttered, flat, inconsistent, cramped, visually misaligned, unresponsive, hard to scan, or insufficiently polished; when asked to make a site look better, or to refine, fix, or polish its hierarchy, typography, spacing, components, forms, states, accessibility, responsive behavior, or motion; or when a critique should end in implemented changes. For a review without edits, use axiomui-audit only if it is installed; otherwise review with the included rules. For values while building new UI, use axiomui only if it is installed; otherwise consult the included rule library.",
     aliases: ["upgrade", "playbook"],
     template: "axiomui-website-upgrade",
     categoryId: null,

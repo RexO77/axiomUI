@@ -28,7 +28,7 @@ import { MotionTile } from "./motion-tile";
 const SIDES: readonly Variant[] = ["do", "dont"];
 
 /** Easing rules show only the curve on a tile; the rail, numbers and axis stay in the rule view. */
-const EASING = new Set(["motion-4", "motion-5"]);
+const EASING = new Set(["motion-4"]);
 
 function Pane({ rule, variant }: { rule: Rule; variant: Variant }) {
   const spec = showcaseSpecs[rule.id];
