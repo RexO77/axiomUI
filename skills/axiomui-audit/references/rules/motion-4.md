@@ -24,7 +24,7 @@ A curve tuned for an 8px menu entrance can produce a jarring first movement on a
 ## How to apply it
 
 1. Keep distance and duration fixed for the comparison.
-2. Check the early movement at the largest supported distance.
+2. Check the first few frames at the actual travel distance. An ease-in can make the start of a short entrance look still, even after the user has acted.
 3. Reuse a token for components with the same motion and purpose.
 
 ## Review questions

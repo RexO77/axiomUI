@@ -15,6 +15,7 @@ Use short transitions for nearby controls. Start with 180ms for a small menu and
 A menu opened beside its trigger has little ground to cover. Stretching the same motion from 180ms to 500ms leaves its labels moving for longer. A large change of view may need more time to show the relationship between the starting and ending positions.
 
 - [IBM Carbon · Motion principles and timing](https://www.carbondesignsystem.com/building-blocks/foundations/motion/overview)
+- [Chrome DevTools · Inspecting animations](https://developer.chrome.com/docs/devtools/css/animations)
 
 ## What breaks
 
@@ -24,7 +25,7 @@ A fixed duration applied across a product can make a small menu linger and a ful
 
 1. Group motion tokens by role and travel distance.
 2. Test the smallest and largest instances of the component.
-3. Measure when content is usable separately from when it comes to rest.
+3. Measure when content becomes usable and when it comes to rest. Slow playback to find a flash or jump, then replay at normal speed to judge the timing.
 
 ## Review questions
 

@@ -5,13 +5,19 @@ Review an interface against Axiom UI's {{ruleCount}} UI design rules and report 
 ## Procedure
 
 1. Frame the surface. Name the page or component, its primary task, and what is in scope. If the request is vague, audit the primary path first and say so.
-2. Gather evidence. Prefer the rendered UI together with its source, because computed styles, tokens and component code show values a screenshot cannot. A screenshot alone is weaker evidence. When it is all you have, say so in the report.
-3. Choose the domains. Pick the checklists below that the surface exercises. A form needs forms, components and accessibility at minimum. Anything that moves needs motion.
-4. Walk the checklist. For each item, look for a concrete violation and record it with evidence: a file and line, a measured value, or a screen region. Skip items that do not apply, and never report a passing item as a finding.
-5. Assign a severity from the scale below.
-6. Report in the format below.
+2. Gather evidence. Prefer the rendered UI together with its source, because computed styles, tokens and component code show values a screenshot cannot. A screenshot alone is weaker evidence. When it is all you have, skip the source searches below and say so in the report.
+3. Run the sweep below as a starting point.
+4. Choose the domains. Pick the checklists below that the surface exercises. A form needs forms, components and accessibility at minimum. Anything that moves needs motion.
+5. Walk the checklist. For each item, look for a concrete violation and record it with evidence: a file and line, a measured value, or a screen region. Skip items that do not apply, and never report a passing item as a finding.
+6. Check the rule's conditions before every finding. Read its description in the checklist, and open its file under `references/rules/` whenever the description names a condition or exception, the fix sets a value, or the finding is a conformance claim. Its "What breaks" section describes a possible failure; report the impact observed on the reviewed interface and state which effects still need testing.
+7. Assign a severity from the scale below.
+8. Report in the format below.
 
-Read a rule's file under `references/rules/` before you report a finding you are unsure of. Its "What breaks" section describes a possible failure. Report the impact observed on the reviewed interface and state which effects still need testing.
+For motion, watch each transition at 10% or 25% speed in the browser's animation tools to check its origin, path and easing, then judge it again at full speed, where timing is felt.
+
+## Sweep
+
+{{sweep}}
 
 ## Severity
 
@@ -22,15 +28,16 @@ Read a rule's file under `references/rules/` before you report a finding you are
 
 ## Report format
 
-A table sorted by severity, most severe first:
+A table ordered by user impact: severity first, then, within a severity, failures earlier on the primary path and failures more people meet come first.
 
-| # | Severity | Rule | Where | Finding | Fix |
+| # | Severity | Rule | Where | Finding | Fix and verification |
 |---|---|---|---|---|---|
-| 1 | Minor | [typo-1](https://axiomui.nischal.fyi/rules/typo-1) | `src/components/signup-form.tsx:42` | The English registration form uses sentence case for every action except "Create New Account". The product style guide uses sentence case for ordinary actions. | Rename the button "Create new account". |
+| 1 | Blocker | [a11y-1](https://axiomui.nischal.fyi/rules/a11y-1) | `src/app/globals.css:14` | `*:focus { outline: none }` has no replacement. Tabbing from the address bar reaches Pricing, Sign in and Start trial with no visible indicator (WCAG 2.4.7, AA). | Replace it with `:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px }`. Verify: Tab through the header and the sign-up form on light and dark sections; every control shows the outline. |
 
 - **Rule** is the rule id, linked to its URL.
 - **Where** is `file:line`, or a screen region when there is no source.
-- **Fix** identifies a change that addresses the observed failure and a way to verify it on this surface.
+- **Finding** states the observed failure, not the matched string.
+- **Fix and verification** names a change that addresses the observed failure and the test that shows it is gone on this surface.
 
 After the table, add two short sections:
 
@@ -45,6 +52,6 @@ After the table, add two short sections:
 
 ## Checklists
 
-Each file lists every rule in one domain with its Do/Don't pair and the questions to ask in review.
+Each file lists every rule in one domain with its description, Do/Don't pair and the questions to ask in review.
 
 {{checklistTable}}

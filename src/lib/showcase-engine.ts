@@ -341,10 +341,6 @@ export const kf = {
         { opacity: 0, transform: `translateY(${px}px)` },
         { opacity: 1, transform: "translateY(0)" },
     ],
-    dropOut: (px: number): Keyframe[] => [
-        { opacity: 1, transform: "translateY(0)" },
-        { opacity: 0, transform: `translateY(${px}px)` },
-    ],
     popIn: (fromScale: number): Keyframe[] => [
         { opacity: 0, transform: `scale(${fromScale})` },
         { opacity: 1, transform: "scale(1)" },

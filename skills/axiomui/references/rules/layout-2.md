@@ -7,14 +7,14 @@
 
 Limit the width of sustained prose on wide screens. Around 65 characters per line is a useful starting point for English paragraphs. Check the actual text because 1ch measures the width of the zero glyph.
 
-- Do: max-width: 45ch
+- Do: max-width: 52ch
 - Don't: width: 100%
 
 ## Why it works
 
-A 95ch canvas can accommodate a wide table and a narrower reading column. The sample caps the paragraph at 45ch. Its character count varies with the font and words, even when the CSS width stays fixed.
+A 95ch canvas can accommodate a wide table and a narrower reading column. The sample caps the column at 52ch to fit about 65 characters per full line in Manrope. The exact count depends on the font and the words.
 
-- [USWDS · Typesetting guidance](https://designsystem.digital.gov/components/typography/)
+- [USWDS · Measure (line length)](https://designsystem.digital.gov/design-tokens/typesetting/measure/)
 - [CSS Values · Font-relative lengths](https://www.w3.org/TR/css-values-4/#ch)
 
 ## What breaks

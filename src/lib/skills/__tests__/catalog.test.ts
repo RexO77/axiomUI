@@ -95,17 +95,24 @@ describe("skill catalog", () => {
     const crossListing = Object.fromEntries(
       domainSkills.filter((skill) => skill.crossListedRuleIds.length > 0).map((skill) => [skill.name, skill])
     );
-    expect(Object.keys(crossListing).sort()).toEqual(["axiomui-accessibility", "axiomui-layout", "axiomui-motion"]);
+    expect(Object.keys(crossListing).sort()).toEqual([
+      "axiomui-accessibility", "axiomui-layout", "axiomui-motion", "axiomui-typography",
+    ]);
     for (const skill of Object.values(crossListing)) {
       expect(skill.crossListedNote, skill.name).toBeTruthy();
       for (const id of skill.crossListedRuleIds) {
         expect(rules.find((rule) => rule.id === id)?.category, `${skill.name} ${id}`).not.toBe(skill.categoryId);
       }
     }
-    expect(findSkill("axiomui-layout")?.crossListedRuleIds).toEqual(["typo-14"]);
-    expect(findSkill("axiomui-accessibility")?.crossListedRuleIds).toEqual(expect.arrayContaining(["comp-13", "form-13"]));
-    // The motion skill's trigger names transitions and will-change, so it must carry those rules.
-    expect(findSkill("axiomui-motion")?.crossListedRuleIds).toEqual(["sys-13", "sys-14"]);
+    // Each trigger names the topic, so the skill must carry the rule filed elsewhere:
+    // typography names measure and heading levels, layout names reflow at narrow widths,
+    // motion names transitions, pausing and drag alternatives, accessibility names reflow.
+    expect(findSkill("axiomui-typography")?.crossListedRuleIds).toEqual(["layout-2", "a11y-5"]);
+    expect(findSkill("axiomui-layout")?.crossListedRuleIds).toEqual(["typo-14", "sys-11"]);
+    expect(findSkill("axiomui-accessibility")?.crossListedRuleIds).toEqual(
+      expect.arrayContaining(["comp-13", "form-13", "sys-11", "layout-12", "form-14", "sys-16"])
+    );
+    expect(findSkill("axiomui-motion")?.crossListedRuleIds).toEqual(["sys-13", "a11y-4", "a11y-6"]);
   });
 
   // Descriptions are triggers. The three core skills must point at each other
@@ -121,7 +128,12 @@ describe("skill catalog", () => {
     expect(trigger("axiomui-website-upgrade")).toContain("only if it is installed; otherwise consult the included rule library");
     expect(trigger("axiomui")).toContain("only if it is installed; otherwise apply the rules here");
     expect(trigger("axiomui")).toContain("only if it is installed; otherwise review with this library");
-    expect(trigger("axiomui-system")).not.toMatch(/transition|will-change|keyboard|target/i);
+    // The system skill bundles sys-3, sys-8, sys-13, sys-15 and sys-16, so its trigger names them.
+    expect(trigger("axiomui-system")).toMatch(/hit areas/);
+    expect(trigger("axiomui-system")).toMatch(/keyboard/);
+    expect(trigger("axiomui-system")).toMatch(/transition/);
+    expect(trigger("axiomui-system")).toMatch(/returning people to the result/);
+    expect(trigger("axiomui-system")).toMatch(/error and its only recovery action on screen/);
   });
 
   it("gives every rule exactly one home domain skill, and every core skill all rules", () => {

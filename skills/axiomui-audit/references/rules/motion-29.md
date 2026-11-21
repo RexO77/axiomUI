@@ -7,8 +7,8 @@
 
 Render controls that are already available in their usable state. Reserve an entrance for a later change the user needs to notice.
 
-- Do: AnimatePresence initial={false}
-- Don't: AnimatePresence initial={true}
+- Do: Ready controls render in place on first paint
+- Don't: Ready controls fade and slide into place on load
 
 ## Why it works
 

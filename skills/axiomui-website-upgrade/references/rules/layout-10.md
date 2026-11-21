@@ -7,12 +7,12 @@
 
 Give lines within one item, neighboring items, and major sections different spacing roles. Reuse the same role whenever that relationship recurs.
 
-- Do: 8 → 16 → 32px (1x, 2x, 4x of 8)
-- Don't: 8 → 13 → 18px (off the 8px base)
+- Do: 8px / 16px / 32px section break
+- Don't: 8px / 16px / 16px section break
 
 ## Why it works
 
-The example uses 8px, 16px, and 32px to distinguish three levels. The important property is the separation between those levels. A well-chosen scale can include intermediate steps or different increments and still explain the same hierarchy.
+Both panes keep the first two gaps at 8px and 16px. A 32px section break makes the next heading read as a new group. When the break repeats the 16px gap, the heading looks like the next item in the same group.
 
 - [IBM Carbon · Spacing](https://www.carbondesignsystem.com/building-blocks/foundations/spacing/overview)
 

@@ -185,10 +185,11 @@ function categoryReference(categoryId: string): string {
 function checklistReference(categoryId: string): string {
   const blocks = [
     `# ${categoryName(categoryId)} checklist`,
-    "Ask each question of the surface under review. Record the observed failure or unmet requirement and the evidence for it.",
+    "Ask each question of the surface under review. Check the rule's description before you record a finding, then record the observed failure or unmet requirement and the evidence for it.",
     ...rulesIn(categoryId).map((rule) =>
       [
         `## ${rule.title} (\`${rule.id}\`)`,
+        rule.desc,
         [
           `- Do: ${rule.do} · Don't: ${rule.dont}`,
           ...ruleReviewQuestions(rule).map((question) => `- [ ] ${question}`),
@@ -221,7 +222,7 @@ const rulesJsonUrl = `${siteConfig.origin}/rules.json`;
  * indexes every rule and points at the site instead.
  */
 function ruleLookup(singleFile: boolean): string {
-  const backing = `The craft standards above are backed by Axiom UI's ${rules.length} rules, each with an example, implementation notes and review questions.`;
+  const backing = `Every rule id above is one of Axiom UI's ${rules.length} rules. Its description and Do/Don't are enough for the sweep; its full reference adds why it works, what breaks, implementation notes and review questions.`;
   if (singleFile) {
     return [
       "## Axiom UI rule lookup",
@@ -230,7 +231,7 @@ function ruleLookup(singleFile: boolean): string {
         `- Every rule's Do and Don't, in one JSON file: ${rulesJsonUrl}`,
         `- One rule's full reasoning: ${siteConfig.origin}/rules/<id>, for example ${ruleUrl(rules[0].id)}`,
       ].join("\n"),
-      `Before you change a domain, find the relevant rule in the index below and check where its example applies. Read the rule's page before you defend a tradeoff or break a rule, and cite the rule id when you report the change. To keep the rule files offline, install the full skill with \`${githubInstallCommand(findSkill("axiomui-website-upgrade")!)}\`.`,
+      `Read a rule's description and Do/Don't from the JSON file, open its page when step 3 calls for the full reference, and cite the rule id when you report the change. The index below lists every rule by domain for symptoms the entry lists miss. To keep the rule files offline, install the full skill with \`${githubInstallCommand(findSkill("axiomui-website-upgrade")!)}\`.`,
       ...categories.map((category) =>
         [`### ${category.name}`, rulesIn(category.id).map((rule) => `- \`${rule.id}\` ${rule.title}`).join("\n")].join("\n\n")
       ),
@@ -238,7 +239,7 @@ function ruleLookup(singleFile: boolean): string {
   }
   return [
     "## Axiom UI rule lookup",
-    `${backing} Before you change a domain, open its file and check where the relevant example applies. Read the rule's own file under \`references/rules/\` before you defend a tradeoff or break a rule, and cite the rule id when you report the change.`,
+    `${backing} Both live in \`references/rules/<id>.md\`: the first dozen lines hold the description and Do/Don't, and the whole file is the full reference to read when step 3 calls for it. Cite the rule id when you report the change. Each domain file below lists that domain's Do and Don't pairs; read one whole only when a symptom falls outside the entry and symptom lists.`,
     `If \`references/\` is missing, this is a single-file copy: read ${rulesJsonUrl} for every rule's Do and Don't, and ${siteConfig.origin}/rules/<id> for one rule's reasoning.`,
     domainTable(categoryFile, "File"),
   ].join("\n\n");
@@ -265,10 +266,14 @@ function skillBody(
           .join("\n\n"),
       });
     case "axiomui-website-upgrade":
-      return renderTemplate(readTemplate("axiomui-website-upgrade.md"), { ruleLookup: ruleLookup(singleFile) });
+      return renderTemplate(readTemplate("axiomui-website-upgrade.md"), {
+        sweep: readTemplate("sweep.md").trimEnd(),
+        ruleLookup: ruleLookup(singleFile),
+      });
     case "axiomui-audit":
       return renderTemplate(readTemplate("axiomui-audit.md"), {
         ruleCount: String(rules.length),
+        sweep: readTemplate("sweep.md").trimEnd(),
         checklistTable: domainTable(checklistFile, "Checklist"),
       });
     case "domain": {

@@ -16,14 +16,11 @@ const STALL_THRESHOLD_MS = 40;
 export function ThreadMeter({
     samples,
     durationMs,
-    mode,
     recording = false,
     reduced = false,
 }: {
     samples: ThreadSample[];
     durationMs: number;
-    /** "stalls" for motion-21; "healthy" framing for motion-22. */
-    mode: "stalls" | "healthy";
     /** A run is in flight; its samples arrive when it finishes. */
     recording?: boolean;
     /** Reduced motion skips the race, so there is no run to sample. */
@@ -37,8 +34,6 @@ export function ThreadMeter({
     if (reduced) caption = "main thread — not sampled while reduced motion is on";
     else if (recording) caption = "main thread — recording…";
     else if (!recorded) caption = "main thread — run it to record";
-    else if (mode === "healthy" && stalls.length === 0)
-        caption = `Callback gaps stayed within ${STALL_THRESHOLD_MS}ms. The timer updates every 80ms.`;
     else if (stalls.length === 0)
         caption = `No callback gap exceeded ${STALL_THRESHOLD_MS}ms on this run.`;
     else

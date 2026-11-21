@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
 
-import { CircleAlert } from "@/components/ui/icons";
+import { ChevronDown, ChevronUp, CircleAlert } from "@/components/ui/icons";
 
 import type { DemoProps, PreviewRenderer } from "@/components/features/rules/preview-primitives";
 import { Annotation, ANNOTATION_INK, PreviewFrame } from "@/components/features/rules/preview-primitives";
 import { cn } from "@/lib/utils";
 
-// Authored previews for a11y-1..a11y-3:
+// Authored previews for a11y-1..a11y-8:
 // same scene in both panes, one variable, evidence annotated in mono.
 
 // ── Local vocabulary ────────────────────────────────────────────────
@@ -24,6 +24,8 @@ const BUTTON_SECONDARY = cn(
     BUTTON_BASE,
     "border border-neutral-300 text-neutral-600 dark:border-neutral-700 dark:text-neutral-300"
 );
+const COMPACT_BUTTON = "inline-flex items-center rounded border border-neutral-300 px-1.5 py-0.5 text-[10px] font-semibold text-neutral-600 dark:border-neutral-700 dark:text-neutral-300";
+const FOCUS_OUTLINE = "outline-2 outline-offset-2 outline-blue-500 dark:outline-blue-400";
 
 function Kbd({ children }: { children: ReactNode }) {
     return (
@@ -45,12 +47,10 @@ const FINE = `font-mono text-[9px] tabular-nums ${ANNOTATION_INK}`;
 // ── a11y-1 · Focus visible indicators ───────────────────────────────
 // Same form footer, same keystrokes, same focus position: Tab Tab has
 // landed on "Save changes" in both panes, and the narration line says so
-// out loud. Do renders the ring that a focus-visible rule would apply;
+// out loud. Do renders the outline that a focus-visible rule would apply;
 // Don't renders outline: none, so the keyboard user is told nothing.
 //
-// The ring is the real ring utility (2px ring, 2px offset), not a painted
-// border — a static preview cannot hold :focus-visible, and a genuinely
-// focusable control inside this aria-hidden frame would be a bug.
+// A static, aria-hidden preview applies the 2px outline and 2px offset directly.
 
 function FocusScene({ variant }: DemoProps) {
     const isDo = variant === "do";
@@ -70,8 +70,7 @@ function FocusScene({ variant }: DemoProps) {
                     <span
                         className={cn(
                             BUTTON_PRIMARY,
-                            isDo &&
-                                "ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-blue-400 dark:ring-offset-neutral-950"
+                            isDo && FOCUS_OUTLINE
                         )}
                     >
                         Save changes
@@ -85,7 +84,7 @@ function FocusScene({ variant }: DemoProps) {
                     </div>
                     <Annotation className={cn(ANNOT, "block")}>
                         {isDo
-                            ? "focus-visible:ring-2 ring-offset-2"
+                            ? "focus-visible:outline-2 outline-offset-2"
                             : "outline: none — nothing replaces it"}
                     </Annotation>
                 </div>
@@ -206,6 +205,164 @@ function TargetSpacingScene({ variant }: DemoProps) {
     );
 }
 
+// ── a11y-4 · Single-pointer alternatives to drag ──────────────────────
+
+const TASKS = ["Send agenda", "Book room", "Share notes"];
+
+function DragAlternativeScene({ variant }: DemoProps) {
+    const isDo = variant === "do";
+    return (
+        <PreviewFrame className="flex flex-col justify-center gap-2">
+            <span className="text-[11px] font-semibold">Meeting tasks</span>
+            <ol className="space-y-1">
+                {TASKS.map((task, index) => (
+                    <li
+                        key={task}
+                        className="flex min-h-7 items-center gap-2 rounded-md border border-neutral-200 px-2 text-[10px] dark:border-neutral-800"
+                    >
+                        <span className="grid shrink-0 grid-cols-2 gap-px text-neutral-500 dark:text-neutral-400">
+                            {Array.from({ length: 6 }, (_, dot) => (
+                                <span key={dot} className="size-0.5 rounded-full bg-current" />
+                            ))}
+                        </span>
+                        <span className="tabular-nums text-neutral-500 dark:text-neutral-400">{index + 1}.</span>
+                        <span className="flex-1">{task}</span>
+                        {isDo && (
+                            <div className="flex shrink-0 flex-wrap justify-end gap-1">
+                                {index > 0 && (
+                                    <span className={cn(COMPACT_BUTTON, "gap-0.5")}>
+                                        <ChevronUp size={10} /> Move up
+                                    </span>
+                                )}
+                                {index < TASKS.length - 1 && (
+                                    <span className={cn(COMPACT_BUTTON, "gap-0.5")}>
+                                        <ChevronDown size={10} /> Move down
+                                    </span>
+                                )}
+                            </div>
+                        )}
+                    </li>
+                ))}
+            </ol>
+            <Annotation className={ANNOT}>
+                {isDo ? "Tap Move up once → Book room moves from 2 to 1" : "Hold and drag Book room from 2 to 1"}
+            </Annotation>
+        </PreviewFrame>
+    );
+}
+
+// ── a11y-5 · Heading levels follow the outline ───────────────────────
+
+const SETTINGS_HEADINGS = ["Settings", "Billing", "Invoices"];
+
+function HeadingOutlineScene({ variant }: DemoProps) {
+    // The page is drawn with plain elements: real headings inside an
+    // illustration would join the host page's outline (one h1 per page).
+    // data-heading-level carries the level the consistency test reads.
+    const levels = ["h1", variant === "do" ? "h2" : "h4", variant === "do" ? "h3" : "h4"];
+    return (
+        <PreviewFrame className="flex items-center">
+            <div className="grid w-full grid-cols-2 gap-2.5">
+                <div className="space-y-1.5 rounded-md border border-neutral-200 p-2 dark:border-neutral-800">
+                    <div data-heading-level={levels[0]} className="text-sm font-semibold leading-tight">{SETTINGS_HEADINGS[0]}</div>
+                    <div data-heading-level={levels[1]} className="border-t border-neutral-200 pt-1.5 text-[11px] font-semibold dark:border-neutral-800">
+                        {SETTINGS_HEADINGS[1]}
+                    </div>
+                    <div>
+                        <div data-heading-level={levels[2]} className="text-[10px] font-semibold">{SETTINGS_HEADINGS[2]}</div>
+                        <p className="text-[10px] text-neutral-500 dark:text-neutral-400">Download past invoices.</p>
+                    </div>
+                </div>
+                <div className="rounded-md bg-neutral-100 p-2 text-[10px] dark:bg-neutral-900">
+                    <div className="mb-1.5 font-semibold">Heading list</div>
+                    <ul>
+                        {SETTINGS_HEADINGS.map((heading, index) => (
+                            <li key={heading} className="leading-relaxed" style={{ paddingInlineStart: (Number(levels[index][1]) - 1) * 3 }}>
+                                <span className="font-mono font-semibold">{levels[index]}</span>{" "}
+                                {heading}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </div>
+        </PreviewFrame>
+    );
+}
+
+// ── a11y-6 · Auto-advancing content can be paused ─────────────────────
+
+function PauseUpdatesScene({ variant }: DemoProps) {
+    const isDo = variant === "do";
+    return (
+        <PreviewFrame className="flex flex-col justify-center gap-2">
+            <div className="rounded-md border border-neutral-200 bg-neutral-50 p-2.5 dark:border-neutral-800 dark:bg-neutral-900">
+                <blockquote className="text-[11px] font-semibold">&ldquo;We planned the whole week in one place.&rdquo;</blockquote>
+                <div className="mt-1.5 flex min-h-6 flex-wrap items-center justify-between gap-x-1 gap-y-1">
+                    <span className="text-[10px] text-neutral-600 dark:text-neutral-400">Maya Chen</span>
+                    {isDo && (
+                        <span className={cn(COMPACT_BUTTON, "gap-1 bg-neutral-200 dark:bg-neutral-800")}>
+                            <span className="h-2 w-1.5 border-x-2 border-current" /> Pause
+                        </span>
+                    )}
+                </div>
+            </div>
+            <p className="text-[11px]">Set up a shared calendar to keep track of shifts and deadlines.</p>
+            <Annotation className={ANNOT}>
+                {isDo ? "Paused · quote stays put" : "Quote changes every 4s"}
+            </Annotation>
+        </PreviewFrame>
+    );
+}
+
+// ── a11y-7 · Persistent cues for links in prose ───────────────────────
+
+function InlineLinkScene({ variant }: DemoProps) {
+    return (
+        <PreviewFrame className="flex items-center justify-center">
+            <p className="max-w-52 text-[13px] leading-relaxed">
+                To change who can see a file, check the{" "}
+                <span className={cn("text-blue-700 dark:text-blue-300", variant === "do" && "underline underline-offset-2")}>
+                    sharing guide
+                </span>
+                .
+            </p>
+        </PreviewFrame>
+    );
+}
+
+// ── a11y-8 · Focus after an overlay closes ────────────────────────────
+
+function ReturnFocusScene({ variant }: DemoProps) {
+    const isDo = variant === "do";
+    return (
+        <PreviewFrame className="flex flex-col justify-center gap-2">
+            <div className="space-y-2 rounded-md border border-neutral-200 p-2 dark:border-neutral-800">
+                <div className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] font-semibold">Projects</span>
+                    <span className={cn(COMPACT_BUTTON, !isDo && FOCUS_OUTLINE)}>
+                        New project
+                    </span>
+                </div>
+                <div className="flex items-center justify-between gap-2 border-t border-neutral-200 pt-2 dark:border-neutral-800">
+                    <span className="text-[11px]">Quarterly report</span>
+                    <span className={cn(COMPACT_BUTTON, isDo && FOCUS_OUTLINE)}>
+                        Edit
+                    </span>
+                </div>
+            </div>
+            <div className="space-y-1">
+                <Annotation className={cn(FINE, "flex flex-wrap items-center gap-1.5")}>
+                    <Kbd>Tab</Kbd><Kbd>Tab</Kbd><Kbd>Enter</Kbd> Edit dialog opens
+                </Annotation>
+                <Annotation className={cn(FINE, "flex flex-wrap items-center gap-1.5")}>
+                    <Kbd>Esc</Kbd>
+                    {isDo ? "Focus returns to Edit" : <><Kbd>Tab</Kbd> Focus starts at New project</>}
+                </Annotation>
+            </div>
+        </PreviewFrame>
+    );
+}
+
 // ── Dispatcher ──────────────────────────────────────────────────────
 
 export const accessibilityPreviews: PreviewRenderer = (ruleId, variant) => {
@@ -216,6 +373,16 @@ export const accessibilityPreviews: PreviewRenderer = (ruleId, variant) => {
             return <ErrorSignalScene variant={variant} />;
         case "a11y-3":
             return <TargetSpacingScene variant={variant} />;
+        case "a11y-4":
+            return <DragAlternativeScene variant={variant} />;
+        case "a11y-5":
+            return <HeadingOutlineScene variant={variant} />;
+        case "a11y-6":
+            return <PauseUpdatesScene variant={variant} />;
+        case "a11y-7":
+            return <InlineLinkScene variant={variant} />;
+        case "a11y-8":
+            return <ReturnFocusScene variant={variant} />;
         default:
             return null;
     }

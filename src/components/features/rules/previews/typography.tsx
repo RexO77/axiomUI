@@ -11,10 +11,9 @@ import {
     PreviewFrame,
     type PreviewRenderer,
 } from "@/components/features/rules/preview-primitives";
-import { ThemedValue } from "@/components/features/rules/previews/color";
 import { cn } from "@/lib/utils";
 
-// Authored previews for typo-1..typo-13.
+// Authored previews for typo-1..typo-15.
 // Every pair is a controlled experiment: the same UI vignette in both panes,
 // with exactly one typographic variable changed. Type is the protagonist, so
 // the previews render real copy at honest sizes and annotate the measurement
@@ -126,10 +125,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
             );
         }
 
-        // Letter spacing on caps — the same sidebar nav group; only the
-        // tracking on the uppercase section label changes. The label runs
-        // long on purpose: tracking accumulates per character, so a short
-        // sample hides the effect the rule is about.
+        // Letter spacing on caps: vary tracking on the short section label.
         case "typo-2":
             return (
                 <PreviewFrame className="flex items-center justify-center">
@@ -139,12 +135,12 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
                                 className={cn(
                                     "text-[11px] font-semibold uppercase",
                                     ACCENT_TEXT,
-                                    isDo ? "tracking-[0.05em]" : "tracking-normal"
+                                    isDo ? "tracking-[0.025em]" : "tracking-normal"
                                 )}
                             >
-                                Account preferences
+                                Account
                             </span>
-                            <Spec>{isDo ? "+0.05em" : "0em"}</Spec>
+                            <Spec>{isDo ? "+0.025em" : "0em"}</Spec>
                         </div>
                         <div className="mt-2.5 space-y-1">
                             <NavRow
@@ -259,8 +255,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
             );
         }
 
-        // De-emphasize with color, not size — the same member row; only the
-        // email's treatment changes: lighter at full size vs tiny at full ink.
+        // Keep the email's ink constant so its size is the only variable.
         case "typo-6":
             return (
                 <PreviewFrame className="flex items-center justify-center">
@@ -275,9 +270,8 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
                             <p
                                 className={cn(
                                     "truncate leading-tight",
-                                    isDo
-                                        ? "text-[14px] text-neutral-500 dark:text-neutral-400"
-                                        : "text-[10px] text-neutral-900 dark:text-neutral-50"
+                                    PRODUCT_MUTED,
+                                    isDo ? "text-[14px]" : "text-[10px]"
                                 )}
                             >
                                 amara@lumen.co
@@ -285,12 +279,6 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
                         </div>
                         <Spec className="shrink-0 text-right">
                             {isDo ? "14px" : "10px"}
-                            <br />
-                            {isDo ? (
-                                <ThemedValue stacked light="neutral-500" dark="400" />
-                            ) : (
-                                <ThemedValue stacked light="neutral-900" dark="50" />
-                            )}
                         </Spec>
                     </div>
                 </PreviewFrame>
@@ -597,6 +585,21 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
 
         case "typo-14":
             return <PreviewFrame className="flex items-center justify-center"><RestaurantReview variant={variant} /></PreviewFrame>;
+
+        case "typo-15": {
+            const letterSpacing = isDo ? "-0.015em" : "-0.05em";
+            return (
+                <PreviewFrame className="flex flex-col items-center justify-center gap-2">
+                    <p
+                        className="whitespace-nowrap text-[38px] leading-none font-semibold text-neutral-900 dark:text-neutral-50"
+                        style={{ fontFamily: "var(--font-manrope), sans-serif", letterSpacing }}
+                    >
+                        Work<br />together
+                    </p>
+                    <Spec>{letterSpacing}</Spec>
+                </PreviewFrame>
+            );
+        }
         default:
             return null;
     }

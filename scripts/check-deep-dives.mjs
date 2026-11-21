@@ -17,3 +17,9 @@ if (unknown.length > 0) {
 }
 
 console.log(`deep dives authored: ${deepDiveKeys.length}/${ruleIds.size}`);
+
+const missing = [...ruleIds].filter((id) => !deepDiveKeys.includes(id));
+if (missing.length > 0) {
+  console.error(`Rules without an authored deep dive: ${missing.join(", ")}`);
+  process.exit(1);
+}

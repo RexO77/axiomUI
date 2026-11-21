@@ -1,6 +1,6 @@
 ---
 name: axiomui-forms
-description: Use Axiom UI’s form guidance when placing labels, marking required or optional fields, sizing fields for plausible answers, choosing radios, checkboxes, switches or selects, timing validation, writing format hints, reusing previously entered answers, confirming a submission, or testing paste and autofill for sign-in codes.
+description: Use Axiom UI’s form guidance when placing labels, marking required or optional fields, sizing fields for plausible answers, declaring input type, keyboard and autocomplete, choosing radios, checkboxes, switches or selects, timing validation, keeping answers after a failed submission, writing format hints, reusing previously entered answers, confirming a submission, or testing paste and autofill for sign-in codes.
 license: MIT
 metadata:
   author: Nischal Skanda
@@ -11,7 +11,7 @@ metadata:
 
 # Axiom UI: Forms & inputs
 
-Follow an answer from entry through submission. Check where its label and format are explained, when the user has enough information to correct it, and whether the value survives the next step. A pasted sign-in code beginning with zero is one useful test of the entire path.
+Follow an answer from entry through submission. Check which keyboard and autofill the field offers, where its label and format are explained, when the user has enough information to correct it, and whether every answer survives a rejected submission and the next step. A pasted sign-in code beginning with zero is one useful test of the entire path.
 
 ## How to use these rules
 
@@ -82,10 +82,10 @@ Use a switch for an on/off setting that applies as it changes. A checkbox fits a
 
 ### Validate when a correction is useful (`form-8`)
 
-Let people finish an entry before showing a format error. Submission is a dependable checkpoint. Use a field-exit check when early correction helps, and clear an existing error as soon as the value is accepted.
+Show the first format error after the person submits the form. Give them time to finish and move between fields. Clear the error when the correction is accepted.
 
-- Do: Error appears after leaving field
-- Don't: Error appears during incomplete entry
+- Do: Error appears after Continue
+- Don't: Error appears while typing
 - Reasoning: `references/rules/form-8.md` · https://axiomui.nischal.fyi/rules/form-8
 
 ### Show format constraints before entry (`form-9`)
@@ -127,6 +127,22 @@ Let people paste a one-time code as they receive it. Keep leading zeros and supp
 - Do: One paste fills all six digits, including the leading zero
 - Don't: One paste fills only the first box
 - Reasoning: `references/rules/form-13.md` · https://axiomui.nischal.fyi/rules/form-13
+
+### Declare what each field expects (`form-14`)
+
+Declare the input type, keyboard layout, and autocomplete purpose so the browser can offer the right keys and saved answers. Turn off spellcheck and automatic capitalization for identifiers such as emails, usernames, and codes.
+
+- Do: Email keyboard · saved address suggested
+- Don't: Plain keyboard · capitalizes Maya@
+- Reasoning: `references/rules/form-14.md` · https://axiomui.nischal.fyi/rules/form-14
+
+### Keep entered answers when validation fails (`form-15`)
+
+When validation fails, show every submitted answer so the person can correct it in place. Mark the fields that need attention.
+
+- Do: Error on Work email · all answers kept
+- Don't: Error on Work email · every field cleared
+- Reasoning: `references/rules/form-15.md` · https://axiomui.nischal.fyi/rules/form-15
 
 ## Related
 

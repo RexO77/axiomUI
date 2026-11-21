@@ -21,8 +21,8 @@ import {
 } from "@/components/features/rules/preview-primitives";
 import { cn } from "@/lib/utils";
 
-// Authored previews for form-1..form-12.
-// Every pane is the same scene as its sibling; exactly one variable changes.
+// Authored previews for form-1..form-15.
+// Each pair isolates one form behavior in a shared scene.
 // Local field anatomy lives here so inputs read as real fields, not empty boxes.
 
 type ShellTone = "default" | "focus" | "error";
@@ -163,6 +163,42 @@ function ErrorNote({ children }: { children: ReactNode }) {
             <CircleAlert size={11} strokeWidth={2} aria-hidden />
             {children}
         </span>
+    );
+}
+
+function PhoneKeyboard({ email }: { email: boolean }) {
+    return (
+        <div className="space-y-1 bg-neutral-200 p-1 dark:bg-neutral-800">
+            <div className="flex h-5 items-center justify-center">
+                {email && (
+                    <span className="rounded bg-white px-1.5 py-0.5 text-[9px] font-medium text-neutral-800 dark:bg-neutral-700 dark:text-neutral-100">
+                        maya@acme.com
+                    </span>
+                )}
+            </div>
+            {["qwertyuiop", "asdfghjkl", "⇧zxcvbnm⌫"].map((row) => (
+                <div key={row} className={cn("mx-auto flex gap-0.5", row.length === 9 && "w-[90%]")}>
+                    {[...row].map((key) => (
+                        <span key={key} className="min-w-0 flex-1 rounded-sm bg-white py-0.5 text-center text-[10px] text-neutral-800 dark:bg-neutral-700 dark:text-neutral-100">
+                            {key}
+                        </span>
+                    ))}
+                </div>
+            ))}
+            <div className="flex gap-0.5">
+                {(email ? ["123", "space", "@", ".", "return"] : ["123", "space", "return"]).map((key) => (
+                    <span
+                        key={key}
+                        className={cn(
+                            "rounded-sm bg-white px-1 py-0.5 text-center text-[9px] text-neutral-800 dark:bg-neutral-700 dark:text-neutral-100",
+                            key === "space" && "flex-1"
+                        )}
+                    >
+                        {key}
+                    </span>
+                ))}
+            </div>
+        </div>
     );
 }
 
@@ -525,10 +561,8 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
             );
         }
 
-        // The same half-typed value at the same two moments — mid-entry and
-        // after blur. Only the moment the error fires changes: the do pane
-        // holds it until the user has finished, the don't pane fires while
-        // the caret is still in the field.
+        // Compare the same entry while typing and after pressing Continue.
+        // Both panes show the submitted error; only Don't shows it early.
         case "form-8": {
             const isDo = variant === "do";
             const error = <ErrorNote>Email is missing a domain</ErrorNote>;
@@ -546,14 +580,15 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
                         height and their fields stay level side by side. */}
                     <div className="flex min-h-3.5 items-center gap-2">
                         <span className={cn("min-w-0 flex-1", isDo && "invisible")}>{error}</span>
-                        <Ann>while typing · 5 chars</Ann>
+                        <Ann>While typing</Ann>
                     </div>
                     <Shell tone="error">
                         <Value>maya@</Value>
                     </Shell>
-                    <div className="flex min-h-3.5 items-center gap-2">
-                        <span className="min-w-0 flex-1">{error}</span>
-                        <Ann>after blur</Ann>
+                    {error}
+                    <div className="flex flex-wrap items-center justify-between gap-1.5">
+                        <MiniButton label="Continue" variant="primary" />
+                        <Ann>After submit</Ann>
                     </div>
                 </PreviewFrame>
             );
@@ -731,6 +766,55 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
 
         case "form-13":
             return <PreviewFrame className="flex items-center justify-center"><CodeResult variant={variant} /></PreviewFrame>;
+
+        case "form-14": {
+            const isDo = variant === "do";
+            return (
+                <PreviewFrame className="flex flex-col items-center justify-center gap-2">
+                    <div className="w-full max-w-[210px] overflow-hidden rounded-xl border border-neutral-300 bg-white dark:border-neutral-700 dark:bg-neutral-900">
+                        <div className="space-y-1 p-2">
+                            <Label strong>Work email</Label>
+                            <Shell tone="focus">
+                                <Value>{isDo ? "maya@" : "Maya@"}</Value>
+                                <Caret />
+                            </Shell>
+                        </div>
+                        <PhoneKeyboard email={isDo} />
+                    </div>
+                    <div className="w-full max-w-[210px]">
+                        <Ann className="block">{isDo ? "type=email · inputmode=email" : "type=text"}</Ann>
+                        <Ann className="block">{isDo ? "autocomplete=email" : "inputmode and autocomplete omitted"}</Ann>
+                        <Ann className="block">{isDo ? "spellcheck=false · autocapitalize=none" : "spellcheck and autocapitalize left at defaults"}</Ann>
+                    </div>
+                </PreviewFrame>
+            );
+        }
+
+        case "form-15": {
+            const isDo = variant === "do";
+            const fields = [
+                { label: "Full name", value: "Maya Chen" },
+                { label: "Work email", value: "maya@", error: "Enter a complete email address" },
+                { label: "Company", value: "Acme Design" },
+            ];
+            return (
+                <PreviewFrame className="flex flex-col justify-center gap-1.5">
+                    {fields.map(({ label, value, error }) => (
+                        <div key={label} className="space-y-1">
+                            <Label>{label}</Label>
+                            <Shell tone={error ? "error" : "default"}>
+                                {isDo && <Value>{value}</Value>}
+                            </Shell>
+                            {error && <ErrorNote>{error}</ErrorNote>}
+                        </div>
+                    ))}
+                    <div className="flex flex-wrap items-center justify-between gap-1.5">
+                        <MiniButton label="Continue" variant="primary" />
+                        <Ann>After submit</Ann>
+                    </div>
+                </PreviewFrame>
+            );
+        }
         default:
             return null;
     }

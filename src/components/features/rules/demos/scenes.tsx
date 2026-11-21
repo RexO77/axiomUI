@@ -84,7 +84,7 @@ export function ModalScene() {
 }
 
 /** Command palette: floating input + result rows, hidden at rest. */
-export function PaletteScene() {
+export function PaletteScene({ query }: { query?: string }) {
     return (
         <AppSurface dim title="Editor">
             <div
@@ -96,8 +96,27 @@ export function PaletteScene() {
                 style={{ opacity: 0 }}
             >
                 <div className="mb-1.5 flex items-center justify-between gap-1 rounded-md bg-neutral-100 px-2 py-1.5 dark:bg-neutral-800">
-                    <span className="text-[10px] text-neutral-400">Search commands…</span>
-                    {/* data-anim="key": motion-2 depresses this on each keystroke */}
+                    {query !== undefined ? (
+                        <div className="relative min-w-0 flex-1 font-mono text-[10px] text-neutral-900 dark:text-neutral-100">
+                            <span data-anim="placeholder" className="block truncate text-neutral-500 dark:text-neutral-400">
+                                Search commands…
+                            </span>
+                            <input
+                                data-anim="query"
+                                className="pointer-events-none absolute inset-0 w-full border-0 bg-transparent p-0 text-inherit"
+                                style={{ opacity: 0 }}
+                                value={query}
+                                readOnly
+                                inert
+                                tabIndex={-1}
+                            />
+                            <span data-anim="focus" className="absolute inset-y-0 left-0 flex items-center" style={{ opacity: 0 }}>
+                                <span data-anim="caret" className="h-[1em] w-px bg-blue-600 dark:bg-blue-400" />
+                            </span>
+                        </div>
+                    ) : (
+                        <span className="text-[10px] text-neutral-400">Search commands…</span>
+                    )}
                     <kbd
                         data-anim="key"
                         className="inline-block rounded border border-neutral-300 px-1 font-mono text-[9px] font-medium text-neutral-500 dark:border-neutral-600 dark:text-neutral-400"
@@ -389,10 +408,7 @@ export function ButtonScene({
     );
 }
 
-/** Two contextual icons occupying the same visual slot. Both stay mounted so
- * the showcase can compare a composed cross-fade with an abrupt state swap.
- * The slot is a real 40px icon button with a 24px glyph, big enough that the
- * 4px blur reads as a blur at ¼× instead of a smudge. */
+/** Two contextual icons occupying the same visual slot. */
 const ICON_PX = 24;
 
 export function IconSwapScene() {
@@ -416,7 +432,7 @@ export function IconSwapScene() {
                     <svg
                         data-anim="icon-in"
                         {...glyph}
-                        style={{ opacity: 0, transform: "scale(0.25)", filter: "blur(4px)" }}
+                        style={{ opacity: 0 }}
                     >
                         <path d="m5 12 4 4L19 6" />
                     </svg>
@@ -569,43 +585,6 @@ export function GrowBoxScene() {
                     <div className="space-y-1 p-1.5">
                         <div className="h-1.5 w-3/4 rounded bg-blue-500/40 dark:bg-blue-400/40" />
                         <div className="h-1.5 w-1/2 rounded bg-blue-500/40 dark:bg-blue-400/40" />
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-/** motion-26: a composed card whose header / body / actions can enter as
- *  three beats (`data-anim="part"`) or as one lump (`data-anim="whole"`).
- *  `mode` controls which nodes hide at rest so both panes rest identically. */
-export function CardRevealScene({ mode }: { mode: "parts" | "whole" }) {
-    const hideParts = mode === "parts" ? { opacity: 0 } : undefined;
-    return (
-        <div className="relative flex items-center justify-center rounded-field border border-neutral-200 bg-neutral-50/50 dark:border-neutral-800 dark:bg-neutral-900/40 h-40 px-3">
-            {/* The slot and the card share one box, so the rest frame reads as
-                "content lands here" and the card lands exactly on it. */}
-            <div className="relative w-full max-w-56">
-                <div
-                    aria-hidden="true"
-                    className="absolute inset-0 rounded-lg border border-dashed border-neutral-300 dark:border-neutral-700"
-                />
-                <div
-                    data-anim="whole"
-                    className="relative rounded-lg border border-blue-500/60 bg-white p-2.5 shadow-sm dark:bg-neutral-900"
-                    style={{ opacity: 0 }}
-                >
-                    <div data-anim="part" style={hideParts}>
-                        <p className="font-semibold tracking-tight text-neutral-900 dark:text-neutral-100 text-[11px]">
-                            Weekly digest
-                        </p>
-                    </div>
-                    <div data-anim="part" className="mt-1.5 space-y-1" style={hideParts}>
-                        <div className="h-1.5 w-full rounded bg-neutral-100 dark:bg-neutral-800" />
-                        <div className="h-1.5 w-3/4 rounded bg-neutral-100 dark:bg-neutral-800" />
-                    </div>
-                    <div data-anim="part" className="mt-2 flex justify-end" style={hideParts}>
-                        <MiniButton label="Read" variant="primary" />
                     </div>
                 </div>
             </div>

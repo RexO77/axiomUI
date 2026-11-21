@@ -1,6 +1,6 @@
 ---
 name: axiomui-accessibility
-description: Use Axiom UI’s accessibility guidance to check keyboard focus and operation, target size and spacing, text and control contrast, meaning beyond color, field labels, accessible authentication, chart alternatives, modal dismissal and reduced motion. Consult the sources on the linked rule page when checking a conformance claim.
+description: Use Axiom UI’s accessibility guidance to check keyboard focus, its visibility and its return when an overlay closes, target size and spacing, text and control contrast, meaning beyond color, underlined links in running text, heading levels, a click path for every drag, pausing content that moves on its own, field labels and input purpose, accessible authentication, chart alternatives, modal dismissal, reflow at 320 CSS px and reduced motion. Consult the sources on the linked rule page when checking a conformance claim.
 license: MIT
 metadata:
   author: Nischal Skanda
@@ -11,7 +11,7 @@ metadata:
 
 # Axiom UI: Accessibility & inclusivity
 
-Follow a task with the input method or presentation the rule addresses. Try a sign-in code from the clipboard, navigate a chart’s data table by its headers, or enlarge text until the layout reflows. For a WCAG finding, identify the applicable success criterion, its level and exceptions, and record what happened on the tested path.
+Follow a task with the input method or presentation the rule addresses. Close a dialog with Escape and note where focus lands, reorder a list without dragging, paste a sign-in code from the clipboard, or zoom to 400% at 1280px wide and check that nothing scrolls sideways. For a WCAG finding, identify the applicable success criterion, its level and exceptions, and record what happened on the tested path.
 
 ## How to use these rules
 
@@ -28,7 +28,7 @@ Where the project already has a token or component for the decision, use it. Whe
 
 Keep a visible indicator on keyboard focus. A custom focus treatment should remain identifiable across the surfaces and display modes where the control appears.
 
-- Do: focus-visible:ring-2 ring-blue-500
+- Do: focus-visible:outline-2 outline-offset-2
 - Don't: outline: none with no replacement
 - Reasoning: `references/rules/a11y-1.md` · https://axiomui.nischal.fyi/rules/a11y-1
 
@@ -48,9 +48,58 @@ Leave space between nearby actions when an unintended tap would be costly. An 8p
 - Don't: Buttons: 0px gutter
 - Reasoning: `references/rules/a11y-3.md` · https://axiomui.nischal.fyi/rules/a11y-3
 
+### Offer a click or tap path for every drag (`a11y-4`)
+
+Offer clicks or taps for tasks such as reordering a list, moving cards between columns or setting a slider. A drag can be required when the drawn path itself is essential to the task.
+
+- Do: Drag handle + Move up / Move down
+- Don't: Drag handle only
+- Reasoning: `references/rules/a11y-4.md` · https://axiomui.nischal.fyi/rules/a11y-4
+
+### Choose heading levels by outline, not size (`a11y-5`)
+
+Choose heading levels from the page's section hierarchy. Style the headings independently so the visual sizes and the screen reader's heading list can both reflect the design.
+
+- Do: h1 Settings → h2 Billing → h3 Invoices
+- Don't: h1 Settings → h4 Billing → h4 Invoices
+- Reasoning: `references/rules/a11y-5.md` · https://axiomui.nischal.fyi/rules/a11y-5
+
+### Let people pause what moves or updates on its own (`a11y-6`)
+
+For nonessential content presented alongside other content, offer a way to pause, stop or hide automatic movement, blinking or scrolling that lasts more than five seconds. For automatic updates, offer a control at any interval. Adjusting the update frequency also works.
+
+- Do: Testimonial strip with Pause
+- Don't: Quote changes every 4s · no control
+- Reasoning: `references/rules/a11y-6.md` · https://axiomui.nischal.fyi/rules/a11y-6
+
+### Underline links in running text (`a11y-7`)
+
+Underline inline links so readers can spot them as they read. Navigation menus can use their layout and placement to identify links.
+
+- Do: p a { text-decoration: underline }
+- Don't: p a { text-decoration: none } · color only
+- Reasoning: `references/rules/a11y-7.md` · https://axiomui.nischal.fyi/rules/a11y-7
+
+### Return focus when an overlay closes (`a11y-8`)
+
+When an overlay closes, return keyboard focus to the control that opened it. If closing removes that control, such as when a row is deleted, focus the next logical control in the workflow.
+
+- Do: Esc → focus back on "Edit"
+- Don't: Esc, then Tab → focus restarts at "New project"
+- Reasoning: `references/rules/a11y-8.md` · https://axiomui.nischal.fyi/rules/a11y-8
+
 ## Cross-listed from other domains
 
 These rules cover specific accessibility decisions in other domains. Check the conditions and exceptions in each rule before making a conformance finding.
+
+### Keep scroll and focus targets clear of sticky headers (`layout-12`)
+
+Account for the height of sticky headers and footers in the scroll container. After an anchor jump or keyboard focus, the entire target should be visible.
+
+- From: Layout & spacing
+- Do: scroll-padding-top: 64px
+- Don't: scroll-padding-top: 0px
+- Reasoning: `references/rules/layout-12.md` · https://axiomui.nischal.fyi/rules/layout-12
 
 ### Give essential control edges enough contrast (`color-6`)
 
@@ -88,6 +137,15 @@ Identify what the chart shows and describe the comparison readers need. When the
 - Don't: Leave the trend and counts in the bars alone
 - Reasoning: `references/rules/comp-13.md` · https://axiomui.nischal.fyi/rules/comp-13
 
+### Navigate with links, act with buttons (`comp-14`)
+
+If activating a control takes someone to another URL, make it a link with an href, however it is styled. The browser then offers Open in new tab and Copy link, and shows the address before the click. Keep buttons for actions that change something on the current page.
+
+- From: Components & actions
+- Do: <a href="/invoices/1042">View invoice</a>
+- Don't: <div onClick={() => router.push(…)}>
+- Reasoning: `references/rules/comp-14.md` · https://axiomui.nischal.fyi/rules/comp-14
+
 ### Keep field labels visible (`form-2`)
 
 Keep a visible label after typing or autofill. A placeholder can illustrate an entry, but it disappears precisely when someone needs to review the completed form.
@@ -105,6 +163,15 @@ Let people paste a one-time code as they receive it. Keep leading zeros and supp
 - Do: One paste fills all six digits, including the leading zero
 - Don't: One paste fills only the first box
 - Reasoning: `references/rules/form-13.md` · https://axiomui.nischal.fyi/rules/form-13
+
+### Declare what each field expects (`form-14`)
+
+Declare the input type, keyboard layout, and autocomplete purpose so the browser can offer the right keys and saved answers. Turn off spellcheck and automatic capitalization for identifiers such as emails, usernames, and codes.
+
+- From: Forms & inputs
+- Do: Email keyboard · saved address suggested
+- Don't: Plain keyboard · capitalizes Maya@
+- Reasoning: `references/rules/form-14.md` · https://axiomui.nischal.fyi/rules/form-14
 
 ### Size the hit area for the input (`sys-3`)
 
@@ -124,13 +191,31 @@ Make each task operable by keyboard. Use native behavior where available. Tab mo
 - Don't: Click-only interactions, no keyboard support
 - Reasoning: `references/rules/sys-8.md` · https://axiomui.nischal.fyi/rules/sys-8
 
+### Keep the task usable at 320 CSS pixels (`sys-11`)
+
+Narrow the viewport to 320 CSS pixels, or zoom a 1280px window to 400%, and complete the page’s main task. Content should reflow without sideways scrolling. A wide table, map or code block may scroll inside its own region.
+
+- From: System & logic
+- Do: 320px: fields stack · Continue in view
+- Don't: 320px: min-width 512px · Continue off-screen
+- Reasoning: `references/rules/sys-11.md` · https://axiomui.nischal.fyi/rules/sys-11
+
+### Keep errors and the only recovery action on screen (`sys-16`)
+
+A success message whose result is visible elsewhere can time out. A failure, or a message that holds the only Undo or Retry, stays until the person acts on it or closes it. Pause any timer while the message is hovered, focused or in a hidden tab.
+
+- From: System & logic
+- Do: Upload failed · Retry stays until dismissed
+- Don't: Upload failed · Retry closes after 5s
+- Reasoning: `references/rules/sys-16.md` · https://axiomui.nischal.fyi/rules/sys-16
+
 ### Keep keyboard input responsive (`motion-2`)
 
 When a shortcut opens a command palette, move focus into the field and accept the next keystroke while the panel settles.
 
 - From: Motion & interaction
-- Do: Keyboard panel: 0ms
-- Don't: Keyboard panel: 240ms
+- Do: Focus on open. First keystrokes land.
+- Don't: Focus after entrance. First keystrokes are lost.
 - Reasoning: `references/rules/motion-2.md` · https://axiomui.nischal.fyi/rules/motion-2
 
 ### Preserve feedback with reduced motion (`motion-17`)

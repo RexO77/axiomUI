@@ -1,34 +1,35 @@
-# Set breakpoints where the layout needs them
+# Keep the task usable at 320 CSS pixels
 
 - ID: sys-11
 - Category: System & logic
 - Tags: Responsive, System, Mobile
 - URL: https://axiomui.nischal.fyi/rules/sys-11
 
-Resize the content until it no longer works, then choose a reflow that solves the failure. The example uses 640px and 1024px. A different interface may need different thresholds or none.
+Narrow the viewport to 320 CSS pixels, or zoom a 1280px window to 400%, and complete the page’s main task. Content should reflow without sideways scrolling. A wide table, map or code block may scroll inside its own region.
 
-- Do: 2 breakpoints: 640px / 1024px (3 tiers)
-- Don't: 8 breakpoints, one per device
+- Do: 320px: fields stack · Continue in view
+- Don't: 320px: min-width 512px · Continue off-screen
 
 ## Why it works
 
-A sidebar can stop fitting because its labels grow, the text is enlarged or the surrounding container narrows. Device names do not capture any of those conditions. A useful breakpoint describes a change the content needs.
+A 1280px window zoomed to 400% lays out like a 320 CSS px phone, so the people who enlarge text get the narrowest layout there is. In the example, one row keeps Street and Postcode side by side with a 512px minimum. The page then scrolls sideways and Continue sits past the right edge.
 
-- [web.dev · Media queries](https://web.dev/learn/design/media-queries)
 - [WCAG 2.2 · Reflow](https://www.w3.org/WAI/WCAG22/Understanding/reflow.html)
+- [WCAG 2.2 · Resize text](https://www.w3.org/WAI/WCAG22/Understanding/resize-text.html)
+- [web.dev · Media queries](https://web.dev/learn/design/media-queries)
 
 ## What breaks
 
-A layout tuned only on a list of popular phone widths can wrap an action bar or clip a label between those widths. Extra tiers are justified when each one addresses a distinct problem.
+Someone reading at 400% scrolls left and right on every line and may never see the action. Hiding the overflow with `overflow-x: hidden` on the page removes the scrollbar but not the problem, so Continue becomes unreachable instead of hard to find.
 
 ## How to apply it
 
-1. Test continuous ranges with real content, translations and larger text.
-2. Prefer intrinsic wrapping or layout sizing when it solves the problem without a query.
-3. Use a container query when the relevant constraint is a component’s allocated space.
+1. Find it: at 320 CSS px run `document.documentElement.scrollWidth > window.innerWidth` in the console, then inspect the widest element. In code, search for `min-width` above 320px, fixed widths on rows, `whitespace-nowrap` on long labels, and `overflow-x: hidden` on html or body. A viewport tag with `user-scalable=no` or `maximum-scale=1` blocks the zoom this test simulates, so remove it.
+2. Let content choose breakpoints: resize until something breaks, then prefer intrinsic fixes (wrapping, `minmax()` grids, container queries) before adding a device-sized query.
+3. Two-dimensional content is excepted. Give a data table, map or diagram its own scroll region with a visible scrollbar, a label and keyboard access (`tabindex="0"`), and keep the rest of the page in one column.
 
 ## Review questions
 
-1. What breaks immediately before this change?
-2. Does the layout recover on both sides of the threshold?
-3. Does an embedded instance still work in a narrower parent?
+1. At 320 CSS px, does `document.documentElement.scrollWidth` equal the viewport width?
+2. Zoom a 1280px window to 400% and complete the main task. Did any step need sideways scrolling?
+3. Which element sets the overflowing width, and does it need that width?

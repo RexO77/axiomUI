@@ -5,17 +5,17 @@
 - Tags: Gestures, Touch
 - URL: https://axiomui.nischal.fyi/rules/motion-19
 
-An elastic edge can show that a surface has reached its limit while the finger continues moving. Clamp controls that represent a fixed valid range.
+When a custom dragged surface reaches a meaningful limit, use bounded resistance to signal the edge. Never re-implement native scroll bounce. Clamp controls that represent a fixed valid range.
 
-- Do: Increasing friction past edge
-- Don't: Invisible wall stop
+- Do: Card yields less as the pull increases
+- Don't: Card stops abruptly at the limit
 
 ## Why it works
 
-When pulling past the end of a scrollable surface, decreasing movement per pixel of pull can make the boundary tangible. A slider that represents a numerical value has a different job. A thumb beyond its maximum may imply a value the control cannot store.
+When a custom draggable card reaches a meaningful limit, moving it less for each additional pixel of pull can make the boundary tangible. A thumb beyond a slider’s maximum can imply a value the control cannot store, so keep numerical sliders in their valid range.
 
-- [Flutter · Bouncing scroll physics](https://api.flutter.dev/flutter/widgets/BouncingScrollPhysics-class.html)
-- [Flutter · Clamping scroll physics](https://api.flutter.dev/flutter/widgets/ClampingScrollPhysics-class.html)
+- [Motion · Elastic drag constraints](https://motion.dev/docs/react-drag#elastic-constraints)
+- [CSS Overscroll Behavior · Scroll boundary default actions](https://www.w3.org/TR/css-overscroll-1/#scroll-chaining)
 
 ## What breaks
 
@@ -23,7 +23,7 @@ Unbounded overdrag can resemble valid progress. A spring that settles far from t
 
 ## How to apply it
 
-1. Choose which bounds belong to the model and which permit a visual overshoot.
+1. Define the visual limit from a meaningful boundary such as a drawer’s last snap point.
 2. Cap visual travel beyond the edge and preserve the valid underlying value.
 3. Give a clear release destination and a reduced-motion settle.
 

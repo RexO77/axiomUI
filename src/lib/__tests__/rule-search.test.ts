@@ -55,7 +55,9 @@ describe("searchRules", () => {
     const hits = searchRules("focus");
     expect(hits[0].rule.id).toBe("a11y-1");
     expect(hits[0].reasons[0]).toEqual({ field: "title", label: "In title" });
-    expect(hits.slice(1).every((hit) => !/focus/i.test(hit.rule.title))).toBe(true);
+    // Every title match outranks every hit that matched elsewhere.
+    const inTitle = hits.map((hit) => /focus/i.test(hit.rule.title));
+    expect(inTitle.indexOf(false)).toBe(inTitle.filter(Boolean).length);
   });
 
   it("ranks an exact id first", () => {
@@ -106,7 +108,7 @@ describe("synonyms", () => {
     ["kerning", ["typo-2"]],
     ["leading", ["typo-3", "typo-4"]],
     ["loading button", ["comp-9"]],
-    ["toast", ["comp-6", "motion-15"]],
+    ["toast", ["comp-6", "motion-15", "sys-16"]],
     ["line length", ["layout-2"]],
     ["focus ring", ["a11y-1"]],
     ["focus rings", ["a11y-1"]],

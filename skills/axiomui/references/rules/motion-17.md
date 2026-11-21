@@ -14,6 +14,7 @@ Honor reduced motion by removing unnecessary travel, zoom and spin. Show the res
 
 Large movement can cause discomfort for some users. A message can arrive at its final location immediately and still communicate that an action succeeded. WCAG 2.3.3, a Level AAA criterion, addresses the ability to disable interaction-triggered motion animation unless it is essential.
 
+- [Media Queries Level 5 · Reduced motion preference](https://www.w3.org/TR/mediaqueries-5/#prefers-reduced-motion)
 - [WCAG 2.2 · Animation from interactions](https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions.html)
 - [WCAG 2.2 · Status messages](https://www.w3.org/WAI/WCAG22/Understanding/status-messages.html)
 
@@ -24,7 +25,7 @@ Removing an animated checkmark without leaving a result can make a successful ac
 ## How to apply it
 
 1. Start with the final content and add movement only when appropriate.
-2. Honor the reduced-motion preference in CSS and scripted animations.
+2. Use @media (prefers-reduced-motion: reduce) in CSS and matchMedia("(prefers-reduced-motion: reduce)") for scripted animations.
 3. Preserve status announcements for results that assistive technology should report.
 
 ## Review questions

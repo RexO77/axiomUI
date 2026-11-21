@@ -1,6 +1,6 @@
 ---
 name: axiomui
-description: Axiom UI's library of 108 UI design rules, each with a Do/Don't pair, a canonical URL, and full reasoning. Use when building new interface code and a concrete, citable value is needed for type, spacing, color and contrast, buttons and overlays, form fields and validation, loading and empty states, animation timing and easing, or accessibility; when the user mentions Axiom UI or cites a rule id such as typo-1 or motion-12; or when two UI treatments are on the table and the choice should rest on an established rule rather than taste. To change an existing interface, use axiomui-website-upgrade only if it is installed; otherwise apply the rules here. For a review without edits, use axiomui-audit only if it is installed; otherwise review with this library.
+description: Axiom UI's library of 112 UI design rules, each with a Do/Don't pair, a canonical URL, and full reasoning. Use when building new interface code and a concrete, citable value is needed for type, spacing, color and contrast, buttons and overlays, form fields and validation, loading and empty states, animation timing and easing, or accessibility; when the user mentions Axiom UI or cites a rule id such as typo-1 or motion-12; or when two UI treatments are on the table and the choice should rest on an established rule rather than taste. To change an existing interface, use axiomui-website-upgrade only if it is installed; otherwise apply the rules here. For a review without edits, use axiomui-audit only if it is installed; otherwise review with this library.
 license: MIT
 metadata:
   author: Nischal Skanda
@@ -11,15 +11,15 @@ metadata:
 
 # Axiom UI
 
-Axiom UI is a library of 108 UI design rules across 8 domains. Each rule is one decision with a concrete Do, a concrete Don't, and written reasoning. Use the rules to make interface choices you can cite, instead of choices you have to defend on taste.
+Axiom UI is a library of 112 UI design rules across 8 domains. Each rule is one decision with a concrete Do, a concrete Don't, and written reasoning. Use the rules to make interface choices you can cite, instead of choices you have to defend on taste.
 
 ## Which Axiom UI skill
 
 This skill is the rule library. The other Axiom UI skills each add a procedure for one job, and each applies only if it is installed:
 
 - Building new UI and choosing a value or a treatment: stay here. Find the rule and apply it.
-- Changing an existing interface in code: use `axiomui-website-upgrade`. It adds the upgrade loop, the craft standards and a verification contract.
-- Reviewing without editing: use `axiomui-audit`. It adds per-domain checklists, a severity scale and a report format.
+- Changing an existing interface in code: use `axiomui-website-upgrade`. It adds page-job entry lists, a detection sweep, an elevate pass and a verification contract.
+- Reviewing without editing: use `axiomui-audit`. It adds the detection sweep, per-domain checklists, a severity scale and a report format.
 - Working mostly in one domain: use that domain's skill (`axiomui-typography`, `axiomui-layout`, `axiomui-color`, `axiomui-components`, `axiomui-forms`, `axiomui-system`, `axiomui-motion`, `axiomui-accessibility`). It carries the domain's rules inline, with sharper triggers.
 
 When the matching skill is not installed, stay here. Every rule is in this skill.
@@ -42,14 +42,14 @@ A platform convention, a language’s reading direction or evidence from the tas
 
 | Domain | Rules | Compact Do/Don't |
 |---|---|---|
-| Typography & text | 14 | `references/typography.md` |
-| Layout & spacing | 11 | `references/layout.md` |
-| Color & depth | 12 | `references/color.md` |
-| Components & actions | 13 | `references/components.md` |
-| Forms & inputs | 13 | `references/forms.md` |
-| System & logic | 13 | `references/system.md` |
-| Motion & interaction | 29 | `references/motion.md` |
-| Accessibility & inclusivity | 3 | `references/accessibility.md` |
+| Typography & text | 15 | `references/typography.md` |
+| Layout & spacing | 13 | `references/layout.md` |
+| Color & depth | 9 | `references/color.md` |
+| Components & actions | 15 | `references/components.md` |
+| Forms & inputs | 15 | `references/forms.md` |
+| System & logic | 14 | `references/system.md` |
+| Motion & interaction | 23 | `references/motion.md` |
+| Accessibility & inclusivity | 8 | `references/accessibility.md` |
 
 ## Rule index
 
@@ -60,7 +60,7 @@ A platform convention, a language’s reading direction or evidence from the tas
 - `typo-3` Set body leading for sustained reading (`references/rules/typo-3.md`)
 - `typo-4` Fit leading to wrapped headings (`references/rules/typo-4.md`)
 - `typo-5` Give each typeface a job (`references/rules/typo-5.md`)
-- `typo-6` Keep secondary text legible (`references/rules/typo-6.md`)
+- `typo-6` Keep secondary text at a readable size (`references/rules/typo-6.md`)
 - `typo-7` Align comparable numbers (`references/rules/typo-7.md`)
 - `typo-8` Align paragraphs to the reading start (`references/rules/typo-8.md`)
 - `typo-9` Assign font weights by role (`references/rules/typo-9.md`)
@@ -69,6 +69,7 @@ A platform convention, a language’s reading direction or evidence from the tas
 - `typo-12` Balance short headings (`references/rules/typo-12.md`)
 - `typo-13` Review wrapping in short descriptions (`references/rules/typo-13.md`)
 - `typo-14` Keep names and counts together across scripts (`references/rules/typo-14.md`)
+- `typo-15` Tighten display tracking only until letters crowd (`references/rules/typo-15.md`)
 
 ### Layout & spacing
 
@@ -79,18 +80,17 @@ A platform convention, a language’s reading direction or evidence from the tas
 - `layout-5` Size button padding around the label (`references/rules/layout-5.md`)
 - `layout-6` Anchor a row icon to the text it describes (`references/rules/layout-6.md`)
 - `layout-7` Choose a boundary that explains the group (`references/rules/layout-7.md`)
-- `layout-8` Consistent gutters (`references/rules/layout-8.md`)
 - `layout-9` Adapt outer spacing to available width (`references/rules/layout-9.md`)
 - `layout-10` Use spacing to express vertical hierarchy (`references/rules/layout-10.md`)
 - `layout-11` Define stacking order within each context (`references/rules/layout-11.md`)
+- `layout-12` Keep scroll and focus targets clear of sticky headers (`references/rules/layout-12.md`)
+- `layout-13` Reserve space for media before it loads (`references/rules/layout-13.md`)
+- `layout-14` Keep the subject in the crop at every ratio (`references/rules/layout-14.md`)
 
 ### Color & depth
 
 - `color-1` Use accent color to mark priority (`references/rules/color-1.md`)
-- `color-2` Use the intended text color (`references/rules/color-2.md`)
-- `color-3` Match shadows to their role (`references/rules/color-3.md`)
 - `color-4` Make status colors dependable (`references/rules/color-4.md`)
-- `color-5` Keep decorative dividers quiet (`references/rules/color-5.md`)
 - `color-6` Give essential control edges enough contrast (`references/rules/color-6.md`)
 - `color-7` Keep hover feedback distinct from a result (`references/rules/color-7.md`)
 - `color-8` Design the dark palette by role (`references/rules/color-8.md`)
@@ -114,6 +114,8 @@ A platform convention, a language’s reading direction or evidence from the tas
 - `comp-11` Size a card’s primary link (`references/rules/comp-11.md`)
 - `comp-12` Make overlay dismissal discoverable (`references/rules/comp-12.md`)
 - `comp-13` Make the chart’s question answerable in text (`references/rules/comp-13.md`)
+- `comp-14` Navigate with links, act with buttons (`references/rules/comp-14.md`)
+- `comp-15` Show the product doing what the headline promises (`references/rules/comp-15.md`)
 
 ### Forms & inputs
 
@@ -130,6 +132,8 @@ A platform convention, a language’s reading direction or evidence from the tas
 - `form-11` Reuse answers the user has supplied (`references/rules/form-11.md`)
 - `form-12` Confirm the outcome of a submission (`references/rules/form-12.md`)
 - `form-13` Accept a complete sign-in code in one paste (`references/rules/form-13.md`)
+- `form-14` Declare what each field expects (`references/rules/form-14.md`)
+- `form-15` Keep entered answers when validation fails (`references/rules/form-15.md`)
 
 ### System & logic
 
@@ -137,15 +141,16 @@ A platform convention, a language’s reading direction or evidence from the tas
 - `sys-2` Explain why a view is empty (`references/rules/sys-2.md`)
 - `sys-3` Size the hit area for the input (`references/rules/sys-3.md`)
 - `sys-4` Choose a timestamp for the question (`references/rules/sys-4.md`)
-- `sys-5` Give shared colors semantic roles (`references/rules/sys-5.md`)
+- `sys-5` Reference colors by role, not by value (`references/rules/sys-5.md`)
 - `sys-6` Make reversible deletion recoverable (`references/rules/sys-6.md`)
 - `sys-7` Orient people in a multi-step flow (`references/rules/sys-7.md`)
 - `sys-8` Follow the keyboard model for each control (`references/rules/sys-8.md`)
 - `sys-9` Reconcile optimistic changes (`references/rules/sys-9.md`)
 - `sys-10` Recover at the point of failure (`references/rules/sys-10.md`)
-- `sys-11` Set breakpoints where the layout needs them (`references/rules/sys-11.md`)
+- `sys-11` Keep the task usable at 320 CSS pixels (`references/rules/sys-11.md`)
 - `sys-13` Limit transitions to intended properties (`references/rules/sys-13.md`)
-- `sys-14` Use will-change sparingly (`references/rules/sys-14.md`)
+- `sys-15` Return people to the result they opened (`references/rules/sys-15.md`)
+- `sys-16` Keep errors and the only recovery action on screen (`references/rules/sys-16.md`)
 
 ### Motion & interaction
 
@@ -153,7 +158,6 @@ A platform convention, a language’s reading direction or evidence from the tas
 - `motion-2` Keep keyboard input responsive (`references/rules/motion-2.md`)
 - `motion-3` Purpose before motion (`references/rules/motion-3.md`)
 - `motion-4` Choose easing for the movement (`references/rules/motion-4.md`)
-- `motion-5` Make the start of an entrance visible (`references/rules/motion-5.md`)
 - `motion-6` Time motion to the task (`references/rules/motion-6.md`)
 - `motion-7` Tune entrance and exit separately (`references/rules/motion-7.md`)
 - `motion-8` Show when a control is pressed (`references/rules/motion-8.md`)
@@ -170,12 +174,7 @@ A platform convention, a language’s reading direction or evidence from the tas
 - `motion-19` Use drag resistance where overshoot is meaningful (`references/rules/motion-19.md`)
 - `motion-20` Keep a drag attached to its initiating pointer (`references/rules/motion-20.md`)
 - `motion-21` Keep decorative motion independent of busy scripts (`references/rules/motion-21.md`)
-- `motion-22` Use a playback controller for programmatic animation (`references/rules/motion-22.md`)
-- `motion-23` Scope rapidly changing drag styles (`references/rules/motion-23.md`)
 - `motion-24` Limit the total stagger (`references/rules/motion-24.md`)
-- `motion-25` Review motion slowly, then at normal speed (`references/rules/motion-25.md`)
-- `motion-26` Sequence panel content when order explains something (`references/rules/motion-26.md`)
-- `motion-27` Keep routine exits quiet (`references/rules/motion-27.md`)
 - `motion-28` Make icon state changes recognizable (`references/rules/motion-28.md`)
 - `motion-29` Show the initial interface in its ready state (`references/rules/motion-29.md`)
 
@@ -184,3 +183,8 @@ A platform convention, a language’s reading direction or evidence from the tas
 - `a11y-1` Keep keyboard focus visible (`references/rules/a11y-1.md`)
 - `a11y-2` Carry meaning beyond color (`references/rules/a11y-2.md`)
 - `a11y-3` Separate competing touch targets (`references/rules/a11y-3.md`)
+- `a11y-4` Offer a click or tap path for every drag (`references/rules/a11y-4.md`)
+- `a11y-5` Choose heading levels by outline, not size (`references/rules/a11y-5.md`)
+- `a11y-6` Let people pause what moves or updates on its own (`references/rules/a11y-6.md`)
+- `a11y-7` Underline links in running text (`references/rules/a11y-7.md`)
+- `a11y-8` Return focus when an overlay closes (`references/rules/a11y-8.md`)

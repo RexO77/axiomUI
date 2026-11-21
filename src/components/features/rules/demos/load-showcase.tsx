@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, type RefObject } from "react";
 
-import { EASE } from "@/lib/showcase-engine";
 import { useReducedMotion } from "@/lib/media";
 import { PaneChrome, ShowcaseControls } from "@/components/features/rules/demos/showcase-chrome";
 import { showcaseSpecs } from "@/components/features/rules/demos/showcase-specs";
@@ -14,13 +13,11 @@ import { MotionRail, ProtagonistChip } from "@/components/features/rules/demos/p
 
 const REST = "translateX(0px)";
 
-/** motion-21 / 22 deep dives — real main-thread work, retimed for study (011). */
+/** motion-21 deep dive — real main-thread work, retimed for study (011). */
 export function LoadShowcase({ ruleId }: { ruleId: string }) {
     switch (ruleId) {
         case "motion-21":
             return <BlockedThreadRace />;
-        case "motion-22":
-            return <IntervalRace />;
         default:
             return null;
     }
@@ -76,23 +73,6 @@ function stall(ms: number) {
     while (performance.now() < end) {
         /* deliberate main-thread burn — the demo */
     }
-}
-
-/**
- * Run the compositor leg, then hand its end state to inline style. A
- * `fill: "forwards"` effect would outrank every inline write after it, so the
- * card could never be reset; landing it inline lets `scheduleReset` move it.
- */
-function slide(el: HTMLElement, destination: string, duration: number) {
-    const anim = el.animate([{ transform: REST }, { transform: destination }], {
-        duration,
-        easing: EASE.linear,
-    });
-    anim.onfinish = () => {
-        el.style.transform = destination;
-        anim.cancel();
-    };
-    return anim;
 }
 
 function resetCard(el: HTMLElement | null) {
@@ -246,133 +226,6 @@ function BlockedThreadRace() {
             <ThreadMeter
                 samples={samples}
                 durationMs={2600}
-                mode="stalls"
-                recording={running && samples.length === 0}
-                reduced={reduced}
-            />
-        </div>
-    );
-}
-
-/* ── motion-22 · Smooth vs setInterval (retimed: 1400ms / 80ms ticks) ── */
-
-function IntervalRace() {
-    const spec = showcaseSpecs["motion-22"];
-    const reduced = useReducedMotion();
-    const [running, setRunning] = useState(false);
-    const [samples, setSamples] = useState<ThreadSample[]>([]);
-    const doCard = useRef<HTMLDivElement | null>(null);
-    const dontCard = useRef<HTMLDivElement | null>(null);
-    const rail = useRef<HTMLDivElement | null>(null);
-    const dontRail = useRef<HTMLDivElement | null>(null);
-    const doAnim = useRef<Animation | null>(null);
-    const intervalId = useRef<ReturnType<typeof setInterval> | null>(null);
-    const sampleRaf = useRef<number | null>(null);
-    const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
-    const sampleBuf = useRef<ThreadSample[]>([]);
-    const lastTick = useRef(0);
-
-    useEffect(
-        () => () => {
-            doAnim.current?.cancel();
-            if (intervalId.current !== null) clearInterval(intervalId.current);
-            if (sampleRaf.current !== null) cancelAnimationFrame(sampleRaf.current);
-            timers.current.forEach(clearTimeout);
-        },
-        []
-    );
-
-    const play = () => {
-        if (running) return;
-        setRunning(true);
-        setSamples([]);
-        sampleBuf.current = [];
-        timers.current.forEach(clearTimeout);
-        timers.current = [];
-        doAnim.current?.cancel();
-        if (intervalId.current !== null) {
-            clearInterval(intervalId.current);
-            intervalId.current = null;
-        }
-        if (sampleRaf.current !== null) cancelAnimationFrame(sampleRaf.current);
-
-        const travel = sharedTravel(
-            rail.current,
-            doCard.current,
-            dontRail.current,
-            dontCard.current
-        );
-        const duration = 1400;
-
-        if (reduced) {
-            if (doCard.current) doCard.current.style.transform = far(travel);
-            if (dontCard.current) dontCard.current.style.transform = far(travel);
-            scheduleReset(doCard.current, 800, timers.current, () => setRunning(false));
-            scheduleReset(dontCard.current, 800, timers.current);
-            return;
-        }
-
-        resetCard(doCard.current);
-        resetCard(dontCard.current);
-        void doCard.current?.offsetHeight;
-
-        if (doCard.current) doAnim.current = slide(doCard.current, far(travel), duration);
-
-        const start = performance.now();
-        lastTick.current = start;
-
-        // Sample thread health via rAF (should stay ~16ms) while setInterval steps the card.
-        const sample = (now: number) => {
-            sampleBuf.current.push({ atMs: now - start, gapMs: now - lastTick.current });
-            lastTick.current = now;
-            if (now - start < duration) {
-                sampleRaf.current = requestAnimationFrame(sample);
-            } else {
-                sampleRaf.current = null;
-                setSamples([...sampleBuf.current]);
-            }
-        };
-        sampleRaf.current = requestAnimationFrame(sample);
-
-        intervalId.current = setInterval(() => {
-            const p = Math.min(1, (performance.now() - start) / duration);
-            if (dontCard.current) {
-                dontCard.current.style.transform = far(travel * p);
-            }
-            if (p >= 1 && intervalId.current !== null) {
-                clearInterval(intervalId.current);
-                intervalId.current = null;
-            }
-        }, 80);
-
-        scheduleReset(doCard.current, duration + 1400, timers.current, () =>
-            setRunning(false)
-        );
-        scheduleReset(dontCard.current, duration + 1400, timers.current);
-    };
-
-    return (
-        <div className="motion-showcase @container">
-            <div className="grid grid-cols-2 gap-3">
-                <PaneChrome variant="do" caption={spec.do.caption}>
-                    <RaceRail railRef={rail} cardRef={doCard} label="WAAPI" />
-                </PaneChrome>
-                <PaneChrome variant="dont" caption={spec.dont.caption}>
-                    <RaceRail railRef={dontRail} cardRef={dontCard} label="setInterval" />
-                </PaneChrome>
-            </div>
-            <ShowcaseControls
-                control={{ label: "Play both", onClick: play, disabled: running }}
-                hints={[
-                    !reduced &&
-                        "Same distance. The Don’t card updates every 80ms.",
-                ]}
-                reducedNote="Reduced motion: both cards jump to the finish. With motion on, the Don’t card steps every 80ms and the Do card glides."
-            />
-            <ThreadMeter
-                samples={samples}
-                durationMs={1400}
-                mode="healthy"
                 recording={running && samples.length === 0}
                 reduced={reduced}
             />

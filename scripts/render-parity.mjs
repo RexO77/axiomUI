@@ -11,7 +11,7 @@
  *   node scripts/render-parity.mjs save     # after `npm run build`
  *   node scripts/render-parity.mjs check    # after `npm run build` again
  *
- * Covered: every prerendered page, the homepage's gallery wall and the 108
+ * Covered: every prerendered page, the homepage's gallery wall and every
  * rule pages included, plus not-found, global-error and the CSS. The wall is
  * server-rendered into `index.html`, so a change to a tile or a preview it
  * shows moves the homepage's digest. A digest without the homepage fails

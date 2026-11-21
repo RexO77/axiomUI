@@ -12,7 +12,7 @@ A toast can arrive slowly enough to locate and leave quickly once dismissed. Cho
 
 ## Why it works
 
-On entry, a toast introduces information. On dismissal, the next task may already be underway. The example gives entry 220ms and exit 160ms. A dismissal that visibly returns an object to its destination may warrant more time than a routine fade.
+A toast introduces information on entry, but by dismissal the next task may already be underway. The example gives entry 220ms and exit 160ms. A drawer returning to its edge or a card moving into an archive may need more time and travel to show where it went.
 
 - [IBM Carbon · Motion principles and timing](https://www.carbondesignsystem.com/building-blocks/foundations/motion/overview)
 - [WCAG 2.2 · Status messages](https://www.w3.org/WAI/WCAG22/Understanding/status-messages.html)
@@ -23,7 +23,7 @@ An exit can block the next click if its invisible layer still intercepts input. 
 
 ## How to apply it
 
-1. Set aside enough time to read a message before its dismissal begins.
+1. Leave enough time to read a message. For routine dismissals, use a short fade or small movement so the next action gets the attention.
 2. Keep focus on the person’s current task when a passive status toast appears or disappears. If a person dismisses it from a focused toast action, move focus to a logical surviving control.
 3. Interrupt an entrance with a dismissal and check the result.
 

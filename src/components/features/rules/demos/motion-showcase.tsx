@@ -59,9 +59,6 @@ const SETTLE_HOLD_MS = 1400;
 
 type Readout = ReturnType<typeof paneReadout>;
 
-/** A pinned pane ignores the speed control (motion-25 bakes its review speed in). */
-const paneRate = (pane: PaneSpec, rate: number) => (pane.pinRate ? 1 : rate);
-
 /** A replay that finds a pane mid-flight, or holding its end frame, first
  *  takes it back to its starting frame this fast, so the restart never cuts
  *  to keyframe 0. */
@@ -187,11 +184,9 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
     const isGesture = spec.trigger === "press" || spec.trigger === "hover";
     const skipDo = Boolean(spec.doRequiresHover) && !canHover;
     // Speed is for timed playthroughs: gestures are driven by the hand, reduced
-    // motion has no playthrough to slow down, and fully pinned specs ignore it.
-    const ratePinned = Boolean(spec.do.pinRate && spec.dont.pinRate);
-    const showSpeed = !isGesture && !reduced && !ratePinned;
+    // motion has no playthrough to slow down.
+    const showSpeed = !isGesture && !reduced;
     const playbackRate = isGesture ? 1 : rate;
-    const holdRate = ratePinned ? 1 : playbackRate;
 
     const writeMs = (el: HTMLSpanElement | null, ms: number) => {
         if (el) el.textContent = `${ms}ms`;
@@ -298,14 +293,12 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
         const start = (fromKeyframes = false) => {
             if (run !== generation.current) return;
             if (doRef.current && !skipDo) {
-                const r = paneRate(spec.do, playbackRate);
-                const animations = playPane(doRef.current, spec.do.tracks, { rate: r, reduced, fromKeyframes });
-                runBar(doBarRef.current, doMsRef.current, readoutFor(spec.do, "enter", reduced ? undefined : animations), r, reduced, "do");
+                const animations = playPane(doRef.current, spec.do.tracks, { rate: playbackRate, reduced, fromKeyframes });
+                runBar(doBarRef.current, doMsRef.current, readoutFor(spec.do, "enter", reduced ? undefined : animations), playbackRate, reduced, "do");
             }
             if (dontRef.current) {
-                const r = paneRate(spec.dont, playbackRate);
-                const animations = playPane(dontRef.current, spec.dont.tracks, { rate: r, reduced, fromKeyframes });
-                runBar(dontBarRef.current, dontMsRef.current, readoutFor(spec.dont, "enter", reduced ? undefined : animations), r, reduced, "dont");
+                const animations = playPane(dontRef.current, spec.dont.tracks, { rate: playbackRate, reduced, fromKeyframes });
+                runBar(dontBarRef.current, dontMsRef.current, readoutFor(spec.dont, "enter", reduced ? undefined : animations), playbackRate, reduced, "dont");
             }
 
             const canSettle =
@@ -314,17 +307,16 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
                 (spec.trigger === "replay" || spec.trigger === "action");
             if (!canSettle) return;
 
-            // Wait for the slower pane, at the rate each one actually plays.
-            const wallMs = (pane: PaneSpec) => tracksDurationMs(pane.tracks) / paneRate(pane, playbackRate);
+            // Wait for both panes to finish at the selected playback speed.
+            const wallMs = (pane: PaneSpec) => tracksDurationMs(pane.tracks) / playbackRate;
             const hold =
-                Math.max(skipDo ? 0 : wallMs(spec.do), wallMs(spec.dont)) + SETTLE_HOLD_MS / holdRate;
+                Math.max(skipDo ? 0 : wallMs(spec.do), wallMs(spec.dont)) + SETTLE_HOLD_MS / playbackRate;
             settleTimer.current = setTimeout(() => {
                 for (const { el, pane, skip } of panes) {
                     if (!el || skip) continue;
-                    const r = paneRate(pane, playbackRate);
-                    void settlePane(el, pane.exitTracks ?? restTracks(pane, el), { rate: r, reduced });
+                    void settlePane(el, pane.exitTracks ?? restTracks(pane, el), { rate: playbackRate, reduced });
                 }
-                clearBars(DUR.fast / holdRate);
+                clearBars(DUR.fast / playbackRate);
                 setEngaged(false);
             }, hold);
         };
@@ -351,7 +343,7 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
             // A pane cancelled mid-reset (unmount, a newer play) stays put.
             if (reset.every(Boolean)) start(true);
         });
-    }, [spec, specEpoch, playbackRate, holdRate, reduced, runBar, skipDo, clearBars, nextGeneration]);
+    }, [spec, specEpoch, playbackRate, reduced, runBar, skipDo, clearBars, nextGeneration]);
 
     const exit = useCallback(() => {
         clearTimeout(settleTimer.current);
@@ -366,12 +358,11 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
             skip: boolean
         ) => {
             if (!el || skip || !pane.exitTracks) return;
-            const r = paneRate(pane, playbackRate);
             // Interruptible: a release mid-press turns around from where the
             // pane is, not from the exit's first keyframe.
-            const animations = playPane(el, pane.exitTracks, { rate: r, reduced });
+            const animations = playPane(el, pane.exitTracks, { rate: playbackRate, reduced });
             // The readout follows the exit, so a 160ms dismiss reads 160ms.
-            runBar(bar, msLabel, readoutFor(pane, "exit", reduced ? undefined : animations), r, reduced, slot);
+            runBar(bar, msLabel, readoutFor(pane, "exit", reduced ? undefined : animations), playbackRate, reduced, slot);
         };
         leave(doRef.current, doBarRef.current, doMsRef.current, spec.do, "do", skipDo);
         leave(dontRef.current, dontBarRef.current, dontMsRef.current, spec.dont, "dont", false);
@@ -478,7 +469,7 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
     const hints = [
         gestureHint,
         spec.hotkey
-            ? `Or press ${spec.hotkey.toUpperCase()} — feel the don’t pane lag behind your keystroke`
+            ? `Or press ${spec.hotkey.toUpperCase()} while the demo has focus`
             : null,
         // Per-rule hint for button-driven demos (gesture hints carry their own).
         // Reduced motion hides the speed control, so a hint that points at it

@@ -4,8 +4,10 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
+import { readdirSync } from "node:fs";
+
 import { ruleSources } from "@/data/rule-sources";
-import { rules } from "@/data/ui-logic";
+import { ruleAliases, rules } from "@/data/ui-logic";
 import { fullCorpusMarkdown } from "@/lib/rule-corpus";
 import { skillAuthor, skillCatalog } from "@/lib/skills/catalog";
 import {
@@ -171,10 +173,49 @@ describe("renderSkillsTree", () => {
   });
 
   it("keeps the hand-written playbook verbatim at the top of its SKILL.md", () => {
-    const [prose] = readTemplate("axiomui-website-upgrade.md").split("{{ruleLookup}}");
+    const [template] = readTemplate("axiomui-website-upgrade.md").split("{{ruleLookup}}");
+    const prose = renderTemplate(template, { sweep: readTemplate("sweep.md").trimEnd() });
     const skill = tree.get("skills/axiomui-website-upgrade/SKILL.md")!;
     const body = skill.slice(skill.indexOf("\n---\n") + "\n---\n\n".length);
     expect(body.startsWith(prose)).toBe(true);
+  });
+
+  // Templates name rules by id. An id that was retired or never existed sends
+  // an agent to a reference that is not there, so every id must be live.
+  it("names only live rule ids in the hand-written templates", () => {
+    const live = new Set(rules.map((rule) => rule.id));
+    const templateDir = path.join(repoRoot, "src/lib/skills/templates");
+    for (const file of readdirSync(templateDir).filter((name) => name.endsWith(".md"))) {
+      const content = readFileSync(path.join(templateDir, file), "utf8");
+      for (const [id] of content.matchAll(/\b(?:typo|layout|color|comp|form|sys|motion|a11y)-\d+\b/g)) {
+        expect(Object.hasOwn(ruleAliases, id), `${file} names retired ${id}`).toBe(false);
+        expect(live.has(id), `${file} names unknown ${id}`).toBe(true);
+      }
+    }
+  });
+
+  // The upgrade and audit skills share one detection sweep; each item names a
+  // rule, a source search and a check in the rendered page.
+  it("ships the same detection sweep in the upgrade and audit skills", () => {
+    const sweep = readTemplate("sweep.md").trimEnd();
+    const items = sweep.split("\n").filter((line) => /^\d+\. /.test(line));
+    expect(items.length).toBeGreaterThanOrEqual(10);
+    for (const item of items) {
+      expect(item).toMatch(/^\d+\. `[a-z0-9]+-\d+` .+ Search: .+ Confirm: .+/);
+    }
+    // What no search finds reliably: each rendered check names its rule and its finding.
+    const looks = sweep.split("\n").filter((line) => line.startsWith("- "));
+    expect(looks.length).toBeGreaterThanOrEqual(5);
+    for (const look of looks) {
+      expect(look).toMatch(/^- `[a-z0-9]+-\d+`.+ is the finding|^- `[a-z0-9]+-\d+`.+replace it/);
+    }
+    for (const file of [
+      "skills/axiomui-website-upgrade/SKILL.md",
+      "skills/axiomui-audit/SKILL.md",
+      "public/skills/axiomui-website-upgrade/SKILL.md",
+    ]) {
+      expect(tree.get(file), file).toContain(sweep);
+    }
   });
 
   // The site serves the playbook as one file. It must not send an agent to

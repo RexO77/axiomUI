@@ -12,7 +12,7 @@ When a boundary is needed to identify an enabled control, WCAG AA requires at le
 
 ## Why it works
 
-The blank area where a teammate’s address goes needs to look editable before anyone reaches it. On white, a pale gray input edge can look stronger than a divider and still miss 3:1. The action labeled Cancel may be identifiable from its content and context without a visible border.
+The blank area where a teammate’s address goes needs to look editable before anyone reaches it. On white, a pale gray input edge can look stronger than a divider and still miss 3:1. The divider beside it can stay quiet, because the content on either side already reads as separate. The action labeled Cancel may be identifiable from its content and context without a visible border.
 
 - [WCAG 2.2 · Contrast at control boundaries](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html#boundaries)
 
@@ -24,7 +24,8 @@ Reusing a decorative divider token for a field can leave the reader with a label
 
 1. Identify which visual feature makes the resting input recognizable.
 2. Measure that feature against its adjacent surface, including themed variants.
-3. Test focus and selected states separately from the resting control.
+3. Hide each line in turn. If the rows still read as separate, the line is decorative and can use a quiet divider token. If a field or a graphic disappears with it, the line is essential and needs 3:1.
+4. Test focus and selected states separately from the resting control.
 
 ## Review questions
 

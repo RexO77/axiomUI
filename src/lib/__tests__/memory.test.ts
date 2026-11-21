@@ -96,9 +96,9 @@ describe("local catalog memory", () => {
     const parsed = parseMemory(JSON.stringify({
       last: "sys-12",
       recent: ["motion-99", "typo-1", "__proto__", "typo-1"],
-      visited: ["color-1", "nope", "color-2"],
+      visited: ["color-1", "nope", "color-4"],
     }));
-    expect(parsed).toMatchObject({ last: null, recent: ["typo-1"], visited: ["color-1", "color-2"] });
+    expect(parsed).toMatchObject({ last: null, recent: ["typo-1"], visited: ["color-1", "color-4"] });
     expect(parseMemory(JSON.stringify({ last: "typo-9" })).recent).toEqual(["typo-9"]);
     const store = createMemoryStore(() => storage());
     store.setLast("not-a-rule");
@@ -107,8 +107,8 @@ describe("local catalog memory", () => {
     expect(store.getSnapshot()).toMatchObject({ last: null, visited: [] });
   });
 
-  it("caps visited at the catalog's 108 rules, keeping the newest", () => {
-    expect(VISITED_LIMIT).toBe(108);
+  it("caps visited at the catalog's rule count, keeping the newest", () => {
+    expect(VISITED_LIMIT).toBe(rules.length);
     expect(rules).toHaveLength(VISITED_LIMIT);
     const all = rules.map((rule) => rule.id);
     const padded = [...all, ...all.map((id) => `${id}0`), "extra-1"];
@@ -150,12 +150,12 @@ describe("local catalog memory", () => {
     const notify = vi.fn();
     const unsubscribe = store.subscribe(notify);
     expect(store.getSnapshot().last).toBeNull();
-    persisted.setItem(MEMORY_KEY, JSON.stringify({ last: "color-3" }));
+    persisted.setItem(MEMORY_KEY, JSON.stringify({ last: "color-12" }));
     events.dispatchEvent(Object.assign(new Event("storage"), { key: "other" }));
     expect(notify).not.toHaveBeenCalled();
     events.dispatchEvent(Object.assign(new Event("storage"), { key: MEMORY_KEY }));
     expect(notify).toHaveBeenCalledOnce();
-    expect(store.getSnapshot().last).toBe("color-3");
+    expect(store.getSnapshot().last).toBe("color-12");
     unsubscribe();
   });
 });

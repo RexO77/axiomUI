@@ -24,7 +24,7 @@ A smoothly moving indicator can mask an unresponsive application. Keyboard input
 
 ## How to apply it
 
-1. Use a transition when the start and destination are known.
+1. Use a transition when the start and destination are known. For scripted pause, reverse or cancellation, element.animate() returns an Animation controller. Keep that handle and handle cancellation separately from completion.
 2. Record the animation and check whether the browser actually composites it.
 3. Break up or remove long main-thread tasks so input can be handled promptly.
 

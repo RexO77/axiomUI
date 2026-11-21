@@ -14,8 +14,8 @@ Stack unrelated questions so the next field is obvious. Group related short fiel
 
 In a two-column form, someone may scan across rows while Tab moves down the first column. Choosing one clear sequence reduces the need to reconstruct the form’s order. A compact group such as parts of one date can still read as one question.
 
+- [WCAG 2.2 · Meaningful sequence (1.3.2)](https://www.w3.org/WAI/WCAG22/Understanding/meaningful-sequence.html)
 - [WCAG 2.2 · Focus order](https://www.w3.org/WAI/WCAG22/Understanding/focus-order.html)
-- [W3C Internationalization · Personal names around the world](https://www.w3.org/International/questions/qa-personal-names)
 
 ## What breaks
 

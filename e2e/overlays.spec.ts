@@ -323,7 +323,7 @@ test("a palette opened on a phone keeps the rail inert when the window widens", 
 });
 
 test("the Agent skills panel expands from the rail popover’s rendered bounds", async ({ page }) => {
-  await openCatalog(page, ruleUrl("motion-25"));
+  await openCatalog(page, ruleUrl("motion-6"));
   const trigger = page.getByRole("button", { name: /^Install in your agent/ });
   await trigger.click();
   const box = page.getByRole("dialog", { name: "Install in your agent" });
@@ -383,7 +383,7 @@ test("the skills dialog reopens on its install view and keeps a loaded playbook"
   };
   const preview = async () => {
     await skills.getByRole("button", { name: "Preview the playbook" }).click();
-    await expect(playbook.getByRole("heading", { name: "Operating principles" })).toBeVisible();
+    await expect(playbook.getByRole("heading", { name: "Step 1: Frame" })).toBeVisible();
     await expect(playbook.getByText("Loading preview…")).toHaveCount(0);
   };
 

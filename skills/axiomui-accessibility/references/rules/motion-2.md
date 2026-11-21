@@ -7,12 +7,12 @@
 
 When a shortcut opens a command palette, move focus into the field and accept the next keystroke while the panel settles.
 
-- Do: Keyboard panel: 0ms
-- Don't: Keyboard panel: 240ms
+- Do: Focus on open. First keystrokes land.
+- Don't: Focus after entrance. First keystrokes are lost.
 
 ## Why it works
 
-Opening a palette and typing a query is one keyboard sequence. If focus moves only after the entrance finishes, the first characters can reach the previous control. A brief visual transition is compatible with immediate keyboard ownership.
+Opening a palette and typing a query is one keyboard sequence. Both palettes share the same entrance, and the field focused on open receives the first keystrokes. Waiting for the panel to settle can send those characters to the previous control.
 
 - [WAI-ARIA APG · Modal dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/)
 - [web.dev · Interaction latency and presentation delay](https://web.dev/articles/optimize-inp)
