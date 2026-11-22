@@ -56,7 +56,7 @@
    inside the scroller when a narrow pane sizes the frame by width. Only a
    sideways scroll is contained: a vertical swipe over the frame scrolls the page. */
 .mf-fit { width: 100%; overflow: auto; overscroll-behavior-x: contain; padding: 3px 2px; }
-.mf-bezel { position: relative; margin-inline: auto; overflow: hidden; border-radius: 15px; box-shadow: var(--ax-shadow-bezel); }
+.mf-bezel { position: relative; margin-inline: auto; overflow: hidden; border-radius: 15px; box-shadow: 0 0 0 1px var(--ax-bezel-ring); }
 .mf-glass { position: relative; transform-origin: top left; overflow: hidden; isolation: isolate; background: var(--ax-surface); color: var(--ax-ink); font-size: 20px; }
 .mf-chrome, .mf-part, .mf-band, .mf-hatch, .mf-hit, .mf-tap-mark, .mf-finger { pointer-events: none; }
 .mf-chrome { position: absolute; inset: 0; }
