@@ -1602,4 +1602,368 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
       "If your dialog can delete a row, try deleting the last one. Can you continue from the previous row or, in an empty list, from New project?",
     ],
   },
+  "mobile-1": {
+    whyItMatters: "The background can fill the bottom of the screen while the button sits higher. Adding the inset to the design gap keeps that gap when the inset changes.",
+    riskWhenIgnored: "Pay ends at 832 in an 844-unit screen. With a 34-unit bottom inset, the last 22 units of the button fall inside the system region.",
+    implementationNotes: [
+      "iOS — Anchor the foreground to the safe-area layout guide and let the bar background extend beneath it.",
+      "Android — Read window insets for the current navigation mode. With Material 3 Scaffold, apply and consume the supplied content padding once.",
+      "Web — For a full-bleed viewport, add the affected env(safe-area-inset-*) value to the design gap.",
+    ],
+    reviewPrompts: [
+      "Does Pay keep its ordinary padding at zero inset?",
+      "After rotation, does the whole target clear the cutout?",
+      "Is Scaffold padding consumed exactly once?",
+    ],
+  },
+  "mobile-2": {
+    whyItMatters: "The small viewport describes the opening with the browser controls expanded. A dynamic viewport follows the space available as the controls move.",
+    riskWhenIgnored: "An 844 px panel places its last 48 px behind an 88 px toolbar. A reader can miss Continue before they have even started scrolling.",
+    implementationNotes: [
+      "iOS — In Safari, check the opening screen with the address bar expanded and after it retracts.",
+      "Android — Repeat in Chrome with controls expanded and re-expanded. Native layouts use their window bounds and insets.",
+      "Web — Use svh for a stable opening section and dvh for a shell that follows current space. Let longer content grow or scroll.",
+    ],
+    reviewPrompts: [
+      "Can you reach Continue on first load with the bar open?",
+      "Does retracting and restoring the bar hide an action?",
+      "Can a longer opening section scroll?",
+    ],
+  },
+  "mobile-3": {
+    whyItMatters: "A corner gives a misplaced tap fewer places to land. Extra responding space can catch a tap that misses the same glyph in a smaller box.",
+    riskWhenIgnored: "The user touches beside Close and the overlay stays open.",
+    implementationNotes: [
+      "iOS — Keep the corner control inside the usable safe area. Apple recommends a 44 pt hit region for ordinary controls.",
+      "Android — Reserve at least 48 × 48 dp for ordinary independent controls. Account for implicit touch expansion when placing neighbors.",
+      "Web — Inspect the actual responding box. The fixture’s 60 CSS px is an example. WCAG 2.5.8 specifies a separate 24 CSS px test with exceptions.",
+    ],
+    reviewPrompts: [
+      "Replay the tap 26 CSS px to the right of Close. Which box contains that point?",
+      "Compare the seeded cloud with your own taps. Which result describes your hand?",
+      "Does extra padding encroach on a neighboring target?",
+    ],
+  },
+  "mobile-4": {
+    whyItMatters: "Placing a repeated action within the current grip saves a stretch on every use.",
+    riskWhenIgnored: "A top-corner Save makes someone shift their grip to finish each edit.",
+    implementationNotes: [
+      "iOS — Keep standard navigation controls in familiar positions. Test the placement of a frequent task action with either hand.",
+      "Android — For a primary floating action, account for the gesture bar and the hand reaching across the screen.",
+      "Web — Use logical alignment for language direction. Offer handedness only as a control in the teaching model.",
+    ],
+    reviewPrompts: [
+      "Does Save stay reachable with either hand?",
+      "Move the thumb pivot and switch hands. Does the center of Save still sit inside the arc?",
+      "Can someone complete the task on the larger screen?",
+    ],
+  },
+  "mobile-5": {
+    whyItMatters: "Contact is the start of both a tap and a scroll. Waiting for release lets the scroll view cancel activation.",
+    riskWhenIgnored: "Dragging up from a message row opens the message before the inbox can scroll.",
+    implementationNotes: [
+      "iOS — Use the control’s highlighted state and normal activation event. Let the scroll view resolve the movement.",
+      "Android — Use the Material press indication and distinguish press, cancellation and completed click.",
+      "Web — Use click for activation. Clear custom pressed visuals on cancellation, and preserve ordinary panning and keyboard activation.",
+    ],
+    reviewPrompts: [
+      "Start a scroll on Tide tables. Does the inbox move, or does the message open under your finger?",
+      "Does a canceled press clear its highlight?",
+      "Does a completed tap open exactly once?",
+    ],
+  },
+  "mobile-6": {
+    whyItMatters: "Separate Open and Like controls let each tap have one meaning.",
+    riskWhenIgnored: "A timer delays every ordinary open even for someone who never uses double tap.",
+    implementationNotes: [
+      "iOS — A recognizer required to wait for a double tap can delay the single-tap action.",
+      "Android — Use confirmed-single-tap recognition only when distinguishing a double tap matters to the same control.",
+      "Web — Responsive pages support fast taps. A CSS touch-action value cannot remove a timer written by the app.",
+    ],
+    reviewPrompts: [
+      "Compare the scheduled 300 ms wait with the elapsed time between the tap handler and Open.",
+      "Can Like still be reached independently?",
+      "Can both actions be invoked with the keyboard?",
+    ],
+  },
+  "mobile-7": {
+    whyItMatters: "A visible Orders tab gives the reader a destination to aim for on the first tap.",
+    riskWhenIgnored: "From Home, hiding Orders adds a stop at Menu before the reader can see and choose Orders.",
+    implementationNotes: [
+      "iOS — Use labelled tabs for peer sections. Put an action such as Compose in the screen’s action controls.",
+      "Android — A Material navigation bar suits three to five peer destinations. Larger windows may use a rail.",
+      "Web — Use navigation links with stable URLs and aria-current. A visible row can work as well as a bottom bar.",
+    ],
+    reviewPrompts: [
+      "How many activations take you from Home to Orders?",
+      "Can you identify the current destination?",
+      "Does each peer destination retain its label?",
+    ],
+  },
+  "mobile-8": {
+    whyItMatters: "Each tab can preserve its own route and reading anchor while another tab is active.",
+    riskWhenIgnored: "If switching tabs remounts Shop at its root, returning from Bag lands the reader in the catalog. They have to find the atlas and its returns policy again.",
+    implementationNotes: [
+      "iOS — Keep the selected destination and its navigation state. Treat reselecting the active tab as a separate interaction.",
+      "Android — Save and restore independent navigation stacks for peer flows. Also restore the list or detail scroll state.",
+      "Web — Store a route and reading anchor per destination and restore after content layout. Preserve browser history behavior.",
+    ],
+    reviewPrompts: [
+      "Does Shop reopen product 18?",
+      "Is the Returns passage visible again?",
+      "What happens if the text size changes while you are away?",
+    ],
+  },
+  "mobile-9": {
+    whyItMatters: "The map and its selected pin supply the context for café details. Closing one layer preserves that context.",
+    riskWhenIgnored: "Back removes the map while the details sheet is still open.",
+    implementationNotes: [
+      "iOS — Use a visible Cancel or Close and native sheet dismissal. Guard unsaved work according to the task.",
+      "Android — Let the topmost modal sheet consume a completed system Back before the parent route.",
+      "Web — Where a sheet is represented in history, handle Back, Forward and explicit close consistently. Escape and Close restore focus.",
+    ],
+    reviewPrompts: [
+      "Does Back dismiss the top sheet first?",
+      "Does focus return to the selected pin?",
+      "After an explicit Close, does Back leave the map and Forward restore the right layer? Try a direct link as well.",
+    ],
+  },
+  "mobile-10": {
+    whyItMatters: "Someone can start Back to see what lies underneath a reply, then change their mind. Keeping the draft route alive lets them resume typing at the same character.",
+    riskWhenIgnored: "Popping at gesture start discards the draft even when the reader cancels.",
+    implementationNotes: [
+      "iOS — Use the navigation controller’s interactive pop when available and respect its cancellation.",
+      "Android — Drive the preview from predictive Back progress. Restore on cancel and pop once on completion.",
+      "Web — Leave browser Back available. Replay in-app navigation in a local stack within the teaching frame.",
+    ],
+    reviewPrompts: [
+      "Does canceling Back preserve the caret?",
+      "Does the draft survive cancellation?",
+      "How many routes are removed on completion?",
+    ],
+  },
+  "mobile-11": {
+    whyItMatters: "The space available to an app can change while the physical display stays the same.",
+    riskWhenIgnored: "A rail sized for the full display takes a column away from the saved book when the app shares the screen.",
+    implementationNotes: [
+      "iOS — Allow tabs or a sidebar to adapt to the scene’s available space.",
+      "Android — The documented navigation suite uses a bar for compact width, compact height or tabletop posture. Test all three conditions.",
+      "Web — Measure the viewport or container and choose the break where these links fit. Preserve each link’s address.",
+    ],
+    reviewPrompts: [
+      "Which surface appears at 599 and 600 dp?",
+      "Does compact height change that decision?",
+      "Does Saved remain selected through the resize?",
+    ],
+  },
+  "mobile-12": {
+    whyItMatters: "The system can reserve an edge for starting Back. A trim handle inside that region can lose the first movement before the clip editor receives a drag.",
+    riskWhenIgnored: "An inward swipe on the handle can reveal the previous screen before the clip changes.",
+    implementationNotes: [
+      "iOS — Respect the leading-edge navigation gesture, including in mirrored layouts, and the bottom Home gesture.",
+      "Android — Either side edge may own Back in gesture mode. Read gesture insets and leave mandatory system gestures available.",
+      "Web — Use an inset handle plus a visible alternative. There is no portable CSS value for an OS Back recognizer’s width.",
+    ],
+    reviewPrompts: [
+      "Who receives the first inward drag?",
+      "With the right edge selected, can you shorten the clip using the step buttons?",
+      "Does the leading edge move with the reading direction?",
+    ],
+  },
+  "mobile-13": {
+    whyItMatters: "A horizontal adjustment and a vertical pan can share a starting point if the browser knows which movement it may take.",
+    riskWhenIgnored: "With touch-action set to none, a vertical swipe that begins on the photo divider leaves the reader on the same paragraph.",
+    implementationNotes: [
+      "iOS — Use native directional recognition or test Safari’s real pan takeover on a touch device.",
+      "Android — Keep the parent’s vertical scroll available across the horizontal control. Test Chrome with a finger.",
+      "Web — Apply touch-action: pan-y pinch-zoom to the custom drag surface. Release drag state on pointercancel or lost capture.",
+    ],
+    reviewPrompts: [
+      "Can a vertical swipe start on the handle?",
+      "Does a horizontal drag still move the divider?",
+      "What happens to the drag when its pointer is canceled?",
+    ],
+  },
+  "mobile-14": {
+    whyItMatters: "A visible menu lets a reader discover an action without first knowing a gesture.",
+    riskWhenIgnored: "A reader can tap the photo, find no actions and leave without adding it to favorites. A swipe-only Archive action has the same discovery problem.",
+    implementationNotes: [
+      "iOS — Expose context-menu items through the main interface too. Keep ordinary link previews available elsewhere.",
+      "Android — Offer an accessible overflow menu or selection control for actions reachable by a long press.",
+      "Web — Use a real button with an accessible name and keyboard-operable menu. Scope any custom callout suppression to the affected item.",
+    ],
+    reviewPrompts: [
+      "Can someone add the photo to favorites through More, then return to the same photo?",
+      "Does scrolling cancel a pending long press?",
+      "Can a keyboard reach and dismiss the same actions?",
+    ],
+  },
+  "mobile-15": {
+    whyItMatters: "Both paths lift the sheet 40 px. Projecting another 0.2 seconds of travel puts the fast release near the half stop and the slow release near peek.",
+    riskWhenIgnored: "A fast flick settles back at the starting stop because its release point was still near peek.",
+    implementationNotes: [
+      "iOS — UIKit offers detents. Apple’s fluid-interface example projects a thrown object’s endpoint. A custom sheet can borrow that idea.",
+      "Android — Prefer the platform’s sheet behavior. Tune custom settling against Android motion on a device.",
+      "Web — Estimate recent release velocity, clamp the projected stop, and expose each rest position through a button.",
+    ],
+    reviewPrompts: [
+      "At a 160 px release height, which stop does the quick flick select?",
+      "Where does the slow release settle?",
+      "Can each stop also be reached with a button?",
+    ],
+  },
+  "mobile-16": {
+    whyItMatters: "The activity log ends at Gates opened. Keeping a fresh swipe inside that log lets the reader pick up the article at the same sentence.",
+    riskWhenIgnored: "A second swipe at the bottom of the log unexpectedly moves the article.",
+    implementationNotes: [
+      "iOS — Check Safari at both boundaries, including a log too short to scroll. Local bounce varies.",
+      "Android — Distinguish local overscroll feedback from moving the parent or triggering browser refresh.",
+      "Web — Set overscroll-behavior-y on the actual scrolling element. Modal focus, inertness and document scroll locking need separate handling.",
+    ],
+    reviewPrompts: [
+      "Swipe over Gates opened, then over the article text. Which scroll offset changes each time?",
+      "Does scrolling outside the log move the article?",
+      "What happens when the log is too short to scroll?",
+    ],
+  },
+  "mobile-17": {
+    whyItMatters: "Remembering where a drag began gives a list flick one job until release.",
+    riskWhenIgnored: "A traveller flicks back from departure 25 to check the first train. If the sheet takes over at the top, the timetable disappears before they can read it.",
+    implementationNotes: [
+      "iOS — Use native scroll and sheet coordination. Check the content and the grabber separately.",
+      "Android — Use the nested-scrolling child and the sheet’s state to decide who receives a drag.",
+      "Web — For a custom sheet, remember which surface owned the gesture at its start. Provide a Close button and avoid binding dismissal to every downward move.",
+    ],
+    reviewPrompts: [
+      "After a flick from departure 25, can you read the first departure without reopening the sheet?",
+      "Is the sheet still open when the list reaches the top?",
+      "Can a fresh pull from the top dismiss it?",
+    ],
+  },
+  "mobile-18": {
+    whyItMatters: "An expanded sheet can still be shorter than its contents. Its body needs enough scroll range to bring the last option into view.",
+    riskWhenIgnored: "Wheelchair access is option 12. Expanding the sheet exposes more rows, but its last option stays below the bottom edge until the body can scroll.",
+    implementationNotes: [
+      "iOS — Use available detents and keep a tappable way to expand or close the sheet.",
+      "Android — Partially expanded and expanded states depend on available space. Give the expanded content an actual scroll range.",
+      "Web — Keep modal focus inside the sheet. Use a bounded, scrollable body and return focus to the opener.",
+    ],
+    reviewPrompts: [
+      "Can you select Wheelchair access after expanding?",
+      "Can you reach and select the final row with Tab as well as by scrolling?",
+      "Where does focus return after Close?",
+    ],
+  },
+  "mobile-19": {
+    whyItMatters: "A shopper looking for black shoes in size 9 under $120 can see how many pairs match while all three choices are still in front of them.",
+    riskWhenIgnored: "The sheet closes between choices and makes the shopper find the remaining filters again.",
+    implementationNotes: [
+      "iOS — Keep the sheet’s pending selection while the person reviews the count and allow Cancel to discard it.",
+      "Android — Keep Apply reachable above the current bottom inset and preserve the list behind the modal.",
+      "Web — Derive the result count from the same predicate as the result list. Handle zero results and clearing a filter.",
+    ],
+    reviewPrompts: [
+      "How many times must you reopen the filters?",
+      "Does Cancel discard pending choices?",
+      "Does the count on Show pairs match the list after applying, even when no pairs match?",
+    ],
+  },
+  "mobile-20": {
+    whyItMatters: "A legible postcode field lets the reader check the street and city while they type.",
+    riskWhenIgnored: "Focusing a small field may zoom the page and move nearby controls out of view.",
+    implementationNotes: [
+      "iOS — This comparison concerns Safari’s focus heuristic. Use native text styles in UIKit and SwiftUI fields.",
+      "Android — Use native scalable text for Android fields. The iPhone focus heuristic establishes no Android size threshold.",
+      "Web — Check the computed field size, for example max(1rem, 16px). Keep pinch zoom enabled in both conditions.",
+    ],
+    reviewPrompts: [
+      "What is the field’s computed size before focus?",
+      "Does pinch zoom still work?",
+      "On an iPhone, what scale does Safari report before focus, after focus and after blur?",
+    ],
+  },
+  "mobile-21": {
+    whyItMatters: "The visible editing rectangle may shrink or move while the layout viewport keeps its height.",
+    riskWhenIgnored: "The draft still receives text while the caret and Send button sit behind the software keyboard.",
+    implementationNotes: [
+      "iOS — Use the keyboard layout guide in native layouts. Check the undocked and external keyboard cases independently.",
+      "Android — Use IME insets in native layouts. Verify the browser and WebView separately when choosing a resize policy.",
+      "Web — Start with a scrollable form. A pinned shell can follow top-level visualViewport height and offset, or reflow when a supported resizes-content policy is active.",
+    ],
+    reviewPrompts: [
+      "Can you see the last line while typing?",
+      "Can you tap Send while the keyboard is open and see your last line arrive in the conversation?",
+      "Does the composer return when a hardware keyboard is used?",
+    ],
+  },
+  "mobile-22": {
+    whyItMatters: "A reader who uses enlarged text needs the pickup instructions to grow when they change the setting.",
+    riskWhenIgnored: "Fixed text stays small even though the reader changed the system setting.",
+    implementationNotes: [
+      "iOS — Use Dynamic Type styles or scale custom fonts with UIFontMetrics. Test an accessibility size.",
+      "Android — Use sp for text and line height. Android 14 introduced nonlinear scaling up to 200%.",
+      "Web — Respect browser text resize and zoom. In Safari, test -apple-system-body where an OS-linked text style is intended. Relative sizes alone do not prove OS integration.",
+    ],
+    reviewPrompts: [
+      "Does the actual label respond to a larger setting?",
+      "In the iOS fixture, does Body grow from 17 pt to 53 pt at AX5?",
+      "Does the platform’s text conversion apply to line height too?",
+    ],
+  },
+  "mobile-23": {
+    whyItMatters: "A minimum row height leaves room for the line boxes a larger label needs.",
+    riskWhenIgnored: "The last words of a payment option disappear inside its fixed row.",
+    implementationNotes: [
+      "iOS — Test a large accessibility size. Stack secondary information when inline text no longer fits.",
+      "Android — Use a minimum row height and the platform’s sp conversion for text and line height.",
+      "Web — Allow wrapping and intrinsic height. Test 200% text resize and the separate 320 CSS px reflow check in sys-11.",
+    ],
+    reviewPrompts: [
+      "Is the full business-account label readable at 200%?",
+      "Can you still select the wrapped option?",
+      "At 200% in the Android 14 fixture, do the 34 dp lines fit inside the payment row?",
+    ],
+  },
+  "mobile-24": {
+    whyItMatters: "The track tells you which way to drag. The price tells you when to stop. If the thumb holds the only number, you have to lift your finger to check it.",
+    riskWhenIgnored: "The price can change while the shopper’s finger covers the only readout.",
+    implementationNotes: [
+      "iOS — A floating preview can keep precision feedback visible while the finger is down.",
+      "Android — Use a slider value indicator or a nearby visible readout for the current value.",
+      "Web — Keep the value available to keyboard and assistive input, including meaningful units on a range control.",
+    ],
+    reviewPrompts: [
+      "Can you read the price throughout the drag?",
+      "When the bubble would cross the top inset, does the price move to a clear spot?",
+      "Can the price also be changed from the keyboard?",
+    ],
+  },
+  "mobile-25": {
+    whyItMatters: "After Add to bag, show the new quantity where the shopper can check it. Announce that same change while keyboard focus stays on Add.",
+    riskWhenIgnored: "Someone adds an item twice because the first addition appeared to do nothing.",
+    implementationNotes: [
+      "iOS — Use optional system feedback when appropriate. WebKit documents haptics on its native switch in Safari 18.",
+      "Android — Honor the device’s haptic preferences. Confirm the state even when vibration is unavailable.",
+      "Web — Feature-detect optional vibration. Expose a visible confirmation and announce the update when the result is outside focus.",
+    ],
+    reviewPrompts: [
+      "Is the new bag count visible with vibration off?",
+      "After a second Add, does the status announce the new quantity once?",
+      "Does opening the bag show the added item?",
+    ],
+  },
+  "mobile-26": {
+    whyItMatters: "The archive notice and the Compose button share the bottom edge of the inbox. Reserve the button’s height and a gap before placing the notice, including when its message wraps.",
+    riskWhenIgnored: "A tap intended to restore the message opens a draft instead.",
+    implementationNotes: [
+      "iOS — Where the app uses a banner or action bar, check its entire hit area against other controls.",
+      "Android — Material 3 Scaffold coordinates the measured snackbar, floating action button and bottom bar.",
+      "Web — Reserve space from measured heights and insets. Test the longest translation and enlarged text.",
+    ],
+    reviewPrompts: [
+      "Does a tap in the center of Undo restore the message?",
+      "After Undo restores the message, can Compose still open a draft?",
+      "Does the translated two-line message clear both targets?",
+    ],
+  },
 };

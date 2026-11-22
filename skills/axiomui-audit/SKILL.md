@@ -1,6 +1,6 @@
 ---
 name: axiomui-audit
-description: Reviews an existing interface against Axiom UI's 112 UI design rules and reports prioritized findings, each tied to a rule ID, a location, and a concrete fix, without editing code. Use when asked to review, audit, critique, or grade a page, component, pull request diff, screenshot, or design system for visual quality, consistency, usability, or accessibility; when preparing a pre-ship design QA pass; or when a review must cite specific, checkable rules instead of opinions. For code changes, use axiomui-website-upgrade only if it is installed; otherwise provide the report for a separate implementation task.
+description: Reviews an existing interface against Axiom UI's 138 UI design rules and reports prioritized findings, each tied to a rule ID, a location, and a concrete fix, without editing code. Use when asked to review, audit, critique, or grade a page, component, pull request diff, screenshot, or design system for visual quality, consistency, usability, or accessibility; when preparing a pre-ship design QA pass; or when a review must cite specific, checkable rules instead of opinions. For code changes, use axiomui-website-upgrade only if it is installed; otherwise provide the report for a separate implementation task.
 license: MIT
 metadata:
   author: Nischal Skanda
@@ -11,7 +11,7 @@ metadata:
 
 # Axiom UI audit
 
-Review an interface against Axiom UI's 112 UI design rules and report what is wrong, where it is, and how to fix it. Leave the code unchanged.
+Review an interface against Axiom UI's 138 UI design rules and report what is wrong, where it is, and how to fix it. Leave the code unchanged.
 
 ## Procedure
 
@@ -98,3 +98,4 @@ Each file lists every rule in one domain with its description, Do/Don’t pair a
 | System & logic | 14 | `references/checklists/system.md` |
 | Motion & interaction | 23 | `references/checklists/motion.md` |
 | Accessibility & inclusivity | 8 | `references/checklists/accessibility.md` |
+| Mobile | 26 | `references/checklists/mobile.md` |

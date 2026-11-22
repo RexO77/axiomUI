@@ -1,0 +1,118 @@
+.mf { container-type: inline-size; }
+.mf-controls, .mf-options { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 12px; background: var(--ax-surface); }
+.mf-controls label, .mf-options label { display: inline-flex; align-items: center; gap: 6px; }
+.mf-controls, .mf-options, .mf-readout, .mf-result { font-size: 0.8125rem; color: var(--ax-ink-secondary); }
+.mf select, .mf-options input:not([type="range"]) { background: var(--ax-fill); border-radius: 6px; padding: 4px 8px; color: var(--ax-ink); }
+.mf input[type="range"] { width: 90px; accent-color: var(--ax-ink); }
+.mf-options { border-block-start: 1px solid var(--ax-line); }
+.mf-calibration { width: 100%; display: grid; gap: 8px; justify-items: start; }
+.mf-ruler-scroll { width: 100%; overflow-x: auto; padding: 8px 0; }
+.mf-ruler { height: 8px; border: solid var(--ax-ink); border-width: 0 1px 1px; }
+/* Keep the floating controls in their own row even when a scene supplies more
+   actions or the reader enlarges text. The shared dock owns reveal and motion. */
+.mf .cmp-stage { padding-bottom: 0; }
+.mf .cmp-canvas[data-flip] { cursor: auto; }
+/* Both panes take the taller scene's height. Hold each phone at the top of its
+   pane so switching sides, or a result line that wraps in either pane, never moves it. */
+.mf .mf-pane { align-items: flex-start; }
+.mf-scene { display: grid; width: min(100%, 400px); min-width: 0; gap: 10px; }
+.mf-dock-slot { display: flex; align-items: flex-end; min-height: 48px; padding-bottom: 9px; }
+.mf-dock-slot .cmp-dock { position: relative; bottom: auto; width: max-content; max-width: calc(100% - 16px); }
+.mf-dock-slot .mf-dock-tools { flex: 0 1 auto; min-width: 0; }
+.mf-dock-panel, .mf-device, .mf-actions, .mf-dock-panel label {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+}
+.mf-dock-panel { font-size: .8125rem; color: var(--ax-ink-secondary); }
+.mf-reset span { display: none; }
+.mf-dock-panel .cmp-ctl { box-shadow: none; }
+.mf-actions { border-inline-start: 1px solid var(--ax-line-strong); padding-inline-start: 4px; }
+.mf-dock-slot .mf-controls-trigger { display: none; width: auto; padding-inline: 10px; gap: 6px; font-size: .8125rem; font-weight: 500; }
+.mf-options { margin-top: 12px; }
+@container (max-width: 800px) {
+  .mf-dock-slot .mf-controls-trigger { display: inline-flex; }
+  .mf-reset { width: auto; gap: 6px; padding-inline: 8px; }
+  .mf-reset span { display: inline; }
+  .mf-dock-panel { display: none; }
+  .mf-dock-slot .cmp-dock:has(.mf-dock-panel[data-open]) {
+    display: grid; grid-template-columns: auto auto; justify-content: center;
+    width: min(320px, calc(100% - 16px));
+  }
+  .mf-dock-tools:has(.mf-dock-panel[data-open]) { display: contents; }
+  .mf-dock-panel[data-open] {
+    display: flex; grid-column: 1 / -1; padding: 8px; gap: 8px;
+    border-top: 1px solid var(--ax-line); max-height: 45dvh; overflow: auto;
+  }
+  .mf-device { width: 100%; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px solid var(--ax-line); }
+  .mf-actions { padding: 0; border: 0; }
+}
+@media (max-width: 640px), (pointer: coarse) {
+  .mf-dock-slot { min-height: 62px; padding-bottom: 6px; }
+  .mf-dock-panel :is(select, input) { min-width: 44px; min-height: 44px; }
+}
+@media (max-width: 640px), (pointer: coarse) and (max-height: 500px) {
+  .mf-dock-panel { scroll-margin-bottom: calc(var(--shell-phone-foot) + env(safe-area-inset-bottom) + 8px); }
+}
+/* The frame fits the content box, so the padding keeps its ring and shadow
+   inside the scroller when a narrow pane sizes the frame by width. Only a
+   sideways scroll is contained: a vertical swipe over the frame scrolls the page. */
+.mf-fit { width: 100%; overflow: auto; overscroll-behavior-x: contain; padding: 3px 2px; }
+.mf-bezel { position: relative; margin-inline: auto; overflow: hidden; border-radius: 15px; box-shadow: var(--ax-shadow-bezel); }
+.mf-glass { position: relative; transform-origin: top left; overflow: hidden; isolation: isolate; background: var(--ax-surface); color: var(--ax-ink); font-size: 20px; }
+.mf-chrome, .mf-part, .mf-band, .mf-hatch, .mf-hit, .mf-tap-mark, .mf-finger { pointer-events: none; }
+.mf-chrome { position: absolute; inset: 0; }
+.mf-panel { position: relative; width: 100%; }
+.mf-primer { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.mf-primer a { text-decoration: underline; text-underline-offset: 2px; }
+.mf-status { position: absolute; inset: 0 0 auto; height: 48px; display: flex; align-items: center; justify-content: space-between; padding: 0 27px; font-size: 23px; font-weight: 650; background: var(--ax-surface); }
+.mf-cutout { position: absolute; width: 74px; height: 18px; border-radius: 20px; top: 9px; left: 50%; transform: translateX(-50%); background: var(--ax-ink); }
+[data-profile="Android"] .mf-cutout { width: 17px; height: 17px; border-radius: 50%; }
+.mf-content { position: absolute; inset: 52px 0 100px; overflow: auto; padding-right: 24px; }
+.mf-content header { display: flex; align-items: center; justify-content: space-between; min-height: 54px; font-weight: 650; border-bottom: 1px solid var(--ax-line-strong); }
+.mf-content header span, .mf-stub span { font-weight: 400; color: var(--ax-ink-muted); }
+.mf-order { padding-top: 50px; }
+.mf-order h3, .mf-sheet h3 { font-size: 36px; font-weight: 650; letter-spacing: -.04em; line-height: 1.1; margin: 0 0 24px; }
+.mf-ticket { overflow: hidden; background: var(--ax-fill); border-radius: 12px; }
+.mf-print { position: relative; overflow: hidden; padding: 24px; background: var(--ax-inverse); color: var(--ax-on-inverse); }
+.mf-print > span, .mf-print > strong { position: relative; display: block; z-index: 1; }
+.mf-print > span { font-size: 20px; }
+.mf-print > strong { font-weight: normal; font-size: 68px; letter-spacing: -.06em; line-height: .91; margin-block: 34px 8px; }
+.mf-orbits { position: absolute; width: 215px; height: 215px; right: -60px; top: 55px; transform: rotate(-24deg); }
+.mf-orbits i { position: absolute; height: 100%; width: 55%; left: 20%; border: 2px solid var(--ax-on-inverse); border-radius: 50%; opacity: .38; }
+.mf-orbits i:nth-child(2) { transform: rotate(40deg); }
+.mf-orbits i:nth-child(3) { transform: rotate(80deg); }
+.mf-orbits i:nth-child(4) { transform: rotate(120deg); }
+.mf-stub, .mf-total, .mf-still-total { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+.mf-stub { padding: 12px 20px; border-bottom: 1px dashed var(--ax-line-strong); }
+.mf-total { padding-block: 23px; font-size: 23px; }
+.mf-action, .mf-still-action { display: grid; place-items: center; border-radius: 9px; font-weight: 650; font-size: 24px; background: var(--ax-inverse); color: var(--ax-on-inverse); }
+.mf-action:focus-visible { outline: 3px solid var(--ax-ring); outline-offset: 3px; }
+.mf-band { background: var(--ax-fill-strong); }
+.mf-home { position: absolute; bottom: 6px; left: 50%; width: 100px; height: 5px; transform: translateX(-50%); border-radius: 8px; background: var(--ax-ink); }
+.mf-three, .mf-browser { position: absolute; bottom: 0; width: 100%; display: flex; align-items: center; justify-content: center; background: var(--ax-fill-strong); }
+.mf-three { height: 48px; }
+.mf-browser { overflow: hidden; justify-content: space-around; font-size: 22px; border-top: 1px solid var(--ax-line-strong); }
+.mf-browser strong { border-radius: 20px; padding: 4px 28px; font-size: 18px; background: var(--ax-surface); font-weight: 500; }
+.mf-boundary { position: absolute; inset: 48px 0 0; border: 2px dashed var(--ax-ink-muted); }
+.mf-side-cutout, .mf-edge { position: absolute; inset: 48px auto 0 0; }
+.mf-side-cutout { background: var(--ax-fill-strong); }
+.mf-edge { border-inline-end: 2px dotted var(--ax-ink-muted); }
+.mf-end { inset-inline: auto 0; border-inline: 0; border-inline-start: 2px dotted var(--ax-ink-muted); }
+.mf-hit { outline: 2px dashed var(--ax-ink); outline-offset: 2px; }
+.mf-part { outline: 4px dotted var(--ax-ink); outline-offset: -4px; }
+.mf-part[data-part="Hit area"], .mf-part[data-part="Status and cutout"] { outline-style: double; }
+.mf-hatch { background: repeating-linear-gradient(135deg, transparent 0 5px, var(--ax-dont-ink) 5px 7px); }
+.mf-tap-mark { position: absolute; width: 28px; height: 28px; border-radius: 50%; border: 3px double var(--ax-ring); background: var(--ax-surface); transform: translate(-50%,-50%); }
+.mf-finger { position: absolute; width: 108.66px; height: 108.66px; border: 2px dashed var(--ax-ink); border-radius: 50%; background: var(--ax-scrim); }
+.mf-inspection { display: grid; gap: 4px; }
+.mf-readout { font-family: var(--font-mono), monospace; font-size: .75rem; }
+.mf-readout b { font-weight: 600; }
+.mf-sheet, .mf-keyboard { position: absolute; inset: auto 0 0; padding: 20px; background: var(--ax-raised); box-shadow: var(--ax-shadow-sheet); }
+.mf-sheet { border-radius: 22px 22px 0 0; }
+.mf-grabber { width: 42px; height: 5px; margin: 0 auto 20px; border-radius: 6px; background: var(--ax-ink-muted); }
+.mf-keyboard { display: grid; align-content: center; gap: 12px; padding-inline: 6px; }
+.mf-keyboard > div { display: flex; justify-content: center; gap: 4px; }
+.mf-keyboard span { flex: 1; text-align: center; padding-block: 8px; background: var(--ax-surface); border-radius: 5px; }
+.mf-still { position: relative; width: 250px; height: 166px; border-radius: 14px; overflow: hidden; border: 1px solid var(--ax-line-strong); background: var(--ax-surface); color: var(--ax-ink); }
+.mf-still-total { padding: 12px; font-size: 14px; }
+.mf-still-action { position: absolute; inset: auto 10px var(--mf-still-bottom); height: 48px; font-size: 16px; }
+.mf-still-bar { position: absolute; inset: auto 0 0; height: var(--mf-still-bar); display: grid; place-items: center; background: var(--ax-fill-strong); font-size: 12px; }

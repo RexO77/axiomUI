@@ -5,6 +5,7 @@ import { hasShowcase, PanePreview } from "@/components/features/rules/demos/regi
 import { accessibilityPreviews } from "@/components/features/rules/previews/accessibility";
 import { colorPreviews } from "@/components/features/rules/previews/color";
 import { componentPreviews } from "@/components/features/rules/previews/components";
+import { mobilePreviews } from "./previews/mobile";
 import { formPreviews } from "@/components/features/rules/previews/forms";
 import { layoutPreviews } from "@/components/features/rules/previews/layout";
 import { systemPreviews } from "@/components/features/rules/previews/system";
@@ -23,6 +24,7 @@ const renderers: Record<string, PreviewRenderer> = {
     comp: componentPreviews,
     form: formPreviews,
     sys: systemPreviews,
+    mobile: mobilePreviews,
     a11y: accessibilityPreviews,
 };
 

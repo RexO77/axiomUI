@@ -52,6 +52,11 @@ export const skillGroupWords = ["core", "domains", "all"] as const;
  * topic also carries every rule about it.
  */
 const crossListing: Record<string, { tags: Set<string>; ruleIds?: string[]; note: string }> = {
+  mobile: {
+    tags: new Set(),
+    ruleIds: ["sys-3", "a11y-3", "motion-8", "form-14"],
+    note: "These lessons cover target size, spacing, pressed feedback and field hints used throughout the phone tasks.",
+  },
   typography: {
     tags: new Set(["Headings", "Readability"]),
     note: "Line measure and heading levels are filed under layout and accessibility, but they are set alongside size, leading and weight.",
@@ -79,6 +84,12 @@ type DomainCopy = Pick<SkillSpec, "summary" | "description" | "lead" | "aliases"
  * entry here gets no skill, and the catalog test fails until one is written.
  */
 const domainCopy: Record<string, DomainCopy> = {
+  mobile: {
+    summary: "Phone layouts, touch input, navigation, sheets, text size and feedback.",
+    description: "Use Axiom UI’s mobile guidance to fit actions above system and browser bars, handle taps, swipes and Back, preserve tab state, coordinate sheets and scrolling, keep editing controls in view, respect text size or confirm actions on iOS, Android and mobile web.",
+    lead: "Start at checkout with the system bars visible. Try Pay, rotate the phone and try again. Then follow the same task with a keyboard open or text enlarged. Record the platform, available window and control that received the input.",
+    aliases: ["mobile", "phone"],
+  },
   typography: {
     summary: "Interface text, from labels and display headings to long passages and mixed-direction names.",
     description:

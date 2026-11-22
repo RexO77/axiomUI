@@ -9,6 +9,7 @@ const PREFIX_TO_CATEGORY: Record<string, string> = {
   form: "forms",
   sys: "system",
   motion: "motion",
+  mobile: "mobile",
   a11y: "accessibility",
 };
 

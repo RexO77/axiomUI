@@ -48,7 +48,7 @@ describe("skill generation command", () => {
     const root = fixture();
     const built = run(root);
     expect(built.status, built.stderr).toBe(0);
-    expect(built.stdout).toContain("skills built: 11 skills");
+    expect(built.stdout).toContain("skills built: 12 skills");
     for (const [file, content] of renderSkillsTree(null)) {
       expect(readFileSync(path.join(root, file), "utf8"), file).toBe(content);
     }
@@ -60,7 +60,7 @@ describe("skill generation command", () => {
     }
     const check = run(root, "--check");
     expect(check.status, check.stderr).toBe(0);
-    expect(check.stdout).toContain("skills in sync: 11 skills");
+    expect(check.stdout).toContain("skills in sync: 12 skills");
     expect(run(root).stdout).toContain("0 added, 0 updated, 0 removed");
   });
 

@@ -12,4 +12,5 @@ export const distributedSkillNames = [
   "axiomui-system",
   "axiomui-motion",
   "axiomui-accessibility",
+  "axiomui-mobile",
 ] as const;

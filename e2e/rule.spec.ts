@@ -841,7 +841,12 @@ test.describe("deep dive toggle", () => {
       expect(result.docked).toBe(width === 1510);
       expect(result.sheetTop).toBeGreaterThan(0);
       expect(result.samples.length).toBeGreaterThan(6);
-      expect(Math.min(...result.samples.map(frame => frame.gap))).toBeGreaterThanOrEqual(-1);
+      if (result.docked) {
+        // The reading card and Related travel together, 12 apart.
+        for (const frame of result.samples) expect(frame.gap).toBeCloseTo(12, 0);
+      } else {
+        expect(Math.min(...result.samples.map(frame => frame.gap))).toBeGreaterThanOrEqual(-1);
+      }
       expect(Math.max(...result.samples.map(frame => frame.mainShift))).toBeLessThan(1);
       if (result.docked) expect(Math.max(...result.samples.map(frame => frame.relatedShift))).toBeLessThan(1);
       expect(result.reversals).toHaveLength(1);

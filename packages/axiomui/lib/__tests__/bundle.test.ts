@@ -41,7 +41,7 @@ describe("skill package bundling", () => {
     const bundle = loadBundle(pkg);
     expect(bundle.skillsDir).toBe(path.join(pkg, "skills"));
     const expected = ["README.md", "catalog.json"];
-    expect(bundle.catalog.skills).toHaveLength(11);
+    expect(bundle.catalog.skills).toHaveLength(12);
     for (const skill of bundle.catalog.skills) {
       for (const file of Object.keys(skill.files)) {
         expect(readBundledFile(bundle, skill, file)).toEqual(readFileSync(path.join(root, "skills", skill.name, file)));

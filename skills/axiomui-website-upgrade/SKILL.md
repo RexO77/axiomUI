@@ -35,7 +35,7 @@ Symptom list:
 - Hard to scan: `layout-2` `typo-3` `typo-6` `a11y-5`
 - Slow: `motion-1` `motion-6` `motion-29` `comp-9` `sys-1`
 - Unsafe or confusing: `comp-2` `sys-6` `sys-16` `form-8` `form-15` `comp-8`
-- Breaks on mobile: `sys-11` `layout-9` `layout-14` `typo-10` `sys-3`
+- Breaks on mobile: `mobile-1` `mobile-2` `sys-11` `layout-9` `layout-14` `typo-10` `sys-3`
 
 Done when you have named the task or symptom, captured and annotated both screen sizes, and listed what to preserve. For marketing and product pages, identify the evidence for the headline.
 
@@ -118,7 +118,7 @@ A Markdown table with Before, After, Why and Rule columns, one row per material 
 
 ## Axiom UI rule lookup
 
-Every rule ID above is one of Axiom UI's 112 rules. Its description and Do and Don’t examples are enough for the sweep; its full reference adds why it works, what breaks, implementation notes and a Before you ship checklist. Both live in `references/rules/<id>.md`: the first dozen lines hold the description and Do and Don’t examples, and the whole file is the full reference to read when step 3 calls for it. Cite the rule ID when you report the change. Each domain file below lists that domain’s Do and Don’t examples; read one whole only when a symptom falls outside the entry and symptom lists.
+Every rule ID above is one of Axiom UI's 138 rules. Its description and Do and Don’t examples are enough for the sweep; its full reference adds why it works, what breaks, implementation notes and a Before you ship checklist. Both live in `references/rules/<id>.md`: the first dozen lines hold the description and Do and Don’t examples, and the whole file is the full reference to read when step 3 calls for it. Cite the rule ID when you report the change. Each domain file below lists that domain’s Do and Don’t examples; read one whole only when a symptom falls outside the entry and symptom lists.
 
 If `references/` is missing, this is a single-file copy: read https://axiomui.nischal.fyi/rules.json for every rule’s Do and Don’t examples, and https://axiomui.nischal.fyi/rules/<id> for one rule's reasoning.
 
@@ -132,3 +132,4 @@ If `references/` is missing, this is a single-file copy: read https://axiomui.ni
 | System & logic | 14 | `references/system.md` |
 | Motion & interaction | 23 | `references/motion.md` |
 | Accessibility & inclusivity | 8 | `references/accessibility.md` |
+| Mobile | 26 | `references/mobile.md` |

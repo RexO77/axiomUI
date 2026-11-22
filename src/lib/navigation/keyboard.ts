@@ -45,6 +45,13 @@ export const shortcuts: readonly Shortcut[] = [
  * by, so J/K, D, F and I still reach the shell from a focused radio.
  */
 export const KEYBOARD_TARGET_SELECTOR = 'input, textarea, select, [contenteditable], [role="slider"], [role="listbox"], [role="combobox"], [role="menu"]';
+/**
+ * An interactive demo's pane (a phone scene): its lists and controls keep ←/→ and J/K, so a
+ * key meant for the demo never pages the rule and discards its state. F, Esc and the rest still
+ * reach the shell, and the canvas itself, outside the panes, still pages.
+ */
+export const DEMO_REGION_SELECTOR = "[data-demo-keys]";
+const PAGING: ReadonlySet<ShortcutAction> = new Set(["next", "previous", "nextSection", "previousSection"]);
 /** Enter opens a rule only from a gallery tile's link. Every other button or link keeps native activation. */
 export const TILE_LINK_SELECTOR = "a[data-rule-link]";
 export const MODAL_SELECTOR = '[aria-modal="true"]';
@@ -103,6 +110,7 @@ export function shortcutAction(event: KeyEvent, options: KeyboardOptions & { vie
   if (!shouldHandle(event, options)) return null;
   const action = bindingFor(event)?.action[options.view] ?? null;
   if (action === "openTile" && !closest(event.target, TILE_LINK_SELECTOR)) return null;
+  if (action && PAGING.has(action) && closest(event.target, DEMO_REGION_SELECTOR)) return null;
   return action;
 }
 

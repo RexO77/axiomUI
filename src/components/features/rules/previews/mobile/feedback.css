@@ -1,0 +1,59 @@
+.fb-scene { position: absolute; inset: 0; background: var(--ax-surface); color: var(--ax-ink); font-size: 18px; line-height: 1.3; }
+.fb-scene h3 { margin: 0; font-size: 32px; font-weight: 650; line-height: 1.12; letter-spacing: -.045em; }
+.fb-scene p { margin-top: 6px; color: var(--ax-ink-muted); }
+.fb-scene button:focus-visible, .fb-scene input:focus-visible, .fb-scene textarea:focus-visible { outline: 3px solid var(--ax-ring); outline-offset: 2px; }
+.fb-heading { position: absolute; top: 83px; left: 24px; }
+.fb-heading small { display: block; margin-bottom: 6px; color: var(--ax-ink-muted); font-size: 16px; }
+.fb-drawing { pointer-events: none; position: absolute; inset: 0; }
+.fb-bars { position: absolute; inset: auto 36px 177px; display: flex; align-items: flex-end; gap: 3px; }
+.fb-bars i { flex: 1; background: var(--ax-fill-strong); border-radius: 3px 3px 0 0; }
+.fb-bars i[data-filled="true"] { background: var(--ax-ink-faint); }
+.fb-track { position: absolute; left: 36px; right: 36px; height: 4px; border-radius: 4px; background: var(--ax-line-strong); }
+.fb-track i { display: block; height: 100%; border-radius: inherit; background: var(--ax-ink); }
+.fb-knob { position: absolute; width: 28px; height: 28px; border-radius: 50%; transform: translate(-50%,-50%); background: var(--ax-ink); border: 3px solid var(--ax-surface); box-shadow: var(--ax-shadow-item); }
+.fb-price { display: grid; place-items: center; border-radius: 10px; background: var(--ax-inverse); color: var(--ax-on-inverse); font-size: 19px; font-variant-numeric: tabular-nums; }
+.fb-pad { display: grid; place-items: center; border-radius: 50%; border: 2px dashed var(--ax-ink-muted); background: var(--ax-fill); color: var(--ax-ink-muted); }
+.fb-axis { position: absolute; inset-inline: 24px; display: flex; justify-content: space-between; color: var(--ax-ink-muted); font-size: 16px; }
+.mf .fb-range[type="range"] { position: absolute; left: 22px; width: 346px; height: 52px; padding: 0; margin: 0; appearance: none; background: transparent; cursor: ew-resize; touch-action: pan-y; }
+.fb-range::-webkit-slider-runnable-track { background: transparent; }
+.fb-range::-webkit-slider-thumb { appearance: none; width: 28px; height: 40px; background: transparent; }
+.fb-range::-moz-range-track { background: transparent; }
+.fb-range::-moz-range-thumb { width: 28px; height: 40px; border: 0; background: transparent; }
+.fb-nav { position: absolute; top: 52px; inset-inline: 20px; height: 44px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--ax-line-strong); font-size: 16px; }
+.fb-nav button, .fb-mail button { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; gap: 4px; text-decoration: underline; text-underline-offset: 3px; }
+.fb-body { position: absolute; inset: 113px 20px 22px; }
+.fb-body > p { font-size: 17px; }
+.fb-swatch { display: grid; place-items: center; height: 145px; border-radius: 10px; background: var(--ax-fill); overflow: hidden; }
+.fb-book { position: relative; width: 104px; height: 123px; transform: rotate(-9deg); border-radius: 2px 7px 7px 2px; color: var(--ax-on-inverse); background: var(--ax-inverse); box-shadow: var(--ax-shadow-sheet); border-right: 3px double var(--ax-ink-faint); }
+.fb-book span { position: absolute; top: 16px; left: 14px; max-width: 56px; font-size: 18px; font-weight: 620; line-height: .96; letter-spacing: -.04em; }
+.fb-book i { position: absolute; inset: 4px auto 4px 6px; border-left: 1px dashed var(--ax-on-inverse); opacity: .55; }
+.fb-product-line { display: flex; align-items: baseline; justify-content: space-between; margin: 16px 0 12px; }
+.fb-product-line h3 { font-size: 27px; }
+.fb-primary, .fb-mini-add { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 48px; border-radius: 10px; background: var(--ax-inverse); color: var(--ax-on-inverse); font-weight: 600; }
+.fb-confirm { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; font-size: 16px; }
+.fb-mail { display: flex; align-items: center; gap: 12px; padding-block: 16px; border-bottom: 1px solid var(--ax-line); font-size: 16px; }
+.fb-mail p { margin: 3px 0 0; }
+.fb-mail button { margin-left: auto; }
+.fb-initial { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: var(--ax-fill); color: var(--ax-ink-secondary); font-size: 17px; font-weight: 600; }
+.fb-body textarea { margin-top: 16px; width: 100%; padding: 16px; min-height: 100px; border: 1px solid var(--ax-line-strong); border-radius: 8px; }
+.fb-snack { position: absolute; left: 16px; right: 16px; bottom: 26px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 4px 8px 16px; background: var(--ax-inverse); color: var(--ax-on-inverse); border-radius: 12px; font-size: 18px; line-height: 1.25; }
+.fb-snack[data-clear="true"] { bottom: calc(26px + var(--fb-fab) + 8px); }
+.fb-snack > span { max-width: 14em; text-wrap: balance; }
+.fb-snack[data-large="true"] { font-size: 25px; }
+.fb-snack button, .fb-snack b { flex: none; display: grid; place-items: center; min-width: var(--fb-fab); min-height: 44px; font-weight: 650; text-decoration: underline; text-underline-offset: 3px; }
+.fb-compose { position: absolute; right: 16px; bottom: 26px; width: var(--fb-fab); height: var(--fb-fab); border-radius: 50%; display: grid; place-items: center; color: var(--ax-ink); background: var(--ax-fill-strong); box-shadow: var(--ax-shadow-item); }
+.fb-still { width: 250px; height: 164px; position: relative; overflow: hidden; border-radius: 12px; border: 1px solid var(--ax-line-strong); background: var(--ax-surface); color: var(--ax-ink); }
+/* The still stretches to its tile: the drawing keeps its size and centres. The
+   fingertip hides the axis end, so the crop leaves the axis out. */
+.fb-mini-price { position: absolute; width: 390px; height: 460px; top: -100px; left: calc(50% - 195px); transform: scale(.64); transform-origin: top center; }
+.fb-mini-price .fb-axis { display: none; }
+.fb-mini-shop { position: absolute; inset: 12px; display: flex; align-items: center; gap: 12px; }
+.fb-mini-shop .fb-swatch { flex: 0 0 92px; height: 120px; }
+.fb-mini-shop .fb-book { transform: scale(.62) rotate(-9deg); }
+.fb-mini-shop b, .fb-mini-add { font-size: 13px; }
+.fb-mini-add { margin-top: 8px; min-height: 30px; }
+.fb-mini-shop .fb-confirm { justify-content: flex-start; font-size: 12px; }
+.fb-mini-mail { --fb-fab: 40px; position: absolute; inset: 0 0 -14px; }
+.fb-mini-mail .fb-snack { font-size: 13px; }
+.fb-mini-mail .fb-snack b { min-height: 24px; }
+

@@ -4,7 +4,7 @@
 //
 // This is a VIEW over `ui-logic.ts`. Rule ids and their `category` field never
 // change here: the skills, `llms.txt` and a rule page's metadata keywords keep
-// reading the original eight categories. The rail, the gallery sections, the
+// reading the source categories. The rail, the gallery sections, the
 // sidebar, the palette and the rule view read this module, and so do a rule
 // page's breadcrumb and structured data and its social card's eyebrow, so
 // what a crawler and a share read matches what the page shows.
@@ -21,6 +21,7 @@ export const categoryShort: Readonly<Record<string, string>> = {
   system: "System",
   motion: "Motion",
   accessibility: "Accessibility",
+  mobile: "Mobile",
 };
 
 /**
@@ -39,7 +40,7 @@ export const railHome: Readonly<Record<string, string>> = {
   "a11y-8": "components",
 };
 
-/** The seven rail categories, in rail order. */
+/** The rail categories, in rail order. */
 export const railCategoryIds = [
   "typography",
   "layout",
@@ -48,6 +49,7 @@ export const railCategoryIds = [
   "forms",
   "system",
   "motion",
+  "mobile",
 ] as const;
 
 export type RailCategoryId = (typeof railCategoryIds)[number];
@@ -108,6 +110,16 @@ const groupsByCategory: Record<RailCategoryId, RuleGroup[]> = {
     { label: "Animation implementation", ruleIds: ids("motion", 14, 12, 13, 15, 21) },
     { label: "Direct manipulation", ruleIds: [...ids("motion", 18), "a11y-4", ...ids("motion", 19, 20)] },
   ],
+  mobile: [
+    { label: "The screen", ruleIds: ids("mobile", 1, 2) },
+    { label: "Touch", ruleIds: ids("mobile", 3, 4, 5, 6) },
+    { label: "Navigation", ruleIds: ids("mobile", 7, 8, 9, 10, 11) },
+    { label: "Gestures", ruleIds: ids("mobile", 12, 13, 14, 15) },
+    { label: "Sheets and scrolling", ruleIds: ids("mobile", 16, 17, 18, 19) },
+    { label: "Keyboard and fields", ruleIds: ids("mobile", 20, 21) },
+    { label: "Text size", ruleIds: ids("mobile", 22, 23) },
+    { label: "Feedback", ruleIds: ids("mobile", 24, 25, 26) },
+  ],
 };
 
 function ids(prefix: string, ...numbers: number[]): string[] {
@@ -136,7 +148,7 @@ export type RailCategory = {
   rules: readonly Rule[];
 };
 
-/** The rail's seven categories, each with its rules in learning order. */
+/** The rail categories, each with its rules in learning order. */
 export const railCategories: readonly RailCategory[] = railCategoryIds.map((id) => {
   const groups = groupsByCategory[id].map((group) => ({
     label: group.label,
@@ -227,21 +239,22 @@ function collection(id: string, name: string, groups: RuleGroup[]): Collection {
  * grouped by what the review checks.
  */
 export const accessibilityCollection = collection("accessibility", "Accessibility", [
-  { label: "Keyboard and focus", ruleIds: ["a11y-1", "sys-8", "comp-12", "a11y-8", "layout-12", "a11y-4"] },
+  { label: "Keyboard and focus", ruleIds: ["a11y-1", "sys-8", "comp-12", "a11y-8", "layout-12", "a11y-4", "mobile-14"] },
   {
     label: "Text, color and charts",
-    ruleIds: ["color-9", "color-6", "typo-6", "typo-11", "a11y-2", "a11y-7", "a11y-5", "comp-13"],
+    ruleIds: ["color-9", "color-6", "typo-6", "typo-11", "a11y-2", "a11y-7", "a11y-5", "comp-13", "mobile-22", "mobile-23"],
   },
-  { label: "Labels and input help", ruleIds: ["form-2", "comp-7", "comp-8", "form-14", "form-13"] },
-  { label: "Targets, timing and motion", ruleIds: ["sys-3", "a11y-3", "motion-17", "a11y-6", "sys-16"] },
+  { label: "Labels and input help", ruleIds: ["form-2", "comp-7", "comp-8", "form-14", "form-13", "mobile-20", "mobile-21"] },
+  { label: "Targets, timing and motion", ruleIds: ["sys-3", "mobile-3", "a11y-3", "motion-17", "a11y-6", "sys-16", "mobile-1", "mobile-25"] },
 ]);
 
 /** These three comparisons operate on text or data rather than timed tracks. */
 export const workedExampleIds: readonly string[] = ["typo-14", "comp-13", "form-13"];
+export const mobileDemoIds: readonly string[] = ["mobile-1", "mobile-2", "mobile-12", "mobile-13", "mobile-14", "mobile-15", "mobile-7", "mobile-8", "mobile-9", "mobile-10", "mobile-11", "mobile-3", "mobile-4", "mobile-5", "mobile-6", "mobile-16", "mobile-17", "mobile-18", "mobile-19", "mobile-20", "mobile-21", "mobile-22", "mobile-23", "mobile-24", "mobile-25", "mobile-26"];
 export const liveDemoCollection = collection("live", "Live demos", [
   {
     label: null,
-    ruleIds: [...rules.filter((rule) => rule.category === "motion").map((rule) => rule.id), "color-7", "comp-9", "sys-1", "sys-9", ...workedExampleIds],
+    ruleIds: [...rules.filter((rule) => rule.category === "motion").map((rule) => rule.id), "color-7", "comp-9", "sys-1", "sys-9", ...workedExampleIds, ...mobileDemoIds],
   },
 ]);
 
@@ -254,14 +267,14 @@ export const liveDemoCollection = collection("live", "Live demos", [
 /** Check whether someone can reach, use, and leave controls with a keyboard while keeping track of focus. */
 export const keyboardCollection = collection("keyboard", "Keyboard & focus", [
   { label: "Keyboard controls and order", ruleIds: ["sys-8", "a11y-1", "form-10", "layout-12", "comp-14"] },
-  { label: "Overlay focus and dismissal", ruleIds: ["motion-2", "comp-12", "a11y-8"] },
+  { label: "Overlay focus and dismissal", ruleIds: ["motion-2", "comp-12", "a11y-8", "mobile-9", "mobile-18"] },
   { label: "Tooltips and sign-in codes", ruleIds: ["motion-11", "form-13"] },
 ]);
 /** Check tap targets, touch input, and the alternatives to swiping or dragging. */
 export const touchGesturesCollection = collection("touch-gestures", "Touch & gestures", [
-  { label: "Tap targets", ruleIds: ["sys-3", "a11y-3", "comp-11"] },
-  { label: "Touch input and feedback", ruleIds: ["motion-8", "motion-16", "form-14", "sys-4"] },
-  { label: "Drag and swipe", ruleIds: ["a11y-4", "motion-20", "motion-18", "motion-19"] },
+  { label: "Tap targets", ruleIds: ["sys-3", "mobile-3", "a11y-3", "mobile-4", "comp-11", "mobile-1", "mobile-26"] },
+  { label: "Touch input and feedback", ruleIds: ["motion-8", "mobile-5", "mobile-6", "motion-16", "form-14", "sys-4", "mobile-25"] },
+  { label: "Drag and swipe", ruleIds: ["a11y-4", "motion-20", "motion-18", "motion-19", "mobile-12", "mobile-13", "mobile-14", "mobile-15", "mobile-10", "mobile-16", "mobile-17", "mobile-24"] },
 ]);
 /** Find where the interface can show useful content, acknowledge input, or make the next action available sooner. */
 export const perceivedSpeedCollection = collection("perceived-speed", "Perceived speed", [
@@ -273,12 +286,12 @@ export const perceivedSpeedCollection = collection("perceived-speed", "Perceived
 export const errorRecoveryCollection = collection("error-recovery", "Error recovery", [
   { label: "Form validation and correction", ruleIds: ["comp-6", "form-15", "form-8", "a11y-2", "form-9"] },
   { label: "Failed operations", ruleIds: ["sys-10", "sys-16", "sys-9"] },
-  { label: "Confirmation and undo", ruleIds: ["comp-2", "sys-6"] },
+  { label: "Confirmation and undo", ruleIds: ["comp-2", "sys-6", "mobile-26"] },
 ]);
 /** Check that tasks, text, and media still work as the viewport narrows or the reader zooms in. */
 export const responsiveUiCollection = collection("responsive-ui", "Responsive UI", [
-  { label: "Space and reading order", ruleIds: ["sys-11", "layout-9", "form-10", "form-1", "comp-5", "layout-12"] },
-  { label: "Text size and wrapping", ruleIds: ["typo-11", "typo-10", "layout-2", "typo-4", "typo-12", "typo-13"] },
+  { label: "Space and reading order", ruleIds: ["sys-11", "layout-9", "form-10", "form-1", "comp-5", "layout-12", "mobile-1", "mobile-2", "mobile-21", "mobile-11"] },
+  { label: "Text size and wrapping", ruleIds: ["typo-11", "typo-10", "layout-2", "typo-4", "typo-12", "typo-13", "mobile-20", "mobile-22", "mobile-23"] },
   { label: "Media size and crops", ruleIds: ["layout-14", "layout-13"] },
 ]);
 /** Build and review theme palettes so text, controls, focus indicators, and surface edges stay discernible. */

@@ -20,7 +20,8 @@
         "axiomui-forms",
         "axiomui-system",
         "axiomui-motion",
-        "axiomui-accessibility"
+        "axiomui-accessibility",
+        "axiomui-mobile"
       ],
       "title": "Domains"
     }

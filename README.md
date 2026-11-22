@@ -8,15 +8,15 @@ A visual field guide for making interfaces feel right. Compare what works with w
 
 ## What’s in V2
 
-- **108 curated UI decisions**, each with a Do/Don’t example and an authored deep dive.
+- **138 curated UI decisions**, each with a Do/Don’t example and an authored deep dive.
 - **Interactive comparisons**: view static examples together or flip between them, zoom in, and try live demos for motion and interaction rules.
 - **Search and collections**: find a rule, browse the Accessibility or Live demos collection, and move through the matching rules without losing your place.
 - **Desktop and phone navigation**: a category rail on desktop; dedicated menu, search and rule navigation on phones, with touch-friendly comparison controls.
 - **A redesigned deep-dive panel**: the desktop panel slides into place without a second layout jump, and the narrower layout reveals the explanation below the comparison. Keyboard toggles and reduced-motion mode stay instant.
 - **Light and dark themes**, keyboard navigation, shortcut preferences and reduced-motion handling.
-- **11 complete agent skills**, plus Markdown and JSON exports generated from the same ruleset.
+- **12 complete agent skills**, plus Markdown and JSON exports generated from the same ruleset.
 
-The underlying data retains eight categories. The browser groups the catalog into seven sections and presents Accessibility as a cross-category collection. Skill coverage and the browser’s section counts therefore do not always match one-to-one.
+The underlying data has nine categories. The browser groups the catalog into eight sections and presents Accessibility as a cross-category collection. Skill coverage and the browser’s section counts therefore do not always match one-to-one.
 
 These are practical guidelines with context, not universal laws. The deep dives explain why a pattern works, what breaks, how to apply it and what to review before making an exception.
 
@@ -59,9 +59,9 @@ Choose all skills or install only the ones you need. The three core skills each 
 <!-- skills:start -->
 | Skill | Group | Rules | What it covers | Install on its own |
 |---|---|---|---|---|
-| `axiomui` | Core | 112 | Every Axiom UI rule, indexed by domain, with full reasoning one file away. | `npx skills add RexO77/axiomUI --skill axiomui` |
-| `axiomui-website-upgrade` | Core | 112 | A step-by-step guide to improving an existing interface in code using Axiom UI rules. | `npx skills add RexO77/axiomUI --skill axiomui-website-upgrade` |
-| `axiomui-audit` | Core | 112 | A read-only design review where every finding cites a rule, a location and a fix. | `npx skills add RexO77/axiomUI --skill axiomui-audit` |
+| `axiomui` | Core | 138 | Every Axiom UI rule, indexed by domain, with full reasoning one file away. | `npx skills add RexO77/axiomUI --skill axiomui` |
+| `axiomui-website-upgrade` | Core | 138 | A step-by-step guide to improving an existing interface in code using Axiom UI rules. | `npx skills add RexO77/axiomUI --skill axiomui-website-upgrade` |
+| `axiomui-audit` | Core | 138 | A read-only design review where every finding cites a rule, a location and a fix. | `npx skills add RexO77/axiomUI --skill axiomui-audit` |
 | `axiomui-typography` | Domain | 17 | Interface text, from labels and display headings to long passages and mixed-direction names. | `npx skills add RexO77/axiomUI --skill axiomui-typography` |
 | `axiomui-layout` | Domain | 15 | Grouping, measure, padding, alignment, sticky headers, media space, crops and reflow. | `npx skills add RexO77/axiomUI --skill axiomui-layout` |
 | `axiomui-color` | Domain | 9 | Accent and status roles, text and control contrast, hover feedback, dark themes and elevation. | `npx skills add RexO77/axiomUI --skill axiomui-color` |
@@ -70,6 +70,7 @@ Choose all skills or install only the ones you need. The three core skills each 
 | `axiomui-system` | Domain | 14 | Loading, empty states, error recovery, return to results, hit areas, keyboard, reflow and motion. | `npx skills add RexO77/axiomUI --skill axiomui-system` |
 | `axiomui-motion` | Domain | 26 | Timing, easing, interruption, gestures, reduced motion and browser animation performance. | `npx skills add RexO77/axiomUI --skill axiomui-motion` |
 | `axiomui-accessibility` | Domain | 23 | Keyboard focus, targets, contrast, links, headings, drag alternatives, pause controls and reflow. | `npx skills add RexO77/axiomUI --skill axiomui-accessibility` |
+| `axiomui-mobile` | Domain | 30 | Phone layouts, touch input, navigation, sheets, text size and feedback. | `npx skills add RexO77/axiomUI --skill axiomui-mobile` |
 <!-- skills:end -->
 
 The standalone `axiomui` npm installer is **not published yet**. For its source commands and local package workflow, see [`packages/axiomui/README.md`](packages/axiomui/README.md). Installing the GitHub skills does not require that package to be published.

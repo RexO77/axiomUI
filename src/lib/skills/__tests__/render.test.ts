@@ -187,7 +187,7 @@ describe("renderSkillsTree", () => {
     const templateDir = path.join(repoRoot, "src/lib/skills/templates");
     for (const file of readdirSync(templateDir).filter((name) => name.endsWith(".md"))) {
       const content = readFileSync(path.join(templateDir, file), "utf8");
-      for (const [id] of content.matchAll(/\b(?:typo|layout|color|comp|form|sys|motion|a11y)-\d+\b/g)) {
+      for (const [id] of content.matchAll(/\b(?:typo|layout|color|comp|form|sys|motion|a11y|mobile)-\d+\b/g)) {
         expect(Object.hasOwn(ruleAliases, id), `${file} names retired ${id}`).toBe(false);
         expect(live.has(id), `${file} names unknown ${id}`).toBe(true);
       }
@@ -234,7 +234,8 @@ describe("renderSkillsTree", () => {
       expect(current, rule.id).toContain(`- \`${rule.id}\` ${rule.title}\n`);
     }
     expect(current.split("\n").length).toBeLessThan(500);
-    expect(current.length).toBeLessThan(20_000);
+    // The index grows by one required line per rule. Bound the authored instructions separately.
+    expect(current.slice(0, current.indexOf(lookup)).length).toBeLessThan(14_000);
 
     const currentLines = current.split("\n");
     const legacyLines = legacy.split("\n");
@@ -246,7 +247,7 @@ describe("renderSkillsTree", () => {
 
   // The skills follow the English sentence-case convention they teach in typo-1.
   it("writes every heading in sentence case", () => {
-    const properNouns = new Set([..."Axiom UI".split(" "), "Do", "Don't", "WCAG", "CSS", "English", "Fitts's"]);
+    const properNouns = new Set([..."Axiom UI".split(" "), "Do", "Don't", "WCAG", "CSS", "Back", "Undo", "English", "Fitts's"]);
     const offenders: string[] = [];
     for (const [file, content] of tree) {
       if (!file.endsWith(".md") || file.endsWith("README.md")) {

@@ -108,7 +108,7 @@ type Compare = {
   hold: (on: boolean) => void;
 };
 
-export function useCompare(ruleId: string, stores: CatalogStores = catalogStores): Compare {
+export function useCompare(ruleId: string, stores: CatalogStores = catalogStores, { zoomShortcut = true } = {}): Compare {
   // The server renders the defaults; the client corrects after hydration.
   const prefs = useSyncExternalStore(stores.prefs.subscribe, stores.prefs.get, stores.prefs.server);
   const [stored, dispatch] = useReducer(flipReducer, ruleId, freshFlip);
@@ -131,7 +131,7 @@ export function useCompare(ruleId: string, stores: CatalogStores = catalogStores
   const onKeyDown = useEffectEvent((event: KeyboardEvent) => {
     const singleKeys = singleKeysOn();
     const action = shortcutAction(event, { view: "rule", singleKeys });
-    if (action === "flip" || action === "zoom") {
+    if (action === "flip" || (zoomShortcut && action === "zoom")) {
       event.preventDefault();
       if (action === "flip") setView(nextView(compareView(stores.prefs.get().mode, state)));
       else stores.writePrefs(zoomPatch(stores.prefs.get()));
