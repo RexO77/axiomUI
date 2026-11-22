@@ -13,7 +13,7 @@ import { awaitUrl, awaitView, expect, openCatalog, ruleUrl, sheetInert, test, wa
 const RULE = "motion-7";
 const position = railPosition(RULE);
 const category = railCategories.find((item) => item.id === position.category)!;
-const upName = `${category.short}, ${position.index} of ${position.total}, back to the rule list`;
+const titleName = `${category.short} ${position.index} of ${position.total}, open rules menu`;
 const sel = {
   bar: ".phone-bar",
   strip: ".bstrip",
@@ -103,40 +103,17 @@ test.describe("a phone, 390 × 844", () => {
     await awaitUrl(page, ruleUrl(target));
   });
 
-  test("Up names where you are, morphs back on a tap and cuts back from the keyboard", async ({ page }) => {
+  test("the title names the current position and All rules returns in one activation", async ({ page }) => {
     await openCatalog(page, ruleUrl(RULE));
-    const where = `${category.short} · ${position.index} of ${position.total}`;
-    const up = page.getByRole("link", { name: upName, exact: true });
-    await expect(up).toBeVisible();
-    // The visible words start the name (WCAG 2.5.3).
-    expect((await up.innerText()).replace(/\s+/g, " ").trim()).toBe(where);
-
-    await page.evaluate(() => {
-      const seen: string[] = [];
-      (window as unknown as { __vt: string[] }).__vt = seen;
-      new MutationObserver(() => {
-        const mode = document.documentElement.dataset.vt;
-        if (mode) seen.push(mode);
-      }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-vt"] });
-    });
-    await up.click();
+    const title = page.getByRole("link", { name: titleName, exact: true });
+    await expect(title).toHaveAttribute("href", wallUrl());
+    expect((await title.innerText()).replace(/\s+/g, " ").trim()).toBe(`${category.short} ${position.index} of ${position.total}`);
+    await title.click();
+    await page.locator(sel.menu).getByRole("link", { name: /^All rules/ }).click();
     await awaitView(page, "gallery");
-    expect(await page.evaluate(() => (window as unknown as { __vt: string[] }).__vt)).toContain("out");
-    await expect(page.locator(sel.strip)).toHaveCount(0);
-
-    await openCatalog(page, ruleUrl(RULE));
-    await page.evaluate(() => {
-      const seen: string[] = [];
-      (window as unknown as { __vt: string[] }).__vt = seen;
-      new MutationObserver(() => {
-        const mode = document.documentElement.dataset.vt;
-        if (mode) seen.push(mode);
-      }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-vt"] });
-    });
-    await up.focus();
-    await page.keyboard.press("Enter");
-    await awaitView(page, "gallery");
-    expect(await page.evaluate(() => (window as unknown as { __vt: string[] }).__vt)).toEqual([]);
+    await expect(page.locator(sel.strip)).toBeInViewport();
+    await expect(page.locator(sel.run)).toHaveCount(0);
+    await expect(page.locator(sel.cats).getByRole("link", { name: category.short })).toHaveAttribute("aria-current", "location");
   });
 
   test("reading down tucks the category row away; reading up brings it back", async ({ page }) => {
@@ -146,6 +123,9 @@ test.describe("a phone, 390 × 844", () => {
     await expect(page.locator(".shell")).toHaveAttribute("data-chrome-min", "");
     await expect(page.locator(sel.cats)).toBeHidden();
     await expect(page.locator(sel.run)).toBeInViewport();
+    await page.locator(".shell-sheet").evaluate((sheet) => sheet.scrollBy(0, -8));
+    await page.waitForTimeout(250);
+    await expect(page.locator(".shell")).toHaveAttribute("data-chrome-min", "");
     await page.locator(".shell-sheet").evaluate((sheet) => sheet.scrollBy(0, -200));
     await expect(page.locator(".shell")).not.toHaveAttribute("data-chrome-min", "");
     await expect(page.locator(sel.cats)).toBeVisible();
@@ -153,13 +133,13 @@ test.describe("a phone, 390 × 844", () => {
 
   test("the menu traps focus, closes on Esc and gives focus back to its opener", async ({ page }) => {
     await openCatalog(page, ruleUrl(RULE));
-    const opener = page.getByRole("button", { name: "Menu", exact: true });
+    const opener = page.getByRole("link", { name: /open rules menu$/ });
     await opener.focus();
     await page.keyboard.press("Enter");
     const menu = page.locator(sel.menu);
     await expect(menu).toBeVisible();
-    await expect(opener).toHaveAttribute("aria-expanded", "true");
-    expect(await focused(page)).toEqual({ label: "Close menu", inMenu: true });
+    await expect(page.locator(".phone-loc")).toHaveAttribute("aria-expanded", "true");
+    await expect(menu.getByRole("link", { name: /^All rules/ })).toBeFocused();
     // The page behind can be neither focused nor read.
     await expect.poll(() => sheetInert(page)).toBe(true);
     await expect(page.locator(sel.bar)).toHaveAttribute("inert", "");
@@ -188,9 +168,26 @@ test.describe("a phone, 390 × 844", () => {
     await expect(opener).toBeFocused();
   });
 
+  test("Space on the title opens the menu, which marks the current category for screen readers", async ({ page }) => {
+    await openCatalog(page, ruleUrl(RULE));
+    const opener = page.getByRole("link", { name: titleName, exact: true });
+    await opener.focus();
+    const before = await page.locator(".shell-sheet").evaluate((sheet) => sheet.scrollTop);
+    await page.keyboard.press("Space");
+    const menu = page.locator(sel.menu);
+    await expect(menu).toBeVisible();
+    expect(await page.locator(".shell-sheet").evaluate((sheet) => sheet.scrollTop)).toBe(before);
+    const rows = menu.locator(".phone-jump");
+    await expect(menu.locator('.phone-jump[aria-current="true"]')).toHaveCount(1);
+    await expect(rows.filter({ hasText: category.short })).toHaveAttribute("aria-current", "true");
+    await page.keyboard.press("Escape");
+    await expect(opener).toBeFocused();
+  });
+
   test("a rule chosen in the menu opens, and the menu's focus goes to the page", async ({ page }) => {
     await openCatalog(page, ruleUrl(RULE));
-    await page.getByRole("button", { name: "Menu", exact: true }).click();
+    await page.getByRole("link", { name: /open rules menu$/ }).click();
+    await page.locator(sel.menu).getByRole("button", { name: "Browse rules and filters" }).click();
     const target = category.rules[0];
     await page.locator(sel.menu).getByRole("link", { name: target.title, exact: true }).click();
     await expect(page.locator(sel.menu)).toHaveCount(0);
@@ -200,7 +197,7 @@ test.describe("a phone, 390 × 844", () => {
 
   test("the menu's install row opens the skills dialog, and its close goes back to the menu's opener", async ({ page }) => {
     await openCatalog(page, ruleUrl(RULE));
-    const opener = page.getByRole("button", { name: "Menu", exact: true });
+    const opener = page.getByRole("link", { name: /open rules menu$/ });
     await opener.click();
     const row = page.locator(sel.menu).getByRole("button", { name: "Browse agent skills", exact: true });
     await expect(row).toBeVisible();
@@ -218,7 +215,7 @@ test.describe("a phone, 390 × 844", () => {
 
   test("leaving the phone layout closes the menu, and focus lands on the page", async ({ page }) => {
     await openCatalog(page, ruleUrl(RULE));
-    await page.getByRole("button", { name: "Menu", exact: true }).click();
+    await page.getByRole("link", { name: /open rules menu$/ }).click();
     await expect(page.locator(sel.menu)).toBeVisible();
     await page.setViewportSize({ width: 1440, height: 900 });
     await expect(page.locator(sel.menu)).toHaveCount(0);
@@ -249,6 +246,26 @@ test.describe("the run's own row", () => {
   }
 });
 
+test.describe("the wall's strip at 320px", () => {
+  test.use({ viewport: { width: 320, height: 640 } });
+
+  test("swaps the icon row for the one category button, a 44px target that opens the menu", async ({ page }) => {
+    await openCatalog(page, wallUrl());
+    const strip = page.locator(".gw-strip");
+    await expect(strip.locator(sel.cats)).toBeHidden();
+    const solo = strip.locator(sel.solo);
+    await expect(solo).toBeVisible();
+    const target = await solo.boundingBox();
+    expect(target!.width).toBeGreaterThanOrEqual(44);
+    expect(target!.height).toBeGreaterThanOrEqual(44);
+    await solo.click();
+    await expect(page.locator(sel.menu)).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(solo).toBeFocused();
+    expect(await sideways(page)).toEqual({ page: 0, sheet: 0 });
+  });
+});
+
 test.describe("a phone held sideways, 844 × 390", () => {
   test.use({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true });
 
@@ -256,7 +273,7 @@ test.describe("a phone held sideways, 844 × 390", () => {
     await openCatalog(page, ruleUrl(RULE));
     await expect(page.locator(sel.bar)).toBeVisible();
     await expect(page.locator(sel.cats)).toBeHidden();
-    expect((await box(page, sel.bar)).height).toBe(40);
+    expect((await box(page, sel.bar)).height).toBe(44);
     expect(await sideways(page)).toEqual({ page: 0, sheet: 0 });
 
     await page.locator(".shell-sheet").evaluate((sheet) => sheet.scrollBy(0, 300));
@@ -293,6 +310,18 @@ test.describe("a phone held sideways, 844 × 390", () => {
     await page.mouse.move(run.x + run.width / 2, run.y - 80);
     await page.mouse.up();
     await awaitUrl(page, ruleUrl(RULE));
+  });
+
+  test("the wall keeps only the capsule at the bottom, as a rule drops its category row", async ({ page }) => {
+    await openCatalog(page, wallUrl());
+    await expect(page.locator(".gw-strip")).toBeHidden();
+    const capsule = page.locator(".gw-capsule");
+    await expect(capsule).toBeInViewport({ ratio: 1 });
+    // Reading down leaves the capsule where it is.
+    await page.locator(".shell-wall").evaluate((wall) => wall.scrollBy(0, 600));
+    await expect(page.locator(".shell")).toHaveAttribute("data-chrome-min", "");
+    await page.waitForTimeout(250);
+    await expect(capsule).toBeInViewport({ ratio: 1 });
   });
 
   test("a touch that starts up or down scrolls the rule; one that starts sideways scrubs", async ({ page }) => {
@@ -348,7 +377,7 @@ test.describe("with JavaScript off", () => {
     await expect(page.locator(".shell-rail")).toBeHidden();
     await expect(page.locator(sel.strip)).toBeVisible();
     await expect(page.locator(sel.cats)).toBeVisible();
-    expect((await box(page, ".shell-sheet")).y).toBe(48);
+    expect((await box(page, ".shell-rule")).y).toBe(52);
     const run = await box(page, sel.run);
     const marks = page.locator(sel.mark);
     await expect(marks).toHaveCount(category.rules.length);
@@ -359,6 +388,6 @@ test.describe("with JavaScript off", () => {
     expect(last.x + last.width).toBeLessThanOrEqual(run.x + run.width);
     expect(first.width).toBeGreaterThan(4);
     await expect(marks.nth(1)).toHaveAttribute("href", ruleUrl(category.rules[1].id));
-    await expect(page.getByRole("link", { name: upName, exact: true })).toHaveAttribute("href", wallUrl());
+    await expect(page.getByRole("link", { name: titleName, exact: true })).toHaveAttribute("href", wallUrl());
   });
 });

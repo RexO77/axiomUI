@@ -1,186 +1,92 @@
 // design-system: strict
 "use client";
 
-/*
- * The phone menu: the expanded sidebar as a full-height sheet from the left.
- * Below 352px the strip's one category button opens it too, as the contents.
- *
- * It is modal (modal.ts): the rest of the document is inert, Tab wraps
- * inside, Esc is handled here, and focus returns to the opener after `inert`
- * lifts. The scrim closes on a tap (a click), never on touch-down, and takes
- * no gestures of its own. The sheet follows a leftward drag 1:1; a flick or a
- * drag past 40% of its width dismisses it, anything less springs back.
- *
- * Motion: in at 220ms on --ease-drawer, out at 140ms on --ease-out-strong.
- * A keyboard close and reduced motion are 0ms.
- */
+import { useLayoutEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
 
-import { X } from "@/components/ui/icons";
-import { useEffect, useRef, type ReactNode } from "react";
-
-import { AxiomLogo } from "@/components/ui/axiom-logo";
-import { prefersReducedMotion } from "@/lib/media";
+import { useWall } from "@/components/gallery/wall-context";
+import { CategoryIcon } from "@/components/ui/category-icon";
+import { Check, ChevronDown, LayoutGrid } from "@/components/ui/icons";
+import { railCategories, railCategoryOf, railOrder } from "@/data/taxonomy";
 import type { CatalogRoutes } from "@/lib/navigation/routes";
-import { siteConfig } from "@/lib/site";
 import { trapTab, useModal, type ModalSession } from "./modal";
-
-const OUT_MS = 140;
-const BACK_MS = 220;
-/** Leftward speed, in px per ms, that reads as a flick. */
-const FLICK = 0.35;
-/** A drag decides its direction after this many px. */
-const SLOP_PX = 8;
-
-type Drag = { id: number; x0: number; y0: number; dx: number; active: boolean; samples: [number, number][] };
 
 type PhoneMenuProps = {
   session: Pick<ModalSession, "isOpen" | "returnTo">;
   routes: CatalogRoutes;
-  /** The wall is on screen: the home link is the current page. */
-  atHome: boolean;
-  onHome: (origin: "pointer" | "keyboard") => void;
+  ruleId: string | null;
+  onRule: (id: string) => void;
+  onHome: (category: string | null, origin: "pointer" | "keyboard") => void;
   onClose: () => void;
-  /** The sidebar list. */
   children: ReactNode;
-  /** Rows under the list. */
-  foot?: ReactNode;
+  foot: ReactNode;
 };
 
-export function PhoneMenu({ session, routes, atHome, onHome, onClose, children, foot }: PhoneMenuProps) {
+/** The jump sheet shares the rail's full rule list, filters and settings. */
+export function PhoneMenu({ session, routes, ruleId, onRule, onHome, onClose, children, foot }: PhoneMenuProps) {
   const panel = useRef<HTMLDivElement>(null);
-  const scrim = useRef<HTMLDivElement>(null);
-  const drag = useRef<Drag | null>(null);
-  const closing = useRef(false);
-  const timer = useRef(0);
+  const [browse, setBrowse] = useState(false);
+  const wall = useWall();
+  const filtered = Boolean(wall.q.trim() || wall.collection);
+  const current = ruleId ? railCategoryOf(ruleId) : null;
   useModal(panel, session);
-  useEffect(() => () => window.clearTimeout(timer.current), []);
+  useLayoutEffect(() => {
+    panel.current?.querySelector<HTMLElement>(".phone-jump")?.focus({ preventScroll: true });
+  }, []);
 
-  /** Slide out from wherever the sheet is, then unmount. 0ms from the keyboard or under reduced motion. */
-  const close = (animate: boolean) => {
-    const el = panel.current;
-    if (closing.current) return;
-    if (!animate || !el || prefersReducedMotion()) {
-      onClose();
-      return;
-    }
-    closing.current = true;
-    el.dataset.closing = "";
-    el.style.transition = `transform ${OUT_MS}ms var(--ease-out-strong)`;
-    el.style.transform = "translateX(calc(-100% - 16px))";
-    if (scrim.current) {
-      scrim.current.style.transition = `opacity ${OUT_MS}ms var(--ease-out-strong)`;
-      scrim.current.style.opacity = "0";
-    }
-    let done = false;
-    const finish = () => {
-      // The panel may already be gone: a route change or the phone layout ending closed it first.
-      if (done || !panel.current) return;
-      done = true;
-      window.clearTimeout(timer.current);
-      onClose();
-    };
-    el.addEventListener("transitionend", (event) => event.target === el && finish(), { once: true });
-    timer.current = window.setTimeout(finish, OUT_MS + 60);
-  };
-
-  const springBack = () => {
-    const el = panel.current;
-    if (!el) return;
-    const reduced = prefersReducedMotion();
-    el.style.transition = reduced ? "none" : `transform ${BACK_MS}ms var(--ease-drawer)`;
-    el.style.transform = "";
-    if (scrim.current) {
-      scrim.current.style.transition = reduced ? "none" : `opacity ${BACK_MS}ms var(--ease-drawer)`;
-      scrim.current.style.opacity = "";
-    }
-  };
+  function jump(event: MouseEvent<HTMLAnchorElement>, category: string | null, firstRule?: string) {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    // A filtered wall can lack this destination entirely. The canonical link
+    // loads the complete catalog and lands on the requested section or rule.
+    if (filtered && (ruleId || category)) return;
+    event.preventDefault();
+    if (filtered) wall.setFilter({ q: "", collection: null });
+    if (ruleId && firstRule) onRule(firstRule);
+    else onHome(category, event.detail === 0 ? "keyboard" : "pointer");
+  }
 
   return (
     <>
-      <div ref={scrim} data-scrim="" className="phone-scrim" aria-hidden="true" onClick={(event) => close(event.detail !== 0)} />
-      <div
-        ref={panel}
-        className="phone-menu"
-        role="dialog"
-        aria-modal="true"
-        data-shell-modal=""
-        aria-label="Rules menu"
-        tabIndex={-1}
+      <div data-scrim="" className="phone-scrim" aria-hidden="true" onClick={onClose} />
+      <div ref={panel} className="phone-menu" role="dialog" aria-modal="true" data-shell-modal="" aria-label="Rules menu"
         onKeyDown={(event) => {
           if (event.key === "Escape") {
             event.preventDefault();
             event.stopPropagation();
-            close(false);
-            return;
-          }
-          trapTab(event, event.currentTarget);
-        }}
-        onPointerDown={(event) => {
-          if (event.pointerType === "mouse" || closing.current) return;
-          drag.current = { id: event.pointerId, x0: event.clientX, y0: event.clientY, dx: 0, active: false, samples: [[event.timeStamp, event.clientX]] };
-        }}
-        onPointerMove={(event) => {
-          const d = drag.current;
-          const el = panel.current;
-          if (!d || d.id !== event.pointerId || !el) return;
-          const dx = event.clientX - d.x0;
-          const dy = event.clientY - d.y0;
-          if (!d.active) {
-            if (Math.abs(dx) < SLOP_PX && Math.abs(dy) < SLOP_PX) return;
-            // Up, down or rightwards: the list scrolls; this is not a dismiss.
-            if (Math.abs(dy) > Math.abs(dx) || dx > 0) {
-              drag.current = null;
-              return;
-            }
-            d.active = true;
-            el.setPointerCapture(event.pointerId);
-            el.style.transition = "none";
-            if (scrim.current) scrim.current.style.transition = "none";
-          }
-          d.dx = Math.min(0, dx);
-          el.style.transform = `translateX(${d.dx}px)`;
-          if (scrim.current) scrim.current.style.opacity = String(Math.max(0, 1 + d.dx / el.offsetWidth));
-          d.samples.push([event.timeStamp, event.clientX]);
-          while (d.samples.length > 2 && event.timeStamp - d.samples[0][0] > 100) d.samples.shift();
-        }}
-        onPointerUp={(event) => {
-          const d = drag.current;
-          drag.current = null;
-          const el = panel.current;
-          if (!d || d.id !== event.pointerId || !d.active || !el) return;
-          const [t0, x0] = d.samples[0];
-          const speed = event.timeStamp > t0 ? (event.clientX - x0) / (event.timeStamp - t0) : 0;
-          if (d.dx < -el.offsetWidth * 0.4 || (speed < -FLICK && d.dx < -16)) close(true);
-          else springBack();
-        }}
-        onPointerCancel={() => {
-          if (drag.current?.active) springBack();
-          drag.current = null;
-        }}
-      >
-        <div className="phone-menu-head">
-          <a
-            className="phone-menu-home"
-            href={routes.galleryHref()}
-            aria-label={`${siteConfig.name}, all rules`}
-            aria-current={atHome ? "page" : undefined}
-            onClick={(event) => {
-              if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-              event.preventDefault();
-              onHome(event.detail === 0 ? "keyboard" : "pointer");
-            }}
-          >
-            <span className="rail-logo-tile">
-              <AxiomLogo className="size-4" />
-            </span>
-            {siteConfig.name}
+            onClose();
+          } else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            const rows = [...event.currentTarget.querySelectorAll<HTMLAnchorElement>(".phone-jump")];
+            const index = rows.indexOf(document.activeElement as HTMLAnchorElement);
+            if (index < 0) return;
+            event.preventDefault();
+            rows[(index + rows.length + (event.key === "ArrowDown" ? 1 : -1)) % rows.length].focus();
+          } else trapTab(event, event.currentTarget);
+        }}>
+        <nav aria-label="Jump to">
+          <a href={routes.galleryHref({ show: wall.show })} className="phone-jump"
+            aria-current={!ruleId && !filtered ? "page" : undefined} onClick={(event) => jump(event, null)}>
+            <LayoutGrid aria-hidden="true" />
+            <span>All rules</span>
+            <span className="phone-jump-count">{railOrder.length}</span>
           </a>
-          <button type="button" className="shell-ctl phone-ctl" aria-label="Close menu" autoFocus onClick={(event) => close(event.detail !== 0)}>
-            <X aria-hidden="true" />
-          </button>
-        </div>
-        {children}
-        {foot ? <div className="phone-menu-foot">{foot}</div> : null}
+          <div className="phone-menu-divider" />
+          {railCategories.map((category) => (
+            <a key={category.id} className="phone-jump" aria-current={current === category.id ? "true" : undefined}
+              href={ruleId ? routes.ruleHref(category.rules[0].id) : routes.galleryHref({ show: wall.show, hash: category.id })}
+              onClick={(event) => jump(event, category.id, category.rules[0].id)}>
+              <CategoryIcon categoryId={category.id} className="size-5" />
+              <span>{category.short}</span>
+              {current === category.id ? <Check aria-hidden="true" className="phone-jump-check" /> : null}
+              <span className="phone-jump-count">{category.rules.length}</span>
+            </a>
+          ))}
+        </nav>
+        <div className="phone-menu-divider" />
+        <button type="button" className="phone-browse" aria-expanded={browse} onClick={() => setBrowse(!browse)}>
+          Browse rules and filters <ChevronDown aria-hidden="true" />
+        </button>
+        {browse ? children : null}
+        <div className="phone-menu-foot">{foot}</div>
+        <button type="button" className="phone-browse" onClick={onClose}>Close menu</button>
       </div>
     </>
   );

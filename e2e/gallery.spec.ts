@@ -156,6 +156,46 @@ test.describe("Do and Don't", () => {
   });
 });
 
+test("phone category icons jump to sections and follow reading position", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openCatalog(page, wallUrl());
+  const strip = page.getByRole("navigation", { name: "Jump to a section" });
+  const color = strip.getByRole("link", { name: "Color" });
+  await color.click();
+  await expect(color).toHaveAttribute("aria-current", "location");
+  await expect(page.locator("#color h2")).toBeInViewport();
+  await expect(strip).toBeInViewport({ ratio: 1 });
+
+  await page.locator("#forms h2").evaluate((heading) => heading.scrollIntoView());
+  await expect(page.locator(".shell")).toHaveAttribute("data-chrome-min", "");
+  await page.locator(".shell-wall").evaluate((wall) => wall.scrollBy(0, -64));
+  await expect(strip.getByRole("link", { name: "Forms" })).toHaveAttribute("aria-current", "location");
+  await expect(strip).toBeInViewport({ ratio: 1 });
+});
+
+test("on a collection wall the phone strip keeps the current group in view", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openCatalog(page, wallUrl({ collection: "accessibility" }));
+  const row = page.locator(".gw-strip .bstrip-cats");
+  const overflow = await row.evaluate((el) => el.scrollWidth - el.clientWidth);
+  expect(overflow, "four group labels overflow a phone").toBeGreaterThan(0);
+  const inRow = () =>
+    row.evaluate((el) => {
+      const item = el.querySelector('[aria-current="location"]');
+      if (!item) return null;
+      const a = item.getBoundingClientRect();
+      const b = el.getBoundingClientRect();
+      return a.left >= b.left - 1 && a.right <= b.right + 1;
+    });
+  await expect.poll(inRow).toBe(true);
+  await page.locator(".shell-wall").evaluate((wall) => wall.scrollTo(0, wall.scrollHeight));
+  await expect(row.locator("a").last()).toHaveAttribute("aria-current", "location");
+  await expect.poll(inRow).toBe(true);
+  await page.locator(".shell-wall").evaluate((wall) => wall.scrollTo(0, 0));
+  await expect(row.locator("a").first()).toHaveAttribute("aria-current", "location");
+  await expect.poll(inRow).toBe(true);
+});
+
 test.describe("search and collections", () => {
   test("a search hides what it leaves out, and J/K walk the rest in deck order", async ({ page }) => {
     await openCatalog(page, wallUrl());

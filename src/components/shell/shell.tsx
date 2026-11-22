@@ -134,7 +134,7 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
   );
   const openShortcuts = useCallback(() => openModal("shortcuts"), [openModal]);
 
-  /* Phones on a rule: reading down tucks the strip's category row (and, held sideways, the top bar) away. */
+  /* Only the visible reading surface drives the phone chrome. */
   const onChrome = usePhoneChrome(root, phone, currentId);
 
   /*
@@ -318,9 +318,13 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
   }, [currentId]);
 
   const onScroll = (event: UIEvent<HTMLElement>) => {
+    if (!currentId && event.target instanceof HTMLElement && event.target.classList.contains("shell-wall")) {
+      onChrome(event.target);
+      return;
+    }
     if (event.target === event.currentTarget) {
       setScrolled(event.currentTarget.scrollTop > 0);
-      onChrome(event.currentTarget);
+      if (currentId) onChrome(event.currentTarget);
     } else if (!(event.target instanceof HTMLElement) || event.target.dataset.panelRule !== currentId) return;
     if (!currentId) return;
     window.clearTimeout(saveTimer.current);
@@ -359,8 +363,10 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
     (categoryId: string | null, from: InputOrigin) => {
       peek.current?.close();
       onHome(categoryId, from);
+      const wall = sheet.current?.querySelector<HTMLElement>(".shell-wall");
+      if (view === "gallery" && wall) onChrome(wall, true);
     },
-    [onHome],
+    [onHome, onChrome, view],
   );
 
   /* Keyboard, from the shared table: bubble phase, so fields, widgets and dialogs go first. */
@@ -423,8 +429,9 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
       inputOrigin,
       openPalette,
       openShortcuts,
+      openMenu,
     }),
-    [view, currentId, deck, openRule, restorePanel, page, exit, home, onClearDeck, hrefFor, phone, scrolled, modKey, inspectorOpen, toggleInspector, singleKeys, inputOrigin, openPalette, openShortcuts],
+    [view, currentId, deck, openRule, restorePanel, page, exit, home, onClearDeck, hrefFor, phone, scrolled, modKey, inspectorOpen, toggleInspector, singleKeys, inputOrigin, openPalette, openShortcuts, openMenu],
   );
 
   /* The phone menu's list: the rail's sidebar, with the gallery's search dimming what it leaves out. */
@@ -449,10 +456,10 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
     window.setTimeout(() => openSkills(dialog), 0);
   }, [closeModal, openSkills]);
   const homeFromMenu = useCallback(
-    (from: InputOrigin) => {
+    (category: string | null, from: InputOrigin) => {
       returnInstead(sheet.current);
       closeModal();
-      home(null, from);
+      home(category, from);
     },
     [returnInstead, closeModal, home],
   );
@@ -477,7 +484,8 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
           <PhoneMenu
             session={modal}
             routes={routes}
-            atHome={view === "gallery"}
+            ruleId={currentId}
+            onRule={openFromMenu}
             onHome={homeFromMenu}
             onClose={closeModal}
             foot={

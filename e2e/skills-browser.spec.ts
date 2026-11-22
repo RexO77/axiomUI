@@ -27,7 +27,7 @@ test("the skills rail uses arrow keys and keeps the selected task when returning
 test("a phone can pick a domain and read its command without horizontal scrolling", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 640 });
   await openCatalog(page, ruleUrl("motion-6"));
-  await page.getByRole("button", { name: "Menu", exact: true }).click();
+  await page.getByRole("link", { name: /open rules menu$/ }).click();
   await page.getByRole("button", { name: "Browse agent skills", exact: true }).click();
   const dialog = page.getByRole("dialog", { name: "Agent skills" });
   const picker = dialog.getByRole("combobox", { name: "Choose a skill" });
@@ -75,7 +75,7 @@ test("retrying a failed playbook keeps focus in the reader", async ({ page }) =>
 test("the phone shows each core example before its install command and identifies the playbook download", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 640 });
   await openCatalog(page, ruleUrl("motion-6"));
-  await page.getByRole("button", { name: "Menu", exact: true }).click();
+  await page.getByRole("link", { name: /open rules menu$/ }).click();
   await page.getByRole("button", { name: "Browse agent skills", exact: true }).click();
   const dialog = page.getByRole("dialog", { name: "Agent skills" });
   const picker = dialog.getByRole("combobox", { name: "Choose a skill" });

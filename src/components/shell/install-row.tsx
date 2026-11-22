@@ -236,11 +236,7 @@ export function InstallMenuRow({ onOpen }: { onOpen: (dialog: SkillsDialogCompon
   return (
     <button type="button" className="rail-row" aria-haspopup="dialog" aria-disabled={status === "loading" || undefined}
       onClick={(event) => {
-        const row = event.currentTarget;
-        browse(row, (dialog) => {
-          // The drawer remains mounted for its exit. Dismissal wins over a late import.
-          if (!row.closest(".phone-menu[data-closing]")) onOpen(dialog);
-        });
+        browse(event.currentTarget, onOpen);
       }}>
       <SquareTerminal aria-hidden="true" />
       <span className="rail-row-label" aria-live="polite">

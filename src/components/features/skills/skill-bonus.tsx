@@ -279,8 +279,8 @@ export function SkillBonus({ open, source, onOpenChange }: SkillBonusProps = {})
       for (const [element, inert] of previousInert) element.inert = inert;
       const focusTargets = [
         returnFocusRef.current,
-        ...document.querySelectorAll<HTMLButtonElement>(
-          '.phone-bar button[aria-label="Menu"], .install-row .rail-row, button[aria-controls="mobile-menu"], button[aria-controls="desktop-sidebar"]'
+        ...document.querySelectorAll<HTMLElement>(
+          '.phone-bar a[aria-haspopup="dialog"], .install-row .rail-row, button[aria-controls="mobile-menu"], button[aria-controls="desktop-sidebar"]'
         ),
       ];
       const returnTarget = focusTargets.find((element) => element && !element.closest("[inert]") && visibleBounds(element));
