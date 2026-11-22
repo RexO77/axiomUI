@@ -10,7 +10,9 @@
 .mn-header { padding: 16px 22px; border-block: 1px solid var(--ax-line); font-size: 20px; font-weight: 650; }
 .mn-header svg { width: 26px; height: 26px; }
 .mn-main { display: flex; flex: 1; min-height: 0; min-width: 0; flex-direction: column; }
-.mn-body { padding: 28px 24px; flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; }
+/* No overscroll containment: the body rarely overflows, and a contained box
+   that cannot scroll still stops a swipe from scrolling the page. */
+.mn-body { padding: 28px 24px; flex: 1; min-height: 0; overflow: auto; }
 .mn-title { font-weight: 650; font-size: 46px; line-height: 1.06; letter-spacing: -.05em; margin: 0 0 24px; }
 .mn-subtitle { display: block; font-size: 21px; color: var(--ax-ink-secondary); margin: 0 0 10px; }
 .mn-tabbar { gap: 2px; padding: 10px 5px; justify-content: space-around; border-block-start: 1px solid var(--ax-line-strong); background: var(--ax-raised); }

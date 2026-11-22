@@ -70,3 +70,18 @@ test("on a phone the frame keeps its place across Do, Don’t and a result that 
   await page.getByRole("radio", { name: "Don’t", exact: true }).click();
   expect(await frameTop("dont")).toBe(rest);
 });
+
+for (const width of [390, 1440]) {
+  test(`a vertical scroll over the phone frame at ${width} scrolls the rule`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 844 });
+    await openCatalog(page, ruleUrl("mobile-26"));
+    const frame = page.locator(".mf-fit").first();
+    const box = await frame.boundingBox();
+    if (!box) throw new Error("the phone frame is missing");
+    const sheet = page.locator(".shell-sheet");
+    expect(await sheet.evaluate((el) => el.scrollTop)).toBe(0);
+    await page.mouse.move(box.x + box.width / 2, Math.min(box.y + box.height / 2, 700));
+    await page.mouse.wheel(0, 300);
+    await expect.poll(() => sheet.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
+  });
+}

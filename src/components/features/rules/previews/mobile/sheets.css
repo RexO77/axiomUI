@@ -35,7 +35,9 @@
 .ms-close, .ms-expand { height: 40px; min-width: 40px; color: var(--ax-ink); }
 .ms-expand { padding-inline: 8px; font-size: 16px; background: var(--ax-fill); }
 .ms-expand:disabled { color: var(--ax-ink-muted); cursor: default; }
-.ms-list, .ms-filter-list { min-height: 0; overflow: auto; overscroll-behavior: contain; }
+.ms-list, .ms-filter-list { min-height: 0; overflow: auto; }
+/* The long lists hold their flicks; the short filter list fits, so a swipe over it scrolls the page. */
+.ms-list { overscroll-behavior: contain; }
 .ms-trains { touch-action: none; cursor: grab; user-select: none; }
 .ms-trains:active { cursor: grabbing; }
 .ms-row { width: 100%; padding: 0 20px; text-align: start; font-size: 19px; }
