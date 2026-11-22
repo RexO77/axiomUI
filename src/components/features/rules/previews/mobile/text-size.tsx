@@ -7,18 +7,9 @@ import type { Rule } from "@/data/ui-logic";
 import { MobileComparison } from "./kit/comparison";
 import { PhoneFrame, Readout } from "./kit/frame";
 import { fixtureUnit } from "./kit/geometry";
-import { bodySizes, largeAndroidSizes, TypeSizeControl } from "./kit/type-size";
+import { TypeSizeControl } from "./kit/type-size";
+import { paymentRow, pickup, typeMetrics, type Platform } from "./text-size-still";
 import "./keyboard-text.css";
-
-type Platform = "iOS" | "Android" | "Browser";
-const pickup = "Pick up your parcel at the side entrance.";
-export const paymentRow = { minimum: 56, column: 160, label: "Charge to business account" } as const;
-
-function typeMetrics(platform: Platform, large: boolean) {
-  if (platform === "iOS") return { fontSize: large ? bodySizes.AX5 : bodySizes.default, lineHeight: large ? 62 : 22 };
-  if (platform === "Android") return { fontSize: large ? largeAndroidSizes[14] : 14, lineHeight: large ? largeAndroidSizes[20] : 20 };
-  return { fontSize: large ? 32 : 16, lineHeight: large ? 44 : 22 };
-}
 
 function TypePane({ side, rows, large, platform, inspect }: {
   side: Variant; rows: boolean; large: boolean; platform: Platform; inspect: boolean;
@@ -99,16 +90,4 @@ export function TextSizeComparison({ rule }: { rule: Rule }) {
       <button className="cmp-ctl" type="button" aria-pressed={inspect} onClick={() => setInspect(!inspect)}>Inspect</button>
     </>} reset={() => { setLarge(rows); setPlatform(initial); setInspect(false); setVersion(n => n + 1); }}
     render={side => <TypePane key={version} side={side} rows={rows} large={large} platform={platform} inspect={inspect} />} />;
-}
-
-export function TextSizeStill({ id, variant }: { id: string; variant: Variant }) {
-  const rows = id === "mobile-23";
-  const metrics = typeMetrics(rows ? "Android" : "iOS", rows || variant === "do");
-  return <div className="mtype-still" data-message={!rows || undefined} aria-hidden="true">
-    <div className="mtype-still-inner"><small>{rows ? "Payment method" : "Delivery update"}</small>
-      {rows ? <div className="mtype-row" style={{ minHeight: paymentRow.minimum, height: variant === "dont" ? paymentRow.minimum : undefined }}>
-        <i /><span style={{ width: paymentRow.column, fontSize: metrics.fontSize, lineHeight: metrics.lineHeight + "px" }}>{paymentRow.label}</span>
-      </div> : <div className="mtype-letter"><span style={{ fontSize: metrics.fontSize, lineHeight: metrics.lineHeight + "px" }}>{pickup}</span></div>}
-    </div>
-  </div>;
 }

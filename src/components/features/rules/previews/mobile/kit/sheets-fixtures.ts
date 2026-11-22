@@ -1,5 +1,6 @@
-const ids = ["mobile-16", "mobile-17", "mobile-18", "mobile-19"];
-export const isSheetRule = (id: string) => ids.includes(id);
+import { mobileScene } from "./scenes";
+
+export const isSheetRule = (id: string) => mobileScene(id) === "sheets";
 
 export const sheetMetrics = {
   logHeight: 240, articleStart: 260, half: 320, expanded: 568,

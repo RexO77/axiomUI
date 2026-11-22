@@ -3,30 +3,16 @@
 import { useEffect, useImperativeHandle, useLayoutEffect, useRef, useState, type CSSProperties, type MouseEvent, type Ref } from "react";
 import type { Rule } from "@/data/ui-logic";
 import type { Variant } from "@/components/features/rules/preview-primitives";
-import { Archive, ArrowLeft, Check, Pencil, Plus, TouchInteraction } from "@/components/ui/icons";
+import { Archive, ArrowLeft, Check, Pencil, Plus } from "@/components/ui/icons";
 import { MobileComparison } from "./kit/comparison";
-import { boxStyle, PhoneFrame, Readout, SystemChrome } from "./kit/frame";
+import { PhoneFrame, Readout, SystemChrome } from "./kit/frame";
 import { calibratedScale, intersection } from "./kit/geometry";
 import { composeSize, feedbackSize, priceGeometry, priceTarget } from "./kit/feedback-geometry";
 import { ScaleControl } from "./kit/inspection";
 import { useTapRecorder } from "./kit/taps";
+import { Notebook, PriceDrawing } from "./feedback-still";
 import "./mobile.css";
 import "./feedback.css";
-
-const bars = [2, 3, 3, 5, 4, 6, 7, 8, 6, 9, 8, 7, 5, 6, 5, 4, 3, 4, 2, 1];
-function PriceDrawing({ value, side, leftHand = false, nearTop = false, holding }: {
-  value: number; side: Variant; leftHand?: boolean; nearTop?: boolean; holding: boolean;
-}) {
-  const { point, bubble, pad } = priceGeometry(value, side, leftHand, nearTop);
-  return <div className="fb-drawing" aria-hidden="true">
-    {!nearTop && <div className="fb-bars">{bars.map((n, i) => <i key={i} style={{ height: n * 6 }} data-filled={i * 5 <= value} />)}</div>}
-    <div className="fb-track" style={{ top: point.y - 2 }}><i style={{ width: value + "%" }} /></div>
-    <i className="fb-knob" style={{ left: point.x, top: point.y }} />
-    <b className="fb-price" style={boxStyle(bubble)}>${value}</b>
-    <div className="fb-axis" style={{ top: point.y + 40 }}><span>$0</span><span>$100</span></div>
-    {holding && <div className="fb-pad" style={boxStyle(pad)}><TouchInteraction size={34} /></div>}
-  </div>;
-}
 
 function PricePane({ side, inspect, nearTop, leftHand, scale, calibrated, replayRef }: {
   side: Variant; inspect: boolean; nearTop: boolean; leftHand: boolean; scale?: number; calibrated: boolean; replayRef: Ref<() => void>;
@@ -58,10 +44,6 @@ function PricePane({ side, inspect, nearTop, leftHand, scale, calibrated, replay
     </PhoneFrame>
     {inspect && <Readout kind="Modelled">{overlap ? "Price overlaps the finger pad." : fixed ? "Price uses the fixed readout below the track." : "4 px between the price and the pad."} Pad width {calibrated ? "18 mm at the calibrated scale" : Math.round(pad.width) + " fixture units"}.</Readout>}
   </>;
-}
-
-function Notebook() {
-  return <div className="fb-swatch" aria-hidden="true"><div className="fb-book"><span>Field notes</span><i /></div></div>;
 }
 
 function BagPane({ side, haptics, inspect }: { side: Variant; haptics: boolean; inspect: boolean }) {
@@ -211,10 +193,4 @@ export function FeedbackComparison({ rule }: { rule: Rule }) {
     render={side => price ? <PricePane key={generation} side={side} inspect={inspect} nearTop={nearTop} leftHand={leftHand}
       calibrated={scale === "Calibrated"} scale={scale === "Fit" ? undefined : scale === "Logical 1:1" ? 1 : calibratedScale(card)} replayRef={side === "do" ? replayDo : replayDont} />
       : bag ? <BagPane key={generation} side={side} inspect={inspect} haptics={haptics} /> : <InboxPane key={generation} side={side} inspect={inspect} large={large} replayRef={side === "do" ? replayDo : replayDont} />} />;
-}
-
-export function FeedbackStill({ id, variant }: { id: string; variant: Variant }) {
-  return <div className="fb-still" aria-hidden="true">{id === "mobile-24" ? <div className="fb-mini-price"><PriceDrawing value={priceTarget} side={variant} holding /></div>
-    : id === "mobile-25" ? <div className="fb-mini-shop"><Notebook /><div><b>Field notebook</b><span className="fb-mini-add">Add to bag</span><span className="fb-confirm">{variant === "do" && <><Check size={14} />1 item in bag</>}</span></div></div>
-      : <div className="fb-mini-mail"><div className="fb-snack" data-clear={variant === "do"}><span>Message moved to the archive folder.</span><b>Undo</b></div><i className="fb-compose"><Pencil size={18} /></i></div>}</div>;
 }

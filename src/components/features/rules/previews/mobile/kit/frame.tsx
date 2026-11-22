@@ -1,11 +1,9 @@
 "use client";
 
 import { useLayoutEffect, useRef, useState, type CSSProperties, type HTMLAttributes, type ReactNode } from "react";
-import { type Box, type Host, type Profile, type Size, screenMetrics } from "./geometry";
+import { boxStyle, type Box, type Host, type Profile, type Size, screenMetrics } from "./geometry";
 
-export function boxStyle(box: Box): CSSProperties {
-  return { position: "absolute", left: box.x, top: box.y, width: box.width, height: box.height };
-}
+export { boxStyle };
 export function Readout({ kind, children }: { kind: "Measured in this pane" | "Simulated" | "Modelled"; children: ReactNode }) {
   return <p className="mf-readout"><b>{kind}</b> · {children}</p>;
 }

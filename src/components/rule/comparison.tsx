@@ -9,14 +9,13 @@ import { Ruler, ZoomIn } from "@/components/ui/icons";
 
 import { KeyboardComparison } from "@/components/features/rules/previews/mobile/keyboard";
 import { TextSizeComparison } from "@/components/features/rules/previews/mobile/text-size";
-import { isSheetRule, SheetsComparison } from "@/components/features/rules/previews/mobile/sheets";
+import { SheetsComparison } from "@/components/features/rules/previews/mobile/sheets";
 import { TouchComparison } from "@/components/features/rules/previews/mobile/touch";
-import { touchIds } from "@/components/features/rules/previews/mobile/touch-ids";
 import { NavigationComparison } from "@/components/features/rules/previews/mobile/navigation";
-import { isNavigation } from "@/components/features/rules/previews/mobile/kit/navigation-fixture";
-import { GestureComparison, isGestureRule } from "@/components/features/rules/previews/mobile/gestures";
+import { GestureComparison } from "@/components/features/rules/previews/mobile/gestures";
 import { FeedbackComparison } from "@/components/features/rules/previews/mobile/feedback";
 import { ScreenComparison } from "@/components/features/rules/previews/mobile/screen";
+import { mobileScene } from "@/components/features/rules/previews/mobile/kit/scenes";
 import { workedExampleIds } from "@/data/taxonomy";
 import { WorkedComparison } from "./worked-comparison";
 import type { Rule } from "@/data/ui-logic";
@@ -44,14 +43,16 @@ const OTHER: Record<Side, Side> = { do: "dont", dont: "do" };
 const MEASURE_DRAG_THRESHOLD = 6;
 
 export function Comparison({ rule }: { rule: Rule }) {
-  if (touchIds.includes(rule.id)) return <TouchComparison key={rule.id} rule={rule} />;
-  if (isNavigation(rule.id)) return <NavigationComparison key={rule.id} rule={rule} />;
-  if (isGestureRule(rule.id)) return <GestureComparison key={rule.id} rule={rule} />;
-  if (rule.id === "mobile-1" || rule.id === "mobile-2") return <ScreenComparison key={rule.id} rule={rule} />;
-  if (rule.id === "mobile-20" || rule.id === "mobile-21") return <KeyboardComparison key={rule.id} rule={rule} />;
-  if (rule.id === "mobile-22" || rule.id === "mobile-23") return <TextSizeComparison key={rule.id} rule={rule} />;
-  if (isSheetRule(rule.id)) return <SheetsComparison key={rule.id} rule={rule} />;
-  if (["mobile-24", "mobile-25", "mobile-26"].includes(rule.id)) return <FeedbackComparison key={rule.id} rule={rule} />;
+  switch (mobileScene(rule.id)) {
+    case "screen": return <ScreenComparison key={rule.id} rule={rule} />;
+    case "touch": return <TouchComparison key={rule.id} rule={rule} />;
+    case "navigation": return <NavigationComparison key={rule.id} rule={rule} />;
+    case "gestures": return <GestureComparison key={rule.id} rule={rule} />;
+    case "sheets": return <SheetsComparison key={rule.id} rule={rule} />;
+    case "keyboard": return <KeyboardComparison key={rule.id} rule={rule} />;
+    case "textSize": return <TextSizeComparison key={rule.id} rule={rule} />;
+    case "feedback": return <FeedbackComparison key={rule.id} rule={rule} />;
+  }
   if (workedExampleIds.includes(rule.id)) return <WorkedComparison key={rule.id} rule={rule} />;
   if (hasShowcase(rule.id) && isNativeMotion(rule.id)) return <MotionCompare ruleId={rule.id} />;
   if (hasShowcase(rule.id)) {

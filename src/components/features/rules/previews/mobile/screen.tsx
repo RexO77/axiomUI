@@ -1,6 +1,6 @@
 "use client";
 
-import { useImperativeHandle, useLayoutEffect, useRef, useState, type CSSProperties, type MouseEvent, type Ref } from "react";
+import { useImperativeHandle, useLayoutEffect, useRef, useState, type MouseEvent, type Ref } from "react";
 import { routes } from "@/lib/navigation/routes";
 import type { Rule } from "@/data/ui-logic";
 import type { Variant } from "@/components/features/rules/preview-primitives";
@@ -195,17 +195,4 @@ export function ScreenComparison({ rule }: { rule: Rule }) {
     <ScaleControl mode={scale} setMode={setScale} card={card} setCard={setCard} />
   </div>} render={side => <ScreenPane key={generation} safe={safe} side={side} settings={settings} replayRef={side === "do" ? doReplay : dontReplay}
     scale={scale === "Fit" ? undefined : scale === "Logical 1:1" ? 1 : calibratedScale(card)} />} />;
-}
-
-export function ScreenStill({ safe, variant }: { safe: boolean; variant: Variant }) {
-  const good = variant === "do";
-  const inset = safe ? screenMetrics.inset : screenMetrics.toolbar;
-  const y = safe ? payBox(windows.portrait, inset, 0, good).y : panelHeight(844, good ? "svh" : "vh", inset, "Browser") - screenMetrics.action;
-  // The still is 166 tall: the browser bar is drawn at 56 and the offset above it shrinks with it, so Continue clears the total.
-  const k = safe ? 1 : 56 / screenMetrics.toolbar;
-  return <div className="mf-still" aria-hidden="true" style={{ "--mf-still-bottom": (844 - y - screenMetrics.action) * k + "px", "--mf-still-bar": inset * k + "px" } as CSSProperties}>
-    <div className="mf-still-total"><span>1 evening ticket</span><strong>$24.00</strong></div>
-    <span className="mf-still-action">{safe ? "Pay" : "Continue"}</span>
-    <div className="mf-still-bar">{safe ? <i className="mf-home" /> : "tickets.example"}</div>
-  </div>;
 }

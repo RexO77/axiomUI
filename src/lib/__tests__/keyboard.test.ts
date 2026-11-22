@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { handleShortcut, KEYBOARD_TARGET_SELECTOR, MODAL_SELECTOR, shortcutAction, shortcuts, shouldHandle, TILE_LINK_SELECTOR, type KeyEvent } from "@/lib/navigation/keyboard";
+import { DEMO_REGION_SELECTOR, handleShortcut, KEYBOARD_TARGET_SELECTOR, MODAL_SELECTOR, shortcutAction, shortcuts, shouldHandle, TILE_LINK_SELECTOR, type KeyEvent } from "@/lib/navigation/keyboard";
 
 const event = (patch: Partial<KeyEvent> = {}): KeyEvent => ({ key: "j", ...patch });
 const target = (selector: string, result: unknown = {}) => ({ closest: (query: string) => query === selector ? result : null });
@@ -48,6 +48,16 @@ describe("shell keyboard ownership", () => {
     expect(closest).toHaveBeenCalledWith(KEYBOARD_TARGET_SELECTOR);
     // A field keeps Esc, to leave the field first.
     expect(shouldHandle(event({ key: "Escape", target: target(KEYBOARD_TARGET_SELECTOR) }))).toBe(false);
+  });
+
+  it("keeps arrows and J/K inside a demo's pane, and lets its other shortcuts through", () => {
+    const pane = element(DEMO_REGION_SELECTOR);
+    for (const [key, shiftKey] of [["ArrowLeft", false], ["ArrowRight", false], ["j", false], ["k", false], ["j", true], ["k", true]] as const) {
+      expect(shortcutAction(event({ key, shiftKey, target: pane }), { view: "rule" }), `${shiftKey ? "⇧" : ""}${key}`).toBeNull();
+    }
+    expect(shortcutAction(event({ key: "f", target: pane }), { view: "rule" })).toBe("flip");
+    expect(shortcutAction(event({ key: "Escape", target: pane }), { view: "rule" })).toBe("escape");
+    expect(shortcutAction(event({ key: "ArrowRight", target: element() }), { view: "rule" })).toBe("next");
   });
 
   it("lets single keys through from a focused radio group, which consumes only the keys it moves by", () => {

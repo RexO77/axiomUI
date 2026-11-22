@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { TouchStill } from "@/components/features/rules/previews/mobile/touch";
+import { TouchStill } from "@/components/features/rules/previews/mobile/touch-still";
 import { touchIds } from "@/components/features/rules/previews/mobile/touch-ids";
 import { rules } from "@/data/ui-logic";
 import { contains, windows } from "@/components/features/rules/previews/mobile/kit/geometry";

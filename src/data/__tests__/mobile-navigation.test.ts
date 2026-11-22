@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createElement } from "react";
 import { rules } from "../ui-logic";
-import { NavigationStill } from "@/components/features/rules/previews/mobile/navigation";
+import { NavigationStill } from "@/components/features/rules/previews/mobile/navigation-still";
 import { backGesture, current, destinations, draft, draftHistory, navigationSurface, product, windowSizes } from "@/components/features/rules/previews/mobile/kit/navigation-fixture";
 
 const rule = (n: number) => rules.find(r => r.id === "mobile-" + n)!;

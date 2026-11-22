@@ -1,11 +1,9 @@
 import { useImperativeHandle, useRef, type PointerEvent, type Ref } from "react";
 import type { Sample } from "./geometry";
+import { anchors, clamp, detents, holdTime, photoActions } from "./gesture-metrics";
 
-export const anchors = { do: 48, dont: 4 };
-export const detents = { Peek: 120, Half: 422, Full: 785 };
-export const photoActions = ["Share", "Favorite", "Delete"] as const;
-export const holdTime = 500;
-export const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+export { anchors, clamp, detents, holdTime, photoActions };
+
 export type PathName = "trim" | "vertical" | "horizontal" | "hold" | "archive" | "quick" | "slow";
 export const pathLabels: Record<PathName, string> = {
   trim: "Replay inward drag", vertical: "Replay vertical swipe", horizontal: "Replay horizontal drag",

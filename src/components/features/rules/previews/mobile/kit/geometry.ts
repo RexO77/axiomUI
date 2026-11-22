@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 export type Size = { width: number; height: number };
 export type Point = { x: number; y: number };
 export type Box = Point & Size;
@@ -62,4 +64,8 @@ export function seededOffsets(seed: number, count: number, region: "center" | "e
   let state = seed >>> 0;
   function offset() { state = (Math.imul(1664525, state) + 1013904223) >>> 0; return (state / 4294967296 * 2 - 1) * spread; }
   return Array.from({ length: count }, () => ({ x: offset(), y: offset() }));
+}
+
+export function boxStyle(box: Box): CSSProperties {
+  return { position: "absolute", left: box.x, top: box.y, width: box.width, height: box.height };
 }

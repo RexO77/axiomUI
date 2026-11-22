@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { composerGeometry, fieldSizes, focusScale } from "@/components/features/rules/previews/mobile/kit/keyboard-fields";
 import { bodySizes, largeAndroidSizes } from "@/components/features/rules/previews/mobile/kit/type-size";
-import { paymentRow } from "@/components/features/rules/previews/mobile/text-size";
+import { paymentRow } from "@/components/features/rules/previews/mobile/text-size-still";
 import { intersection, panelHeight, payBox, screenMetrics, windows } from "@/components/features/rules/previews/mobile/kit/geometry";
 import { ruleDeepDives } from "@/data/deep-dives";
 import { rules } from "@/data/ui-logic";

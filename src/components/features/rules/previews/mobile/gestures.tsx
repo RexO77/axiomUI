@@ -10,25 +10,18 @@ import { screenMetrics, windows, type Sample } from "./kit/geometry";
 import { PathReplay } from "./kit/inspection";
 import { anchors, clamp, detents, gesturePath, holdTime, pathLabels, photoActions, sheetLanding, useGestureInput,
   type PathName, type Receiver, type ReplayRef } from "./kit/gestures-path";
+import { isGestureRule, type GestureId } from "./kit/scenes";
+import { Film, Moon } from "./gestures-still";
 import "./gestures.css";
 
 const paths = {
   "mobile-12": ["trim"], "mobile-13": ["vertical", "horizontal"],
   "mobile-14": ["hold", "archive"], "mobile-15": ["quick", "slow"],
-} as const;
-type GestureId = keyof typeof paths;
-export function isGestureRule(id: string): id is GestureId { return Object.hasOwn(paths, id); }
+} as const satisfies Record<GestureId, readonly PathName[]>;
 type PaneProps = { side: Variant; inspect: boolean; replay: ReplayRef };
 const nameOf = (label: string) => label.slice(7, 8).toUpperCase() + label.slice(8);
 function Scene({ title, detail, children }: { title: string; detail?: ReactNode; children: ReactNode }) {
   return <div className="gest-card"><header className="gest-head"><strong>{title}</strong>{detail}</header>{children}</div>;
-}
-// NASA/JPL/USGS PIA00405, Galileo, 7 Dec 1992 (public domain): https://science.nasa.gov/photojournal/earths-moon
-function Moon({ className = "" }: { className?: string }) {
-  return <div role="img" aria-label="Galileo photograph of the Moon" className={"gest-moon " + className} />;
-}
-function Film({ trim, right }: { trim: number; right: boolean }) {
-  return <div aria-hidden="true" className="gest-film"><i className="gest-cut" style={{ width: trim, [right ? "right" : "left"]: 0 }} /></div>;
 }
 
 function TrimPane({ side, inspect, replay, right }: PaneProps & { right: boolean }) {
@@ -160,6 +153,13 @@ function ActionPane({ side, inspect, replay, row }: PaneProps & { row: boolean }
   function close() {
     setOpen(false); setReveal(0); returnTo.current?.focus({ preventScroll: true });
   }
+  // Undo unmounts itself: focus goes to the restored photo instead of the page.
+  const restored = useRef(false);
+  useLayoutEffect(() => {
+    if (removed || !restored.current) return;
+    restored.current = false;
+    surface.current?.focus({ preventScroll: true });
+  }, [removed]);
   const input = useGestureInput(replay, e => {
     if (e.phase === "down") {
       cancel(); active.current = true; began.current = e.time; setReveal(0);
@@ -188,7 +188,7 @@ function ActionPane({ side, inspect, replay, row }: PaneProps & { row: boolean }
       <div className="gest-photo-item" onKeyDown={e => {
         if (e.key === "Escape" && open) { e.preventDefault(); e.stopPropagation(); close(); }
       }}>
-        {removed ? <div className="gest-empty"><p>{result}</p><button className="cmp-ctl" autoFocus onClick={() => { setRemoved(false); setResult("Photo restored."); }}>Undo</button></div> : <>
+        {removed ? <div className="gest-empty"><p>{result}</p><button className="cmp-ctl" autoFocus onClick={() => { restored.current = true; setRemoved(false); setResult("Photo restored."); }}>Undo</button></div> : <>
           <div className={row ? "gest-message" : "gest-photo-surface"} ref={surface} {...input} role="group" aria-label="Lunar surface photo" onWheel={cancel}
             tabIndex={0} onContextMenu={e => { e.preventDefault(); show("Context menu", surface.current); }}
             onKeyDown={e => {
@@ -296,21 +296,4 @@ function GestureDemo({ id, rule }: { id: GestureId; rule: Rule }) {
       if (id === "mobile-14") return <ActionPane key={generation} {...props} row={path === "archive"} />;
       return <SheetPane key={generation} {...props} />;
     }} />;
-}
-
-export function GestureStill({ id, variant }: { id: GestureId; variant: Variant }) {
-  const good = variant === "do";
-  return <div className="gest-still" data-rule={id} role="img" aria-label={{
-    "mobile-12": good ? "Trimmed lunar clip" : "Back preview over the untrimmed clip",
-    "mobile-13": good ? "Article scrolled beyond the photo" : "Photo divider still at the top",
-    "mobile-14": good ? "More exposes three photo actions" : "Photo has no visible actions",
-    "mobile-15": good ? "Photo details at half height" : "Photo details back at peek",
-  }[id]}>
-    {id === "mobile-12" ? <><div className="gest-monitor"><div className="gest-library">‹ Clips</div><Moon className={good ? "" : "gest-back-left"} /></div>
-      <Film trim={anchors[variant] + (good ? 60 : 0)} right={false} /><strong>{good ? "9.0 s remaining" : "Back preview"}</strong></> :
-    id === "mobile-13" ? <><div className="gest-still-article" style={{ marginTop: good ? -68 : 0 }}><strong>Reading the Moon</strong>
-      <div className="gest-compare-photo"><Moon /><i className="gest-still-divider" /></div><b>The southern highlands</b><p>Bright streaks spread from Tycho.</p></div></> :
-    id === "mobile-14" ? <><Moon /><strong>Lunar surface {good && " · More"}</strong>{good && <div className="gest-menu">{photoActions.map(a => <span key={a}>{a}</span>)}</div>}</> :
-    <><Moon /><div className="gest-sheet" style={{ height: (good ? detents.Half : detents.Peek) / windows.portrait.height * 100 + "%" }}><i /><b>Photo details</b><p>Earth’s Moon · Galileo</p></div></>}
-  </div>;
 }

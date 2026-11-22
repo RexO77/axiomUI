@@ -1,7 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
-import { Archive, ArrowLeft, ArrowRight, ChevronRight, Heart, Layers, LayoutGrid, Menu, SquareStack, Users } from "@/components/ui/icons";
+import { Archive, ArrowLeft, ArrowRight, ChevronRight, Menu, SquareStack, Users } from "@/components/ui/icons";
 import type { Variant } from "@/components/features/rules/preview-primitives";
 import type { Rule } from "@/data/ui-logic";
 import { MobileComparison } from "./kit/comparison";
@@ -10,11 +10,10 @@ import { windows, type Size } from "./kit/geometry";
 import { navigate, startHistory, type NavigationEvent } from "./kit/navigation";
 import { backGesture, cafe, current, destinations, details, draft, draftHistory, inbox, navigationSurface, product, shopTabs, tabHistories, windowSizes, type Destination } from "./kit/navigation-fixture";
 import { useTapRecorder } from "./kit/taps";
+import { Atlas, Tabs, type Tab } from "./navigation-still";
 import "./mobile.css";
 import "./navigation.css";
 
-const icons = { Home: LayoutGrid, Saved: Heart, Orders: Archive, Account: Users, Shop: SquareStack, Bag: Archive };
-type Tab = keyof typeof icons;
 
 
 function useTabs<T extends Tab>(tabs: readonly T[], initial: T, retain = true) {
@@ -29,23 +28,6 @@ function useTabs<T extends Tab>(tabs: readonly T[], initial: T, retain = true) {
     setHistories(old => ({ ...old, [selected]: navigate(old[selected], event) }));
   }
   return { selected, select, entry: current(histories[selected]), dispatch };
-}
-
-function Tabs<T extends Tab>({ tabs, selected, onSelect }: {
-  tabs: readonly T[]; selected: T; onSelect?: (tab: T, event: MouseEvent<HTMLButtonElement>) => void;
-}) {
-  return <div className="mn-tabbar" role={onSelect ? "group" : undefined} aria-label={onSelect ? "Destinations" : undefined}>
-    {tabs.map(tab => {
-      const Icon: typeof Archive = icons[tab];
-      const label = <><Icon aria-hidden="true" />{tab}</>;
-      return onSelect ? <button type="button" className="mn-tab" key={tab} data-receiver={tab} aria-current={selected === tab ? "page" : undefined} onClick={e => onSelect(tab, e)}>{label}</button>
-        : <span className="mn-tab" data-active={selected === tab} key={tab}>{label}</span>;
-    })}
-  </div>;
-}
-
-function Atlas() {
-  return <div className="mn-shelf" aria-hidden="true"><div className="mn-book"><b>Pocket<br />atlas</b><Layers /></div></div>;
 }
 
 function StoreContent({ tab }: { tab: Destination }) {
@@ -311,25 +293,4 @@ export function NavigationComparison({ rule }: { rule: Rule }) {
       default: return <WindowPane key={generation} {...props} size={windowSizes[preset]} tabletop={tabletop} />;
     }
   }} />;
-}
-
-export function NavigationStill({ id, variant }: { id: string; variant: Variant }) {
-  const good = variant === "do";
-  let content: ReactNode;
-  switch (id) {
-    case "mobile-7":
-      content = <><div className="mn-body"><Atlas /><strong>Home</strong></div>{good ? <Tabs tabs={destinations} selected="Home" /> : <div className="mn-tabbar"><span className="mn-tab"><Menu />Menu</span></div>}</>;
-      break;
-    case "mobile-8":
-      content = <><div className="mn-detail"><small>Back in Shop</small><strong>{good ? "Pocket atlas" : "Catalog"}</strong>{good ? <div className="mn-secret">Product 18 · Returns<br />Return an unused atlas in its original sleeve.</div> : <Atlas />}</div><Tabs tabs={shopTabs} selected="Shop" /></>;
-      break;
-    case "mobile-9":
-      content = good ? <><div className="mn-map"><b className="mn-pin">Fern café</b></div><div className="mn-detail"><small>Selected pin</small><strong>Fern café</strong></div></> : <><div className="mn-body"><strong>Places</strong></div><div className="mn-dialog"><strong>Fern café</strong><p>Café details · 14 Market Lane</p></div></>;
-      break;
-    case "mobile-10":
-      content = <div className="mn-detail"><small>After canceling Back</small><strong>{good ? "Draft" : "Inbox"}</strong>{good ? <div className="mn-secret">See you<span className="mn-caret" aria-hidden="true" /> at the station.</div> : <><div className="mn-listrow">Lin Harper · Row 18</div><div className="mn-listrow">Mara Chen · Row 19</div></>}</div>;
-      break;
-    default: content = <div className="mn-layout" data-rail={!good}><Tabs tabs={destinations} selected="Saved" /><div className="mn-body"><strong>Saved</strong><Atlas /></div></div>;
-  }
-  return <div className="mn-still" aria-hidden="true">{content}</div>;
 }

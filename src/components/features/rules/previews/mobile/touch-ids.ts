@@ -1,1 +1,3 @@
-export const touchIds = ["mobile-3", "mobile-4", "mobile-5", "mobile-6"];
+import { sceneIds } from "./kit/scenes";
+
+export const touchIds = sceneIds("touch");

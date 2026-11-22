@@ -76,7 +76,7 @@ export function MobileComparison({ rule, controls, inspect, reset, render, examp
         tabIndex={0} role="group" aria-label={flip ? `Comparison, showing ${verdict[showing]}.` : "Comparison"}>
         {sides.map(side => {
           const off = flip && side !== showing;
-          return <figure key={side} className="cmp-pane mf-pane" data-side={side} inert={off} aria-hidden={off || undefined}
+          return <figure key={side} className="cmp-pane mf-pane" data-side={side} data-demo-keys="" inert={off} aria-hidden={off || undefined}
             aria-label={verdict[side]} aria-describedby={`${id}-${side}`}>
             <span className="cmp-pane-label"><VerdictLabel verdict={side} /></span>
             <div className="mf-scene">{render(side)}</div>
