@@ -133,7 +133,7 @@ function layerLines(text: string): string[] | null {
 /** One half of the controlled experiment: label chrome + mono evidence. */
 function VerdictPanel({ kind, text }: { kind: "do" | "dont"; text: string }) {
   const evidence = text.length > 80 ? `${text.slice(0, 77)}…` : text;
-  const lines = layerLines(text);
+  const lines = evidence === text ? layerLines(text) : null;
 
   return (
     <div
