@@ -168,6 +168,22 @@ test.describe("a phone, 390 × 844", () => {
     await expect(opener).toBeFocused();
   });
 
+  test("Space on the title opens the menu, which marks the current category for screen readers", async ({ page }) => {
+    await openCatalog(page, ruleUrl(RULE));
+    const opener = page.getByRole("link", { name: titleName, exact: true });
+    await opener.focus();
+    const before = await page.locator(".shell-sheet").evaluate((sheet) => sheet.scrollTop);
+    await page.keyboard.press("Space");
+    const menu = page.locator(sel.menu);
+    await expect(menu).toBeVisible();
+    expect(await page.locator(".shell-sheet").evaluate((sheet) => sheet.scrollTop)).toBe(before);
+    const rows = menu.locator(".phone-jump");
+    await expect(menu.locator('.phone-jump[aria-current="true"]')).toHaveCount(1);
+    await expect(rows.filter({ hasText: category.short })).toHaveAttribute("aria-current", "true");
+    await page.keyboard.press("Escape");
+    await expect(opener).toBeFocused();
+  });
+
   test("a rule chosen in the menu opens, and the menu's focus goes to the page", async ({ page }) => {
     await openCatalog(page, ruleUrl(RULE));
     await page.getByRole("link", { name: /open rules menu$/ }).click();
@@ -230,6 +246,26 @@ test.describe("the run's own row", () => {
   }
 });
 
+test.describe("the wall's strip at 320px", () => {
+  test.use({ viewport: { width: 320, height: 640 } });
+
+  test("swaps the icon row for the one category button, a 44px target that opens the menu", async ({ page }) => {
+    await openCatalog(page, wallUrl());
+    const strip = page.locator(".gw-strip");
+    await expect(strip.locator(sel.cats)).toBeHidden();
+    const solo = strip.locator(sel.solo);
+    await expect(solo).toBeVisible();
+    const target = await solo.boundingBox();
+    expect(target!.width).toBeGreaterThanOrEqual(44);
+    expect(target!.height).toBeGreaterThanOrEqual(44);
+    await solo.click();
+    await expect(page.locator(sel.menu)).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(solo).toBeFocused();
+    expect(await sideways(page)).toEqual({ page: 0, sheet: 0 });
+  });
+});
+
 test.describe("a phone held sideways, 844 × 390", () => {
   test.use({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true });
 
@@ -274,6 +310,18 @@ test.describe("a phone held sideways, 844 × 390", () => {
     await page.mouse.move(run.x + run.width / 2, run.y - 80);
     await page.mouse.up();
     await awaitUrl(page, ruleUrl(RULE));
+  });
+
+  test("the wall keeps only the capsule at the bottom, as a rule drops its category row", async ({ page }) => {
+    await openCatalog(page, wallUrl());
+    await expect(page.locator(".gw-strip")).toBeHidden();
+    const capsule = page.locator(".gw-capsule");
+    await expect(capsule).toBeInViewport({ ratio: 1 });
+    // Reading down leaves the capsule where it is.
+    await page.locator(".shell-wall").evaluate((wall) => wall.scrollBy(0, 600));
+    await expect(page.locator(".shell")).toHaveAttribute("data-chrome-min", "");
+    await page.waitForTimeout(250);
+    await expect(capsule).toBeInViewport({ ratio: 1 });
   });
 
   test("a touch that starts up or down scrolls the rule; one that starts sideways scrubs", async ({ page }) => {

@@ -70,12 +70,12 @@ export function PhoneMenu({ session, routes, ruleId, onRule, onHome, onClose, ch
           </a>
           <div className="phone-menu-divider" />
           {railCategories.map((category) => (
-            <a key={category.id} className="phone-jump"
+            <a key={category.id} className="phone-jump" aria-current={current === category.id ? "true" : undefined}
               href={ruleId ? routes.ruleHref(category.rules[0].id) : routes.galleryHref({ show: wall.show, hash: category.id })}
               onClick={(event) => jump(event, category.id, category.rules[0].id)}>
               <CategoryIcon categoryId={category.id} className="size-5" />
               <span>{category.short}</span>
-              {current === category.id ? <Check aria-label="Current category" className="phone-jump-check" /> : null}
+              {current === category.id ? <Check aria-hidden="true" className="phone-jump-check" /> : null}
               <span className="phone-jump-count">{category.rules.length}</span>
             </a>
           ))}

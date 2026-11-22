@@ -531,6 +531,23 @@
   .gw-capsule [role="radio"] svg { width: 16px; height: 16px; }
 }
 
+/* The shell's short and narrow phone rules, as on a rule. Its own
+   `.bstrip-cats` hides lose to the wall's grid above, so they are repeated here. */
+/* Short screens: the category row stays away. It is all the wall's strip
+   holds, so the strip goes and the capsule rides the bottom inset, unmoved
+   by reading. */
+@media (max-width: 640px) and (max-height: 420px), (pointer: coarse) and (max-height: 500px) {
+  .gw-strip.bstrip { display: none; }
+  .gw-float { padding-bottom: calc(8px + var(--safe-bottom)); }
+  .shell[data-chrome-min] .gw-float { transform: none; }
+}
+/* Under 352px the icons would fall below 44px: one category button that
+   opens the menu. A collection's labelled row keeps its widths and scrolls. */
+@media (max-width: 351.98px) {
+  .gw-strip .bstrip-cats:not([data-groups]) { display: none; }
+  .gw-strip .bstrip-solo { display: flex; margin: 0 auto; }
+}
+
 /* ── Forced colours, reduced motion, keyboard ──────────────────────── */
 
 @media (forced-colors: active) {

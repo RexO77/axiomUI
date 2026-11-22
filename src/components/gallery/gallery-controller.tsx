@@ -23,6 +23,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
 
 import { CategoryIcon } from "@/components/ui/category-icon";
+import { ChevronsUpDown } from "@/components/ui/icons";
 import { registerSheetResizer, settleSheet } from "@/components/shell/sheet-resize";
 import { useShell } from "@/components/shell/shell-context";
 import { collections } from "@/data/taxonomy";
@@ -364,6 +365,20 @@ export function GalleryController({ base, total, sections, children }: GalleryCo
     : sections.filter((section) => !wall.visible || section.ruleIds.some((id) => wall.visible?.has(id)));
 
   const empty = shown === 0;
+  const activeSection = destinations.find((section) => section.id === active) ?? destinations[0];
+
+  /* A collection's labelled row scrolls sideways: keep the current group in it. */
+  const cats = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const row = cats.current;
+    const item = row?.querySelector<HTMLElement>('[aria-current="location"]');
+    if (!row || !item || row.scrollWidth <= row.clientWidth) return;
+    const { left, right } = item.getBoundingClientRect();
+    const bounds = row.getBoundingClientRect();
+    if (left < bounds.left) row.scrollLeft -= bounds.left - left;
+    else if (right > bounds.right) row.scrollLeft += right - bounds.right;
+  }, [active, grouped]);
+
   return (
     <div ref={root} data-wall="" className="gw" data-filtered={wall.visible ? "" : undefined} data-empty={empty || undefined} onClick={onClick}>
       <Toolbar
@@ -399,7 +414,18 @@ export function GalleryController({ base, total, sections, children }: GalleryCo
         <div className="gw-float">
           <SideSwitch variant="capsule" keyHint={false} onChoose={chooseSide} />
           <nav className="bstrip gw-strip" aria-label="Jump to a section">
-            <div className="bstrip-cats" data-groups={grouped ? "" : undefined}
+            {/* Under 352px, as on a rule: the one category button that opens the menu. */}
+            {!grouped && activeSection ? (
+              <button type="button" className="bstrip-solo" aria-label={`Open rules menu, ${activeSection.short}`} aria-haspopup="dialog"
+                onClick={(event) => {
+                  event.currentTarget.focus({ preventScroll: true });
+                  shell.openMenu();
+                }}>
+                <CategoryIcon categoryId={activeSection.id} className="size-5" />
+                <ChevronsUpDown aria-hidden="true" />
+              </button>
+            ) : null}
+            <div ref={cats} className="bstrip-cats" data-groups={grouped ? "" : undefined}
               style={{ "--rail-count": destinations.length } as CSSProperties}>
               {destinations.map((section) => (
                 <a key={section.id} className="bstrip-cat" href={`#${section.id}`}
