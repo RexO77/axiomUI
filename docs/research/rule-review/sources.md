@@ -423,7 +423,7 @@ Claims: Give hover and selection separate state names. Derive them from the same
 
 Judgement: Which roles derive from the brand and which alpha values work is an interface decision. The single blue source is a local example.
 
-Disagreement: The caption's literal ‘Every state’ overreaches. Atlassian’s Color roles guidance advises against using brand tokens to communicate selection in its system. Carbon's selectable tile shows a separate inverse-border cue.
+Disagreement: Atlassian’s Color roles guidance advises against using brand tokens to communicate selection in its system. Carbon's selectable tile shows a separate inverse-border cue.
 
 ## color-11
 
@@ -827,7 +827,7 @@ Claims: After failed validation, preserve both valid and invalid submitted answe
 - [React · Validation errors with useActionState](https://react.dev/reference/react/useActionState#displaying-validation-errors-and-preserving-form-values) · practice · Shows returning submitted values with validation errors and using them as the new defaultValue after failed validation. · “Return validation errors and submitted values from the Action to display an error without clearing the affected fields.”
 - [Baymard · Retaining entered data after validation errors](https://baymard.com/research-articles/preserve-card-details-on-error) · research · Checkout usability tests document extra effort and abandonment when errors clear valid entered values. · “clearing the credit card field — regardless of where the validation error actually occurred — results in increased effort for all users.”
 
-Disagreement: W3C technique G85 makes an exception for security-related fields where redisplaying data is inappropriate, such as passwords. The rule’s phrase “every submitted answer” is broader.
+Disagreement: W3C technique G85 makes an exception for security-related fields where redisplaying data is inappropriate, such as passwords. The rule now keeps only answers people can safely review.
 
 Dropped: https://react.dev/reference/react-dom/components/form#preserving-form-values-after-an-action (The page returns 200, but this fragment does not exist. The verified replacement uses #preserve-form-values-after-an-action.)
 

@@ -550,14 +550,14 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         trigger: "replay",
         hint: "Play both examples and compare how the Saved toast appears.",
         do: {
-            caption: "The Saved toast fades in place over 220ms.",
+            caption: "With reduced motion, the Saved toast fades in place over 220ms.",
             scene: () => <ToastScene />,
             tracks: [
                 t("panel", [{ opacity: 0, transform: "translateY(0)" }, { opacity: 1, transform: "translateY(0)" }], DUR.medium),
             ],
         },
         dont: {
-            caption: "With motion on, the Saved toast slides up in 220ms.",
+            caption: "With reduced motion, the Saved toast still slides up in 220ms.",
             scene: () => <ToastScene />,
             tracks: [t("panel", kf.slideYIn("150%"), DUR.medium)],
         },
