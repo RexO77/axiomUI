@@ -68,7 +68,7 @@ function BagPane({ side, haptics, inspect }: { side: Variant; haptics: boolean; 
   return <>
     <PhoneFrame size={feedbackSize} profile="iOS" host="Browser" events={{ onPointerDownCapture: trial.begin,
       onPointerUpCapture: e => trial.end(e), onPointerCancelCapture: e => trial.end(e, true) }}>
-      <div className="fb-scene" onKeyDown={e => { if (e.key === "Escape" && open) { e.stopPropagation(); setOpen(false); bagButton.current?.focus(); } }}>
+      <div className="fb-scene" onKeyDown={e => { if (e.key === "Escape" && open) { e.stopPropagation(); setOpen(false); bagButton.current?.focus({ preventScroll: true }); } }}>
         <header className="fb-nav"><strong>Paper goods</strong><button ref={bagButton} aria-expanded={open} onClick={() => setOpen(v => !v)}>{open ? "Back to item" : "Open bag"}</button></header>
         {open ? <div className="fb-body"><h3>Your bag</h3><p>{count ? "Field notebook × " + count : "Your bag is empty."}</p></div> :
           <div className="fb-body fb-product"><Notebook /><div className="fb-product-line"><h3>Field notebook</h3><b>$12</b></div>

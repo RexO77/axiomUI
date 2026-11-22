@@ -78,7 +78,7 @@ function trap(event: KeyboardEvent<HTMLDivElement>, close: () => void) {
   const targets = [...event.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled), [tabindex="0"]')].filter(el => !el.closest("[inert]"));
   const target = event.shiftKey ? targets.at(-1) : targets[0];
   if (document.activeElement === (event.shiftKey ? targets[0] : targets.at(-1))) {
-    event.preventDefault(); target?.focus();
+    event.preventDefault(); target?.focus({ preventScroll: true });
   }
 }
 

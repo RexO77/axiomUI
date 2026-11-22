@@ -153,10 +153,13 @@ function ActionPane({ side, inspect, replay, row }: PaneProps & { row: boolean }
   function close() {
     setOpen(false); setReveal(0); returnTo.current?.focus({ preventScroll: true });
   }
-  // Undo unmounts itself: focus goes to the restored photo instead of the page.
+  // Focus follows the photo inside the scaled phone without scrolling it:
+  // to Undo when the photo goes, and back to the photo when Undo restores it.
   const restored = useRef(false);
+  const undo = useRef<HTMLButtonElement>(null);
   useLayoutEffect(() => {
-    if (removed || !restored.current) return;
+    if (removed) { undo.current?.focus({ preventScroll: true }); return; }
+    if (!restored.current) return;
     restored.current = false;
     surface.current?.focus({ preventScroll: true });
   }, [removed]);
@@ -188,7 +191,7 @@ function ActionPane({ side, inspect, replay, row }: PaneProps & { row: boolean }
       <div className="gest-photo-item" onKeyDown={e => {
         if (e.key === "Escape" && open) { e.preventDefault(); e.stopPropagation(); close(); }
       }}>
-        {removed ? <div className="gest-empty"><p>{result}</p><button className="cmp-ctl" autoFocus onClick={() => { restored.current = true; setRemoved(false); setResult("Photo restored."); }}>Undo</button></div> : <>
+        {removed ? <div className="gest-empty"><p>{result}</p><button className="cmp-ctl" ref={undo} onClick={() => { restored.current = true; setRemoved(false); setResult("Photo restored."); }}>Undo</button></div> : <>
           <div className={row ? "gest-message" : "gest-photo-surface"} ref={surface} {...input} role="group" aria-label="Lunar surface photo" onWheel={cancel}
             tabIndex={0} onContextMenu={e => { e.preventDefault(); show("Context menu", surface.current); }}
             onKeyDown={e => {

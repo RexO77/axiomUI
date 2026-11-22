@@ -68,7 +68,7 @@ function DestinationPane({ side, inspect }: PaneProps) {
     <Header>Fieldwork books</Header><StoreContent tab={tab.selected} />
     {side === "do" ? <Tabs tabs={destinations} selected={tab.selected} onSelect={choose} /> : <>
       <div className="mn-tabbar"><button className="mn-tab" ref={menuButton} data-receiver="Menu" aria-expanded={menu} onClick={e => { activate("Menu", e); setMenu(!menu); }}><Menu />Menu</button></div>
-      {menu && <div className="mn-menu" ref={firstDestination} onKeyDown={e => { if (e.key === "Escape") { e.stopPropagation(); setMenu(false); menuButton.current?.focus(); } }}>
+      {menu && <div className="mn-menu" ref={firstDestination} onKeyDown={e => { if (e.key === "Escape") { e.stopPropagation(); setMenu(false); menuButton.current?.focus({ preventScroll: true }); } }}>
         <Tabs tabs={destinations} selected={tab.selected} onSelect={choose} /></div>}
     </>}
   </Frame><p className="mf-result" role="status">{path.length ? "Measured in this pane · " + path.length + (path.length === 1 ? " activation" : " activations") + " · " + (menu ? "Menu" : tab.selected) : "Find your order from Home."}</p>
@@ -166,8 +166,8 @@ function MapPane({ side, inspect }: PaneProps) {
       if (e.key !== "Tab") return;
       const items = e.currentTarget.querySelectorAll<HTMLElement>("button:not(:disabled), input");
       const first = items[0], last = items[items.length - 1];
-      if (e.shiftKey && e.target === first) { e.preventDefault(); last.focus(); }
-      if (!e.shiftKey && e.target === last) { e.preventDefault(); first.focus(); }
+      if (e.shiftKey && e.target === first) { e.preventDefault(); last.focus({ preventScroll: true }); }
+      if (!e.shiftKey && e.target === last) { e.preventDefault(); first.focus({ preventScroll: true }); }
     }}>
       {pending ? <><h3 className="mn-title">Discard note?</h3><p>{note}</p><div className="mn-toolbar"><button className="mn-soft" ref={keep} onClick={keepNote}>Keep editing</button>
         <button className="mn-action" onClick={() => dismiss(pending, true)}>Discard</button></div></>
