@@ -45,11 +45,10 @@ export function GalleryWall({ base }: { base: string }) {
       ))}
       <p id={collection.id} className="gw-collection">
         <span>
-          {collection.name} is a collection: the {collection.ruleIds.length} rules an accessibility review needs, from
-          every category.
+          Accessibility rules appear in every category.
         </span>
         <a href={routes.galleryHref({ collection: collection.id })} data-collection={collection.id}>
-          Show the {collection.ruleIds.length} rules
+          Show {collection.ruleIds.length} accessibility rules
         </a>
       </p>
     </GalleryController>

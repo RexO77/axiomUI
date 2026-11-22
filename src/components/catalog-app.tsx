@@ -66,7 +66,7 @@ import {
 } from "@/lib/navigation/history";
 import { resolveHash } from "@/lib/navigation/hash";
 import { createRoutes, type CatalogLocation } from "@/lib/navigation/routes";
-import { runViewTransition, type TransitionHandle, type ViewTransitionElements } from "@/lib/navigation/view-transition";
+import { runViewTransition, type TransitionHandle } from "@/lib/navigation/view-transition";
 
 const ruleById = new Map(rules.map((rule) => [rule.id, rule]));
 
@@ -89,7 +89,6 @@ function ruleOf(id: string, from: CatalogLocation): CatalogLocation {
   return { view: "rule", ruleId: id, q: keep ? from.q : "", collection: keep ? from.collection : null, show: from.show };
 }
 
-/* The morph pair: a tile's frame and title, and the rule view's canvas and title. */
 const tileIn = (layer: HTMLElement | null, id: string) =>
   layer?.querySelector<HTMLElement>(`[data-rule-link][id="rule-${CSS.escape(id)}"]`) ?? null;
 const sectionIn = (layer: HTMLElement | null, id: string) =>
@@ -97,12 +96,6 @@ const sectionIn = (layer: HTMLElement | null, id: string) =>
 
 /** What the wall brings into view on arrival: a rule's tile (focused), or a category's section. */
 type Reveal = { ruleId: string; section: string | null };
-const pairOf = (root: Element | null, canvas: string, title: string): ViewTransitionElements => ({
-  canvas: root?.querySelector<HTMLElement>(canvas),
-  title: root?.querySelector<HTMLElement>(title),
-});
-const tilePair = (tile: Element | null) => pairOf(tile, "[data-tile-frame]", "[data-tile-title]");
-const stagePair = () => pairOf(document.querySelector(".shell-rule"), "[data-rule-canvas]", "[data-rule-title]");
 
 /**
  * Holds useSearchParams under its own Suspense boundary, so a prerendered
@@ -287,14 +280,12 @@ export function CatalogApp({ basePath, wall, children }: CatalogAppProps) {
   const showGallery = useCallback(
     (next: CatalogLocation, target: Reveal | null, origin: InputOrigin) => {
       pendingReveal.current = target;
-      // Only a return to the rule's own tile morphs; a category lands at once.
+      // Only a return to the rule's own tile animates; a category lands at once.
       const tile = target && !target.section ? tileIn(wallLayer.current, target.ruleId) : null;
       const animate = origin === "pointer" && tile !== null;
       morph.current = runViewTransition(() => commit(next), {
         source: animate ? "pointer" : "keyboard",
         direction: "out",
-        from: animate ? stagePair() : undefined,
-        to: animate ? () => tilePair(tile) : undefined,
         fallbackTarget: wallLayer.current,
       });
     },
@@ -315,7 +306,9 @@ export function CatalogApp({ basePath, wall, children }: CatalogAppProps) {
       holdHistory(false);
       wallWatch.current?.disconnect();
       wallWatch.current = null;
-      showGallery(waiting.below, waiting.reveal, waiting.origin);
+      // Router commits call this from a layout effect, where the keyboard
+      // exit's flushSync is illegal. A microtask still lands before paint.
+      queueMicrotask(() => showGallery(waiting.below, waiting.reveal, waiting.origin));
     };
   }, [showGallery]);
 
@@ -337,7 +330,9 @@ export function CatalogApp({ basePath, wall, children }: CatalogAppProps) {
           pendingOpen.current = null;
           commit(next);
         },
-        { source: tile ? origin : "keyboard", direction: "in", from: tilePair(tile), to: stagePair },
+        // The page changes in place: no element travels from the tile, whose
+        // scaled snapshot shimmered as it settled. The blur carries the change.
+        { source: tile ? origin : "keyboard", direction: "in" },
       );
     },
     [commit, galleryUrl, ruleUrl, supersede],
@@ -465,13 +460,28 @@ export function CatalogApp({ basePath, wall, children }: CatalogAppProps) {
     },
     [commit, galleryUrl],
   );
+  /** A filter chosen on a rule (Show only, a Shift+Enter search), applied once the exit has landed on the wall. */
+  const queuedFilter = useRef<WallFilter | null>(null);
+  const queueFilter = useCallback(
+    (patch: WallFilter) => {
+      if (locRef.current.view === "gallery" && !pendingOpen.current) setFilter(patch);
+      else queuedFilter.current = patch;
+    },
+    [setFilter],
+  );
+  useEffect(() => {
+    const patch = queuedFilter.current;
+    if (!patch || loc.view !== "gallery" || pendingOpen.current) return;
+    queuedFilter.current = null;
+    setFilter(patch);
+  }, [loc, setFilter]);
   const visible = useMemo(() => {
     const deck = deckFor(wallShown);
     return deck.kind === "catalog" ? null : new Set(deck.rules.map((rule) => rule.id));
   }, [wallShown]);
   const wallApi = useMemo<WallApi>(
-    () => ({ q: wallShown.q, collection: wallShown.collection, show: wallShown.show, visible, setFilter }),
-    [wallShown.q, wallShown.collection, wallShown.show, visible, setFilter],
+    () => ({ q: wallShown.q, collection: wallShown.collection, show: wallShown.show, visible, setFilter, queueFilter }),
+    [wallShown.q, wallShown.collection, wallShown.show, visible, setFilter, queueFilter],
   );
 
   /*

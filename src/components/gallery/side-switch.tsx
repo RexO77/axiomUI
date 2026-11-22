@@ -59,14 +59,11 @@ export type SideSwitchProps = {
 
 export function SideSwitch({ variant, keyHint, onChoose }: SideSwitchProps) {
   const side = useSide();
-  // Until hydration the switch can only show the server's "do". On a
-  // ?show=dont load gallery.css keeps it hidden for that moment, so it never
-  // contradicts the wall beside it.
   const pending = !useHydrated();
-  const control = (
+  const control = (value: GallerySide) => (
     <Segmented
       label="Show Do or Don’t examples"
-      value={side}
+      value={value}
       options={OPTIONS}
       variant={variant === "capsule" ? "capsule" : "default"}
       className={variant === "capsule" ? "gw-capsule" : undefined}
@@ -80,16 +77,19 @@ export function SideSwitch({ variant, keyHint, onChoose }: SideSwitchProps) {
           side="bottom"
           content={
             <>
-              {side === "do" ? "Show Don’ts" : "Show Dos"}
+              Switch between Do and Don’t
               {keyHint ? <Kbd className="ml-2">D</Kbd> : null}
             </>
           }
         >
-          {control}
+          {control(side)}
         </Tooltip>
       ) : (
-        control
+        control(side)
       )}
+      {/* The boot script knows the URL before React can read the store.
+          CSS exposes just the matching radio group until hydration. */}
+      {pending && <div className="gw-boot-dont">{control("dont")}</div>}
     </div>
   );
 }

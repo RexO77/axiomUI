@@ -2,13 +2,21 @@
 import {
   Accessibility,
   Activity,
+  AlertCircle,
   BoxSelect,
+  Columns2,
   Cpu,
+  FileText,
+  Keyboard,
   Layers,
   LayoutGrid,
+  Moon,
   Palette,
+  Play,
   TextCursorInput,
+  TouchInteraction,
   Type,
+  Zap,
   type AppIcon,
 } from "@/components/ui/icons";
 
@@ -23,6 +31,16 @@ const categoryIcons: Record<string, AppIcon> = {
   system: Cpu,
   motion: Activity,
   accessibility: Accessibility,
+  // Collections (taxonomy.ts): ink-muted, as they carry no category colour.
+  // Play is the wall's mark for a tile that runs.
+  live: Play,
+  keyboard: Keyboard,
+  "touch-gestures": TouchInteraction,
+  "perceived-speed": Zap,
+  "error-recovery": AlertCircle,
+  "responsive-ui": Columns2,
+  "theme-contrast": Moon,
+  "writing-labels": FileText,
 };
 
 const categoryIconColors: Record<string, string> = {

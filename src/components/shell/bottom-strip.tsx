@@ -224,7 +224,7 @@ export const BottomStrip = memo(function BottomStrip({ ruleId, routes, onContent
     browseTo(id);
     setTold(id);
     const section = railCategory(id);
-    setSaid(`${section.short}, ${section.rules.length} rules. Tap a dot.`);
+    setSaid(`${section.short}, ${section.rules.length} rules. Choose a rule.`);
   };
   const openFirst = (id: RailCategoryId) => {
     const first = railCategory(id).rules[0];
@@ -714,11 +714,11 @@ export const BottomStrip = memo(function BottomStrip({ ruleId, routes, onContent
   return (
     <>
       <Rise handle={rise} />
-      <nav className="bstrip" aria-label="Rules in this category">
+      <nav className="bstrip" aria-label="Rules">
         {toldSection ? (
           <p className="bstrip-told" aria-hidden="true">
             <CategoryIcon categoryId={toldSection.id} className="size-4" />
-            {toldSection.short} · {toldSection.rules.length} <span>tap a dot</span>
+            {toldSection.short} · {toldSection.rules.length} <span>tap a dot to open a rule</span>
           </p>
         ) : null}
         <p className="sr-only" aria-live="polite">
@@ -817,7 +817,7 @@ export const BottomStrip = memo(function BottomStrip({ ruleId, routes, onContent
           <button
             type="button"
             className="bstrip-solo"
-            aria-label={`Contents. ${currentSection.short}, ${position.index} of ${position.total}`}
+            aria-label={`Open rules menu, ${currentSection.short}, ${position.index} of ${position.total}`}
             aria-haspopup="dialog"
             onClick={(event) => {
               event.currentTarget.focus({ preventScroll: true });
@@ -841,7 +841,7 @@ export const BottomStrip = memo(function BottomStrip({ ruleId, routes, onContent
           ref={bar}
           className="bstrip-cats"
           role="group"
-          aria-label={`Categories. Showing ${section.short}; this rule is ${currentSection.short}, ${position.index} of ${position.total}.`}
+          aria-label={`Categories, showing ${section.short}`}
           style={{ "--rail-count": CAT_COUNT } as CSSProperties}
           onPointerDown={(event) => {
             tap.current = { from: browseRef.current, moved: false, done: false };

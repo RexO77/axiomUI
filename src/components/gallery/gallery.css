@@ -59,7 +59,6 @@
   font-size: 20px;
   line-height: 28px;
   font-weight: 600;
-  letter-spacing: -0.01em;
   white-space: nowrap;
 }
 .gw-count {
@@ -132,6 +131,8 @@
   background: var(--ax-surface);
   box-shadow: inset 0 0 0 1px var(--ax-line-strong), 0 0 0 2px var(--ax-ring);
 }
+/* Clicked into, the field shows it is active by its fill and edge alone; the ring is for keyboard focus. */
+:root[data-focus-origin="pointer"] .gw-search input:focus-visible { box-shadow: inset 0 0 0 1px var(--ax-line-strong); }
 .gw-search-key,
 .gw-search-clear { position: absolute; right: 7px; }
 .gw-search-clear {
@@ -148,9 +149,9 @@
 .gw-side { display: inline-flex; flex-shrink: 0; }
 .gw-side [aria-checked="true"] .gw-side-do { color: var(--ax-do); }
 .gw-side [aria-checked="true"] .gw-side-dont { color: var(--ax-dont); }
-/* Before hydration the switch can only say Do. On a ?show=dont load it waits
-   for the store rather than contradict the wall. */
-:root[data-side="dont"] .gw-side[data-pending] { visibility: hidden; }
+.gw-boot-dont,
+:root[data-side="dont"] .gw-side[data-pending] > :not(.gw-boot-dont) { display: none; }
+:root[data-side="dont"] .gw-side[data-pending] > .gw-boot-dont { display: inline-flex; }
 
 @media (hover: hover) and (pointer: fine) {
   .gw-continue:hover,
@@ -203,14 +204,14 @@
   column-gap: 8px;
   margin-bottom: 16px;
 }
-/* 16/24 600: a clear step above the 14/500 tile titles it heads. */
+/* 16/24 600: a clear step above the 14/500 tile titles it heads, in the
+   emphasis grey: it organises the wall, and the tiles under it lead. */
 .gw-section-head h2 {
   font-family: -apple-system, BlinkMacSystemFont, var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   font-size: 16px;
   line-height: 24px;
   font-weight: 600;
-  letter-spacing: -0.005em;
-  color: var(--ax-ink);
+  color: var(--ax-ink-secondary);
   text-wrap: balance;
 }
 /* The category's own coloured icon, as on the rail. Inline, so the head
@@ -390,12 +391,20 @@
 }
 :root[data-side="dont"] .gw-verdict { display: inline-flex; }
 
+/* A rule's name is never cut. It wraps to a second line, balanced so the
+   break falls between phrases, and every title holds two lines' height, so
+   frames sit on one pitch down the wall whether a row's names take one line
+   or two. The clamp is only a backstop: at the narrowest track (256px) the
+   longest title still takes two lines. */
 .gw-title {
-  display: block;
-  margin-top: 10px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  min-height: 40px;
+  margin-top: 10px;
+  text-wrap: balance;
   font-size: 14px;
   line-height: 20px;
   font-weight: 500;

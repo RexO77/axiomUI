@@ -73,7 +73,8 @@ export type ShellApi = {
   /** False when the reader turned single-key shortcuts off (WCAG 2.1.4). D, F and Z must check it. */
   singleKeys: boolean;
   inputOrigin: () => InputOrigin;
-  openPalette: () => void;
+  /** `returnTo` takes focus when the palette closes, instead of whatever had it before. */
+  openPalette: (returnTo?: HTMLElement | null) => void;
   openShortcuts: () => void;
 };
 

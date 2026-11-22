@@ -21,8 +21,6 @@ function element() {
 
 function fixture(native = true) {
   const root = element();
-  const from = { canvas: element(), title: element() };
-  const to = { canvas: element(), title: element() };
   const captures: { commit: () => void; done: ReturnType<typeof deferred>; skipTransition: ReturnType<typeof vi.fn> }[] = [];
   const sheet = { textContent: "", remove: vi.fn() };
   const append = vi.fn();
@@ -36,9 +34,7 @@ function fixture(native = true) {
     documentElement: root, head: { append }, createElement: () => sheet,
     startViewTransition: native ? startViewTransition : undefined,
   });
-  // The fixture implements the style and attribute surface the helper uses.
-  const pair = (value: typeof from) => value as unknown as { canvas: HTMLElement; title: HTMLElement };
-  return { root, from, to, captures, sheet, append, startViewTransition, pair };
+  return { root, captures, sheet, append, startViewTransition };
 }
 
 afterEach(() => {
@@ -47,51 +43,43 @@ afterEach(() => {
 });
 
 describe("shell view transitions", () => {
-  it("commits keyboard changes synchronously without names, capture, timing or fade", async () => {
+  it("commits keyboard changes synchronously without capture, timing or fade", async () => {
     const f = fixture();
     const update = vi.fn();
-    await runViewTransition(update, { source: "keyboard", reducedMotion: false, from: f.pair(f.from) }).finished;
+    await runViewTransition(update, { source: "keyboard", reducedMotion: false }).finished;
     expect(update).toHaveBeenCalledOnce();
     expect(f.startViewTransition).not.toHaveBeenCalled();
     expect(f.root.animate).not.toHaveBeenCalled();
     expect(f.append).not.toHaveBeenCalled();
     expect(f.root.getAttribute("data-vt")).toBeNull();
-    expect(f.from.canvas.style.viewTransitionName).toBe("");
   });
 
-  it.each(["in", "out"] as const)("names the snapshot pair and uses the %s duration until finished", async (direction) => {
+  it.each(["in", "out"] as const)("blurs the root through the %s duration until finished", async (direction) => {
     const f = fixture();
-    f.from.canvas.style.viewTransitionName = "previous-name";
     const update = vi.fn();
-    const handle = runViewTransition(update, { direction, reducedMotion: false, from: f.pair(f.from), to: () => f.pair(f.to) });
+    const handle = runViewTransition(update, { direction, reducedMotion: false });
     expect(f.root.getAttribute("data-vt")).toBe(direction);
-    expect(f.from.canvas.style.viewTransitionName).toBe("rule-canvas");
-    expect(f.from.title.style.viewTransitionName).toBe("rule-title");
-    expect(f.sheet.textContent).toContain(`animation-duration: ${direction === "in" ? 360 : 220}ms`);
+    expect(f.sheet.textContent).toContain(`animation-duration: ${direction === "in" ? 280 : 220}ms`);
+    expect(f.sheet.textContent).toContain("filter: blur(8px)");
+    // Only the page changes: no element is named to travel on its own.
+    expect(f.sheet.textContent).not.toMatch(/view-transition-[a-z]+\((?!root\))/);
     f.captures[0].commit();
     expect(update).toHaveBeenCalledOnce();
-    expect(f.from.canvas.style.viewTransitionName).toBe("previous-name");
-    expect(f.to.canvas.style.viewTransitionName).toBe("rule-canvas");
-    expect(f.to.title.style.viewTransitionName).toBe("rule-title");
     f.captures[0].done.resolve();
     await handle.finished;
     expect(f.root.getAttribute("data-vt")).toBeNull();
-    expect(f.to.canvas.style.viewTransitionName).toBe("");
-    expect(f.to.title.style.viewTransitionName).toBe("");
     expect(f.sheet.remove).toHaveBeenCalledOnce();
   });
 
-  it("uses a 140ms linear native root crossfade without naming a reduced-motion pair", async () => {
+  it("uses a 140ms linear native root crossfade under reduced motion", async () => {
     const f = fixture();
     const update = vi.fn();
-    const handle = runViewTransition(update, { reducedMotion: true, from: f.pair(f.from), to: () => f.pair(f.to) });
+    const handle = runViewTransition(update, { reducedMotion: true });
     expect(f.root.getAttribute("data-vt")).toBe("fade");
-    expect(f.from.canvas.style.viewTransitionName).toBe("");
-    expect(f.sheet.textContent).not.toMatch(/360ms|220ms|var\(--ease-drawer\)/);
+    expect(f.sheet.textContent).not.toMatch(/280ms|220ms|var\(--ease-out-strong\)|blur/);
     expect(f.sheet.textContent).toContain("animation-duration: 140ms");
     expect(f.sheet.textContent).toContain("animation-timing-function: linear");
     f.captures[0].commit();
-    expect(f.to.canvas.style.viewTransitionName).toBe("");
     f.captures[0].done.resolve();
     await handle.finished;
     expect(update).toHaveBeenCalledOnce();
@@ -113,10 +101,10 @@ describe("shell view transitions", () => {
     const f = fixture();
     const oldUpdate = vi.fn();
     const newUpdate = vi.fn();
-    runViewTransition(oldUpdate, { reducedMotion: false, from: f.pair(f.from) });
+    runViewTransition(oldUpdate, { reducedMotion: false });
     const handle = runViewTransition(newUpdate, { reducedMotion: false, direction: "out" });
     expect(f.captures[0].skipTransition).toHaveBeenCalledOnce();
-    expect(f.from.canvas.style.viewTransitionName).toBe("");
+    expect(f.sheet.remove).toHaveBeenCalledOnce();
     f.captures[0].commit();
     f.captures[1].commit();
     expect(oldUpdate).not.toHaveBeenCalled();
@@ -131,14 +119,13 @@ describe("shell view transitions", () => {
     await handle.finished;
   });
 
-  it("cleans names and restores an existing mode after a failed capture", async () => {
+  it("restores an existing mode and removes its timing after a failed capture", async () => {
     const f = fixture();
     f.root.setAttribute("data-vt", "theme");
-    const handle = runViewTransition(vi.fn(), { reducedMotion: false, from: f.pair(f.from) });
+    const handle = runViewTransition(vi.fn(), { reducedMotion: false });
     f.captures[0].done.reject(new Error("capture failed"));
     await expect(handle.finished).rejects.toThrow("capture failed");
     expect(f.root.getAttribute("data-vt")).toBe("theme");
-    expect(f.from.title.style.viewTransitionName).toBe("");
     expect(f.sheet.remove).toHaveBeenCalledOnce();
   });
 

@@ -4,12 +4,16 @@
 import { memo, useId, useLayoutEffect, useRef, useState, type KeyboardEvent, type RefObject } from "react";
 
 import { CategoryIcon } from "@/components/ui/category-icon";
-import { accessibilityCollection, railCategories, type RailCategory } from "@/data/taxonomy";
+import { collections, railCategories, type RailCategory } from "@/data/taxonomy";
 import { useVisited } from "@/lib/catalog/stores";
+import { prefersReducedMotion } from "@/lib/media";
 import type { CatalogRoutes } from "@/lib/navigation/routes";
-import type { PeekHandle } from "./shell-context";
+import { useWall, wallDefaults } from "@/components/gallery/wall-context";
+import { useShell, type InputOrigin, type PeekHandle } from "./shell-context";
 
 const RUN_PITCH = 6;
+/** --ease-out-strong; WAAPI cannot read a custom property. */
+const EASE_OUT_STRONG = "cubic-bezier(0.23, 1, 0.32, 1)";
 
 function MiniRun({ section, ruleId, visited, matches, peek, touch, routes, onOpen }: {
   section: RailCategory;
@@ -81,6 +85,53 @@ const skipWhileHidden = (a: ListProps, b: ListProps) => Boolean(a.hidden && b.hi
   (a.ruleId === b.ruleId && a.currentCat === b.currentCat && a.matches === b.matches &&
     a.peek === b.peek && a.hidden === b.hidden && a.touch === b.touch && a.routes === b.routes && a.onOpen === b.onOpen);
 
+/*
+ * Collections narrow the wall to a cross-category subset, so they are
+ * settings, not sections: "Show only" switches under the categories, one per
+ * collection (taxonomy.ts). One is on at a time (the wall holds one
+ * collection), and switching one on from a rule goes back to the wall first
+ * and filters it there, as search does.
+ */
+function ShowOnly({ prefix }: { prefix: string }) {
+  const wall = useWall();
+  const { view, exit, hrefFor } = useShell();
+  const apply = (collection: string | null, origin: InputOrigin) => {
+    if (wall.setFilter === wallDefaults.setFilter) {
+      const base = hrefFor("x").split("/rules/")[0] || "/";
+      window.location.assign(collection ? `${base}?collection=${collection}` : base);
+      return;
+    }
+    if (view === "gallery") {
+      wall.setFilter({ q: "", collection });
+      return;
+    }
+    wall.queueFilter({ q: "", collection });
+    exit(origin);
+  };
+  return (
+    <>
+      <p className="rail-showonly-label" id={`${prefix}-showonly`}>Show only</p>
+      <ul aria-labelledby={`${prefix}-showonly`}>
+        {collections.map((collection) => {
+          const on = wall.collection === collection.id && !wall.q.trim();
+          return (
+            <li key={collection.id}>
+              <button type="button" role="switch" aria-checked={on} className="rail-switchrow"
+                aria-label={`${collection.name}, ${collection.ruleIds.length} rules`}
+                onClick={(event) => apply(on ? null : collection.id, event.detail === 0 ? "keyboard" : "pointer")}>
+                <CategoryIcon categoryId={collection.id} />
+                <span>{collection.name}</span>
+                <span className="rail-count" aria-hidden="true">{collection.ruleIds.length}</span>
+                <span className="rail-switch" aria-hidden="true" />
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </>
+  );
+}
+
 /** The expanded rail and the phone menu. */
 export const SidebarList = memo(function SidebarList({
   ruleId, currentCat, matches = null, peek, hidden, touch = false, routes, onOpen,
@@ -142,12 +193,68 @@ export const SidebarList = memo(function SidebarList({
     row?.focus({ preventScroll: true });
   }, [ruleId, openCat, hidden]);
 
+  /*
+   * A category opening or closing: its block eases from the height it had to
+   * its new one, so the categories under it glide rather than jump, and the
+   * rules it now lists fade in down the list. Runs after the scroll effects,
+   * which read the final layout. Heights are re-read on every render, so a
+   * filter or a visit never leaves a stale starting height. Keyboard and
+   * reduced-motion changes are instant.
+   */
+  const heights = useRef(new Map<string, number>());
+  /** Height animations still running, by category, with the height each is heading for. */
+  const easing = useRef(new Map<string, { animation: Animation; to: number }>());
+  const lastOpen = useRef(openCat);
+  useLayoutEffect(() => {
+    const element = scroller.current;
+    const previous = lastOpen.current;
+    lastOpen.current = openCat;
+    const blocks = element ? [...element.querySelectorAll<HTMLElement>("li[data-category] > div")] : [];
+    const idOf = (block: HTMLElement) => block.parentElement?.dataset.category ?? "";
+    const toggled = previous !== openCat;
+    // A block still easing from the last toggle shows its animated height,
+    // which is where a reversal starts. Read it, then cancel that animation
+    // (instant toggles included) so the new content's natural height can be
+    // measured rather than the animation's.
+    const shown = new Map<string, number>();
+    if (toggled) for (const block of blocks) {
+      const live = easing.current.get(idOf(block));
+      if (!live) continue;
+      shown.set(idOf(block), block.getBoundingClientRect().height);
+      live.animation.cancel();
+      easing.current.delete(idOf(block));
+    }
+    const was = heights.current;
+    // An animation still running on a re-render reports its frame, not where the block is going.
+    heights.current = new Map(blocks.map((block) => [idOf(block), easing.current.get(idOf(block))?.to ?? block.offsetHeight]));
+    if (hidden || !toggled || prefersReducedMotion() || document.documentElement.dataset.input === "keyboard") return;
+    for (const block of blocks) {
+      const id = idOf(block);
+      if (id !== openCat && id !== previous) continue;
+      const from = shown.get(id) ?? was.get(id);
+      const to = heights.current.get(id);
+      if (from === undefined || to === undefined || Math.abs(from - to) < 1) continue;
+      const animation = block.animate([{ height: `${from}px`, overflow: "clip" }, { height: `${to}px`, overflow: "clip" }], { duration: 240, easing: EASE_OUT_STRONG });
+      easing.current.set(id, { animation, to });
+      animation.addEventListener("finish", () => {
+        if (easing.current.get(id)?.animation === animation) easing.current.delete(id);
+      });
+      if (id !== openCat) continue;
+      block.querySelectorAll<HTMLElement>(".rail-sublabel, .rail-rulerow").forEach((row, index) => {
+        // Opacity only: each row draws its own piece of the trunk, which must stay in line.
+        row.animate([{ opacity: 0 }, { opacity: 1 }], {
+          duration: 200, delay: Math.min(index, 10) * 16, easing: EASE_OUT_STRONG, fill: "backwards",
+        });
+      });
+    }
+  });
+
   const onKey = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
     const target = event.target as HTMLElement;
     const category = target.closest<HTMLLIElement>("li[data-category]");
     const button = category?.querySelector<HTMLButtonElement>(".rail-catrow");
-    const rows = [...event.currentTarget.querySelectorAll<HTMLElement>(".rail-catrow, .rail-rulerow")];
+    const rows = [...event.currentTarget.querySelectorAll<HTMLElement>(".rail-catrow, .rail-rulerow, .rail-switchrow")];
     const at = rows.indexOf(target);
     if (at < 0) return;
     if (event.key === "ArrowDown" || event.key === "ArrowUp" || event.key === "Home" || event.key === "End") {
@@ -193,7 +300,7 @@ export const SidebarList = memo(function SidebarList({
               </button>
               <div id={`${prefix}-${section.id}`}>
                 {listed ? section.groups.map((group, index) => (
-                  <div key={group.label ?? "all"}>
+                  <div key={group.label ?? "all"} className="rail-group">
                     {group.label ? <p className="rail-sublabel" id={`${prefix}-${section.id}-${index}`}>{group.label}</p> : null}
                     <ul aria-labelledby={group.label ? `${prefix}-${section.id}-${index}` : undefined}
                       aria-label={group.label ? undefined : `${section.short} rules`}>
@@ -219,7 +326,7 @@ export const SidebarList = memo(function SidebarList({
                               const bounds = event.currentTarget.getBoundingClientRect();
                               peek?.current?.hover(rule.id, bounds.top + bounds.height / 2);
                             }} onBlur={() => peek?.current?.leave()}>
-                            <span className="rail-rowdot" aria-hidden="true" />{rule.title}
+                            <span className="rail-rowtitle"><span className="rail-branch" aria-hidden="true" />{rule.title}</span>
                           </a>
                         </li>
                       ))}
@@ -230,11 +337,8 @@ export const SidebarList = memo(function SidebarList({
             </li>
           );
         })}
-        <li className="rail-collection">
-          <a className="rail-catrow" href={routes.galleryHref({ collection: accessibilityCollection.id })}>
-            <CategoryIcon categoryId="accessibility" />
-            <span>{accessibilityCollection.name} · {accessibilityCollection.ruleIds.length}</span>
-          </a>
+        <li className="rail-showonly">
+          <ShowOnly prefix={prefix} />
         </li>
       </ul>
     </div>

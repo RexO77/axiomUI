@@ -3,7 +3,7 @@ import type { ShellView } from "./routes";
 export type ShortcutAction =
   | "palette" | "filter" | "sidebar" | "next" | "previous"
   | "nextSection" | "previousSection" | "openTile" | "side"
-  | "flip" | "zoom" | "inspector" | "escape" | "shortcuts";
+  | "flip" | "zoom" | "measure" | "inspector" | "escape" | "shortcuts";
 
 export type Shortcut = {
   keys: readonly string[];
@@ -23,17 +23,18 @@ export const shortcuts: readonly Shortcut[] = [
   { keys: ["["], label: "[", gallery: "Toggle sidebar", rule: "Toggle sidebar", action: { gallery: "sidebar", rule: "sidebar" }, toggle: true },
   { keys: ["j"], label: "J", gallery: "Next rule", rule: "Next rule", action: { gallery: "next", rule: "next" }, shift: false },
   { keys: ["k"], label: "K", gallery: "Previous rule", rule: "Previous rule", action: { gallery: "previous", rule: "previous" }, shift: false },
-  { keys: ["j"], label: "⇧J", gallery: "Next category", rule: "Next category", action: { gallery: "nextSection", rule: "nextSection" }, shift: true },
-  { keys: ["k"], label: "⇧K", gallery: "Previous category", rule: "Previous category", action: { gallery: "previousSection", rule: "previousSection" }, shift: true },
+  { keys: ["j"], label: "⇧J", gallery: "Next section", rule: "Next section", action: { gallery: "nextSection", rule: "nextSection" }, shift: true },
+  { keys: ["k"], label: "⇧K", gallery: "Previous section", rule: "Previous section", action: { gallery: "previousSection", rule: "previousSection" }, shift: true },
   { keys: ["ArrowLeft"], label: "←", gallery: "", rule: "Previous rule", action: { rule: "previous" } },
   { keys: ["ArrowRight"], label: "→", gallery: "", rule: "Next rule", action: { rule: "next" } },
   { keys: ["ArrowUp", "ArrowDown"], label: "↑ / ↓", gallery: "Scroll", rule: "Scroll", action: {} },
   { keys: ["Enter"], label: "Enter", gallery: "Open rule", rule: "", action: { gallery: "openTile" } },
-  { keys: ["d"], label: "D", gallery: "Show Do or Don’t", rule: "", action: { gallery: "side" }, toggle: true },
-  { keys: ["f"], label: "F", gallery: "", rule: "Flip", action: { rule: "flip" }, toggle: true },
-  { keys: ["z"], label: "Z", gallery: "", rule: "Zoom", action: { rule: "zoom" }, toggle: true },
-  { keys: ["i"], label: "I", gallery: "", rule: "Deep dive", action: { rule: "inspector" }, toggle: true },
-  { keys: ["Escape"], label: "Esc", gallery: "Clear search", rule: "Close search, leave a field, back to all rules", action: { gallery: "escape", rule: "escape" } },
+  { keys: ["d"], label: "D", gallery: "Switch between Do and Don’t", rule: "", action: { gallery: "side" }, toggle: true },
+  { keys: ["f"], label: "F", gallery: "", rule: "Cycle through Both, Do and Don’t (static comparisons)", action: { rule: "flip" }, toggle: true },
+  { keys: ["z"], label: "Z", gallery: "", rule: "Toggle 2× zoom (static comparisons)", action: { rule: "zoom" }, toggle: true },
+  { keys: ["m"], label: "M", gallery: "", rule: "Toggle Measure (static comparisons)", action: { rule: "measure" }, toggle: true },
+  { keys: ["i"], label: "I", gallery: "", rule: "Toggle deep dive", action: { rule: "inspector" }, toggle: true },
+  { keys: ["Escape"], label: "Esc", gallery: "Clear search or collection filter", rule: "Close an overlay, exit Measure, or return to the rule list", action: { gallery: "escape", rule: "escape" } },
   { keys: ["?"], label: "?", gallery: "Shortcuts", rule: "Shortcuts", action: { gallery: "shortcuts", rule: "shortcuts" }, toggle: true },
   { keys: ["/"], label: "⌘/ / Ctrl+/", gallery: "Shortcuts", rule: "Shortcuts", action: { gallery: "shortcuts", rule: "shortcuts" }, command: true, toggle: true },
 ];

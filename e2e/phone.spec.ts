@@ -13,6 +13,7 @@ import { awaitUrl, awaitView, expect, openCatalog, ruleUrl, sheetInert, test, wa
 const RULE = "motion-7";
 const position = railPosition(RULE);
 const category = railCategories.find((item) => item.id === position.category)!;
+const upName = `${category.short}, ${position.index} of ${position.total}, back to the rule list`;
 const sel = {
   bar: ".phone-bar",
   strip: ".bstrip",
@@ -105,7 +106,7 @@ test.describe("a phone, 390 × 844", () => {
   test("Up names where you are, morphs back on a tap and cuts back from the keyboard", async ({ page }) => {
     await openCatalog(page, ruleUrl(RULE));
     const where = `${category.short} · ${position.index} of ${position.total}`;
-    const up = page.getByRole("link", { name: `${where}, back to all rules`, exact: true });
+    const up = page.getByRole("link", { name: upName, exact: true });
     await expect(up).toBeVisible();
     // The visible words start the name (WCAG 2.5.3).
     expect((await up.innerText()).replace(/\s+/g, " ").trim()).toBe(where);
@@ -201,7 +202,7 @@ test.describe("a phone, 390 × 844", () => {
     await openCatalog(page, ruleUrl(RULE));
     const opener = page.getByRole("button", { name: "Menu", exact: true });
     await opener.click();
-    const row = page.locator(sel.menu).getByRole("button", { name: "Install in your agent", exact: true });
+    const row = page.locator(sel.menu).getByRole("button", { name: "Browse agent skills", exact: true });
     await expect(row).toBeVisible();
     expect((await row.boundingBox())!.height).toBeGreaterThanOrEqual(44);
     await row.click();
@@ -358,6 +359,6 @@ test.describe("with JavaScript off", () => {
     expect(last.x + last.width).toBeLessThanOrEqual(run.x + run.width);
     expect(first.width).toBeGreaterThan(4);
     await expect(marks.nth(1)).toHaveAttribute("href", ruleUrl(category.rules[1].id));
-    await expect(page.getByRole("link", { name: /back to all rules$/ })).toHaveAttribute("href", wallUrl());
+    await expect(page.getByRole("link", { name: upName, exact: true })).toHaveAttribute("href", wallUrl());
   });
 });

@@ -25,12 +25,18 @@ export type WallApi = {
   visible: ReadonlySet<string> | null;
   /** Replace the wall's entry with this filter applied. Ignored while a rule is open. */
   setFilter: (patch: WallFilter) => void;
+  /**
+   * The same, once the wall is showing: a filter chosen on a rule waits for
+   * the exit to land. The catalog holds it, so it survives whatever asked for
+   * it (the phone menu) unmounting meanwhile.
+   */
+  queueFilter: (patch: WallFilter) => void;
 };
 
 const noop = () => {};
 
 /** Outside CatalogApp (a test render, a stray mount): the whole catalog, filters ignored. */
-export const wallDefaults: WallApi = Object.freeze({ q: "", collection: null, show: "do", visible: null, setFilter: noop });
+export const wallDefaults: WallApi = Object.freeze({ q: "", collection: null, show: "do", visible: null, setFilter: noop, queueFilter: noop });
 
 export const WallContext = createContext<WallApi>(wallDefaults);
 

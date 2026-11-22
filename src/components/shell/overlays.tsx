@@ -8,9 +8,9 @@
  * routes their keys.
  *
  * Keys, from the shared table:
- * - ⌘K / Ctrl+K opens the palette, or closes it; `/` opens it on a rule (on
- *   the wall `/` is the wall's own filter). On phones `/` opens it in either
- *   view, ahead of the wall, which shows no filter there.
+ * - ⌘K / Ctrl+K opens the palette in either view, or closes it. `/` opens it
+ *   on a rule and focuses the wall's own search field on the wall; on phones,
+ *   where the wall shows no field, `/` opens the palette in either view.
  * - `?` opens the shortcuts sheet; ⌘/ / Ctrl+/ opens it even with single
  *   keys off.
  * - While a modal is open only those two command keys act: each hands the
@@ -61,7 +61,8 @@ export function Overlays({ session }: { session: ModalSession }) {
     };
     /* Phones: `/` opens search in either view, ahead of the wall's own `/`. */
     const onSlash = (event: KeyboardEvent) => {
-      if (!phone || event.key !== "/" || event.metaKey || event.ctrlKey || isOpen()) return;
+      if (!phone) return;
+      if (event.key !== "/" || event.metaKey || event.ctrlKey || isOpen()) return;
       const gate = {
         key: event.key,
         target: event.target,
@@ -115,7 +116,6 @@ export function Overlays({ session }: { session: ModalSession }) {
    * first and filter once it is there. Without a wall to ask (a test render),
    * load the filtered wall instead.
    */
-  const pendingQuery = useRef<string | null>(null);
   const onSearch = (query: string) => {
     returnInstead(sheet.current);
     close();
@@ -127,15 +127,9 @@ export function Overlays({ session }: { session: ModalSession }) {
       wall.setFilter({ q: query, collection: null });
       return;
     }
-    pendingQuery.current = query;
+    wall.queueFilter({ q: query, collection: null });
     exit("keyboard");
   };
-  useEffect(() => {
-    const query = pendingQuery.current;
-    if (view !== "gallery" || query === null) return;
-    pendingQuery.current = null;
-    wall.setFilter({ q: query, collection: null });
-  }, [view, wall]);
 
   return (
     <>

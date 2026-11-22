@@ -86,6 +86,12 @@ export function GalleryController({ base, total, sections, children }: GalleryCo
     setSeenQ(wall.q);
     setText(wall.q);
   }
+  const [seenCollection, setSeenCollection] = useState(wall.collection);
+  if (seenCollection !== wall.collection) {
+    // A collection chosen elsewhere (the sidebar's Show only) drops typing still waiting to commit.
+    setSeenCollection(wall.collection);
+    setText(wall.q);
+  }
   const [seenOnWall, setSeenOnWall] = useState(onWall);
   if (seenOnWall !== onWall) {
     // Typing still waiting to commit is dropped when the wall goes (below): the field drops it too.
@@ -93,12 +99,13 @@ export function GalleryController({ base, total, sections, children }: GalleryCo
     if (!onWall) setText(wall.q);
   }
   const commitTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  // A query that arrives from outside (history, the palette) replaces what was
-  // typed, so a commit still pending from that typing must never land on top
-  // of it. Leaving the wall drops it too: a filter never commits behind a rule.
+  // A query or collection that arrives from outside (history, the palette,
+  // the sidebar) replaces what was typed, so a commit still pending from that
+  // typing must never land on top of it. Leaving the wall drops it too: a
+  // filter never commits behind a rule.
   useEffect(() => {
     clearTimeout(commitTimer.current);
-  }, [wall.q, onWall]);
+  }, [wall.q, wall.collection, onWall]);
   /** Set when the reader changes the filter here; a filter that arrives with the URL keeps its scroll. */
   const ownChange = useRef(false);
   const commitQuery = useCallback(
@@ -171,7 +178,7 @@ export function GalleryController({ base, total, sections, children }: GalleryCo
     (side: GallerySide) => {
       writeSide(side);
       wall.setFilter({ show: side });
-      say(side === "dont" ? "Showing Don’ts" : "Showing Dos");
+      say(side === "dont" ? "Showing Don’t examples" : "Showing Do examples");
     },
     [wall, say],
   );
@@ -390,6 +397,8 @@ export function GalleryController({ base, total, sections, children }: GalleryCo
         collection={collection ? { id: collection.id, name: collection.name } : null}
         continueRule={continueRule}
         singleKeys={shell.singleKeys}
+        modKey={shell.modKey}
+        onOpenPalette={shell.openPalette}
         searchRef={searchRef}
         chipsRef={chipsRef}
         onText={onText}
@@ -402,7 +411,7 @@ export function GalleryController({ base, total, sections, children }: GalleryCo
         {empty ? (
           <div className="gw-empty">
             <p className="gw-empty-title">No rules match “{wall.q.trim()}”</p>
-            <p>Search looks at titles, summaries, Do and Don’t lines and tags. Try one word, like “tracking”.</p>
+            <p>Try one word, like “tracking”.</p>
             <button type="button" className="gw-empty-clear" onClick={clearFilter}>
               Clear search
             </button>

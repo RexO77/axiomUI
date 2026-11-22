@@ -43,7 +43,7 @@ async function countPlays(page: Page, id: string): Promise<() => Promise<number>
 const settledRunning = (page: Page) =>
   expect.poll(() => page.evaluate(() => document.getAnimations().filter((a) => a.playState === "running").length), { timeout: 2_000 });
 
-const BORDER = ["layout-7", "a11y-2", "color-6", "color-12", "motion-8"];
+const BORDER = ["layout-7", "a11y-2", "color-6", "color-12", "comp-3", "motion-8"];
 /** A motion rule whose tile replays (an action showcase). */
 const MOTION = "motion-1";
 
@@ -53,9 +53,9 @@ test.describe("Do and Don't", () => {
     expect(await side(page)).toBe("do");
     await expect(page.locator(wall.badge("typo-1"))).toBeHidden();
     // Clock the press inside the page: keydown to the first frame that shows the badge.
-    const painted = page.evaluate(
-      (badge) =>
-        new Promise<number>((resolve) => {
+    const probe = await page.evaluateHandle(
+      (badge) => ({
+        painted: new Promise<number>((resolve) => {
           document.addEventListener(
             "keydown",
             () => {
@@ -66,10 +66,11 @@ test.describe("Do and Don't", () => {
             { capture: true, once: true },
           );
         }),
+      }),
       wall.badge("typo-1"),
     );
     await page.keyboard.press("d");
-    expect(await painted).toBeLessThan(100);
+    expect(await probe.evaluate(({ painted }) => painted)).toBeLessThan(100);
     expect(await side(page)).toBe("dont");
     await awaitUrl(page, wallUrl({ show: "dont" }));
     await expect(page.getByRole("radio", { name: "Don’t" })).toHaveAttribute("aria-checked", "true");
@@ -89,6 +90,7 @@ test.describe("Do and Don't", () => {
     // Every script the build ships comes back empty: only the inline boot script runs.
     await page.route(/\/_next\/static\/chunks\/.+\.js(?:\?|$)/, (route) => route.fulfill({ contentType: "application/javascript", body: "" }));
     await page.goto(wallUrl({ show: "dont" }));
+    await expect(page.getByRole("radio", { name: "Don’t", checked: true })).toBeVisible();
     expect(await side(page)).toBe("dont");
     await expect(page.locator(wall.badge("typo-1"))).toBeVisible();
     await expect(page.locator(`${sel.tile("typo-1")} .gw-fit[data-v="dont"]`)).toBeVisible();
@@ -99,6 +101,45 @@ test.describe("Do and Don't", () => {
       return getComputedStyle(document.querySelector("[data-tile-frame]")!, "::after").boxShadow;
     });
     expect(ring).not.toBe(plain);
+  });
+
+  test("the selection slides on pointer input and snaps on keyboard and reduced motion", async ({ page }) => {
+    await openCatalog(page, wallUrl());
+    const group = page.getByRole("radiogroup", { name: "Show Do or Don’t examples" });
+    const dont = group.getByRole("radio", { name: "Don’t" });
+    const transitions = () => group.evaluate((track) => track.getAnimations({ subtree: true })
+      .filter((animation): animation is CSSTransition => animation instanceof CSSTransition)
+      .map((animation) => animation.transitionProperty));
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send("Animation.enable");
+    await cdp.send("Animation.setPlaybackRate", { playbackRate: 0.1 });
+
+    expect(await transitions()).toEqual([]);
+    await dont.click();
+    expect(await transitions()).toEqual(expect.arrayContaining(["left", "color"]));
+    await dont.press("Home");
+    await expect(group.getByRole("radio", { name: "Do", exact: true })).toBeChecked();
+    expect(await transitions()).toEqual([]);
+
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await dont.click();
+    await expect(dont).toBeChecked();
+    expect(await transitions()).toEqual([]);
+  });
+
+  test("the pill follows its radio in RTL when a sibling grows", async ({ page }) => {
+    await openCatalog(page, wallUrl({ show: "dont" }));
+    const group = page.getByRole("radiogroup", { name: "Show Do or Don’t examples" });
+    await group.evaluate((track) => track.setAttribute("dir", "rtl"));
+    await group.getByRole("radio", { name: "Do", exact: true }).evaluate((radio) => {
+      radio.style.minWidth = "140px";
+    });
+    await expect.poll(() => group.evaluate((track) => {
+      const radio = track.querySelector('[aria-checked="true"]')!.getBoundingClientRect();
+      const pill = getComputedStyle(track, "::before");
+      return Math.abs(track.getBoundingClientRect().right - parseFloat(pill.right) - radio.right)
+        + Math.abs(parseFloat(pill.width) - radio.width);
+    })).toBeLessThan(0.1);
   });
 
   test("the phone capsule switches the side", async ({ browser }) => {
@@ -131,18 +172,21 @@ test.describe("search and collections", () => {
       await page.keyboard.press("j");
       expect(await focused(page)).toBe(id);
     }
-    await page.keyboard.press("Shift+K");
-    expect(await focused(page)).toBe("a11y-2");
-    await page.keyboard.press("Shift+K");
-    expect(await focused(page)).toBe("layout-7");
-    await page.keyboard.press("Shift+J");
-    expect(await focused(page)).toBe("a11y-2");
-    await page.keyboard.press("Shift+J");
-    expect(await focused(page)).toBe("motion-8");
+    const previousSections = ["comp-3", "a11y-2", "layout-7"];
+    for (const id of previousSections) {
+      await page.keyboard.press("Shift+K");
+      expect(await focused(page)).toBe(id);
+    }
+    for (const id of ["a11y-2", "comp-3", "motion-8"]) {
+      await page.keyboard.press("Shift+J");
+      expect(await focused(page)).toBe(id);
+    }
 
     // The rule view pages the same deck.
-    await page.keyboard.press("Shift+K");
-    await page.keyboard.press("Shift+K");
+    for (const id of previousSections) {
+      await page.keyboard.press("Shift+K");
+      expect(await focused(page)).toBe(id);
+    }
     await page.keyboard.press("Enter");
     await awaitView(page, "rule");
     await awaitUrl(page, ruleUrl("layout-7", { q: "border" }));

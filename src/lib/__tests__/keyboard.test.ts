@@ -9,18 +9,19 @@ const element = (...matches: string[]) => ({
 });
 
 describe("shell keyboard ownership", () => {
-  it("describes the visible search, rule and category actions consistently", () => {
+  it("describes the visible search, rule and section actions consistently", () => {
     const row = (label: string) => shortcuts.find((shortcut) => shortcut.label === label);
     for (const label of ["⌘K / Ctrl+K", "/"]) {
       expect(row(label)).toMatchObject({ gallery: "Search", rule: "Search" });
     }
-    for (const [label, description] of [["J", "Next rule"], ["K", "Previous rule"], ["⇧J", "Next category"], ["⇧K", "Previous category"]]) {
+    for (const [label, description] of [["J", "Next rule"], ["K", "Previous rule"], ["⇧J", "Next section"], ["⇧K", "Previous section"]]) {
       expect(row(label)).toMatchObject({ gallery: description, rule: description });
     }
     expect(row("Enter")?.gallery).toBe("Open rule");
-    expect(row("D")?.gallery).toBe("Show Do or Don’t");
-    expect(row("I")?.rule).toBe("Deep dive");
-    expect(row("Esc")).toMatchObject({ gallery: "Clear search", rule: "Close search, leave a field, back to all rules" });
+    expect(row("D")?.gallery).toBe("Switch between Do and Don’t");
+    expect(row("I")?.rule).toBe("Toggle deep dive");
+    expect(row("F")?.rule).toBe("Cycle through Both, Do and Don’t (static comparisons)");
+    expect(row("Esc")).toMatchObject({ gallery: "Clear search or collection filter", rule: "Close an overlay, exit Measure, or return to the rule list" });
   });
 
   it("omits native gallery arrow navigation from the sheet while keeping rule bindings", () => {
@@ -74,9 +75,19 @@ describe("shell keyboard ownership", () => {
     expect(shouldHandle(event({ key: "ArrowLeft", repeat: true }))).toBe(true);
   });
 
+  it("offers Measure only on rules with single-key shortcuts enabled", () => {
+    expect(shortcuts.find(({ label }) => label === "M")?.rule).toBe("Toggle Measure (static comparisons)");
+    expect(shortcutAction(event({ key: "m" }), { view: "rule" })).toBe("measure");
+    expect(shortcutAction(event({ key: "m" }), { view: "gallery" })).toBeNull();
+    expect(shortcutAction(event({ key: "m" }), { view: "rule", singleKeys: false })).toBeNull();
+    expect(shortcutAction(event({ key: "m", repeat: true }), { view: "rule" })).toBeNull();
+    expect(shortcutAction(event({ key: "m", target: element("input") }), { view: "rule" })).toBeNull();
+  });
+
   it("disables single character shortcuts, including shifted letters and punctuation", () => {
     for (const key of ["j", "J", "D", "[", "/", "?"]) expect(shouldHandle(event({ key }), { singleKeys: false })).toBe(false);
     expect(shortcutAction(event({ key: "k", ctrlKey: true }), { view: "gallery", singleKeys: false })).toBe("palette");
+    expect(shortcutAction(event({ key: "k", ctrlKey: true }), { view: "rule", singleKeys: false })).toBe("palette");
     expect(shortcutAction(event({ key: "ArrowLeft" }), { view: "rule", singleKeys: false })).toBe("previous");
   });
 

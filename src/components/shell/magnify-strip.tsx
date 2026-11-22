@@ -3,7 +3,7 @@
 
 /*
  * The collapsed rail's dot column: one mark per rule, all
- * 108, in runs per rail category, each run headed by its coloured category
+ * 112, in runs per rail category, each run headed by its coloured category
  * icon. Under the pointer it magnifies like the Dock: the column keeps its
  * length and the mark under the pointer stays under the pointer
  * (`magnifyInto`, which writes into buffers this strip owns, so a frame
@@ -66,6 +66,8 @@ const RUNS = GROUP_STARTS.map((start, group) => ({ cat: ENTRIES[start] as CatEnt
  * items of lens. PAD is room at both ends for the lens to grow into, about
  * half a lens, so the first and last marks keep its full shape.
  */
+/** How far past its resting slot the pointer goes before the lit mark lets go, in px. */
+const STICK = 3;
 const PAD = 30;
 const ICON_B = 20;
 const ACTIVE_B = 18;
@@ -140,6 +142,8 @@ const Column = memo(function Column({ initialId, initialCat, routes, peek, api, 
     mode: "idle" as "idle" | "pointer" | "keyboard",
     kb: -1,
     hot: -1,
+    /** The mark lit when a mouse press began: the one its click opens. */
+    pressed: -1,
     top: 0,
     scroll: 0,
     anim: { from: 0, to: 0, t0: 0, dur: 1 },
@@ -458,14 +462,33 @@ const Column = memo(function Column({ initialId, initialCat, routes, peek, api, 
     return k;
   };
 
+  /**
+   * The lit mark holds until the pointer is STICK px past its resting slot. A
+   * rule's slot is only ~4.5px of travel (112 marks in the column), so without
+   * it the lens slid a mark on almost every pixel.
+   */
   const pointerTo = (clientY: number) => {
     const s = st.current;
-    if (s.mode !== "pointer") {
+    // A new gesture holds nothing: the mark lit by the keyboard or a last
+    // gesture is not the one under a fresh press.
+    const fresh = s.mode !== "pointer";
+    if (fresh) {
       s.mode = "pointer";
       retarget(1, ENTER_MS);
     }
     s.cy = clientY;
-    s.p = localY(clientY);
+    let y = localY(clientY);
+    const h = s.hot;
+    if (h >= 0 && !fresh) {
+      const a = s.starts[h];
+      const b = a + s.items[h].size;
+      // Never past two thirds of a neighbour's slot: on a short desktop the
+      // pitch drops under 3px, and a full STICK would skip the next mark.
+      const above = h > 0 ? Math.min(STICK, (s.items[h - 1].size * 2) / 3) : STICK;
+      const below = h < N - 1 ? Math.min(STICK, (s.items[h + 1].size * 2) / 3) : STICK;
+      if (y >= a - above && y < b + below) y = Math.min(Math.max(y, a), b - 0.001);
+    }
+    s.p = y;
     schedule();
   };
 
@@ -556,6 +579,8 @@ const Column = memo(function Column({ initialId, initialCat, routes, peek, api, 
           pointerTo(event.clientY);
         }}
         onPointerMove={(event) => {
+          // A held mouse button freezes the lens: a slip during the press must not change what it opens.
+          if (event.pointerType === "mouse" && event.buttons & 1) return;
           if (event.pointerType === "mouse" || st.current.touch === event.pointerId) pointerTo(event.clientY);
         }}
         onPointerLeave={(event) => {
@@ -565,6 +590,8 @@ const Column = memo(function Column({ initialId, initialCat, routes, peek, api, 
           // A new press: a lift's unconsumed click can no longer arrive.
           st.current.touchOpened = false;
           if (event.pointerType === "mouse") {
+            // What the click opens is what is lit as the press starts.
+            st.current.pressed = st.current.hot;
             peek.current?.close();
             return;
           }
@@ -579,7 +606,11 @@ const Column = memo(function Column({ initialId, initialCat, routes, peek, api, 
           if (s.touch !== event.pointerId) return;
           s.touch = -1;
           s.touchOpened = true;
-          open(ENTRIES[hitIndex(event.clientY)]);
+          // Resolve this gesture now: a quick tap can lift before the frame
+          // that lights its mark, and the lit mark then is still the last one.
+          paint(performance.now());
+          // The lit mark, which at the end pads is the first or last, never nothing.
+          open(ENTRIES[s.hot >= 0 ? s.hot : hitIndex(event.clientY)]);
           release(LEAVE_MS);
         }}
         onPointerCancel={() => {
@@ -602,7 +633,11 @@ const Column = memo(function Column({ initialId, initialCat, routes, peek, api, 
             st.current.touchOpened = false;
             return;
           }
-          open(ENTRIES[hitIndex(event.clientY)]);
+          // The lit mark, even from the pads at either end, where the lens clamps to the first or last.
+          const s = st.current;
+          const lit = s.pressed >= 0 ? s.pressed : s.hot;
+          s.pressed = -1;
+          open(ENTRIES[lit >= 0 ? lit : hitIndex(event.clientY)]);
         }}
         onFocus={(event) => {
           const i = linkIndex(event.target);
@@ -645,7 +680,7 @@ const Column = memo(function Column({ initialId, initialCat, routes, peek, api, 
                   data-i={start}
                   tabIndex={start === firstStop ? 0 : -1}
                   draggable={false}
-                  aria-label={`${cat.name}, ${cat.count} rules, on the wall`}
+                  aria-label={`Browse ${cat.name}, ${cat.count} rules`}
                 />
                 <span ref={(el) => { markEls.current[start] = el; }} className="strip-cat-mark" aria-hidden="true">
                   <CategoryIcon categoryId={cat.id} className="size-3.5" />

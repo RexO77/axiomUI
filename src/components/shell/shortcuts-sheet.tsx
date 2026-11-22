@@ -74,7 +74,7 @@ export function ShortcutsSheet({ session, view, modKey, phone, onClose }: Shortc
   useModal(dialog, session);
   const { prefs } = useMemory();
   const on = prefs.singleKeys;
-  const rows = shortcuts.filter((shortcut) => shortcut[view] && !(phone && shortcut.action[view] === "sidebar"));
+  const rows = shortcuts.filter((shortcut) => shortcut[view] && !(phone && (shortcut.action[view] === "sidebar" || shortcut.action[view] === "inspector")));
   const mod = modKey.trim() === "⌘" ? "⌘" : "Ctrl+";
 
   return (
@@ -104,27 +104,31 @@ export function ShortcutsSheet({ session, view, modKey, phone, onClose }: Shortc
             <X aria-hidden="true" />
           </button>
         </div>
-        <table className="keys-table">
-          <caption className="sr-only">{view === "rule" ? "On a rule" : "On all rules"}</caption>
-          <tbody>
-            {rows.map((shortcut) => {
-              const off = !on && isSingleKey(shortcut);
-              return (
-                <tr key={`${shortcut.label}-${shortcut[view]}`} data-off={off ? "" : undefined}>
-                  <th scope="row">
-                    {keycaps(shortcut, modKey).map((cap) => (
-                      <Keycap key={cap} text={cap} off={off} />
-                    ))}
-                  </th>
-                  <td>
-                    {shortcut[view]}
-                    {off ? <span className="keys-off"> · off</span> : null}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        {/* The bezel's inset panel: the table scrolls inside it, under a fixed header row and foot.
+            A stop in the Tab order, so the arrow and Page keys can scroll it in a short window. */}
+        <div className="keys-panel" tabIndex={0} role="region" aria-label="Shortcuts">
+          <table className="keys-table">
+            <caption className="sr-only">{view === "rule" ? "Shortcuts for a rule" : "Shortcuts for the rule list"}</caption>
+            <tbody>
+              {rows.map((shortcut) => {
+                const off = !on && isSingleKey(shortcut);
+                return (
+                  <tr key={`${shortcut.label}-${shortcut[view]}`} data-off={off ? "" : undefined}>
+                    <th scope="row">
+                      {keycaps(shortcut, modKey).map((cap) => (
+                        <Keycap key={cap} text={cap} off={off} />
+                      ))}
+                    </th>
+                    <td>
+                      {!phone && shortcut.action[view] === "filter" ? "Focus search field" : shortcut[view]}
+                      {off ? <span className="keys-off"> · off</span> : null}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
         <div className="keys-foot">
           <div className="keys-switch">
             <span>
@@ -132,7 +136,7 @@ export function ShortcutsSheet({ session, view, modKey, phone, onClose }: Shortc
                 Single-key shortcuts
               </label>
               <span id={`${uid}-help`} className="keys-switch-help">
-                Letters and punctuation without a modifier. {mod}/ always opens this sheet.
+                Includes Shift+J and Shift+K. {mod}/ opens this sheet even when shortcuts are off.
               </span>
             </span>
             <button

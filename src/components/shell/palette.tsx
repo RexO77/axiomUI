@@ -140,7 +140,7 @@ export function Palette({ session, currentId, onClose, onOpen, onSearch }: Palet
   };
   const q = query.trim();
   const count = flat.length;
-  const status = q ? (count ? `${count} ${count === 1 ? "rule" : "rules"}` : `No rules match “${q}”`) : "";
+  const status = q ? (count ? `${count} ${count === 1 ? "match" : "matches"}` : `No rules match “${q}”`) : "";
 
   return (
     <>
@@ -238,7 +238,7 @@ export function Palette({ session, currentId, onClose, onOpen, onSearch }: Palet
           </div>
           {count === 0 ? (
             <p className="palette-empty">
-              No rules match “{q}”. Try one word, like “tracking”.
+              No rules match “{q}”. Try a broader term, like “spacing”.
             </p>
           ) : (
             <div className="palette-preview" aria-hidden="true">
@@ -256,16 +256,20 @@ export function Palette({ session, currentId, onClose, onOpen, onSearch }: Palet
           )}
         </div>
         <div className="palette-foot" id={`${uid}-keys`}>
-          <span>
-            <Key glyph="↑" spoken="Up arrow" />
-            <Key glyph="↓" spoken="Down arrow" /> Move
-          </span>
-          <span>
-            <Key spoken="Enter">
-              <CornerDownLeft className="size-3" />
-            </Key>{" "}
-            Open
-          </span>
+          {count > 0 ? (
+            <>
+              <span>
+                <Key glyph="↑" spoken="Up arrow" />
+                <Key glyph="↓" spoken="Down arrow" /> Move
+              </span>
+              <span>
+                <Key spoken="Enter">
+                  <CornerDownLeft className="size-3" />
+                </Key>{" "}
+                Open
+              </span>
+            </>
+          ) : null}
           <span data-off={q ? undefined : ""}>
             <Key glyph="⇧" spoken="Shift" off={!q} />
             <Key spoken="Enter" off={!q}>
