@@ -61,17 +61,17 @@ test("a cold chunk failure leaves a focused retry that can open the dialog", asy
   await expect.poll(() => workspace(page).evaluate((el) => el.contains(document.activeElement))).toBe(true);
 });
 
-test("a phone menu dismissal cancels a cold launch before the drawer finishes leaving", async ({ page }) => {
+test("a phone menu dismissal cancels a cold launch while the dialog is loading", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openCatalog(page, wallUrl());
   const release = await holdFirstDialogChunk(page);
-  const opener = page.getByRole("button", { name: "Menu", exact: true });
+  const opener = page.getByRole("link", { name: /open rules menu$/ });
   await opener.click();
   const menu = page.getByRole("dialog", { name: "Rules menu" });
   await menu.getByRole("button", { name: "Browse agent skills" }).click();
   await expect(menu.getByRole("button", { name: "Opening skills…" })).toBeFocused();
   await menu.getByRole("button", { name: "Close menu" }).click();
-  await expect(menu).toBeAttached();
+  await expect(menu).toHaveCount(0);
   const received = page.waitForEvent("requestfinished", (request) => request.resourceType() === "script");
   release();
   await received;
@@ -151,7 +151,7 @@ for (const view of ["Agent skills", "Website upgrade playbook"]) {
     await expect(dialog).toHaveAttribute("data-rail-motion", "local");
     await dialog.getByRole("button", { name: "Close agent skills" }).click();
     await expect(dialog).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Menu", exact: true })).toBeFocused();
+    await expect(page.getByRole("link", { name: /open rules menu$/ })).toBeFocused();
   });
 }
 

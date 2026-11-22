@@ -125,7 +125,7 @@ for (const width of [355, 1440]) {
     await page.setViewportSize({ width, height: phone ? 640 : 900 });
     if (phone) {
       await openCatalog(page, wallUrl());
-      await page.getByRole("button", { name: "Menu", exact: true }).click();
+      await page.getByRole("link", { name: /open rules menu$/ }).click();
       await page.getByRole("button", { name: "Browse agent skills", exact: true }).click();
     } else await openInstall(page);
     const dialog = page.getByRole("dialog", { name: "Agent skills" });

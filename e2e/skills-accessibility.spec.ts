@@ -5,7 +5,7 @@ const dialog = (page: Page) => page.getByRole("dialog", { name: "Agent skills" }
 async function openSkills(page: Page, phone = false) {
   await openCatalog(page, ruleUrl("typo-1"));
   if (phone) {
-    await page.locator(".phone-bar").getByRole("button", { name: "Menu" }).click();
+    await page.locator(".phone-bar").getByRole("link", { name: /open rules menu$/ }).click();
     await page.locator(".phone-menu").getByRole("button", { name: "Browse agent skills" }).click();
   } else {
     await page.locator(".install-row .rail-row").click();
@@ -102,7 +102,7 @@ test("the native list owns Escape before its parent dialog", async ({ page }) =>
   await expect.poll(() => picker.evaluate((el) => el.matches(":open"))).toBe(false);
   await page.keyboard.press("Escape");
   await expect(dialog(page)).toHaveCount(0);
-  await expect(page.locator(".phone-bar").getByRole("button", { name: "Menu" })).toBeFocused();
+  await expect(page.locator(".phone-bar").getByRole("link", { name: /open rules menu$/ })).toBeFocused();
 });
 
 test.describe("short touch landscape", () => {

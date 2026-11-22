@@ -156,6 +156,23 @@ test.describe("Do and Don't", () => {
   });
 });
 
+test("phone category icons jump to sections and follow reading position", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openCatalog(page, wallUrl());
+  const strip = page.getByRole("navigation", { name: "Jump to a section" });
+  const color = strip.getByRole("link", { name: "Color" });
+  await color.click();
+  await expect(color).toHaveAttribute("aria-current", "location");
+  await expect(page.locator("#color h2")).toBeInViewport();
+  await expect(strip).toBeInViewport({ ratio: 1 });
+
+  await page.locator("#forms h2").evaluate((heading) => heading.scrollIntoView());
+  await expect(page.locator(".shell")).toHaveAttribute("data-chrome-min", "");
+  await page.locator(".shell-wall").evaluate((wall) => wall.scrollBy(0, -64));
+  await expect(strip.getByRole("link", { name: "Forms" })).toHaveAttribute("aria-current", "location");
+  await expect(strip).toBeInViewport({ ratio: 1 });
+});
+
 test.describe("search and collections", () => {
   test("a search hides what it leaves out, and J/K walk the rest in deck order", async ({ page }) => {
     await openCatalog(page, wallUrl());

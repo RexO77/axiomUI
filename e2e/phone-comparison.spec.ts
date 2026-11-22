@@ -67,7 +67,7 @@ test.describe("phone catalog and static comparison", () => {
     };
     for (const inset of [0, 34]) {
       await page.locator(".gw").evaluate((wall, value) => (wall as HTMLElement).style.setProperty("--safe-bottom", `${value}px`), inset);
-      expect(await bottomGap()).toBe(32 + inset);
+      expect(await bottomGap()).toBe(16 + 52 + inset);
     }
   });
 

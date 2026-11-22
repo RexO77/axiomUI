@@ -135,12 +135,27 @@
 @media (max-width: 640px), (pointer: coarse) and (max-height: 500px) {
   .shell .shell-sheet,
   .shell[data-wide] .shell-sheet {
-    top: calc(var(--shell-phone-top) + env(safe-area-inset-top));
+    top: env(safe-area-inset-top);
     right: 0;
     bottom: 0;
     left: 0;
-    border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+    border-radius: 0;
+    box-shadow: none;
   }
+  .shell { --phone-bar-height: var(--shell-phone-top); }
+  .shell-wall, .shell[data-view="rule"] .shell-sheet { padding-top: var(--phone-bar-height); }
+  .shell-wall { scroll-padding-top: var(--phone-bar-height); }
+  /* Cover the moving bar at the hardware inset, including the last hairline. */
+  .shell::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: env(safe-area-inset-top);
+    z-index: 32;
+    pointer-events: none;
+    background: var(--ax-surface);
+  }
+  .shell[data-chrome-min]::before { box-shadow: 0 1px 0 var(--ax-line); }
   .shell[data-view="rule"] .shell-sheet {
     padding-bottom: calc(var(--shell-phone-foot) + env(safe-area-inset-bottom));
   }
@@ -649,51 +664,48 @@
   top: env(safe-area-inset-top);
   left: 0;
   right: 0;
-  height: var(--shell-phone-top);
+  z-index: 31;
+  height: var(--phone-bar-height);
+  background: var(--ax-surface);
+  transition: translate 240ms var(--ease-out-strong), box-shadow 160ms var(--ease-out-strong);
+  justify-content: space-between;
   align-items: center;
   gap: 4px;
-  padding: 0 max(2px, env(safe-area-inset-right)) 0 max(2px, env(safe-area-inset-left));
+  padding: 0 max(5px, env(safe-area-inset-right)) 0 max(8px, env(safe-area-inset-left));
   user-select: none;
 }
+.shell[data-chrome-scrolled] .phone-bar { box-shadow: 0 1px 0 var(--ax-line); }
+.shell[data-chrome-min] .phone-bar:not(:has(:focus-visible)) { translate: 0 -100%; transition-duration: 160ms; }
 /* Every phone control is a 44px target. */
 .phone-ctl { flex: none; width: 44px; min-width: 44px; height: 44px; padding: 0; color: var(--ax-ink); }
 .phone-ctl svg { width: 20px; height: 20px; }
 .phone-ctl:disabled { cursor: default; background: none; color: var(--ax-ink-muted); opacity: 0.5; }
 /* The location: the name truncates; the count never shrinks (200% zoom, long queries). */
 .phone-loc {
-  flex: 1;
-  min-width: 0;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
-  margin: 0;
+  gap: 6px;
+  min-width: 0;
+  height: 44px;
+  padding: 0 8px;
+  border-radius: var(--radius-control);
   color: var(--ax-ink);
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 600;
+  text-decoration: none;
   white-space: nowrap;
 }
-.phone-loc-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.phone-loc-count { flex: none; color: var(--ax-ink-muted); font-weight: 500; font-variant-numeric: tabular-nums; }
-/* On a rule the location is Up: back to the wall at this rule's tile. */
-.phone-up {
-  flex: 0 1 auto;
-  height: 44px;
-  margin: 0 auto;
-  padding: 0 12px 0 6px;
-  gap: 2px;
-  border-radius: var(--radius-control);
-  text-decoration: none;
-  cursor: pointer;
-  transition: background-color 140ms var(--ease-out-strong);
+.phone-loc svg { flex: none; }
+.phone-loc-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 20px;
+  line-height: 24px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
-.phone-up svg { flex: none; width: 20px; height: 20px; color: var(--ax-ink-muted); stroke-width: 1.75; }
-.phone-up .phone-loc-count { margin-left: 2px; }
-@media (hover: hover) and (pointer: fine) {
-  .phone-up:hover { background: var(--ax-hover); }
-}
-.phone-up:active { background: var(--ax-press); }
+.phone-loc-chevron { width: 16px; height: 16px; margin-left: -2px; color: var(--ax-ink-muted); }
+.phone-loc-count { flex: none; margin-left: 4px; font-size: 14px; color: var(--ax-ink-muted); font-weight: 500; font-variant-numeric: tabular-nums; }
+.phone-loc:active { opacity: 0.5; }
 :is(.phone-bar, .bstrip, .phone-menu) :focus-visible { outline: 2px solid var(--ax-ring); outline-offset: -2px; }
 :is(.phone-bar, .bstrip, .phone-menu) :is(a, button) { touch-action: manipulation; }
 
@@ -816,10 +828,10 @@
   background: var(--ax-ink);
 }
 /* Reading down a rule, the icon row slides away at --motion-fast, leaving the run. */
-.shell[data-chrome-min] .bstrip { transform: translateY(44px); transition-duration: 140ms; }
+.shell[data-chrome-min][data-view="rule"] .bstrip { transform: translateY(44px); transition-duration: 140ms; }
 .shell[data-chrome-min] .bstrip-cats { visibility: hidden; transition: visibility 0s linear 140ms; }
 @media (pointer: coarse) and (max-height: 500px), (max-width: 351.98px), (max-width: 640px) and (max-height: 420px) {
-  .shell[data-chrome-min] .bstrip { transform: none; }
+  .shell[data-chrome-min][data-view="rule"] .bstrip { transform: none; }
 }
 /* Under 352px: the one category button, which opens the menu as the contents. */
 .bstrip-solo {
@@ -944,63 +956,54 @@
 .bstrip-rise[data-cancel] .bstrip-rise-body { opacity: 0.5; }
 /* ── Phone menu ────────────────────────────────────────────────────── */
 
-/* The expanded sidebar as a full-height sheet from the left. */
-.phone-scrim {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  background: var(--ax-scrim);
-  touch-action: none;
-  animation: phone-fade-in 220ms var(--ease-drawer);
-}
-/* The list's mini runs are links: the rail's 3:1 marks, mixed on the overlay. */
+/* The title's jump sheet. On a short screen the whole menu scrolls. */
+.phone-scrim { position: fixed; inset: 0; z-index: 60; touch-action: none; }
 .phone-menu {
   --rail-mark: color-mix(in oklch, var(--ax-ink) 44%, var(--ax-overlay));
   --rail-visited: color-mix(in oklch, var(--ax-ink) 58%, var(--ax-overlay));
   position: fixed;
-  inset: 0 auto 0 0;
+  top: calc(env(safe-area-inset-top) + var(--phone-bar-height) + 2px);
+  left: max(8px, env(safe-area-inset-left));
   z-index: 61;
-  width: min(320px, 86vw);
-  display: flex;
-  flex-direction: column;
-  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) env(safe-area-inset-left);
+  width: min(248px, calc(100% - 16px - env(safe-area-inset-left) - env(safe-area-inset-right)));
+  max-height: calc(100% - var(--phone-bar-height) - 10px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px;
+  border-radius: var(--radius-bezel-panel);
   background: var(--ax-overlay);
   box-shadow: var(--ax-shadow-popover);
-  color: var(--ax-ink);
-  font-family: -apple-system, BlinkMacSystemFont, var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  outline: none;
-  touch-action: pan-y;
-  user-select: none;
-  animation: phone-menu-in 220ms var(--ease-drawer);
+  animation: phone-fade-in 160ms var(--ease-out-strong);
 }
-@keyframes phone-menu-in { from { transform: translateX(calc(-100% - 16px)); } }
 @keyframes phone-fade-in { from { opacity: 0; } }
-.phone-menu-head { flex: none; display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 4px 0 8px; }
-.phone-menu-home {
-  flex: 1;
-  margin-right: 8px;
-  display: inline-flex;
+.phone-jump, .phone-browse {
+  display: flex;
   align-items: center;
-  gap: 10px;
-  height: 44px;
-  padding: 0 10px 0 6px;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
   border-radius: var(--radius-control);
   color: var(--ax-ink);
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 600;
-  text-decoration: none;
+  text-align: left;
 }
-.phone-menu-home:active { background: var(--ax-press); }
-/* The list is a scroll container, which resets touch-action: pan-y again, so
-   a sideways drag reaches the dismiss gesture instead of the browser. */
-.phone-menu .rail-list { position: static; flex: 1; width: auto; visibility: visible; touch-action: pan-y; }
+.phone-jump { font-size: 16px; }
+.phone-jump svg { flex: none; width: 20px; height: 20px; }
+.phone-jump svg.phone-jump-check { width: 16px; height: 16px; margin-left: auto; }
+.phone-jump-count { margin-left: auto; color: var(--ax-ink-muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+.phone-jump-check + .phone-jump-count { margin-left: 0; }
+.phone-jump:active, .phone-browse:active { background: var(--ax-press); }
+.phone-menu-divider { margin: 5px 12px; border-top: 1px solid var(--ax-line); }
+.phone-browse { justify-content: space-between; font-size: 14px; font-weight: 500; }
+.phone-browse svg { width: 16px; height: 16px; }
+.phone-browse[aria-expanded="true"] svg { rotate: 180deg; }
+.phone-menu .rail-list { position: static; width: auto; visibility: visible; }
 .phone-menu .rail-catrow { height: 44px; }
 /* Too small to tap: on the phone the dot run previews, and the whole block opens the category. */
 .phone-menu .rail-minirun { pointer-events: none; }
 .phone-menu .rail-switchrow { height: 44px; }
 .phone-menu .rail-rulerow { min-height: 44px; }
-.phone-menu-foot { flex: none; padding: 8px; }
+.phone-menu-foot { padding: 0 2px; }
 /* The theme row, always expanded here: its label shows and the row is a full touch target. */
 .phone-menu .rail-row { height: 44px; padding: 0 8px 0 39px; }
 .phone-menu .rail-row-label { position: static; width: auto; height: auto; min-width: 0; clip-path: none; text-overflow: ellipsis; }
@@ -1009,48 +1012,14 @@
 
 /* Narrower cases inside the phone layout. Last in the file, so they win over
    the parts' own rules at the same specificity. */
-/* Very short screens (400% zoom on a laptop): one 40px bar, and the strip
-   keeps only its 48px row. Before the sideways case, which refines it. */
-@media (max-width: 640px) and (max-height: 420px), (pointer: coarse) and (max-height: 420px) {
-  .shell .shell-sheet,
-  .shell[data-wide] .shell-sheet { top: calc(var(--shell-phone-top-short) + env(safe-area-inset-top)); }
-  .shell[data-view="rule"] .shell-sheet {
-    padding-bottom: calc(var(--shell-phone-foot-short) + env(safe-area-inset-bottom));
-  }
-  .phone-bar { height: var(--shell-phone-top-short); }
+/* Short screens keep the full search target and the rule pager. */
+@media (max-width: 640px) and (max-height: 420px), (pointer: coarse) and (max-height: 500px) {
+  .shell { --phone-bar-height: var(--shell-phone-top-short); }
+  .shell[data-view="rule"] .shell-sheet { padding-bottom: calc(var(--shell-phone-foot-short) + env(safe-area-inset-bottom)); }
   .bstrip-cats { display: none; }
   .bstrip-rise {
     --rise-top: var(--shell-phone-top-short);
     --rise-foot: var(--shell-phone-foot-short);
-  }
-}
-/* A phone held sideways: a 40px bar and only the run, so the rule keeps the
-   height. Reading down, the bar slides away and the sheet rises into its
-   place; scrolling up, or reaching the end, brings both back. The sheet runs
-   one bar's height past the bottom edge, under the strip, so its foot never
-   shows a gap when it rises; its padding pays that back. */
-@media (pointer: coarse) and (max-height: 500px) {
-  .shell .shell-sheet,
-  .shell[data-wide] .shell-sheet { top: calc(var(--shell-phone-top-short) + env(safe-area-inset-top)); }
-  .shell[data-view="rule"] .shell-sheet {
-    bottom: calc(-1 * var(--shell-phone-top-short));
-    padding-bottom: calc(var(--shell-phone-foot-short) + var(--shell-phone-top-short) + env(safe-area-inset-bottom));
-  }
-  .phone-bar { height: var(--shell-phone-top-short); }
-  .bstrip-cats { display: none; }
-  .bstrip-rise {
-    --rise-top: var(--shell-phone-top-short);
-    --rise-foot: var(--shell-phone-foot-short);
-  }
-  .phone-bar,
-  .shell[data-view="rule"] .shell-sheet { transition: translate 220ms var(--ease-out-strong); }
-  .shell[data-chrome-min] .phone-bar {
-    translate: 0 calc(-100% - env(safe-area-inset-top));
-    transition-duration: 140ms;
-  }
-  .shell[data-chrome-min][data-view="rule"] .shell-sheet {
-    translate: 0 calc(-1 * var(--shell-phone-top-short));
-    transition-duration: 140ms;
   }
 }
 /* Very narrow (200% zoom): the run gets the full width on a row of its own,
@@ -1073,10 +1042,10 @@
 
 /* Anything the keyboard starts is 0ms, and so is everything under reduced motion. */
 :root[data-input="keyboard"] :is(.phone-menu, .phone-scrim, .bstrip-told) { animation: none; }
-:root[data-input="keyboard"] :is(.phone-up, .bstrip-rise) { transition: none; }
+:root[data-input="keyboard"] .bstrip-rise { transition: none; }
 @media (prefers-reduced-motion: reduce) {
   .phone-menu, .phone-scrim, .bstrip-told { animation: none; }
-  .phone-bar, .phone-up, .bstrip, .bstrip-rise, .shell[data-view="rule"] .shell-sheet { transition: none; }
+  .shell .phone-bar, .bstrip, .bstrip-rise, .shell[data-view="rule"] .shell-sheet { transition: none; }
 }
 @media (forced-colors: active) {
   .phone-menu, .bstrip-rise, .bstrip-told { border: 1px solid; }

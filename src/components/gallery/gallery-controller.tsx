@@ -3,7 +3,7 @@
 
 /*
  * Everything on the wall that moves: the toolbar, the search, the Do/Don't
- * side, J/K between tiles, the phone chips' scroll-spy, the empty state and
+ * side, J/K between tiles, the phone strip's scroll-spy, the empty state and
  * the announcements. The sections arrive as server-rendered children and are
  * never re-rendered here; the filter reaches them through the gates.
  *
@@ -20,19 +20,19 @@
  * the deck's.
  */
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
 
+import { CategoryIcon } from "@/components/ui/category-icon";
 import { registerSheetResizer, settleSheet } from "@/components/shell/sheet-resize";
 import { useShell } from "@/components/shell/shell-context";
 import { collections } from "@/data/taxonomy";
 import { rules } from "@/data/ui-logic";
 import { catalogStores } from "@/lib/catalog/stores";
-import { prefersReducedMotion } from "@/lib/media";
 import { shortcutAction } from "@/lib/navigation/keyboard";
 import { createRoutes, type GallerySide } from "@/lib/navigation/routes";
 
 import { readSide, SideSwitch, writeSide } from "./side-switch";
-import { Toolbar, type ChipSection } from "./toolbar";
+import { Toolbar } from "./toolbar";
 import { groupSectionId, shownCollection, useWall } from "./wall-context";
 import { wallResizer } from "./wall-resize";
 
@@ -63,7 +63,7 @@ export type GalleryControllerProps = {
   /** The catalog's base path, for Continue's href. */
   base: string;
   total: number;
-  sections: readonly ChipSection[];
+  sections: readonly { id: string; short: string; ruleIds: readonly string[] }[];
   /** The sections and the collection entry, server-rendered. */
   children: ReactNode;
 };
@@ -75,7 +75,6 @@ export function GalleryController({ base, total, sections, children }: GalleryCo
   const root = useRef<HTMLDivElement>(null);
   const scroller = useRef<HTMLElement | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
-  const chipsRef = useRef<HTMLElement>(null);
 
   /* ── The query: typed here, committed to the location after a pause ── */
 
@@ -183,7 +182,7 @@ export function GalleryController({ base, total, sections, children }: GalleryCo
     [wall, say],
   );
 
-  /* ── Scroll: the toolbar's hairline and the phone chips' active section ── */
+  /* ── Scroll: the toolbar's hairline and the phone strip's active section ── */
 
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState<string | null>(sections[0]?.id ?? null);
@@ -224,31 +223,13 @@ export function GalleryController({ base, total, sections, children }: GalleryCo
     };
     measure();
     sc.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
     return () => {
+      window.removeEventListener("resize", onScroll);
       sc.removeEventListener("scroll", onScroll);
       cancelAnimationFrame(frame);
     };
-  }, [shell.phone, filterKey]);
-
-  // The active chip slides into view without moving the page, and without
-  // the slide when the reader asked for less motion.
-  useEffect(() => {
-    const row = chipsRef.current;
-    const chip = row?.querySelector<HTMLElement>(`[data-cat="${active}"]`);
-    if (!row || !chip || row.offsetParent === null) return;
-    const left = chip.offsetLeft - 16;
-    const right = chip.offsetLeft + chip.offsetWidth + 16 - row.clientWidth;
-    const behavior = prefersReducedMotion() ? "auto" : "smooth";
-    if (row.scrollLeft > left) row.scrollTo({ left, behavior });
-    else if (row.scrollLeft < right) row.scrollTo({ left: right, behavior });
-  }, [active]);
-
-  const jumpTo = useCallback((categoryId: string) => {
-    const section = root.current?.querySelector<HTMLElement>(`section[id="${CSS.escape(categoryId)}"]:not([hidden])`);
-    if (!section) return;
-    section.scrollIntoView({ block: "start" });
-    setActive(categoryId);
-  }, []);
+  }, [shell.phone, filterKey, onWall]);
 
   /* ── Keys ──────────────────────────────────────────────────────────── */
 
@@ -377,11 +358,10 @@ export function GalleryController({ base, total, sections, children }: GalleryCo
     wall.setFilter({ q: "", collection: link.dataset.collection ?? null });
   };
 
-  // A collection's chips are its groups, matching the sections it shows.
   const grouped = shownCollection(wall);
-  const chips: readonly ChipSection[] = grouped
-    ? grouped.groups.map((group, index) => ({ id: groupSectionId(grouped, index), short: group.label ?? grouped.name, ruleIds: group.ruleIds, plain: true }))
-    : sections;
+  const destinations = grouped
+    ? grouped.groups.map((group, index) => ({ id: groupSectionId(grouped, index), short: group.label ?? grouped.name }))
+    : sections.filter((section) => !wall.visible || section.ruleIds.some((id) => wall.visible?.has(id)));
 
   const empty = shown === 0;
   return (
@@ -389,8 +369,6 @@ export function GalleryController({ base, total, sections, children }: GalleryCo
       <Toolbar
         total={total}
         visible={wall.visible}
-        sections={chips}
-        active={active}
         scrolled={scrolled}
         text={text}
         query={wall.q}
@@ -400,11 +378,9 @@ export function GalleryController({ base, total, sections, children }: GalleryCo
         modKey={shell.modKey}
         onOpenPalette={shell.openPalette}
         searchRef={searchRef}
-        chipsRef={chipsRef}
         onText={onText}
         onSearchKey={onSearchKey}
         onClear={clearFilter}
-        onJump={jumpTo}
         onChooseSide={chooseSide}
       />
       <div className="gw-wall">
@@ -419,9 +395,28 @@ export function GalleryController({ base, total, sections, children }: GalleryCo
         ) : null}
         {children}
       </div>
-      <div className="gw-float">
-        <SideSwitch variant="capsule" keyHint={false} onChoose={chooseSide} />
-      </div>
+      {onWall && !empty ? (
+        <div className="gw-float">
+          <SideSwitch variant="capsule" keyHint={false} onChoose={chooseSide} />
+          <nav className="bstrip gw-strip" aria-label="Jump to a section">
+            <div className="bstrip-cats" data-groups={grouped ? "" : undefined}
+              style={{ "--rail-count": destinations.length } as CSSProperties}>
+              {destinations.map((section) => (
+                <a key={section.id} className="bstrip-cat" href={`#${section.id}`}
+                  aria-label={section.short} aria-current={active === section.id ? "location" : undefined}
+                  data-shown={active === section.id ? "" : undefined} data-current={active === section.id ? "" : undefined}
+                  onClick={(event) => {
+                    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                    event.preventDefault();
+                    shell.home(section.id, event.detail === 0 ? "keyboard" : "pointer");
+                  }}>
+                  {grouped ? <span>{section.short}</span> : <CategoryIcon categoryId={section.id} className="size-5" />}
+                </a>
+              ))}
+            </div>
+          </nav>
+        </div>
+      ) : null}
       <p role="status" className="sr-only">
         {message}
       </p>

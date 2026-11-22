@@ -5,7 +5,7 @@ test.describe("touch search can show the filtered gallery", () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
   for (const [name, url] of [["unfiltered", wallUrl()], ["query", wallUrl({ q: "contrast" })], ["collection", wallUrl({ collection: "accessibility" })]] as const) {
-    test(`a direct ${name} load starts the gallery under the chips without an intro`, async ({ page }) => {
+    test(`a direct ${name} load starts the gallery under the title menu without an intro`, async ({ page }) => {
       let releaseBundles!: () => void;
       const bundlesReady = new Promise<void>((resolve) => { releaseBundles = resolve; });
       await page.route("**/_next/static/**/*.js", async (route) => {
@@ -44,7 +44,8 @@ test.describe("touch search can show the filtered gallery", () => {
       await expect.poll(() => new URL(page.url()).searchParams.get("q")).toBe("contrast");
       await expect.poll(() => sheetInert(page)).toBe(false);
       await expect(page.locator("a[data-rule-link]:visible")).toHaveCount(count);
-      await page.getByRole("button", { name: "Clear search “contrast”", exact: true }).tap();
+      await page.getByRole("link", { name: /^“contrast” .*open rules menu$/ }).tap();
+      await page.getByRole("dialog", { name: "Rules menu" }).getByRole("link", { name: /^All rules/ }).tap();
       await expect.poll(() => new URL(page.url()).searchParams.has("q")).toBe(false);
     });
   }
@@ -61,7 +62,8 @@ test.describe("touch search can show the filtered gallery", () => {
     await expect(show).toBeInViewport({ ratio: 1 });
     await show.tap();
     await awaitView(page, "gallery");
-    await page.getByRole("button", { name: "Clear search “contrast”", exact: true }).tap();
+    await page.getByRole("link", { name: /^“contrast” .*open rules menu$/ }).tap();
+    await page.getByRole("dialog", { name: "Rules menu" }).getByRole("link", { name: /^All rules/ }).tap();
     await expect.poll(() => new URL(page.url()).searchParams.has("q")).toBe(false);
 
     await opener.tap();

@@ -69,7 +69,6 @@
   white-space: nowrap;
 }
 .gw-spacer { flex: 1; min-width: 8px; }
-.gw-chips { display: none; }
 
 /* Continue and the collection pill: quiet outlined controls beside the count. */
 .gw-continue,
@@ -467,12 +466,12 @@
 /* ── Phone ─────────────────────────────────────────────────────────── */
 
 @media (max-width: 640px), (pointer: coarse) and (max-height: 500px) {
-  .gw { --gw-bar-h: 56px; }
+  .gw { --gw-bar-h: 0px; display: flex; flex-direction: column; }
   :is(.gw-bar, .gw-wall, .gw-section, .gw-grid) { --gw-pad: 16px; --gw-row-gap: 24px; }
 
   .gw-bar { gap: 0; padding: 0; }
   .gw-desk { display: none; }
-  /* The title stays the page's h1 for screen readers; the chips are the toolbar. */
+  /* The title stays the page's h1 for screen readers; the title menu identifies the deck. */
   .gw-h1 {
     position: absolute;
     width: 1px;
@@ -482,70 +481,41 @@
     white-space: nowrap;
   }
 
-  .gw-chips {
-    flex: 1;
-    min-width: 0;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0 16px;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scrollbar-width: none;
-    scroll-padding-inline: 16px;
-    -webkit-mask-image: linear-gradient(to right, black calc(100% - 16px), transparent);
-    mask-image: linear-gradient(to right, black calc(100% - 16px), transparent);
-  }
-  .gw-chips::-webkit-scrollbar { display: none; }
-  .gw-chip {
-    position: relative;
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    height: 36px;
-    padding: 0 12px;
-    border-radius: 9999px;
-    font-size: 14px;
-    line-height: 20px;
-    font-weight: 500;
-    color: var(--ax-ink-secondary);
-    box-shadow: inset 0 0 0 1px var(--ax-line-strong);
-    transition: box-shadow 140ms var(--ease-out-strong), color 140ms var(--ease-out-strong);
-  }
-  /* 44px targets from 36px chips: 4px over and under, and 4px each side,
-     which meets the next chip's across the 8px gap without overlapping. */
-  .gw-chip::before { content: ""; position: absolute; inset: -4px; border-radius: 9999px; }
-  .gw-chip .gw-chip-icon { width: 16px; height: 16px; flex-shrink: 0; }
-  .gw-chip-count { color: var(--ax-ink-muted); font-variant-numeric: tabular-nums; }
-  /* The active chip: an ink ring and ink text, no fill, so the category
-     icon keeps its colour in both themes. */
-  .gw-chip[aria-current] { color: var(--ax-ink); box-shadow: inset 0 0 0 1.5px var(--ax-ink); }
-  .gw-chip-clear { gap: 4px; padding-right: 8px; color: var(--ax-ink); background: var(--ax-fill); box-shadow: none; }
-  .gw-chip-clear span { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .gw-chip-clear svg { width: 16px; height: 16px; color: var(--ax-ink-muted); }
-  .gw-chip:active { background: var(--ax-press); }
-
   .gw-section-head { margin-bottom: 12px; }
   .gw-title { font-size: 15px; }
-  .gw-tile { scroll-margin-bottom: 92px; }
-  .gw-wall { padding-bottom: 24px; }
+  .gw-tile { scroll-margin-block: var(--phone-bar-height) 140px; }
+  .gw-wall { width: 100%; padding-bottom: 24px; }
   .gw-collection { margin-top: 40px; }
 
   /* The switch floats in the thumb zone: an opaque track (tiles never show
      through it) with the raised thumb, the desktop recipe at thumb size. */
   .gw-float {
     position: sticky;
-    bottom: calc(16px + var(--safe-bottom));
+    bottom: 0;
     z-index: 3;
     display: flex;
-    justify-content: center;
-    padding: 16px 0;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-top: auto;
+    padding-top: 16px;
+    transition: transform 220ms var(--ease-out-strong);
     pointer-events: none;
   }
   .gw-float > * { pointer-events: auto; }
-  .gw[data-empty] .gw-float { display: none; }
+  .gw-strip.bstrip { position: relative; align-self: stretch; padding-bottom: calc(4px + var(--safe-bottom)); }
+  .gw-strip .bstrip-cats { display: grid; touch-action: pan-y; }
+  .gw-strip .bstrip-cats[data-groups] { display: flex; overflow-x: auto; touch-action: pan-x; }
+  .gw-strip [data-groups] .bstrip-cat { flex: 1 0 auto; padding: 0 10px; font-size: 13px; }
+  .gw-strip .bstrip-cat span { position: relative; }
+  .shell[data-chrome-min] .gw-float { transform: translateY(52px); transition-duration: 140ms; }
+  /* Tucked away, only the home-indicator inset would remain: an empty band
+     under a hairline. Once the row has gone, the wall runs to the edge. */
+  .shell[data-chrome-min] .gw-strip {
+    background: none;
+    box-shadow: none;
+    transition: background-color 0s linear 140ms, box-shadow 0s linear 140ms;
+  }
   .gw-capsule {
     padding: 4px;
     gap: 0;
@@ -565,7 +535,6 @@
 
 @media (forced-colors: active) {
   .gw-frame { forced-color-adjust: none; outline: 1px solid CanvasText; }
-  .gw-chip[aria-current] { outline: 2px solid Highlight; outline-offset: -2px; }
   .gw-capsule { border: 1px solid CanvasText; }
   /* The frame keeps the previews' own colours; the badge opts back in and
      takes a CanvasText edge, so it stays legible. */
@@ -574,14 +543,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .gw-frame { transition: none; }
+  .gw-frame, .gw-float, .shell[data-chrome-min] .gw-strip { transition: none; }
   .gw-frame:active { scale: none; }
   .gw-marker { display: none; }
 }
 
 /* Anything the keyboard starts lands at once: D re-rings every tile, J/K
    move the focus ring. */
-:root[data-input="keyboard"] :is(.gw-bar, .gw-frame, .gw-chip, .gw-continue, .gw-pill, .gw-search input, .gw-search-clear, .gw-empty-clear),
+:root[data-input="keyboard"] :is(.gw-bar, .gw-frame, .gw-continue, .gw-pill, .gw-search input, .gw-search-clear, .gw-empty-clear),
 :root[data-input="keyboard"] .gw-frame::after {
   transition: none;
 }

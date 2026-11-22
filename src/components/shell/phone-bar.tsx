@@ -2,22 +2,14 @@
 "use client";
 
 /*
- * The phone's top bar (PHONE_QUERY; CSS shows it, so the first paint is
- * already right): Menu, where you are, and Search.
- *
- * On the wall the middle says what the wall shows ("All rules · 108"). On a
- * rule it is Up: back to the wall at this rule's tile, as Esc is. It is a
- * real link to the wall, so it works before hydration and in a new tab, and
- * its name starts with what it shows (WCAG 2.5.3): "Motion · 7 of 29, back to
- * all rules". The name truncates; the count never does.
- *
- * `usePhoneChrome` is the reading mode: scrolling down a rule tucks the
- * bottom strip's category row away (and, held sideways, the top bar too), and
- * scrolling up or reaching the end brings it back.
+ * The title opens the rules menu. Its real href also reaches the current
+ * deck's wall before hydration or in a new tab. The visible title and count
+ * lead its accessible name. Esc on a rule still returns to its tile.
  */
 
-import { ChevronLeft, Menu, Search } from "@/components/ui/icons";
-import { useCallback, useEffect, useRef, type MouseEvent, type RefObject } from "react";
+import { CategoryIcon } from "@/components/ui/category-icon";
+import { ChevronDown, Search } from "@/components/ui/icons";
+import { useCallback, useLayoutEffect, useRef, type MouseEvent, type RefObject } from "react";
 
 import { collections, railCategory, railOrder } from "@/data/taxonomy";
 import { deckPosition } from "@/lib/navigation/deck";
@@ -25,8 +17,9 @@ import type { CatalogRoutes } from "@/lib/navigation/routes";
 import { useShell } from "./shell-context";
 
 const TOTAL = railOrder.length;
-/** Scroll this far in one direction before the reading mode changes. */
-const CHROME_DY = 6;
+/** Keep the title in place until its height has scrolled past. */
+const HIDE_AFTER = 52;
+const DIRECTION_TRAVEL = 32;
 
 const isPlainClick = (event: MouseEvent) =>
   event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
@@ -38,7 +31,7 @@ type PhoneBarProps = {
 };
 
 export function PhoneBar({ routes, menuOpen, onMenu }: PhoneBarProps) {
-  const { view, ruleId, deck, exit, openPalette } = useShell();
+  const { view, ruleId, deck, openPalette } = useShell();
   const position = view === "rule" && ruleId ? deckPosition(deck, ruleId) : null;
   const deckName =
     deck.kind === "search"
@@ -58,47 +51,25 @@ export function PhoneBar({ routes, menuOpen, onMenu }: PhoneBarProps) {
   }
 
   return (
-    <div className="phone-bar">
-      <button
-        type="button"
-        className="shell-ctl phone-ctl"
-        aria-label="Menu"
+    <nav className="phone-bar" aria-label="Catalog">
+      <a
+        className="phone-loc"
+        href={routes.galleryHref({ q: deck.q, collection: deck.collection })}
+        aria-label={`${name} ${count}, open rules menu`}
         aria-haspopup="dialog"
         aria-expanded={menuOpen}
         onClick={(event) => {
+          if (!isPlainClick(event)) return;
+          event.preventDefault();
           event.currentTarget.focus({ preventScroll: true });
           onMenu();
         }}
       >
-        <Menu aria-hidden="true" />
-      </button>
-      {position ? (
-        <a
-          className="phone-loc phone-up"
-          href={routes.galleryHref({ q: deck.q, collection: deck.collection })}
-          aria-label={`${name}, ${deck.kind === "search" ? "match " : deck.kind === "collection" ? "rule " : ""}${count}, back to the rule list`}
-          onClick={(event) => {
-            if (!isPlainClick(event)) return;
-            event.preventDefault();
-            exit(event.detail === 0 ? "keyboard" : "pointer");
-          }}
-        >
-          <ChevronLeft aria-hidden="true" />
-          <span className="phone-loc-name">{name}</span>
-          <span className="phone-loc-count">
-            <span className="phone-loc-sep">· </span>
-            {count}
-          </span>
-        </a>
-      ) : (
-        <p className="phone-loc">
-          <span className="phone-loc-name">{name}</span>
-          <span className="phone-loc-count">
-            <span className="phone-loc-sep">· </span>
-            {count}
-          </span>
-        </p>
-      )}
+        {position ? <CategoryIcon categoryId={position.category} className="size-5" /> : null}
+        <span className="phone-loc-name">{name}</span>
+        <ChevronDown aria-hidden="true" className="phone-loc-chevron" />
+        <span className="phone-loc-count">{count}</span>
+      </a>
       <button
         type="button"
         className="shell-ctl phone-ctl"
@@ -111,49 +82,63 @@ export function PhoneBar({ routes, menuOpen, onMenu }: PhoneBarProps) {
       >
         <Search aria-hidden="true" />
       </button>
-    </div>
+    </nav>
   );
 }
 
-/**
- * The reading mode, on `data-chrome-min` of the shell root: written straight
- * to the DOM, so a scroll never re-renders. Returns the sheet's scroll
- * handler. Off the phone layout, or off a rule, it stays cleared.
- */
-export function usePhoneChrome(root: RefObject<HTMLElement | null>, active: boolean, ruleId: string | null) {
-  const state = useRef({ y: 0, min: false });
-  const set = useCallback(
-    (min: boolean) => {
-      if (state.current.min === min) return;
-      state.current.min = min;
-      root.current?.toggleAttribute("data-chrome-min", min);
-    },
-    [root],
-  );
+/** Track travel from the last turning point, so small reversals never reveal the bar. */
+export function usePhoneChrome(rootRef: RefObject<HTMLElement | null>, active: boolean, ruleId: string | null) {
+  const state = useRef({ anchor: 0, min: false });
+  useLayoutEffect(() => {
+    const el = rootRef.current;
+    const scroller = el?.querySelector<HTMLElement>(ruleId ? ".shell-sheet" : ".shell-wall");
+    const reset = () => {
+      const y = scroller?.scrollTop ?? 0;
+      state.current = { anchor: y, min: false };
+      el?.removeAttribute("data-chrome-min");
+      el?.toggleAttribute("data-chrome-scrolled", active && y > 0);
+    };
+    reset();
+    if (!active) return;
+    // The wall restores its tile after the shell's layout effect. Start
+    // measuring from that restored position and from the new layout on rotation.
+    const frame = requestAnimationFrame(reset);
+    let width = window.innerWidth;
+    const onResize = () => {
+      if (width === window.innerWidth) return;
+      width = window.innerWidth;
+      reset();
+    };
+    window.addEventListener("resize", onResize);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("resize", onResize);
+    };
+  }, [rootRef, active, ruleId]);
 
-  // A new rule, or leaving the phone layout, starts with everything shown.
-  useEffect(() => {
-    state.current.y = 0;
-    set(false);
-  }, [active, ruleId, set]);
-
-  return useCallback(
-    (sheet: HTMLElement) => {
-      if (!active || !ruleId) return;
-      const s = state.current;
-      const y = sheet.scrollTop;
-      const atEnd = y + sheet.clientHeight >= sheet.scrollHeight - 2;
-      if (atEnd || y <= 0) {
-        set(false);
-        s.y = y;
-      } else if (y - s.y > CHROME_DY) {
-        set(true);
-        s.y = y;
-      } else if (s.y - y > CHROME_DY) {
-        set(false);
-        s.y = y;
+  // Stable: the shell API memo depends on it through `home`.
+  return useCallback((scroller: HTMLElement, reveal = false) => {
+    const el = rootRef.current;
+    if (!active || !el) return;
+    const y = Math.max(0, scroller.scrollTop);
+    const s = state.current;
+    el.toggleAttribute("data-chrome-scrolled", y > 0);
+    if (reveal || y < HIDE_AFTER || y + scroller.clientHeight >= scroller.scrollHeight - 2) {
+      s.min = false;
+      s.anchor = y;
+    } else if (s.min) {
+      s.anchor = Math.max(s.anchor, y);
+      if (s.anchor - y >= DIRECTION_TRAVEL) {
+        s.min = false;
+        s.anchor = y;
       }
-    },
-    [active, ruleId, set],
-  );
+    } else {
+      s.anchor = Math.min(s.anchor, y);
+      if (y - s.anchor >= DIRECTION_TRAVEL) {
+        s.min = true;
+        s.anchor = y;
+      }
+    }
+    el.toggleAttribute("data-chrome-min", s.min);
+  }, [rootRef, active]);
 }

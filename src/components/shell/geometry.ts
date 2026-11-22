@@ -11,9 +11,9 @@
  * The sheet header is 52px under that 8px inset, so its centre, the logo
  * tile's centre and every 32px header control share y = 34.
  *
- * Phone (PHONE_QUERY): a 48px top bar over a full-width sheet, and on a rule
+ * Phone (PHONE_QUERY): a 52px top bar over a full-width sheet, and on a rule
  * a 104px foot for the bottom strip (4 + 48 run + 44 icons + 4, on the 8
- * grid). Phones held sideways and very short screens get a 40px bar and the
+ * grid). Phones held sideways and very short screens get a 44px bar and the
  * 56px run alone.
  */
 
@@ -38,10 +38,10 @@ export const CLOSE_MS = 140;
 export const STRIP_TOP = 60;
 export const STRIP_BOTTOM = 128;
 
-export const PHONE_TOP = 48;
+export const PHONE_TOP = 52;
 export const PHONE_FOOT = 104;
 /** Sideways phones and very short screens. */
-export const PHONE_TOP_SHORT = 40;
+export const PHONE_TOP_SHORT = 44;
 export const PHONE_FOOT_SHORT = 56;
 
 /** The shell's reading-position save, this long after scrolling stops. */
