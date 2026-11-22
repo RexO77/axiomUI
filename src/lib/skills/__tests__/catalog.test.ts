@@ -9,11 +9,24 @@ import {
   skillGroupWords,
   skillRules,
   skillInstallCommand,
+  legacySkills,
 } from "@/lib/skills/catalog";
 
 const domainSkills = skillCatalog.filter((skill) => skill.group === "domain");
 
 describe("skill catalog", () => {
+  it("keeps recognizing every published copy of the old website playbook", () => {
+    // Each hash is a pristine axiom-website-upgrade SKILL.md that shipped from
+    // public/skills. Dropping one makes the installer treat that untouched
+    // copy as edited and leave it beside its replacement.
+    const published = [
+      "2d9777f87eed3ecfa55b7f5b6ac35604729a7ab56463927cec29c037b5a0d312", // up to #71
+      "53dc5be86f84a39727acdd7a0fe48b2c301fe674bde3324444b9b0169d6e92c0", // #76 and #77
+    ];
+    const known = legacySkills.find((legacy) => legacy.name === "axiom-website-upgrade")!.sha256;
+    for (const hash of published) expect(known, hash).toContain(hash);
+  });
+
   it("uses available GitHub commands with complete canonical names", () => {
     for (const skill of skillCatalog) {
       expect(skillInstallCommand(skill)).toBe(`npx skills add RexO77/axiomUI --skill ${skill.name}`);
