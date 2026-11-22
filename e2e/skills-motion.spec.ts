@@ -1,8 +1,8 @@
 import type { Page } from "@playwright/test";
 import { expect, openCatalog, sel, test, wallUrl } from "./helpers";
 
-const rail = (page: Page) => page.getByRole("button", { name: /^Install in your agent/ });
-const card = (page: Page) => page.getByRole("dialog", { name: "Install in your agent" });
+const rail = (page: Page) => page.getByRole("button", { name: "Install agent skills: npx skills add RexO77/axiomUI", exact: true });
+const card = (page: Page) => page.getByRole("dialog", { name: "Install agent skills", exact: true });
 const workspace = (page: Page) => page.getByRole("dialog", { name: "Agent skills" });
 
 /** Intercept the named dialog's actual split chunk, independent of its production hash. */
@@ -29,7 +29,7 @@ test("Escape cancels a cold Browse without a late dialog or a lost focus positio
   await openCatalog(page, wallUrl());
   const release = await holdFirstDialogChunk(page);
   await rail(page).click();
-  const browse = card(page).getByRole("button", { name: "Browse the skills" });
+  const browse = card(page).getByRole("button", { name: "Browse agent skills" });
   await browse.focus();
   await browse.press("Enter");
   const pending = card(page).getByRole("button", { name: "Opening skills…" });
@@ -42,7 +42,7 @@ test("Escape cancels a cold Browse without a late dialog or a lost focus positio
   await requestDone;
   await expect(workspace(page)).toHaveCount(0);
   await rail(page).click();
-  await card(page).getByRole("button", { name: "Browse the skills" }).click();
+  await card(page).getByRole("button", { name: "Browse agent skills" }).click();
   await expect(workspace(page)).toHaveCount(1);
 });
 
@@ -50,7 +50,7 @@ test("a cold chunk failure leaves a focused retry that can open the dialog", asy
   await openCatalog(page, wallUrl());
   const release = await holdFirstDialogChunk(page, true);
   await rail(page).click();
-  await card(page).getByRole("button", { name: "Browse the skills" }).click();
+  await card(page).getByRole("button", { name: "Browse agent skills" }).click();
   await expect(card(page).getByRole("button", { name: "Opening skills…" })).toBeFocused();
   release();
   const retry = card(page).getByRole("button", { name: "Retry opening skills" });
@@ -67,8 +67,8 @@ test("a phone menu dismissal cancels a cold launch before the drawer finishes le
   const release = await holdFirstDialogChunk(page);
   const opener = page.getByRole("button", { name: "Menu", exact: true });
   await opener.click();
-  const menu = page.getByRole("dialog", { name: "All rules" });
-  await menu.getByRole("button", { name: "Install in your agent" }).click();
+  const menu = page.getByRole("dialog", { name: "Rules menu" });
+  await menu.getByRole("button", { name: "Browse agent skills" }).click();
   await expect(menu.getByRole("button", { name: "Opening skills…" })).toBeFocused();
   await menu.getByRole("button", { name: "Close menu" }).click();
   await expect(menu).toBeAttached();
@@ -122,7 +122,7 @@ test("the expanding surface keeps heading text and the close icon at their final
     }
     requestAnimationFrame(read);
   }));
-  await card(page).getByRole("button", { name: "Browse the skills" }).click();
+  await card(page).getByRole("button", { name: "Browse agent skills" }).click();
   const frames = await readings;
   expect(frames.some((frame) => frame.scale < 0.99 && frame.opacity > 0.01)).toBe(true);
   const final = frames.at(-1)!;
@@ -141,7 +141,7 @@ for (const view of ["Agent skills", "Website playbook"]) {
   test(`after a desktop-to-phone resize ${view} dismisses locally and returns focus to Menu`, async ({ page }) => {
     await openCatalog(page, wallUrl());
     await rail(page).click();
-    await card(page).getByRole("button", { name: "Browse the skills" }).click();
+    await card(page).getByRole("button", { name: "Browse agent skills" }).click();
     if (view === "Website playbook") {
       await workspace(page).getByRole("button", { name: "Preview the playbook" }).click();
     }
@@ -171,7 +171,7 @@ for (const mode of ["keyboard", "reduced motion"]) {
       });
       observer.observe(document.body, { subtree: true, childList: true });
     }));
-    const browse = card(page).getByRole("button", { name: "Browse the skills" });
+    const browse = card(page).getByRole("button", { name: "Browse agent skills" });
     if (mode === "keyboard") await browse.press("Enter");
     else await browse.click();
     expect(await firstFrame).toEqual({ state: "open", scale: 1, opacity: 1 });
@@ -200,7 +200,7 @@ test("the compact card hands off its contents and a resized dock returns to the 
     });
     observer.observe(document.body, { childList: true, subtree: true });
   }));
-  await compact.getByRole("button", { name: "Browse the skills" }).click();
+  await compact.getByRole("button", { name: "Browse agent skills" }).click();
   expect(await initial).toEqual({ width: before.width, opacity: "1", inert: true });
   const modal = workspace(page);
   await expect(modal.locator(".skill-origin-copy")).toHaveCount(0);

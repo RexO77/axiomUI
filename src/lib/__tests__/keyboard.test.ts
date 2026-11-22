@@ -20,8 +20,8 @@ describe("shell keyboard ownership", () => {
     expect(row("Enter")?.gallery).toBe("Open rule");
     expect(row("D")?.gallery).toBe("Switch between Do and Don’t");
     expect(row("I")?.rule).toBe("Toggle deep dive");
-    expect(row("F")?.rule).toBe("Cycle through Both, Do and Don’t (static comparisons)");
-    expect(row("Esc")).toMatchObject({ gallery: "Clear search or collection filter", rule: "Close an overlay, exit Measure, or return to the rule list" });
+    expect(row("F")?.rule).toBe("Flip");
+    expect(row("Esc")).toMatchObject({ gallery: "Clear search or collection filter", rule: "Close an overlay, or return to the rule list" });
   });
 
   it("omits native gallery arrow navigation from the sheet while keeping rule bindings", () => {
@@ -73,15 +73,6 @@ describe("shell keyboard ownership", () => {
     for (const key of ["d", "D", "f", "z", "i", "[", "?", "/"]) expect(shouldHandle(event({ key, repeat: true }))).toBe(false);
     expect(shouldHandle(event({ repeat: true }))).toBe(true);
     expect(shouldHandle(event({ key: "ArrowLeft", repeat: true }))).toBe(true);
-  });
-
-  it("offers Measure only on rules with single-key shortcuts enabled", () => {
-    expect(shortcuts.find(({ label }) => label === "M")?.rule).toBe("Toggle Measure (static comparisons)");
-    expect(shortcutAction(event({ key: "m" }), { view: "rule" })).toBe("measure");
-    expect(shortcutAction(event({ key: "m" }), { view: "gallery" })).toBeNull();
-    expect(shortcutAction(event({ key: "m" }), { view: "rule", singleKeys: false })).toBeNull();
-    expect(shortcutAction(event({ key: "m", repeat: true }), { view: "rule" })).toBeNull();
-    expect(shortcutAction(event({ key: "m", target: element("input") }), { view: "rule" })).toBeNull();
   });
 
   it("disables single character shortcuts, including shifted letters and punctuation", () => {

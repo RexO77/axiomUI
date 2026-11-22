@@ -18,25 +18,34 @@ import type { GallerySide } from "@/lib/navigation/routes";
 
 export type WallFilter = { q?: string; collection?: string | null; show?: GallerySide };
 
+/**
+ * `reveal`: the reader chose this filter outside the wall (Show only), so the
+ * wall starts at the top of its results and announces them, as it does for
+ * its own search and collection links. A filter from the URL keeps its scroll.
+ */
+export type FilterOptions = { reveal?: boolean };
+
 export type WallApi = {
   q: string;
   collection: string | null;
   show: GallerySide;
   visible: ReadonlySet<string> | null;
   /** Replace the wall's entry with this filter applied. Ignored while a rule is open. */
-  setFilter: (patch: WallFilter) => void;
+  setFilter: (patch: WallFilter, options?: FilterOptions) => void;
   /**
    * The same, once the wall is showing: a filter chosen on a rule waits for
    * the exit to land. The catalog holds it, so it survives whatever asked for
    * it (the phone menu) unmounting meanwhile.
    */
-  queueFilter: (patch: WallFilter) => void;
+  queueFilter: (patch: WallFilter, options?: FilterOptions) => void;
+  /** Whether the filter last applied asked to be revealed. Reading it clears it. */
+  takeReveal: () => boolean;
 };
 
 const noop = () => {};
 
 /** Outside CatalogApp (a test render, a stray mount): the whole catalog, filters ignored. */
-export const wallDefaults: WallApi = Object.freeze({ q: "", collection: null, show: "do", visible: null, setFilter: noop, queueFilter: noop });
+export const wallDefaults: WallApi = Object.freeze({ q: "", collection: null, show: "do", visible: null, setFilter: noop, queueFilter: noop, takeReveal: () => false });
 
 export const WallContext = createContext<WallApi>(wallDefaults);
 
