@@ -34,6 +34,7 @@ const domainPrompts: Record<string, string> = {
   components: "Is it clear how to confirm the change or close the dialog?",
   forms: "Check whether this signup form keeps its labels and gives useful feedback after an error.",
   system: "Review the loading, empty, and error states of this activity feed.",
+  mobile: "Check whether Pay clears the system bar after rotating the phone.",
   motion: "Review this panel’s opening and closing transitions, including reduced motion.",
   accessibility: "Walk through this checkout with the keyboard and identify any unreachable actions.",
 };

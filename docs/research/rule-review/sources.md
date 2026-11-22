@@ -1400,3 +1400,124 @@ Claims: Render controls that are already available visibly and operably on the f
 Judgement: An immediate first paint is a product default for already-ready controls. The 220ms comparison is illustrative, and the value of animating a later arrival depends on whether it conveys a useful change.
 
 Disagreement: Carbon recommends sequencing page loading where possible and revealing the primary action late to draw attention. If that action was already available, that choreography would differ from Axiom’s ready-on-first-paint default.
+
+## mobile-1
+
+Claims: The background can fill the bottom of the screen while the button sits higher. Adding the inset to the design gap keeps that gap when the inset changes.
+
+- [Apple HIG, Layout](https://developer.apple.com/design/human-interface-guidelines/layout) · guideline · “Respecting the safe area is essential”
+- [WebKit, Designing Websites for iPhone X](https://webkit.org/blog/7929/designing-websites-for-iphone-x/) · guideline · “Safe area insets are not a replacement for margins.”
+- [WWDC21, Design for Safari 15](https://developer.apple.com/videos/play/wwdc2021/10029/) · guideline · “the safe area starts above it.”
+- [Android, Window insets](https://developer.android.com/develop/ui/compose/system/insets) · guideline · “Edge-to-edge is enforced on Android 15 and higher once your app targets SDK 35”
+- [Android, Edge-to-edge design](https://developer.android.com/design/ui/mobile/guides/layout-and-content/edge-to-edge) · guideline · “System bar insets apply to UI that is both tappable”
+- [MDN, env()](https://developer.mozilla.org/en-US/docs/Web/CSS/env) · standard · “where it is safe to place content”
+
+Judgement: The bottom inset, action height and ordinary padding are fixture values. A real safe-area intersection alone does not establish who receives a tap.
+
+## mobile-2
+
+Claims: The small viewport describes the opening with the browser controls expanded. A dynamic viewport follows the space available as the controls move.
+
+- [web.dev, The large, small, and dynamic viewport units](https://web.dev/blog/viewport-units) · guideline · “The sizes of these viewport-percentage units are fixed (and therefore stable) unless the viewport itself is resized.”
+- [CSS Values and Units 4](https://www.w3.org/TR/css-values-4/#viewport-relative-lengths) · standard · “such content might be hidden behind such interfaces when they are expanded”
+- [WWDC21, Design for Safari 15](https://developer.apple.com/videos/play/wwdc2021/10029/) · guideline · “As the tab bar minimizes, the dimensions of the safe area change.”
+
+Judgement: The toolbar endpoints illustrate one window. The host determines the actual sizes and when its dynamic viewport updates.
+
+## mobile-3
+
+Hoober reports greater touch dispersion in the corners of the screen. The 60 px Close target and the uniform square of sample offsets are choices for this comparison. Personal trials count the action that actually ran. [Design for Fingers, Touch, and People, Part 3](https://www.uxmatters.com/mt/archives/2017/07/design-for-fingers-touch-and-people-part-3.php)
+
+## mobile-4
+
+One-handed reach varies with device size and grip. The adjustable arc tests the distance from a selected pivot to the center of Save. A person can reach beyond it or fall short. [Understanding single-handed mobile device interaction](https://www.cs.umd.edu/hcil/trs/2006-02/2006-02.htm)
+
+## mobile-5
+
+Completing a button action on release lets someone abandon a press. The inbox keeps the pressed appearance separate from opening the message. Its 120 px replay represents one scrolling gesture. [W3C · Understanding pointer cancellation](https://www.w3.org/WAI/WCAG22/Understanding/pointer-cancellation.html)
+
+## mobile-6
+
+Recognizing a possible second tap can delay the first action. The comparison schedules its own 300 ms wait and measures elapsed handler time. WebKit describes separate browser optimizations for fast taps. [WebKit · More responsive tapping on iOS](https://webkit.org/blog/5610/more-responsive-tapping-on-ios/)
+
+## mobile-20
+
+The pinned [WebKit implementation](https://raw.githubusercontent.com/WebKit/WebKit/77899089cc29f732abe2c258e19c970c0df364e3/Source/WebKit/UIProcess/API/ios/WKWebViewIOS.mm) includes a 16 px reference size and clamps the target scale. The comparison illustrates the unclamped ratio of 16 to 14. Inspect records the host page’s viewport scale separately.
+
+## mobile-21
+
+The [Chrome viewport guide](https://developer.chrome.com/blog/viewport-resize-behavior) describes three keyboard resize policies. The 844 px window and 336 px keyboard are example rectangles. Layout resize leaves both composers visible. Visual-only resize can leave the layout-anchored composer covered.
+
+## mobile-22
+
+[Apple’s typography tables](https://developer.apple.com/design/human-interface-guidelines/typography) give Body a size of 17 pt at Large and 53 pt at AX5. The in-page setting supplies those fixture values. Test system preference changes separately on a device.
+
+## mobile-23
+
+The [Android 14.0.0 r1 conversion table](https://raw.githubusercontent.com/aosp-mirror/platform_frameworks_base/android-14.0.0_r1/core/java/android/content/res/FontScaleConverterFactory.java) maps 14 sp to 26 dp and 20 sp to 34 dp at 200%. The comparison applies both values, wraps the payment label in a 160-unit column and measures its line boxes against the row.
+
+## mobile-12
+
+Android describes Back starting at either side edge. The trimmer models a 24-unit band so the same inward drag can reach the handle or reveal the previous screen. Devices supply their own gesture insets. [Android gesture navigation](https://developer.android.com/develop/ui/views/touch-and-input/gestures/gesturenav)
+
+## mobile-13
+
+The browser checks touch-action on the target and its ancestors when deciding whether it can pan. The photo divider permits vertical panning in one pane. Its replay sets the article’s scroll offset directly. [Pointer Events, the touch-action property](https://www.w3.org/TR/pointerevents3/#the-touch-action-css-property)
+
+## mobile-14
+
+Apple recommends making context menu actions available through the main interface. Both photos support the same long press. More exposes those actions to someone using ordinary taps. [Apple HIG, Context menus](https://developer.apple.com/design/human-interface-guidelines/context-menus)
+
+## mobile-15
+
+Apple illustrates projecting the release point of a thrown object. The sheet extrapolates 0.2 seconds from release and chooses among three authored stops. Those values belong to the example. [Designing Fluid Interfaces](https://developer.apple.com/videos/play/wwdc2018/803/)
+
+The four gesture examples use Galileo’s 7 December 1992 photograph of the Moon, courtesy of NASA/JPL/USGS and in the public domain. [NASA/JPL Photojournal PIA00405, Earth’s Moon](https://science.nasa.gov/photojournal/earths-moon)
+
+## mobile-7
+
+Visible labels expose the available destinations before anyone opens a menu. The example counts actual activations from Home to Orders. Its result depends on these four destinations and their placement. [NN/g navigation study](https://www.nngroup.com/articles/hamburger-menus/) · [Apple tab bars](https://developer.apple.com/design/human-interface-guidelines/tab-bars)
+
+## mobile-8
+
+Saving each tab’s stack lets the reader return to the same product after visiting Bag. The example also stores the heading of the visible passage so that resizing text can preserve a reading location. [Android multiple back stacks](https://developer.android.com/guide/navigation/backstack/multi-back-stacks) · [Apple tab bars](https://developer.apple.com/design/human-interface-guidelines/tab-bars)
+
+## mobile-9
+
+A navigable sheet needs consistent dismissal through Back and its visible Close control. This fixture keeps the café selection on the map and restores focus to the pin. Direct entry uses the map as its fallback destination. [NN/g bottom sheets](https://www.nngroup.com/articles/bottom-sheet/) · [Apple sheets](https://developer.apple.com/design/human-interface-guidelines/sheets)
+
+## mobile-10
+
+Back progress previews the previous destination. Cancellation restores the current one. The example keeps the route, text and caret until completion. Its untimed controls send explicit navigation events. [Android predictive Back](https://developer.android.com/guide/navigation/custom-back/predictive-back-gesture) · [UIKit interactive pop](https://developer.apple.com/documentation/uikit/uinavigationcontroller/interactivepopgesturerecognizer)
+
+## mobile-11
+
+The adaptive navigation suite can choose a bottom bar for compact width, compact height or tabletop posture. The example applies that policy to a resizable app window on a 700 dp device and retains the selected destination. [Android adaptive navigation](https://developer.android.com/develop/adaptive-apps/guides/build-adaptive-navigation) · [Android window size classes](https://developer.android.com/develop/adaptive-apps/guides/use-window-size-classes)
+
+## mobile-16
+
+The activity log is an independent scroll container. Its parent article keeps its own reading position. A fresh gesture on the article can still move it. Inspect reports each element’s actual scroll offset. The replay models one boundary crossing. [CSS Overscroll Behavior Level 1](https://www.w3.org/TR/css-overscroll-1/)
+
+## mobile-17
+
+The departure list starts on row 25. Its downward flick can run out of list before the gesture ends. The fixture lets the reader compare ownership at pointer down with transfer at the boundary, then try a fresh pull from the top. Projection and dismissal thresholds are fixture choices. [Building a drawer component](https://emilkowal.ski/ui/building-a-drawer-component) · [Android Material BottomSheetBehavior](https://developer.android.com/reference/com/google/android/material/bottomsheet/BottomSheetBehavior)
+
+## mobile-18
+
+Both sheets expand to the same height. Their twelve options occupy more space than the expanded body. A bounded scrolling list can bring Wheelchair access above the bottom inset and into keyboard reach. Closing returns focus to Visit options. [UIKit sheet detents](https://developer.apple.com/documentation/uikit/uisheetpresentationcontroller/detents) · [W3C modal dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/)
+
+## mobile-19
+
+The shoe sheet previews the result count from the pending size, colour and price filters. Committing the draft on Apply lets the shopper finish the three choices in one visit. Both variants show the applied filters alongside the results. [Baymard mobile filtering research](https://baymard.com/guidelines/1125-apply-buttons-in-mobile-filtering-interfaces) · [eBay filtering patterns](https://playbook.ebay.com/design-system/patterns/filtering-patterns)
+
+## mobile-24
+
+During a drag the finger obscures content around the contact point. This fixture keeps a 4 px gap above a modelled pad and moves the readout below the track when the top inset leaves too little room. Physical pad size depends on display calibration. [Hoober, Design for Fingers, Touch, and People, Part 2](https://www.uxmatters.com/mt/archives/2017/05/design-for-fingers-touch-and-people-part-2.php)
+
+## mobile-25
+
+A bag quantity gives the shopper a result they can read again after adding an item. Both panes save the item. Only one exposes the update at the point of action. The optional vibration request describes a simulated cue. Confirming a felt vibration requires a device trial. [Apple, Playing haptics](https://developer.apple.com/design/human-interface-guidelines/playing-haptics) · [Vibration API](https://www.w3.org/TR/vibration/)
+
+## mobile-26
+
+Material 3 Scaffold includes the floating action button in its calculation of the snackbar offset. This inbox uses a shared 56-unit button size and tests the actual receiver at Undo’s center after the archive notice wraps. [AndroidX Scaffold implementation](https://raw.githubusercontent.com/androidx/androidx/cc19260e63cb6987f899a15feef625db9823b854/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Scaffold.kt) · [Compose snackbar](https://developer.android.com/develop/ui/compose/components/snackbar)

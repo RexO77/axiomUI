@@ -1,6 +1,10 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
+import { composerGeometry, fieldSizes, focusScale } from "@/components/features/rules/previews/mobile/kit/keyboard-fields";
+import { bodySizes, largeAndroidSizes } from "@/components/features/rules/previews/mobile/kit/type-size";
+import { paymentRow } from "@/components/features/rules/previews/mobile/text-size";
+import { intersection, panelHeight, payBox, screenMetrics, windows } from "@/components/features/rules/previews/mobile/kit/geometry";
 import { ruleDeepDives } from "@/data/deep-dives";
 import { rules } from "@/data/ui-logic";
 import { hasShowcase } from "@/components/features/rules/demos/registry";
@@ -669,5 +673,79 @@ describe("rules do not lean on discredited models", () => {
     }
 
     expect(hits, hits.join("\n")).toEqual([]);
+  });
+});
+
+describe("mobile screen captions follow the fixture", () => {
+  const size = windows.portrait;
+  it("preserves normal padding and measures the covered part of Pay", () => {
+    const inset = screenMetrics.inset;
+    const band = { x: 0, y: size.height - inset, width: size.width, height: inset };
+    const good = payBox(size, inset, 0, true);
+    const bad = payBox(size, inset, 0, false);
+    const rule = rules.find(entry => entry.id === "mobile-1")!;
+    expect(rule.do).toContain((band.y - good.y - good.height) + " px above");
+    expect(rule.dont).toContain(intersection(bad, band)!.height + " px of Pay overlaps the " + inset + " px inset");
+    expect(payBox(size, 0, 0, true)).toEqual(payBox(size, 0, 0, false));
+    expect(payBox(windows.landscape, inset, screenMetrics.side, true).x).toBe(screenMetrics.side + screenMetrics.gap);
+  });
+
+  it("keeps the small viewport stable and the dynamic viewport attached to the toolbar", () => {
+    const rule = rules.find(entry => entry.id === "mobile-2")!;
+    const small = panelHeight(size.height, "svh", screenMetrics.toolbar, "Browser");
+    const large = panelHeight(size.height, "vh", screenMetrics.toolbar, "Browser");
+    expect(rule.do).toContain(small + " px opening panel");
+    expect(rule.dont).toContain(large + " px opening panel");
+    expect(large - screenMetrics.action).toBeGreaterThanOrEqual(small);
+    for (const toolbar of [0, 35, screenMetrics.toolbar]) {
+      expect(panelHeight(size.height, "svh", toolbar, "Browser")).toBe(small);
+      expect(panelHeight(size.height, "dvh", toolbar, "Browser")).toBe(size.height - toolbar);
+    }
+  });
+});
+
+describe("mobile keyboard and type captions", () => {
+  it("uses one font-size change for the modelled postcode crop", () => {
+    const rule = rules.find(entry => entry.id === "mobile-20")!;
+    for (const side of ["do", "dont"] as const) {
+      expect(rule[side]).toContain(fieldSizes[side] + " px");
+      expect(rule[side]).toContain(Math.round(focusScale(side, true) * 100) + "%");
+      expect(focusScale(side, false)).toBe(1);
+    }
+  });
+
+  it("anchors Send once under each keyboard resize policy", () => {
+    const rule = rules.find(entry => entry.id === "mobile-21")!;
+    const good = composerGeometry("do", true, "visual", "Docked");
+    const bad = composerGeometry("dont", true, "visual", "Docked");
+    expect(rule.do).toContain("y=" + good.keyboard.y);
+    expect(rule.dont).toContain("y=" + (bad.composer.y + bad.composer.height));
+    expect(bad.covered).toBe(true);
+    for (const policy of ["layout", "visual", "overlay"] as const) {
+      const visible = composerGeometry("do", true, policy, "Docked");
+      expect(visible.composer.y + visible.composer.height).toBe(good.keyboard.y);
+      expect(visible.covered).toBe(false);
+    }
+    expect(composerGeometry("dont", true, "layout", "Docked").covered).toBe(false);
+    expect(composerGeometry("do", true, "overlay", "Floating").covered).toBe(false);
+    expect(composerGeometry("dont", true, "visual", "Hardware").covered).toBe(false);
+  });
+
+  it("keeps the gallery text at its demonstrated size and the stills unfocusable", () => {
+    const row = rules.find(entry => entry.id === "mobile-23")!;
+    expect(row.dont).toContain(paymentRow.minimum + " dp");
+    expect(row.do).toContain("200%");
+    for (const id of ["mobile-20", "mobile-21", "mobile-22", "mobile-23"]) {
+      for (const side of ["do", "dont"] as const) {
+        const html = renderToStaticMarkup(getStaticRulePreview(id, side));
+        expect(html).not.toMatch(/<(input|select|button|textarea|a)\b|tabindex=/i);
+        if (id === "mobile-22") expect(html).toContain("font-size:" + bodySizes[side === "do" ? "AX5" : "default"] + "px");
+        if (id === "mobile-23") {
+          expect(html).toContain("font-size:" + largeAndroidSizes[14] + "px");
+          expect(html).toContain("line-height:" + largeAndroidSizes[20] + "px");
+          expect(html).toContain("width:" + paymentRow.column + "px");
+        }
+      }
+    }
   });
 });

@@ -35,6 +35,7 @@ describe("category display data", () => {
       "System",
       "Motion",
       "Accessibility",
+      "Mobile",
     ]);
   });
 
@@ -47,12 +48,12 @@ describe("category display data", () => {
 });
 
 describe("rail view", () => {
-  it("shows seven categories, without Accessibility", () => {
+  it("shows eight categories, without Accessibility", () => {
     expect(railCategoryIds).toEqual([
-      "typography", "layout", "color", "components", "forms", "system", "motion",
+      "typography", "layout", "color", "components", "forms", "system", "motion", "mobile",
     ]);
     expect(railCategories.map((c) => c.id)).toEqual([...railCategoryIds]);
-    expect(railCategories).toHaveLength(7);
+    expect(railCategories).toHaveLength(8);
     expect(railCategoryIds).not.toContain("accessibility");
   });
 
@@ -96,6 +97,7 @@ describe("rail view", () => {
       forms: 15,
       system: 16,
       motion: 25,
+      mobile: 26,
     });
   });
 
@@ -173,9 +175,9 @@ describe("rail view", () => {
 });
 
 describe("collections", () => {
-  it("makes Accessibility a 24-rule collection across categories, holding every a11y rule", () => {
-    expect(accessibilityCollection.ruleIds).toHaveLength(24);
-    expect(new Set(accessibilityCollection.ruleIds).size).toBe(24);
+  it("makes Accessibility a 32-rule collection across categories, holding every a11y rule", () => {
+    expect(accessibilityCollection.ruleIds).toHaveLength(32);
+    expect(new Set(accessibilityCollection.ruleIds).size).toBe(32);
     for (const id of rules.filter((rule) => rule.category === "accessibility").map((rule) => rule.id)) {
       expect(accessibilityCollection.ruleIds).toContain(id);
     }
@@ -184,10 +186,10 @@ describe("collections", () => {
   });
 
   it("holds Live demos to the showcase registry, so it cannot drift from the demos", () => {
-    expect([...liveDemoCollection.ruleIds].sort()).toEqual([...Object.keys(showcaseSpecs), "typo-14", "comp-13", "form-13"].sort());
-    expect(liveDemoCollection.ruleIds).toHaveLength(30);
+    expect([...liveDemoCollection.ruleIds].sort()).toEqual([...Object.keys(showcaseSpecs), "typo-14", "comp-13", "form-13", "mobile-1", "mobile-2", "mobile-12", "mobile-13", "mobile-14", "mobile-15", "mobile-7", "mobile-8", "mobile-9", "mobile-10", "mobile-11", "mobile-3", "mobile-4", "mobile-5", "mobile-6", "mobile-16", "mobile-17", "mobile-18", "mobile-19", "mobile-20", "mobile-21", "mobile-22", "mobile-23", "mobile-24", "mobile-25", "mobile-26"].sort());
+    expect(liveDemoCollection.ruleIds).toHaveLength(56);
     for (const rule of rules) {
-      expect(hasLiveDemo(rule.id), rule.id).toBe(rule.id in showcaseSpecs || ["typo-14", "comp-13", "form-13"].includes(rule.id));
+      expect(hasLiveDemo(rule.id), rule.id).toBe(rule.id in showcaseSpecs || ["typo-14", "comp-13", "form-13", "mobile-1", "mobile-2", "mobile-12", "mobile-13", "mobile-14", "mobile-15", "mobile-7", "mobile-8", "mobile-9", "mobile-10", "mobile-11", "mobile-3", "mobile-4", "mobile-5", "mobile-6", "mobile-16", "mobile-17", "mobile-18", "mobile-19", "mobile-20", "mobile-21", "mobile-22", "mobile-23", "mobile-24", "mobile-25", "mobile-26"].includes(rule.id));
     }
   });
 
@@ -219,7 +221,7 @@ describe("compare kind", () => {
         "a11y-4", "a11y-6",
       ].sort(),
     );
-    expect(alignedRuleIds.size).toBe(89);
+    expect(alignedRuleIds.size).toBe(115);
   });
 
   it("suggests Flip only on aligned static rules", () => {

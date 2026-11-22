@@ -4,9 +4,19 @@
 // Static comparisons share a canvas, dock and caption pair. Motion and
 // worked examples provide the controls for their own demonstrations.
 
-import { useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { CircleCheck, CircleX, Columns2, Ruler, ZoomIn } from "@/components/ui/icons";
+import { useId, useLayoutEffect, useRef, useState } from "react";
+import { Ruler, ZoomIn } from "@/components/ui/icons";
 
+import { KeyboardComparison } from "@/components/features/rules/previews/mobile/keyboard";
+import { TextSizeComparison } from "@/components/features/rules/previews/mobile/text-size";
+import { isSheetRule, SheetsComparison } from "@/components/features/rules/previews/mobile/sheets";
+import { TouchComparison } from "@/components/features/rules/previews/mobile/touch";
+import { touchIds } from "@/components/features/rules/previews/mobile/touch-ids";
+import { NavigationComparison } from "@/components/features/rules/previews/mobile/navigation";
+import { isNavigation } from "@/components/features/rules/previews/mobile/kit/navigation-fixture";
+import { GestureComparison, isGestureRule } from "@/components/features/rules/previews/mobile/gestures";
+import { FeedbackComparison } from "@/components/features/rules/previews/mobile/feedback";
+import { ScreenComparison } from "@/components/features/rules/previews/mobile/screen";
 import { workedExampleIds } from "@/data/taxonomy";
 import { WorkedComparison } from "./worked-comparison";
 import type { Rule } from "@/data/ui-logic";
@@ -15,8 +25,6 @@ import { MotionShowcase } from "@/components/features/rules/demos/motion-showcas
 import { CaptionLeadContext } from "@/components/features/rules/demos/showcase-chrome";
 import { hasShowcase } from "@/components/features/rules/demos/showcase-specs";
 import { Kbd } from "@/components/ui/kbd";
-import { Segmented } from "@/components/ui/segmented";
-import { Tooltip } from "@/components/ui/tooltip";
 import { VerdictLabel } from "@/components/ui/verdict-label";
 import { RULE_ANNOTATIONS } from "@/data/measure-marks";
 import { AnnotationReadout, MeasuredCaption } from "./measure/annotation-readout";
@@ -25,22 +33,25 @@ import "./measure/annotations.css";
 import { MeasureOverlay, MeasureReadout } from "./comparison-measure";
 import { MotionCompare, isNativeMotion } from "./motion-compare";
 import { PHONE_QUERY, useCanHover, useMediaQuery } from "@/lib/media";
-import { ToolToggle, useComparisonKeys } from "./comparison-tool";
-import { clampPan, panByPointer, panKeyDelta, useCompare, type Pan, type Side, type View } from "./use-compare";
+import { ComparisonDock, ToolToggle, useComparisonKeys } from "./comparison-tool";
+import { clampPan, panByPointer, panKeyDelta, useCompare, type Pan, type Side } from "./use-compare";
 import { useComparisonMeasure } from "./use-comparison-measure";
 import "./compare.css";
 
 const SIDES = ["do", "dont"] as const;
-const VIEWS = [
-  { value: "both", label: "Both", icon: <Columns2 /> },
-  { value: "do", label: "Do", icon: <CircleCheck /> },
-  { value: "dont", label: "Don’t", icon: <CircleX /> },
-] as const satisfies readonly { value: View; label: string; icon: ReactNode }[];
 const VERDICT: Record<Side, string> = { do: "Do", dont: "Don’t" };
 const OTHER: Record<Side, Side> = { do: "dont", dont: "do" };
 const MEASURE_DRAG_THRESHOLD = 6;
 
 export function Comparison({ rule }: { rule: Rule }) {
+  if (touchIds.includes(rule.id)) return <TouchComparison key={rule.id} rule={rule} />;
+  if (isNavigation(rule.id)) return <NavigationComparison key={rule.id} rule={rule} />;
+  if (isGestureRule(rule.id)) return <GestureComparison key={rule.id} rule={rule} />;
+  if (rule.id === "mobile-1" || rule.id === "mobile-2") return <ScreenComparison key={rule.id} rule={rule} />;
+  if (rule.id === "mobile-20" || rule.id === "mobile-21") return <KeyboardComparison key={rule.id} rule={rule} />;
+  if (rule.id === "mobile-22" || rule.id === "mobile-23") return <TextSizeComparison key={rule.id} rule={rule} />;
+  if (isSheetRule(rule.id)) return <SheetsComparison key={rule.id} rule={rule} />;
+  if (["mobile-24", "mobile-25", "mobile-26"].includes(rule.id)) return <FeedbackComparison key={rule.id} rule={rule} />;
   if (workedExampleIds.includes(rule.id)) return <WorkedComparison key={rule.id} rule={rule} />;
   if (hasShowcase(rule.id) && isNativeMotion(rule.id)) return <MotionCompare ruleId={rule.id} />;
   if (hasShowcase(rule.id)) {
@@ -265,10 +276,7 @@ function StaticComparison({ rule }: { rule: Rule }) {
           })}
         </div>
 
-        <div className="cmp-dock">
-          <Tooltip side="top" content={<>Switch comparison view{keys ? <Kbd className="ml-2">F</Kbd> : null}</>}>
-            <Segmented variant="capsule" label={keys ? "Comparison view (F)" : "Comparison view"} value={view} options={VIEWS} onChange={(next) => setView(next)} />
-          </Tooltip>
+        <ComparisonDock view={view} setView={setView} keys={keys}>
           <div className="cmp-tools" role="group" aria-label="Inspect">
             <ToolToggle label="Measure" shortcut="M" keys={keys} pressed={measure.active} onClick={(event) => {
               // Enter or Space (a click with no pointer detail) opening free
@@ -283,7 +291,7 @@ function StaticComparison({ rule }: { rule: Rule }) {
               <ZoomIn />
             </ToolToggle>
           </div>
-        </div>
+        </ComparisonDock>
       </div>
       <div className="cmp-captions">
         {SIDES.map((side) => (

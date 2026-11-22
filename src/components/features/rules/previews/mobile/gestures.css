@@ -1,0 +1,112 @@
+.gest-card, .gest-still {
+  position: relative;
+  width: min(100%, 320px);
+  margin: auto;
+  overflow: hidden;
+  border: 1px solid var(--ax-line-strong);
+  border-radius: 14px;
+  background: var(--ax-surface);
+  color: var(--ax-ink);
+  line-height: 1.35;
+  text-align: start;
+  font-size: .875rem;
+}
+.gest-head, .gest-meta, .gest-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  gap: 8px;
+  padding: 12px 14px;
+}
+.gest-head { border-bottom: 1px solid var(--ax-line); }
+.gest-head > span, .gest-meta small, .gest-foot > span { font-size: .78rem; color: var(--ax-ink-muted); }
+.gest-meta small { display: block; margin-top: 2px; }
+.gest-meta > span { font-variant-numeric: tabular-nums; }
+.gest-foot { flex-wrap: wrap; justify-content: flex-end; border-top: 1px solid var(--ax-line); gap: 5px; }
+.gest-foot > span { margin-right: auto; }
+.gest-card button:not(.cmp-ctl) { color: var(--ax-ink); cursor: pointer; }
+.gest-foot button, .gest-meta button {
+  padding: 5px 9px;
+  min-width: 30px;
+  min-height: 32px;
+  border-radius: 7px;
+  background: var(--ax-fill);
+  font-size: .8rem;
+}
+.gest-meta button { margin-inline-start: auto; }
+.gest-foot button:hover, .gest-meta button:hover, .gest-menu button:hover { background: var(--ax-fill-strong); }
+.gest-foot button[aria-pressed="true"] { box-shadow: inset 0 0 0 1px var(--ax-ink-muted); }
+/* lunar-surface.webp: "Earth's Moon", taken by Galileo on 7 December 1992,
+   NASA/JPL/USGS, public domain. PIA00405:
+   https://science.nasa.gov/photojournal/earths-moon */
+.gest-moon, .gest-original {
+  background: var(--ax-fill) url("./lunar-surface.webp") center 53% / cover no-repeat;
+}
+.gest-monitor { position: relative; height: 150px; overflow: hidden; }
+.gest-monitor .gest-moon { position: absolute; inset: 0; transition: transform 160ms ease-out; }
+.gest-library { position: absolute; inset: 0; display: flex; align-items: center; gap: 4px; padding: 8px; background: var(--ax-fill); }
+.gest-back-left { transform: translateX(30%); }
+.gest-back-right { transform: translateX(-30%); }
+.gest-monitor:has(.gest-back-right) .gest-library { justify-content: end; }
+.gest-track { position: relative; overflow: hidden; padding: 4px 0; }
+.gest-film { position: relative; height: 40px; background: var(--ax-fill) url("./lunar-surface.webp") center / 46px auto repeat-x; }
+.gest-cut, .gest-edge {
+  position: absolute; inset-block: 0; pointer-events: none;
+  background: repeating-linear-gradient(135deg, var(--ax-scrim) 0 2px, transparent 2px 6px);
+}
+.gest-cut { background-color: var(--ax-fill-strong); }
+.gest-edge { left: 0; border-right: 1px dashed var(--ax-ink-muted); }
+.gest-track[data-right="true"] .gest-edge { right: 0; left: auto; border-width: 0 0 0 1px; border-left: 1px dashed var(--ax-ink-muted); }
+.gest-trim-handle, .gest-divider {
+  position: absolute; inset-block: 0; display: grid; place-items: center; cursor: ew-resize; user-select: none;
+}
+.gest-trim-handle { width: 32px; touch-action: none; }
+.gest-trim-handle i { height: 100%; width: 9px; background: var(--ax-surface); border: 2px solid var(--ax-ink); border-radius: 3px; }
+.gest-status { color: var(--ax-ink-secondary); font-size: .8125rem; margin: 0 auto; text-align: center; }
+.gest-article { height: 232px; overflow-y: auto; overscroll-behavior: contain; }
+.gest-article h3 { padding: 12px 14px 9px; font-size: 1.25rem; font-weight: 650; letter-spacing: -.025em; }
+.gest-article section { padding: 12px 14px 6px; }
+.gest-article h4 { margin: 0 0 5px; font-size: .94rem; font-weight: 650; }
+.gest-article p, .gest-still p { margin: 0; color: var(--ax-ink-secondary); }
+.gest-compare-photo { position: relative; height: 152px; overflow: hidden; }
+.gest-compare-photo .gest-moon, .gest-original { position: absolute; inset: 0; }
+.gest-enhanced { filter: contrast(1.5) brightness(1.2); }
+.gest-original { filter: contrast(.7); clip-path: inset(0 var(--gest-after, 50%) 0 0); }
+.gest-divider { width: 38px; transform: translateX(-50%); }
+.gest-divider::before, .gest-still-divider { content: ""; position: absolute; inset: 0 auto; width: 2px; background: var(--ax-surface); box-shadow: 1px 0 var(--ax-ink); }
+.gest-divider i { position: relative; padding: 2px 6px; border: 1px solid var(--ax-ink); border-radius: 50px; background: var(--ax-surface); font: inherit; }
+.gest-photo-item { position: relative; }
+.gest-photo-item:has(.gest-message) { min-height: 210px; background: var(--ax-sunken); }
+.gest-photo-surface, .gest-message { user-select: none; -webkit-touch-callout: none; touch-action: pan-y pinch-zoom; }
+.gest-photo-surface .gest-moon { height: 192px; }
+.gest-message { position: relative; display: flex; align-items: center; gap: 10px; background: var(--ax-surface); padding: 12px; }
+.gest-message .gest-moon { width: 52px; height: 52px; border-radius: 7px; }
+.gest-photo-item:has(.gest-message)::before { content: "Archive"; position: absolute; top: 0; inset-inline: 0; height: 76px; text-align: right; padding: 26px 10px; background: var(--ax-fill-strong); }
+.gest-menu { position: absolute; z-index: 1; bottom: 56px; right: 10px; padding: 4px; border-radius: 9px; background: var(--ax-overlay); box-shadow: var(--ax-shadow-popover); }
+.gest-menu button, .gest-menu span { padding: 7px 12px; display: flex; align-items: center; gap: 9px; width: 100%; border-radius: 5px; font-size: .8125rem; }
+.gest-empty { min-height: 190px; display: grid; place-content: center; justify-items: center; gap: 10px; }
+.gest-sheet-stage { position: relative; overflow: hidden; }
+.gest-sheet-stage > .gest-moon { height: 100%; background-position: 50% 26%; }
+.gest-sheet { position: absolute; inset: auto 0 0; overflow: hidden; background: var(--ax-surface); border: 1px solid var(--ax-line-strong); border-bottom: none; border-radius: 14px 14px 0 0; }
+.gest-grip { padding: 4px 14px; cursor: ns-resize; touch-action: none; user-select: none; min-height: 40px; }
+.gest-grip i, .gest-still .gest-sheet i { display: block; margin: 0 auto 6px; width: 32px; height: 4px; border-radius: 3px; background: var(--ax-ink-muted); }
+.gest-sheet dl { display: grid; grid-template-columns: auto 1fr; gap: 8px; padding: 8px 14px; font-size: .8rem; }
+.gest-sheet dt { color: var(--ax-ink-muted); }
+.gest-sheet dd { text-align: end; }
+.gest-projection { position: absolute; inset-inline: 0; border-block-end: 2px dashed var(--ax-redline); pointer-events: none; }
+.gest-card :focus-visible { outline: 2px solid var(--ax-ring); outline-offset: -2px; }
+.gest-still { width: min(100%, 230px); height: 145px; border-radius: 10px; pointer-events: none; }
+.gest-still .gest-monitor, .gest-still > .gest-moon { height: 84px; }
+.gest-still .gest-film { height: 29px; }
+.gest-still strong, .gest-still-article > b, .gest-still-article p { display: block; padding: 6px 10px; font-size: 13px; }
+.gest-still .gest-compare-photo { height: 85px; }
+.gest-still-divider { left: 50%; }
+.gest-still .gest-menu { top: 8px; bottom: auto; }
+.gest-still .gest-menu span { padding: 3px 8px; font-size: 11px; }
+.gest-still[data-rule="mobile-15"] > .gest-moon { height: 100%; }
+.gest-still .gest-sheet { padding: 1px 10px; font-size: 12px; }
+.gest-still .gest-sheet i { margin-bottom: 1px; height: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  .gest-monitor .gest-moon { transition: none; }
+}

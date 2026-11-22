@@ -35,7 +35,7 @@ Symptom list:
 - Hard to scan: `layout-2` `typo-3` `typo-6` `a11y-5`
 - Slow: `motion-1` `motion-6` `motion-29` `comp-9` `sys-1`
 - Unsafe or confusing: `comp-2` `sys-6` `sys-16` `form-8` `form-15` `comp-8`
-- Breaks on mobile: `sys-11` `layout-9` `layout-14` `typo-10` `sys-3`
+- Breaks on mobile: `mobile-1` `mobile-2` `sys-11` `layout-9` `layout-14` `typo-10` `sys-3`
 
 Done when you have named the task or symptom, captured and annotated both screen sizes, and listed what to preserve. For marketing and product pages, identify the evidence for the headline.
 
@@ -118,7 +118,7 @@ A Markdown table with Before, After, Why and Rule columns, one row per material 
 
 ## Axiom UI rule lookup
 
-Every rule ID above is one of Axiom UI's 112 rules. Its description and Do and Don’t examples are enough for the sweep; its full reference adds why it works, what breaks, implementation notes and review questions. This is the single-file copy of the skill, so the rules are online rather than beside it:
+Every rule ID above is one of Axiom UI's 138 rules. Its description and Do and Don’t examples are enough for the sweep; its full reference adds why it works, what breaks, implementation notes and review questions. This is the single-file copy of the skill, so the rules are online rather than beside it:
 
 - Every rule’s Do and Don’t examples in one JSON file: https://axiomui.nischal.fyi/rules.json
 - One rule's full reasoning: https://axiomui.nischal.fyi/rules/<id>, for example https://axiomui.nischal.fyi/rules/typo-1
@@ -260,3 +260,32 @@ Read a rule's description and Do and Don’t examples from the JSON file, open i
 - `a11y-6` Let people pause what moves or updates on its own
 - `a11y-7` Underline links in paragraphs
 - `a11y-8` Return focus when a dialog closes
+
+### Mobile
+
+- `mobile-1` Keep controls inside the safe area
+- `mobile-2` Fit the page above browser bars
+- `mobile-3` Give corner targets more room
+- `mobile-4` Bring repeated actions within reach
+- `mobile-5` Let a scroll cancel a press
+- `mobile-6` Give single taps an immediate action
+- `mobile-7` Show the main destinations
+- `mobile-8` Keep each tab’s place
+- `mobile-9` Close the sheet before leaving
+- `mobile-10` Commit Back when the gesture finishes
+- `mobile-11` Fit navigation to the window
+- `mobile-12` Start drags clear of system gestures
+- `mobile-13` Let vertical swipes scroll the page
+- `mobile-14` Expose actions hidden behind gestures
+- `mobile-15` Use flick speed to choose a stop
+- `mobile-16` Keep panel scrolling inside the panel
+- `mobile-17` Keep list flicks from dismissing sheets
+- `mobile-18` Make the last sheet option reachable
+- `mobile-19` Apply multiple filters together
+- `mobile-20` Keep iPhone field text legible
+- `mobile-21` Keep the caret above the keyboard
+- `mobile-22` Follow the reader’s text size
+- `mobile-23` Let rows grow with enlarged text
+- `mobile-24` Keep values visible above the finger
+- `mobile-25` Show confirmation when haptics are off
+- `mobile-26` Keep Undo clear of floating buttons

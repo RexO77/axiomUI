@@ -1,0 +1,58 @@
+.ms-screen, .ms-still { color: var(--ax-ink); font-family: var(--font-sans), sans-serif; line-height: 1.3; }
+.ms-screen { position: absolute; inset: 48px 0 0; background: var(--ax-surface); }
+.ms-screen svg, .ms-still svg { width: 1.1em; height: 1.1em; flex-shrink: 0; }
+.ms-screen button { cursor: pointer; }
+.ms-screen :focus-visible { outline: 3px solid var(--ax-ring); outline-offset: -3px; }
+.ms-mast { display: flex; align-items: center; gap: 10px; padding: 12px 20px; font-weight: 650; background: var(--ax-inverse); color: var(--ax-on-inverse); }
+.ms-screen small, .ms-still small { display: block; color: var(--ax-ink-secondary); font-size: 16px; }
+.ms-screen h3, .ms-still strong { margin-block: 4px 10px; font-weight: 650; font-size: 34px; line-height: 1.05; letter-spacing: -.045em; }
+.ms-screen h4 { font-size: 21px; font-weight: 650; }
+.ms-screen p { font-size: 19px; color: var(--ax-ink-secondary); }
+.ms-page, .ms-story, .ms-intro { padding: 22px; }
+.ms-intro { height: 260px; background: var(--ax-fill); }
+.ms-story h4 { margin: 22px 0 10px; }
+.ms-story { padding-bottom: 150px; }
+.ms-article { position: absolute; inset: 50px 0 16px; overflow-y: auto; overscroll-behavior: contain; }
+.ms-log { overflow-y: auto; border: 1px solid var(--ax-line-strong); border-radius: 14px; background: var(--ax-fill); }
+.ms-entry, .ms-row, .ms-products li { display: flex; align-items: center; gap: 14px; border-bottom: 1px solid var(--ax-line); }
+.ms-entry { min-height: 56px; padding: 6px 16px; font-size: 19px; }
+.ms-entry span, .ms-row span, .ms-row time { color: var(--ax-ink-secondary); font-size: 16px; font-variant-numeric: tabular-nums; }
+.ms-entry b, .ms-row b, .ms-products b { font-weight: 550; }
+.ms-back { height: 100%; overflow: auto; overscroll-behavior: contain; }
+.ms-page { padding-bottom: 36px; }
+.ms-details { margin-top: 26px; padding: 18px 0; border-block: 1px solid var(--ax-line-strong); display: grid; gap: 4px; }
+.ms-details strong { font-size: 40px; font-variant-numeric: tabular-nums; letter-spacing: -.045em; }
+.ms-details span { font-size: 17px; }
+.ms-primary, .ms-expand, .ms-close, .ms-chip { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 10px; }
+.ms-primary { padding: 12px 16px; margin-top: 18px; background: var(--ax-inverse); color: var(--ax-on-inverse); font-size: 19px; font-weight: 600; }
+.ms-shade, .ms-layer { position: absolute; inset: 0; }
+.ms-shade { background: var(--ax-scrim); }
+.ms-screen .mf-sheet { overflow: hidden; padding: 0 0 16px; }
+.ms-screen .mf-grabber { position: absolute; top: 6px; left: 50%; transform: translateX(-50%); width: 34px; height: 4px; pointer-events: none; }
+.ms-dialog { height: 100%; display: flex; flex-direction: column; }
+.ms-dialog header { flex: none; display: flex; align-items: center; padding: 6px 12px 0 20px; gap: 6px; border-bottom: 1px solid var(--ax-line-strong); }
+.ms-dialog h4 { margin-right: auto; }
+.ms-close, .ms-expand { height: 40px; min-width: 40px; color: var(--ax-ink); }
+.ms-expand { padding-inline: 8px; font-size: 16px; background: var(--ax-fill); }
+.ms-expand:disabled { color: var(--ax-ink-muted); cursor: default; }
+.ms-list, .ms-filter-list { min-height: 0; overflow: auto; overscroll-behavior: contain; }
+.ms-trains { touch-action: none; cursor: grab; user-select: none; }
+.ms-trains:active { cursor: grabbing; }
+.ms-row { width: 100%; padding: 0 20px; text-align: start; font-size: 19px; }
+.ms-row small, .ms-row i { margin-left: auto; }
+.ms-row i, .ms-filter i { display: grid; place-items: center; width: 21px; height: 21px; border: 1px solid var(--ax-line-strong); border-radius: 5px; }
+.ms-row[aria-pressed="true"] i, .ms-filter[aria-pressed="true"] i { background: var(--ax-inverse); color: var(--ax-on-inverse); }
+.ms-filter { width: 100%; display: flex; align-items: center; gap: 13px; min-height: 52px; padding: 8px 20px; text-align: start; border-bottom: 1px solid var(--ax-line); }
+.ms-dialog footer { margin-top: auto; padding: 8px 16px; }
+.ms-dialog footer .ms-primary { width: 100%; margin: 0; justify-content: space-between; }
+.ms-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 12px; }
+.ms-chip { padding: 4px 9px; font-size: 15px; background: var(--ax-fill); }
+.ms-products { margin-top: 12px; }
+.ms-products li { justify-content: space-between; padding-block: 12px; font-size: 19px; }
+.ms-still { width: min(100%, 245px); padding: 12px 15px; background: var(--ax-raised); border: 1px solid var(--ax-line-strong); border-radius: 12px; }
+.ms-still small { font-size: 11px; }
+.ms-still strong { display: block; font-size: 19px; }
+.ms-still span { display: block; padding: 4px 0; border-top: 1px solid var(--ax-line); font-size: 13px; }
+.ms-still b { display: flex; align-items: center; gap: 6px; padding-top: 6px; font-size: 12px; }
+.ms-still[data-good="true"] b { color: var(--ax-do-ink); }
+.ms-still[data-good="false"] b { color: var(--ax-dont-ink); }

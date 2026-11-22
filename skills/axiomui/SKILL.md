@@ -1,6 +1,6 @@
 ---
 name: axiomui
-description: Axiom UI's library of 112 UI design rules, each with a Do/Don’t pair, a canonical URL, and full reasoning. Use these rules to choose between UI treatments or find values for type, spacing, color, contrast or motion. They also cover components, forms, states and accessibility. Use this skill when a request names Axiom UI or a rule ID such as typo-1 or motion-12. To change an existing interface, use axiomui-website-upgrade only if it is installed; otherwise apply the rules here. For a review without edits, use axiomui-audit only if it is installed; otherwise review with this library.
+description: Axiom UI's library of 138 UI design rules, each with a Do/Don’t pair, a canonical URL, and full reasoning. Use these rules to choose between UI treatments or find values for type, spacing, color, contrast or motion. They also cover components, forms, states and accessibility. Use this skill when a request names Axiom UI or a rule ID such as typo-1 or motion-12. To change an existing interface, use axiomui-website-upgrade only if it is installed; otherwise apply the rules here. For a review without edits, use axiomui-audit only if it is installed; otherwise review with this library.
 license: MIT
 metadata:
   author: Nischal Skanda
@@ -11,7 +11,7 @@ metadata:
 
 # Axiom UI
 
-Axiom UI is a library of 112 UI design rules across 8 domains. Each rule shows Do and Don’t examples, explains the choice and gives a URL you can cite.
+Axiom UI is a library of 138 UI design rules across 9 domains. Each rule shows Do and Don’t examples, explains the choice and gives a URL you can cite.
 
 ## Which Axiom UI skill
 
@@ -20,7 +20,7 @@ This skill is the rule library. Choose an installed skill that fits the task.
 - Building new UI and choosing a value or a treatment: stay here. Find the rule and apply it.
 - Changing an existing interface in code: use `axiomui-website-upgrade`. It lists rules by page type and explains how to find, fix and verify problems.
 - Reviewing without editing: use `axiomui-audit`. It adds the detection sweep, per-domain checklists, a severity scale and a report format.
-- Working mostly in one domain: use that domain's skill (`axiomui-typography`, `axiomui-layout`, `axiomui-color`, `axiomui-components`, `axiomui-forms`, `axiomui-system`, `axiomui-motion`, `axiomui-accessibility`). Its skill file includes the rules for that domain.
+- Working mostly in one domain: use that domain's skill (`axiomui-typography`, `axiomui-layout`, `axiomui-color`, `axiomui-components`, `axiomui-forms`, `axiomui-system`, `axiomui-motion`, `axiomui-accessibility`, `axiomui-mobile`). Its skill file includes the rules for that domain.
 
 When the matching skill is not installed, stay here. Every rule is in this skill.
 
@@ -50,6 +50,7 @@ A platform convention, a language’s reading direction or evidence from the tas
 | System & logic | 14 | `references/system.md` |
 | Motion & interaction | 23 | `references/motion.md` |
 | Accessibility & inclusivity | 8 | `references/accessibility.md` |
+| Mobile | 26 | `references/mobile.md` |
 
 ## Rule index
 
@@ -188,3 +189,32 @@ A platform convention, a language’s reading direction or evidence from the tas
 - `a11y-6` Let people pause what moves or updates on its own (`references/rules/a11y-6.md`)
 - `a11y-7` Underline links in paragraphs (`references/rules/a11y-7.md`)
 - `a11y-8` Return focus when a dialog closes (`references/rules/a11y-8.md`)
+
+### Mobile
+
+- `mobile-1` Keep controls inside the safe area (`references/rules/mobile-1.md`)
+- `mobile-2` Fit the page above browser bars (`references/rules/mobile-2.md`)
+- `mobile-3` Give corner targets more room (`references/rules/mobile-3.md`)
+- `mobile-4` Bring repeated actions within reach (`references/rules/mobile-4.md`)
+- `mobile-5` Let a scroll cancel a press (`references/rules/mobile-5.md`)
+- `mobile-6` Give single taps an immediate action (`references/rules/mobile-6.md`)
+- `mobile-7` Show the main destinations (`references/rules/mobile-7.md`)
+- `mobile-8` Keep each tab’s place (`references/rules/mobile-8.md`)
+- `mobile-9` Close the sheet before leaving (`references/rules/mobile-9.md`)
+- `mobile-10` Commit Back when the gesture finishes (`references/rules/mobile-10.md`)
+- `mobile-11` Fit navigation to the window (`references/rules/mobile-11.md`)
+- `mobile-12` Start drags clear of system gestures (`references/rules/mobile-12.md`)
+- `mobile-13` Let vertical swipes scroll the page (`references/rules/mobile-13.md`)
+- `mobile-14` Expose actions hidden behind gestures (`references/rules/mobile-14.md`)
+- `mobile-15` Use flick speed to choose a stop (`references/rules/mobile-15.md`)
+- `mobile-16` Keep panel scrolling inside the panel (`references/rules/mobile-16.md`)
+- `mobile-17` Keep list flicks from dismissing sheets (`references/rules/mobile-17.md`)
+- `mobile-18` Make the last sheet option reachable (`references/rules/mobile-18.md`)
+- `mobile-19` Apply multiple filters together (`references/rules/mobile-19.md`)
+- `mobile-20` Keep iPhone field text legible (`references/rules/mobile-20.md`)
+- `mobile-21` Keep the caret above the keyboard (`references/rules/mobile-21.md`)
+- `mobile-22` Follow the reader’s text size (`references/rules/mobile-22.md`)
+- `mobile-23` Let rows grow with enlarged text (`references/rules/mobile-23.md`)
+- `mobile-24` Keep values visible above the finger (`references/rules/mobile-24.md`)
+- `mobile-25` Show confirmation when haptics are off (`references/rules/mobile-25.md`)
+- `mobile-26` Keep Undo clear of floating buttons (`references/rules/mobile-26.md`)

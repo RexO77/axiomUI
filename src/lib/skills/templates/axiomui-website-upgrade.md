@@ -24,7 +24,7 @@ Symptom list:
 - Hard to scan: `layout-2` `typo-3` `typo-6` `a11y-5`
 - Slow: `motion-1` `motion-6` `motion-29` `comp-9` `sys-1`
 - Unsafe or confusing: `comp-2` `sys-6` `sys-16` `form-8` `form-15` `comp-8`
-- Breaks on mobile: `sys-11` `layout-9` `layout-14` `typo-10` `sys-3`
+- Breaks on mobile: `mobile-1` `mobile-2` `sys-11` `layout-9` `layout-14` `typo-10` `sys-3`
 
 Done when you have named the task or symptom, captured and annotated both screen sizes, and listed what to preserve. For marketing and product pages, identify the evidence for the headline.
 

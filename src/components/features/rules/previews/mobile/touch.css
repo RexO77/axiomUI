@@ -1,0 +1,49 @@
+.mt-screen, .mt-still { font-family: var(--font-sans), sans-serif; color: var(--ax-ink); }
+.mt-screen { position: absolute; inset: 48px 0 34px; }
+.mt-screen header { height: 80px; margin: 0 24px; border-bottom: 1px solid var(--ax-line-strong); display: flex; align-items: center; font-weight: 650; gap: 10px; }
+.mt-body { padding: 30px 24px; }
+.mt-body h3, .mt-message h3 { font-size: 40px; font-weight: 650; letter-spacing: -.045em; line-height: 1.05; margin: 0 0 18px; }
+.mt-body p, .mt-message p { font-size: 23px; line-height: 1.4; }
+.mt-meta { display: block; font-size: 18px; color: var(--ax-ink-secondary); margin: 0 0 12px; }
+.mt-chart { position: relative; height: 174px; overflow: hidden; border-radius: 12px; margin-bottom: 24px; background: var(--ax-inverse); color: var(--ax-on-inverse); }
+.mt-chart i { position: absolute; display: block; width: 135%; aspect-ratio: 1.7; border: 2px solid currentColor; border-radius: 50%; transform: rotate(-16deg); }
+.mt-screen button, .mt-save, .mt-close, .mt-reference { cursor: pointer; }
+.mt-close, .mt-reference, .mt-save, .mt-pill { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.mt-close, .mt-reference { border: 1px dashed var(--ax-ink-muted); background: var(--ax-fill); }
+.mt-reference { border-radius: 50%; }
+.mt-save, .mt-pill { border-radius: 100px; font-size: 22px; padding: 8px 18px; font-weight: 600; background: var(--ax-inverse); color: var(--ax-on-inverse); }
+.mt-secondary { background: var(--ax-fill); color: var(--ax-ink); }
+.mt-close:focus-visible, .mt-reference:focus-visible, .mt-save:focus-visible, .mt-screen button:focus-visible { outline: 4px solid var(--ax-ring); outline-offset: 2px; }
+.mt-arc, .mt-pivot, .mt-dot { position: absolute; pointer-events: none; border-radius: 50%; }
+.mt-arc { border: 3px dashed var(--ax-ink-muted); background: color-mix(in srgb, var(--ax-ink) 5%, transparent); }
+.mt-pivot { width: 18px; height: 18px; background: var(--ax-ink); transform: translate(-50%,-50%); }
+.mt-dot { width: 5px; height: 5px; background: var(--ax-do-ink); transform: translate(-50%,-50%); }
+.mt-dot[data-miss="true"] { background: var(--ax-dont-ink); }
+.mt-table { margin-top: 26px; }
+.mt-table div { display: flex; justify-content: space-between; padding: 12px 0; border-block-end: 1px solid var(--ax-line); }
+.mt-table dt { color: var(--ax-ink-secondary); }
+.mt-list { position: absolute; inset: 141px 0 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; border-top: 1px solid var(--ax-line); }
+.mt-row { width: 100%; height: 88px; display: flex; align-items: center; text-align: start; gap: 14px; padding-inline: 24px; border-bottom: 1px solid var(--ax-line); }
+.mt-row[data-pressed="true"] { background: var(--ax-fill-strong); }
+.mt-row b, .mt-row small { display: block; }
+.mt-row b { font-size: 22px; font-weight: 600; }
+.mt-row small { color: var(--ax-ink-secondary); font-size: 17px; }
+.mt-avatar { width: 48px; height: 48px; display: grid; place-content: center; flex: none; background: var(--ax-fill); border-radius: 50%; font-size: 18px; font-weight: 600; }
+.mt-message { position: absolute; inset: 0; background: var(--ax-surface); padding: 35px 24px; }
+.mt-message button { margin-bottom: 64px; }
+.mt-card { display: block; width: 100%; text-align: start; padding: 12px; background: var(--ax-fill); border-radius: 16px; }
+.mt-card .mt-chart { width: 100%; height: 202px; margin-bottom: 16px; }
+.mt-card strong { display: block; font-size: 28px; line-height: 1.2; margin-bottom: 6px; }
+.mt-card .mt-meta { margin-bottom: 0; display: flex; align-items: center; gap: 6px; }
+.mt-like { margin-top: 15px; }
+.mt-metrics { display: grid; gap: 3px; }
+.mt-still { width: 236px; height: 152px; position: relative; overflow: hidden; background: var(--ax-surface); border: 1px solid var(--ax-line-strong); border-radius: 12px; }
+.mt-still header { height: 41px; border-bottom: 1px solid var(--ax-line); padding: 10px 14px; font-size: 13px; font-weight: 600; }
+.mt-still .mt-close { position: absolute; display: grid; place-items: center; top: 12px; right: 12px; }
+.mt-still .mt-spot { position: absolute; top: 39px; right: 9px; width: 9px; height: 9px; border-radius: 50%; background: var(--ax-ink); outline: 2px solid var(--ax-surface); }
+.mt-still footer { position: absolute; bottom: 12px; left: 14px; display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; }
+.mt-still .mt-save { position: absolute; font-size: 11px; padding: 4px 12px; }
+.mt-still .mt-arc { right: -85px; bottom: -90px; width: 230px; height: 175px; border-width: 1px; }
+.mt-still .mt-row { height: 39px; padding-inline: 14px; font-size: 14px; }
+.mt-still .mt-chart { position: absolute; right: 12px; top: 57px; width: 76px; height: 57px; }
+.mt-still-line { position: absolute; top: 64px; left: 14px; font-size: 16px; font-weight: 650; }

@@ -13,6 +13,7 @@ import {
   Moon,
   Palette,
   Play,
+  Smartphone,
   TextCursorInput,
   TouchInteraction,
   Type,
@@ -30,6 +31,7 @@ const categoryIcons: Record<string, AppIcon> = {
   forms: TextCursorInput,
   system: Cpu,
   motion: Activity,
+  mobile: Smartphone,
   accessibility: Accessibility,
   // Collections (taxonomy.ts): ink-muted, as they carry no category colour.
   // Play is the wall's mark for a tile that runs.
@@ -51,6 +53,7 @@ const categoryIconColors: Record<string, string> = {
   forms: "text-cyan-600 dark:text-cyan-400",
   system: "text-lime-700 dark:text-lime-400",
   motion: "text-fuchsia-600 dark:text-fuchsia-400",
+  mobile: "text-teal-700 dark:text-teal-400",
   accessibility: "text-orange-600 dark:text-orange-400",
 };
 

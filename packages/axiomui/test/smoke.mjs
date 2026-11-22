@@ -45,7 +45,7 @@ try {
   result = run("list", "--json");
   assert.equal(result.code, 0, result.err);
   const listing = JSON.parse(result.out);
-  assert.equal(listing.skills.length, 11, "all 11 complete skills are available");
+  assert.equal(listing.skills.length, 12, "all 12 complete skills are available");
   assert.equal(listing.installs.length, 3, "the noninteractive default installs the three core skills");
 
   writeFileSync(skill, "edited\n");
@@ -64,7 +64,7 @@ try {
   assert.equal(result.code, 0, result.err);
   result = run("list", "--json");
   assert.equal(result.code, 0, result.err);
-  assert.equal(JSON.parse(result.out).installs.length, 11, "every bundled skill installs");
+  assert.equal(JSON.parse(result.out).installs.length, 12, "every bundled skill installs");
   result = run("remove", "--all", "--yes");
   assert.equal(result.code, 0, result.err);
   result = run("list", "--json");

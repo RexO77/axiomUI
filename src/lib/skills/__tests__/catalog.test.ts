@@ -96,7 +96,7 @@ describe("skill catalog", () => {
       domainSkills.filter((skill) => skill.crossListedRuleIds.length > 0).map((skill) => [skill.name, skill])
     );
     expect(Object.keys(crossListing).sort()).toEqual([
-      "axiomui-accessibility", "axiomui-layout", "axiomui-motion", "axiomui-typography",
+      "axiomui-accessibility", "axiomui-layout", "axiomui-mobile", "axiomui-motion", "axiomui-typography",
     ]);
     for (const skill of Object.values(crossListing)) {
       expect(skill.crossListedNote, skill.name).toBeTruthy();
