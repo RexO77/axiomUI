@@ -92,20 +92,20 @@ const skipWhileHidden = (a: ListProps, b: ListProps) => Boolean(a.hidden && b.hi
  * collection), and switching one on from a rule goes back to the wall first
  * and filters it there, as search does.
  */
-function ShowOnly({ prefix }: { prefix: string }) {
+function ShowOnly({ prefix, routes }: { prefix: string; routes: CatalogRoutes }) {
   const wall = useWall();
-  const { view, exit, hrefFor } = useShell();
+  const { view, exit } = useShell();
   const apply = (collection: string | null, origin: InputOrigin) => {
     if (wall.setFilter === wallDefaults.setFilter) {
-      const base = hrefFor("x").split("/rules/")[0] || "/";
-      window.location.assign(collection ? `${base}?collection=${collection}` : base);
+      window.location.assign(routes.galleryHref(collection ? { collection } : {}));
       return;
     }
+    // Like the wall's own collection links: the wall starts at the top and announces the result.
     if (view === "gallery") {
-      wall.setFilter({ q: "", collection });
+      wall.setFilter({ q: "", collection }, { reveal: true });
       return;
     }
-    wall.queueFilter({ q: "", collection });
+    wall.queueFilter({ q: "", collection }, { reveal: true });
     exit(origin);
   };
   return (
@@ -338,7 +338,7 @@ export const SidebarList = memo(function SidebarList({
           );
         })}
         <li className="rail-showonly">
-          <ShowOnly prefix={prefix} />
+          <ShowOnly prefix={prefix} routes={routes} />
         </li>
       </ul>
     </div>

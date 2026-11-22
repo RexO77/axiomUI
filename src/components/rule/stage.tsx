@@ -81,7 +81,7 @@ export function Stage({ ruleId, seed = null }: StageProps) {
           <p className="rv-summary">
             <Prose text={rule.desc} />
           </p>
-          <div className="rv-compare" data-rule-canvas="">
+          <div className="rv-compare">
             <Comparison rule={shown} />
           </div>
           <div className="rv-mcopy">

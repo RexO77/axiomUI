@@ -38,7 +38,7 @@ Set heading leading with a two- or three-line title. Start tighter than paragrap
 
 Start with one family for product headings and body text. Add another family when it serves a recognizable role, such as code, editorial display, or coverage for another script.
 
-- Do: Manrope for headings + body
+- Do: One sans for headings + body
 - Don't: Arial headings + Verdana body
 - Reasoning: `references/rules/typo-5.md` · https://axiomui.nischal.fyi/rules/typo-5
 
