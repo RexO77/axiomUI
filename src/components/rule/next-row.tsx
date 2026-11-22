@@ -39,9 +39,10 @@ export function NextRow({ ruleId }: { ruleId: string }) {
   let heading: string;
   let card: ReactNode;
   if (!next) {
-    heading = deck.kind === "search" ? "That’s the last match" : "That’s the last rule";
+    heading = deck.kind === "collection" ? "That’s the last rule in this collection"
+      : deck.kind === "search" ? "That’s the last match" : "That’s the last rule";
     card = (
-      <button type="button" className="rv-nextcard" onClick={(event) => shell.home(null, event.detail === 0 ? "keyboard" : "pointer")}>
+      <button type="button" className="rv-nextcard bezel-panel" onClick={(event) => shell.home(null, event.detail === 0 ? "keyboard" : "pointer")}>
         <span className="rv-nc-body">
           <span className="rv-nc-title">
             <span>Back to all rules</span>
@@ -61,10 +62,10 @@ export function NextRow({ ruleId }: { ruleId: string }) {
       ? `${handoff.count} ${handoff.count === 1 ? "rule" : "rules"}`
       : catalog
         ? `${short} · ${position?.label ?? ""}`
-        : `${short} · match ${position?.label ?? ""}`;
+        : `${short} · ${deck.kind === "search" ? "match" : "rule"} ${position?.label ?? ""}`;
     card = (
       <a
-        className="rv-nextcard"
+        className="rv-nextcard bezel-panel"
         href={shell.hrefFor(next.id)}
         aria-keyshortcuts={singleKeys ? "J" : undefined}
         onPointerEnter={() => proseLoader.prefetch(next.id)}
@@ -98,8 +99,12 @@ export function NextRow({ ruleId }: { ruleId: string }) {
 
   return (
     <section className="rv-next" aria-labelledby={`${uid}-h`}>
-      <h2 id={`${uid}-h`}>{heading}</h2>
-      {card}
+      <div className="bezel">
+        <div className="bezel-head">
+          <h2 id={`${uid}-h`}>{heading}</h2>
+        </div>
+        {card}
+      </div>
     </section>
   );
 }

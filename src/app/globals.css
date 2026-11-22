@@ -84,6 +84,13 @@
   --ax-dont: #e11d48;
   --ax-dont-ink: #be123c;
 
+  /* The bezel card: an outer shell one step off the page, a header row on
+     it, and an inset panel holding the content. In light the shell is the
+     greyer step and the panel white; in dark the shell lifts and the panel
+     sinks below the page. Each edge is its own hairline. */
+  --ax-bezel: #f7f7f7;
+  --ax-bezel-panel: #ffffff;
+
   /* Elevation. The site is flat except for these. */
   --ax-scrim: rgb(0 0 0 / 0.2);
   /* A surface floating free over content, like the skills dialog. */
@@ -108,12 +115,23 @@
     0 0 0 1px rgb(0 0 0 / 0.06),
     0 2px 4px rgb(0 0 0 / 0.04),
     0 12px 32px -8px rgb(0 0 0 / 0.16);
+  /* A bezel shell sitting on the page: a ring and a touch of lift. The ring
+     is the --ax-line hairline and no fainter: a shell that lands on a half
+     pixel splits it across two rows, and a fainter ring vanishes there while
+     its rounded corners still show. */
+  --ax-shadow-bezel:
+    0 0 0 1px rgb(0 0 0 / 0.08),
+    0 1px 2px rgb(0 0 0 / 0.04);
 
   /* Motion durations. showcase-engine.ts mirrors these as DUR, and
      design-system.test.ts holds the two in step. */
   --motion-fast: 140ms;
   --motion-medium: 220ms;
   --motion-slow: 360ms;
+
+  /* The bezel card's one length: the shell's padding around its header row
+     and panel. Keeps --radius-bezel concentric with --radius-bezel-panel. */
+  --bezel-pad: 6px;
 }
 
 .dark {
@@ -128,6 +146,8 @@
   --ax-fill-strong: #404040;
   --ax-inverse: #fafafa;
   --ax-on-inverse: #0a0a0a;
+  --ax-bezel: #1c1c1c;
+  --ax-bezel-panel: #111111;
 
   --ax-hover: rgb(255 255 255 / 0.05);
   --ax-press: rgb(255 255 255 / 0.08);
@@ -158,6 +178,7 @@
   --ax-shadow-popover:
     0 0 0 1px rgb(255 255 255 / 0.09),
     0 16px 40px -12px rgb(0 0 0 / 0.7);
+  --ax-shadow-bezel: 0 0 0 1px rgb(255 255 255 / 0.12);
 }
 
 /* `inline` makes each utility emit the raw `var(--ax-*)` (and the font
@@ -175,6 +196,8 @@
   --color-fill-strong: var(--ax-fill-strong);
   --color-inverse: var(--ax-inverse);
   --color-on-inverse: var(--ax-on-inverse);
+  --color-bezel: var(--ax-bezel);
+  --color-bezel-panel: var(--ax-bezel-panel);
   --color-hover: var(--ax-hover);
   --color-press: var(--ax-press);
   --color-ink: var(--ax-ink);
@@ -194,6 +217,7 @@
   --shadow-sheet: var(--ax-shadow-sheet);
   --shadow-item: var(--ax-shadow-item);
   --shadow-popover: var(--ax-shadow-popover);
+  --shadow-bezel: var(--ax-shadow-bezel);
   --shadow-keycap: var(--ax-shadow-keycap);
   --shadow-keycap-off: var(--ax-shadow-keycap-off);
 
@@ -220,6 +244,9 @@
   --radius-frame: 10px;
   --radius-field: 16px;
   --radius-well: 20px;
+  /* The bezel card: shell 20 = panel 14 + 6 padding (--bezel-pad). */
+  --radius-bezel: 20px;
+  --radius-bezel-panel: 14px;
 
   --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out-strong: cubic-bezier(0.65, 0, 0.35, 1);
@@ -422,6 +449,46 @@
 @layer components {
   .preview-frame {
     box-shadow: var(--ax-shadow-inset);
+  }
+
+  /* The bezel card, for any card that holds content (the rule view's Before
+     you ship and Next; overlays and the docked column apply the same tokens
+     in their own sheets). Three parts:
+       .bezel        the shell: --bezel-pad around everything, radius 20;
+       .bezel-head   a 36px row on the shell: label left, .bezel-meta right,
+                     its text on the panel's own 16px inner edge;
+       .bezel-panel  the inset content panel: its own tone and hairline, and
+                     the concentric radius, 20 − 6 = 14. */
+  .bezel {
+    padding: var(--bezel-pad);
+    border-radius: var(--radius-bezel);
+    background: var(--ax-bezel);
+    box-shadow: var(--ax-shadow-bezel);
+  }
+  .bezel-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 0 16px;
+    font-size: 13px;
+    line-height: 20px;
+    font-weight: 500;
+    color: var(--ax-ink-secondary);
+  }
+  .bezel-meta {
+    flex: none;
+    margin-left: auto;
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 500;
+    color: var(--ax-ink-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .bezel-panel {
+    border-radius: var(--radius-bezel-panel);
+    background: var(--ax-bezel-panel);
+    box-shadow: inset 0 0 0 1px var(--ax-line);
   }
 
   /* Press feedback. Owns the element's transitions, so a pressable element

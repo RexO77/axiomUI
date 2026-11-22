@@ -3,25 +3,34 @@
    them is compare.css; nothing here reaches into it.
 
    Spacing comes only from 4 · 8 · 12 · 16 · 24 · 32 · 40 · 48 · 64.
-   Vertical rhythm: header 48 → 12 → title → 12 → summary → 24 (the
+   Vertical rhythm: header 48 → 32 → title → 12 → summary → 24 (the
    comparison's own margin) → comparison → 40 → Before you ship → 40 →
-   (Related → 40 below 1160) → Next → 48.
+   (Related → 40 below 1160, or with the dive hidden) → Next → 48.
 
    Two left edges: the outer x (--rv-x: title, comparison, review block,
    Related, Next) and the inner x, outer + 16 (the text inside the review
    block and the Next card, and the deep dive when it sits below). --rv-x is
-   the gallery's gutter (24, 32 from a 1280px sheet, 16 on phones), so the
-   cross-fade between the two views keeps one content edge. The header row
+   the gallery's gutter (24, 32 from a 1280px sheet, 16 on phones; it eases
+   between 24 and 32 over 1200–1280), so the views share one content edge. The header row
    lines up with the same block.
 
-   Rule prose turns common ligatures off: Manrope joins "--" into a dash, and
-   the copy quotes CSS ("--swipe-amount"). Code-like tokens are
+   Rule prose turns common ligatures off so a quoted CSS name
+   ("--swipe-amount") never joins into a dash. Code-like tokens are
    <code class="rv-code"> in Plex Mono (prose-code.ts). */
 
-.rv { --rv-x: 24px; --rv-deep-w: 360px; overflow-x: clip; }
-@container sheet (min-width: 1280px) { .rv { --rv-x: 32px; } }
-@container sheet (min-width: 1360px) { .rv { --rv-deep-w: 400px; } }
-@container sheet (min-width: 1800px) { .rv { --rv-deep-w: 440px; } }
+/* The gutter and the docked column's width follow the sheet's width
+   continuously rather than in steps: the rail's open and close moves the
+   sheet's edge across these widths, and a stepped value jumped mid-move.
+   Gutter 24 → 32 over 1200–1280; column 360 → 400 over 1280–1360 and → 440
+   over 1720–1800. Registered, so each resolves once on .rv (against the
+   sheet) and inherits as a length, never against an inner container. */
+@property --rv-x { syntax: "<length>"; inherits: true; initial-value: 24px; }
+@property --rv-deep-w { syntax: "<length>"; inherits: true; initial-value: 360px; }
+.rv {
+  --rv-x: clamp(24px, 24px + (100cqw - 1200px) / 10, 32px);
+  --rv-deep-w: calc(clamp(360px, 360px + (100cqw - 1280px) / 2, 400px) + clamp(0px, (100cqw - 1720px) / 2, 40px));
+  overflow-x: clip;
+}
 
 /* ── Header: one 48px row on one 32px control height ───────────────────
    The crumb's icon sits on the title's x (--rv-x less its 8px padding); the
@@ -207,21 +216,24 @@
 /* ── Title, summary, prose code ─────────────────────────────────────── */
 
 .rv-title {
-  font-size: 36px;
-  line-height: 40px;
+  /* One size at every width: 28 over the 16px summary, as phones always had. */
+  font-size: 28px;
+  line-height: 34px;
   font-weight: 600;
-  letter-spacing: -0.02em;
+  /* On Inter (globals.css) the face's own correction, then the display tightening. */
+  letter-spacing: calc(var(--face-track-strong, 0px) - 0.02em);
   color: var(--ax-ink);
   text-wrap: balance;
 }
 /* It takes focus when the view is entered so screen readers land on it; a heading, not a control. */
 .rv-title:focus-visible { outline: none; }
 .rv-summary {
-  max-width: 31rem;
+  /* The column's full width, as the comparison under it: a two- or three-line
+     summary, not a narrow five-line block beside empty space. */
   margin-top: 12px;
   font-size: 16px;
   line-height: 26px;
-  color: var(--ax-ink-secondary);
+  color: var(--ax-ink-muted);
   text-wrap: pretty;
   font-variant-ligatures: no-common-ligatures;
 }
@@ -246,7 +258,7 @@
   max-width: 1040px;
   margin-inline: auto;
 }
-.rv-main { min-width: 0; padding: 12px var(--rv-x) 0; }
+.rv-main { min-width: 0; padding: 32px var(--rv-x) 0; }
 .rv-mcopy { margin-top: 24px; }
 .rv-stage > .rv-side { display: contents; }
 .rv-stage > .rv-ship { order: 1; }
@@ -268,14 +280,16 @@
   padding-inline: calc(var(--rv-x) + 16px);
 }
 .rv-dd[hidden] { margin: 0; padding: 0; }
+/* The reading card's shell and header row exist only docked (≥ 1160, shown). */
+.rv-dd-card { display: contents; }
+.rv-dd-bar { display: none; }
 .rv-dd-sec + .rv-dd-sec { margin-top: 40px; }
 /* Section heads are UI type: small, at body weight scale, not display headings. */
 .rv-dd-h, .rv-ship h2, .rv-next h2, .rv-related h2 {
   font-size: 14px;
   line-height: 20px;
   font-weight: 600;
-  letter-spacing: 0;
-  color: var(--ax-ink);
+  color: var(--ax-ink-secondary);
 }
 .rv-dd-label, .rv-dd-toggle { display: flex; align-items: center; gap: 8px; }
 /* Colour is for categories and verdicts only: the warning glyph is ink-muted. */
@@ -287,7 +301,7 @@
   grid-template-columns: 20px minmax(0, 1fr);
   font-size: 14px;
   line-height: 22px;
-  color: var(--ax-ink-secondary);
+  color: var(--ax-ink-muted);
   text-wrap: pretty;
 }
 .rv-dd-steps li::before {
@@ -298,7 +312,7 @@
   color: var(--ax-ink-muted);
   font-variant-numeric: tabular-nums;
 }
-.rv-dd p { font-size: 14px; line-height: 22px; color: var(--ax-ink-secondary); text-wrap: pretty; }
+.rv-dd p { font-size: 14px; line-height: 22px; color: var(--ax-ink-muted); text-wrap: pretty; }
 /* Loading, or a failed load with its retry button: one line where the prose goes. */
 .rv-dd-state { display: flex; align-items: center; gap: 12px; grid-column: 1 / -1; min-height: 32px; }
 .rv-dd-state p { color: var(--ax-ink-muted); }
@@ -309,23 +323,29 @@
   .rv-dd-col + .rv-dd-col { margin-top: 40px; }
 }
 
-/* ── Before you ship: an outlined panel the main column's full width ── */
+/* ── Bezel cards (globals.css: .bezel, .bezel-head, .bezel-panel) ──────
+   Before you ship, Next, and the docked column's two cards share one shape:
+   a shell, a 36px header row carrying the section's label, and the content
+   inset in its own panel. The label is chrome, so it is quieter than the
+   section heads inside the reading card. */
+
+.bezel-head h2,
+.rv-dd-bar,
+.rv-side > .rv-related h2 { font-size: 13px; line-height: 20px; font-weight: 500; color: var(--ax-ink-secondary); }
+
+/* ── Before you ship: a bezel card the main column's full width ─────── */
 
 .rv-ship {
   margin: 40px var(--rv-x) 0;
-  padding: 16px;
-  border-radius: var(--radius-frame);
-  box-shadow: inset 0 0 0 1px var(--ax-line);
   font-variant-ligatures: no-common-ligatures;
 }
-.rv-ship ul { display: grid; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; }
+.rv-ship ul { display: grid; gap: 8px; margin: 0; padding: 16px; list-style: none; }
 .rv-ship li {
   position: relative;
-  max-width: 72ch;
   padding-left: 16px;
   font-size: 14px;
   line-height: 22px;
-  color: var(--ax-ink-secondary);
+  color: var(--ax-ink-muted);
   text-wrap: pretty;
 }
 /* A ring, not a checkbox: it marks the item; there is nothing to tick. */
@@ -340,7 +360,7 @@
   box-shadow: inset 0 0 0 1px var(--ax-ink-muted);
 }
 
-/* ── Next: an h2 like Related's, then one 64px row ──────────────────── */
+/* ── Next: a bezel card, its label on the shell, one 64px row inset ─── */
 
 .rv-next { min-width: 0; margin-top: 40px; padding: 0 var(--rv-x) 48px; }
 .rv-nextcard {
@@ -350,19 +370,20 @@
   width: 100%;
   min-width: 0;
   min-height: 64px;
-  margin-top: 12px;
   padding: 12px 16px;
-  border-radius: var(--radius-frame);
+  border-radius: var(--radius-bezel-panel);
+  background: var(--ax-bezel-panel);
   box-shadow: inset 0 0 0 1px var(--ax-line);
   text-align: left;
   cursor: pointer;
   transition: background-color 140ms var(--ease-out-strong), box-shadow 140ms var(--ease-out-strong);
 }
 @media (hover: hover) and (pointer: fine) {
-  .rv-nextcard:hover { background: var(--ax-hover); box-shadow: inset 0 0 0 1px var(--ax-line-strong); }
+  /* Mixed into the panel's own tone: a translucent hover would show the shell through. */
+  .rv-nextcard:hover { background: color-mix(in oklch, var(--ax-ink) 3%, var(--ax-bezel-panel)); box-shadow: inset 0 0 0 1px var(--ax-line-strong); }
   .rv-nextcard:hover .rv-nc-arrow { translate: 2px 0; }
 }
-.rv-nextcard:active { background: var(--ax-press); }
+.rv-nextcard:active { background: color-mix(in oklch, var(--ax-ink) 7%, var(--ax-bezel-panel)); }
 .rv-nc-body { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
 .rv-nc-go { display: inline-flex; align-items: center; gap: 8px; flex: none; color: var(--ax-ink-muted); }
 .rv-nc-arrow { width: 16px; height: 16px; flex: none; color: var(--ax-ink-muted); transition: translate 140ms var(--ease-out-strong); }
@@ -401,7 +422,8 @@
 }
 .rv-rrow:active { background: var(--ax-press); }
 
-/* Related stays at the top of the reserved column. Only the reading card scrolls. */
+/* With the dive shown, the reading card (How to apply it first) leads the reserved column and Related
+   follows it. Only the reading card scrolls, so Related never leaves the column. */
 @container sheet (min-width: 1160px) {
   .rv-stage {
     max-width: calc(1040px + var(--rv-deep-w));
@@ -423,46 +445,106 @@
     align-self: start;
     position: sticky;
     /* The sticky bounds must stay the same when the reading card disappears.
-       Let a short window scroll past Related to reach the lower card. */
+       Let a short window scroll the column to reach Related under the card. */
     --rv-side-min-height: 360px;
-    top: min(64px, calc(100dvh - var(--rv-side-min-height) - 16px));
-    height: max(var(--rv-side-min-height), calc(100dvh - 2 * var(--shell-inset) - 80px));
-    margin: 16px var(--rv-x) 32px 0;
+    top: min(80px, calc(100dvh - var(--rv-side-min-height) - 16px));
+    height: max(var(--rv-side-min-height), calc(100dvh - 2 * var(--shell-inset) - 96px));
+    /* Its top meets the title's: both sit 32 under the header. */
+    margin: 32px var(--rv-x) 32px 0;
   }
-  .rv-side > .rv-related,
-  html:not([data-deep="hidden"]) .rv-side > .rv-dd:not([hidden]) {
-    padding: 20px;
-    background: var(--ax-sunken);
-    box-shadow: inset 0 0 0 1px var(--ax-line);
-    border-radius: var(--radius-frame);
-  }
+  /* Two bezel cards: the reading card (its shell is .rv-dd-card, the dive
+     its panel and still the scroller) and Related (the section is the shell,
+     its h2 the header row, the list the panel). Unscoped to the stage, so the
+     exiting copy (deep-dive-motion.ts) keeps every part of the shape. */
+  /* The exiting copy sits outside the stage, so it takes its direction here. */
+  .rv-side { flex-direction: column; }
+  .rv-side > .rv-dd-card,
   .rv-side > .rv-related {
-    order: -1;
+    padding: var(--bezel-pad);
+    border-radius: var(--radius-bezel);
+    background: var(--ax-bezel);
+    box-shadow: var(--ax-shadow-bezel);
+  }
+  .rv-side > .rv-dd-card {
+    display: flex;
+    flex-direction: column;
+    flex: 0 1 auto;
+    min-height: 0;
+  }
+  .rv-side .rv-dd-bar { display: flex; align-items: center; gap: 8px; flex: none; min-height: 36px; padding: 0 16px; }
+  .rv-dd-meta { margin-left: auto; font-size: 12px; line-height: 16px; color: var(--ax-ink-muted); font-variant-numeric: tabular-nums; }
+  .rv-side > .rv-related {
     flex: none;
     margin: 0;
   }
+  .rv-side > .rv-related h2 { display: flex; align-items: center; min-height: 36px; padding: 0 16px; }
+  .rv-side > .rv-related ul,
+  html:not([data-deep="hidden"]) .rv-side .rv-dd:not([hidden]) {
+    border-radius: var(--radius-bezel-panel);
+    background: var(--ax-bezel-panel);
+    box-shadow: inset 0 0 0 1px var(--ax-line);
+  }
+  .rv-side > .rv-related ul { margin: 0; padding: 4px 16px; }
+  html:not([data-deep="hidden"]) .rv-side > .rv-dd-card + .rv-related { margin-top: 12px; }
   .rv-side .rv-rrow { height: auto; min-height: 36px; padding-block: 6px; }
   .rv-side .rv-rrow-title { white-space: normal; overflow-wrap: anywhere; }
-  .rv-side > .rv-dd {
+  .rv-side .rv-dd {
     display: block;
+    flex: 0 1 auto;
     min-height: 0;
     margin: 0;
-    padding: 0;
+    padding: 16px;
     overflow-y: auto;
     overscroll-behavior-y: contain;
     scrollbar-gutter: stable;
   }
-  html:not([data-deep="hidden"]) .rv-side > .rv-dd:not([hidden]) { margin-top: 12px; }
   .rv-side .rv-dd-sec + .rv-dd-sec,
   .rv-side .rv-dd-col + .rv-dd-col {
     margin-top: 24px;
     padding-block-start: 20px;
     border-block-start: 1px solid var(--ax-line);
   }
+
+  /* The dive hidden: no column is reserved. The stage goes back to the one
+     column's 1040 cap, centred, so the comparison keeps a reading width
+     instead of stretching across the sheet. The header's left group follows
+     the title's edge; its right edge stays put, so the toggle never moves
+     under the pointer. deep-dive-motion.ts slides both to their new x.
+     Related joins the reading order between Before you ship and Next, as it
+     does below 1160. Scoped to the stage, so the exiting copy of the docked
+     column keeps its card styles. */
+  html[data-deep="hidden"] .rv-stage { max-width: 1040px; min-height: 0; grid-template-rows: none; }
+  html[data-deep="hidden"] .rv-head { padding-left: calc(max(0px, (100cqw - 1040px) / 2) + var(--rv-x) - 8px); }
+  html[data-deep="hidden"] .rv-stage > :is(.rv-main, .rv-ship, .rv-next) { grid-column: 1 / -1; grid-row: auto; }
+  html[data-deep="hidden"] .rv-stage > .rv-side { display: contents; }
+  html[data-deep="hidden"] .rv-stage > .rv-side > * { grid-column: 1 / -1; }
+  html[data-deep="hidden"] .rv-stage > .rv-ship { order: 1; }
+  html[data-deep="hidden"] .rv-stage .rv-dd-card { display: contents; }
+  html[data-deep="hidden"] .rv-stage .rv-dd-bar { display: none; }
+  html[data-deep="hidden"] .rv-stage > .rv-side > .rv-related {
+    order: 2;
+    margin: 40px var(--rv-x) 0;
+    padding: 0;
+    background: none;
+    box-shadow: none;
+    border-radius: 0;
+  }
+  html[data-deep="hidden"] .rv-stage > .rv-side > .rv-related h2 { display: block; min-height: 0; padding: 0; font-size: 14px; font-weight: 600; }
+  html[data-deep="hidden"] .rv-stage > .rv-side > .rv-related ul {
+    margin: 4px 0 0;
+    padding: 0;
+    background: none;
+    box-shadow: none;
+    border-radius: 0;
+  }
+  html[data-deep="hidden"] .rv-stage > .rv-next { order: 3; }
+  html[data-deep="hidden"] .rv-stage .rv-rrow { height: 36px; min-height: 0; padding-block: 0; }
+  html[data-deep="hidden"] .rv-stage .rv-rrow-title { white-space: nowrap; }
 }
 
 /* ── Showing and hiding the deep dive (deep-dive-motion.ts) ───────────
-   The docked card slides within its reserved row. An inline card reveals
+   The docked column (Related and the dive) slides in from, or out past, the
+   sheet's right edge; the main column changes width at once. An inline card reveals
    its height in the grid so the following content clears it each frame.
    The inert exit copy retains the actual panel’s layout and scroll offset. */
 
@@ -482,7 +564,6 @@ html[data-deep="hidden"] .rv-dd { content-visibility: hidden; margin: 0; padding
 @media (max-width: 640px), (pointer: coarse) and (max-height: 500px) {
   .rv { --rv-x: 16px; }
   .rv-head { display: none; }
-  .rv-title { font-size: 28px; line-height: 34px; }
   .rv-main { padding-top: 24px; }
   .rv-mcopy { display: block; }
   .rv-mcopy .rv-copy-trigger { height: 44px; padding: 0 16px; font-size: 14px; }
@@ -519,7 +600,10 @@ html[data-deep="hidden"] .rv-dd { content-visibility: hidden; margin: 0; padding
   html[data-hydrated] .rv-dd-sec[data-collapsible][data-open] .rv-dd-h::after { rotate: -135deg; margin-top: -2px; }
   html[data-hydrated] .rv-dd-sec[data-collapsible]:not([data-open]) .rv-dd-body { display: none; }
 
-  .rv-ship h2, .rv-next h2, .rv-related h2, .rv-nc-title { font-size: 16px; line-height: 24px; }
+  .rv-related h2, .rv-nc-title { font-size: 16px; line-height: 24px; }
+  .bezel-head { min-height: 40px; }
+  .bezel-head h2 { font-size: 14px; line-height: 20px; }
+  .bezel-meta { font-size: 13px; line-height: 20px; }
   .rv-ship li { font-size: 16px; line-height: 26px; }
   .rv-ship li::before { top: 10px; }
   .rv-nc-meta { font-size: 13px; line-height: 20px; }
@@ -532,10 +616,11 @@ html[data-deep="hidden"] .rv-dd { content-visibility: hidden; margin: 0; padding
 }
 /* Forced colours drop every box-shadow: the edges, the column hairline and the review rings come back as borders. */
 @media (forced-colors: active) {
-  .rv-menu, .rv-nextcard, .rv-ship, .rv-ship li::before { border: 1px solid CanvasText; }
+  .rv-menu, .rv-nextcard, .rv-ship, .rv-ship ul, .rv-next .bezel, .rv-ship li::before { border: 1px solid CanvasText; }
   .rv-copy-trigger { border: 1px solid ButtonText; }
   @container sheet (min-width: 1160px) {
-    .rv-side > .rv-related, .rv-side > .rv-dd:not([hidden]) { border: 1px solid CanvasText; }
+    .rv-side > :is(.rv-related, .rv-dd-card), .rv-side > .rv-related ul, .rv-side .rv-dd:not([hidden]) { border: 1px solid CanvasText; }
+    html[data-deep="hidden"] .rv-stage > .rv-side > .rv-related, html[data-deep="hidden"] .rv-stage > .rv-side > .rv-related ul { border: 0; }
   }
   .rv-related li + li { border-top: 1px solid CanvasText; }
 }

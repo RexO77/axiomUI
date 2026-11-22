@@ -7,7 +7,8 @@ import { Segmented, segmentIndex } from "@/components/ui/segmented";
 // Inspect the rendered handlers in node without a DOM renderer.
 vi.mock("react", async (importOriginal) => ({
   ...await importOriginal<typeof import("react")>(),
-  useRef: () => ({ current: [] }),
+  useRef: (initial: unknown) => ({ current: initial }),
+  useLayoutEffect: () => {},
 }));
 
 describe("segmented radio keyboard logic", () => {
@@ -67,7 +68,8 @@ describe("segmented presentation", () => {
     expect(html).toContain("bg-raised text-ink shadow-item");
     expect(html).not.toMatch(/bg-surface|hover:bg-|rounded-md|rounded-lg/);
     expect(html).toContain("hover:text-ink");
-    expect(html).toContain("transition-[background-color,color,box-shadow] duration-fast");
+    // The server paints the selected radio; measuring it and enabling motion are client-only.
+    expect(html).not.toMatch(/data-measured|data-slide/);
     expect(html).toContain("focus-visible:outline-offset-0");
     expect(html).toContain("[&amp;_svg]:size-3.5");
     expect(html).toContain('aria-hidden="true" class="text-ink-secondary"');
