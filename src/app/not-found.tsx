@@ -7,9 +7,9 @@ import { AxiomLogo } from "@/components/ui/axiom-logo";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: { absolute: "Page not found | Axiom UI" },
+  title: { absolute: "Page not found · Axiom UI" },
   description:
-    "This page couldn't be found. Head back to the Axiom UI catalog of UI design rules.",
+    "Browse all UI design rules in the Axiom UI catalog.",
 };
 
 export default function NotFound() {
@@ -29,21 +29,17 @@ export default function NotFound() {
         tabIndex={-1}
         className="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center px-6 pb-24 pt-12 outline-none sm:px-10 lg:flex-row lg:items-center lg:gap-20"
       >
-        <p aria-hidden="true" className="shrink-0 font-serif text-8xl leading-none tracking-tighter text-ink-muted sm:text-9xl lg:text-[180px]">
+        <p aria-hidden="true" className="shrink-0 text-8xl leading-none tracking-tight text-ink-muted sm:text-9xl lg:text-[180px]">
           404
         </p>
         <div className="mt-8 max-w-sm lg:mt-0">
           <h1 className="text-3xl font-semibold leading-tight text-ink sm:text-4xl">
             Page not found
           </h1>
-          <p className="mt-4 text-base leading-7 text-pretty text-ink-secondary">
-            The link may have changed, or the page may have moved. Find your
-            way back in the catalog.
-          </p>
           <div className="mt-8">
             <Button href="/" variant="primary" size="md">
               <ArrowLeft aria-hidden="true" className="size-3.5" />
-              Back to the catalog
+              Browse all rules
             </Button>
           </div>
         </div>

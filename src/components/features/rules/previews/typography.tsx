@@ -227,16 +227,16 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
         // a Linux face so the avoid pane still renders two distinct sans.
         case "typo-5": {
             const headingFamily = isDo
-                ? "var(--font-manrope), sans-serif"
+                ? "var(--font-inter), sans-serif"
                 : "Arial, Helvetica, 'Liberation Sans', sans-serif";
             const bodyFamily = isDo
-                ? "var(--font-manrope), sans-serif"
+                ? "var(--font-inter), sans-serif"
                 : "Verdana, 'DejaVu Sans', Geneva, sans-serif";
             return (
                 <PreviewFrame className="flex items-center justify-center">
                     <div className="w-full max-w-[230px]">
                         <Spec className="block">
-                            {isDo ? "1 family · Manrope" : "2 sans · Arial + Verdana"}
+                            {isDo ? "1 sans · SF Pro or Inter" : "2 sans · Arial + Verdana"}
                         </Spec>
                         <p
                             className="mt-2 text-[17px] font-semibold leading-snug text-neutral-900 dark:text-neutral-50"
@@ -286,7 +286,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
 
         // Numeric alignment — the same order summary, right-aligned in both
         // panes; only font-variant-numeric changes. The amounts are 1-heavy on
-        // purpose: Manrope's proportional 1 is far narrower than its 0 or 8, so
+        // purpose: in SF Pro and Inter the proportional 1 is far narrower than 0 or 8, so
         // proportional figures let the decimal points wander while tabular
         // figures stack every column. Alignment is not the variable here.
         case "typo-7": {
@@ -370,8 +370,8 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
         // The avoid pane spends a different weight on every role, including
         // a bold meta line and a medium description, so the four-weight
         // scramble is visible without reading the tags.
-        // app/layout.tsx loads Manrope at 400/500/600/700 only, so every tag
-        // below is a weight the page actually renders — no phantom 300.
+        // SF Pro and Inter (variable) both render every weight below, so no
+        // tag names a weight the page fakes.
         case "typo-9": {
             const rows: Array<{ text: string; base: string; doW: string; dontW: string }> = [
                 {
@@ -592,7 +592,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
                 <PreviewFrame className="flex flex-col items-center justify-center gap-2">
                     <p
                         className="whitespace-nowrap text-[38px] leading-none font-semibold text-neutral-900 dark:text-neutral-50"
-                        style={{ fontFamily: "var(--font-manrope), sans-serif", letterSpacing }}
+                        style={{ fontFamily: "var(--font-inter), sans-serif", letterSpacing }}
                     >
                         Work<br />together
                     </p>

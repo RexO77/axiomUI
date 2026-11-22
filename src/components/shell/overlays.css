@@ -427,7 +427,7 @@
 .keys-head h2 { font-size: 14px; line-height: 20px; font-weight: 600; }
 /* Overlay titles are labels in the shell's sans, not page headings. */
 .install-pop h2,
-.keys-head h2 { font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif; letter-spacing: 0; }
+.keys-head h2 { font-family: -apple-system, BlinkMacSystemFont, var(--font-inter), ui-sans-serif, system-ui, sans-serif; }
 .keys-close {
   width: 32px;
   height: 32px;

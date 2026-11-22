@@ -121,6 +121,10 @@ function expectListInStep(frames: Frame[], opening: boolean) {
   expect(frames[land].list).toBeCloseTo(opening ? 1 : 0, 1);
 }
 
+// A full-wall DOM snapshot after the first click blocks animation frames before
+// the second click. Keep the trace’s screenshots and action timings.
+const reversalTest = test.extend({ trace: { mode: "retain-on-failure", snapshots: false } });
+
 const firstTile = sel.tile(railIds[0]);
 
 test.beforeEach(async ({ page }) => {
@@ -208,7 +212,7 @@ test.describe("one motion", () => {
     }
   });
 
-  test("a second click mid-move turns the edge around from where it is", async ({ page }) => {
+  reversalTest("a second click mid-move turns the edge around from where it is", async ({ page }) => {
     await openCatalog(page, wallUrl());
     const toggle = page.locator(sel.railToggle);
     const frames = await record(page, firstTile, async () => {

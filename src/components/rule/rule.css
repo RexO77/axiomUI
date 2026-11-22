@@ -14,7 +14,7 @@
    cross-fade between the two views keeps one content edge. The header row
    lines up with the same block.
 
-   Rule prose turns common ligatures off: Manrope joins "--" into a dash, and
+   Rule prose turns common ligatures off: a sans can join "--" into a dash, and
    the copy quotes CSS ("--swipe-amount"). Code-like tokens are
    <code class="rv-code"> in Plex Mono (prose-code.ts). */
 
@@ -207,7 +207,6 @@
 /* ── Title, summary, prose code ─────────────────────────────────────── */
 
 .rv-title {
-  font-family: var(--font-source-serif), ui-serif, Georgia, serif;
   font-size: 36px;
   line-height: 40px;
   font-weight: 600;
@@ -270,9 +269,8 @@
 }
 .rv-dd[hidden] { margin: 0; padding: 0; }
 .rv-dd-sec + .rv-dd-sec { margin-top: 40px; }
-/* Section heads are UI type: Manrope, never the serif the base styles give headings (021: serif is for titles). */
+/* Section heads are UI type: small, at body weight scale, not display headings. */
 .rv-dd-h, .rv-ship h2, .rv-next h2, .rv-related h2 {
-  font-family: var(--font-manrope), ui-sans-serif, sans-serif;
   font-size: 14px;
   line-height: 20px;
   font-weight: 600;

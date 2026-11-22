@@ -181,16 +181,31 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
     };
     const onPointer = (event: PointerEvent) => {
       if (event.type === "pointerdown" || event.movementX || event.movementY) set("pointer");
+      // A press inside what already has focus moves no focus, so no focusin
+      // follows: a field reached with / and then clicked drops its ring here.
+      const focused = document.activeElement;
+      if (event.type === "pointerdown" && focused && focused !== document.body && event.target instanceof Node && focused.contains(event.target)) {
+        root.dataset.focusOrigin = "pointer";
+      }
+    };
+    /* How focus last arrived, frozen at that moment: a ring marks keyboard focus
+       only (globals.css). A click into a text field, or a script moving focus
+       after a click, never draws one, and typing afterwards does not add one. */
+    const onFocus = () => {
+      root.dataset.focusOrigin = origin.current;
     };
     root.dataset.input = origin.current;
     document.addEventListener("keydown", onKey, true);
     document.addEventListener("pointerdown", onPointer, true);
     document.addEventListener("pointermove", onPointer, true);
+    document.addEventListener("focusin", onFocus, true);
     return () => {
       document.removeEventListener("keydown", onKey, true);
       document.removeEventListener("pointerdown", onPointer, true);
       document.removeEventListener("pointermove", onPointer, true);
+      document.removeEventListener("focusin", onFocus, true);
       delete root.dataset.input;
+      delete root.dataset.focusOrigin;
     };
   }, []);
   const inputOrigin = useCallback(() => origin.current, []);

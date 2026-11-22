@@ -46,7 +46,7 @@ Set heading leading with a two- or three-line title. Start tighter than paragrap
 
 Start with one family for product headings and body text. Add another family when it serves a recognizable role, such as code, editorial display, or coverage for another script.
 
-- Do: Manrope for headings + body · Don't: Arial headings + Verdana body
+- Do: One sans for headings + body · Don't: Arial headings + Verdana body
 - [ ] Where does the change of family signal a change of role?
 - [ ] Could the existing family express the same distinction?
 - [ ] Which face actually renders the localized copy?

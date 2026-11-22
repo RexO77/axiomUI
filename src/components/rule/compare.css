@@ -167,7 +167,7 @@
 /* A motion caption opens with the rule's own claim, in ink, over the narration of what plays. */
 .cmp-cap-rule { display: block; color: var(--ax-ink); }
 .cmp-cap-v { display: none; }
-.cmp-tally { margin-left: 8px; font-family: var(--font-manrope), ui-sans-serif, sans-serif; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cmp-tally { margin-left: 8px; font-family: -apple-system, BlinkMacSystemFont, var(--font-inter), ui-sans-serif, system-ui, sans-serif; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .cmp-tally[data-on] { color: var(--ax-dont-ink); }
 
 /* Every hint sits in one place: under the captions, on the inner edge, 13/20.
@@ -201,7 +201,7 @@
   .cmp-canvas:not([data-flip]) .cmp-pane + .cmp-pane { box-shadow: inset 0 1px 0 var(--ax-line); }
   .cmp-pane { padding: 44px 20px 28px; }
   .cmp-captions { grid-template-columns: minmax(0, 1fr); row-gap: 6px; }
-  .cmp-cap-v { display: inline; margin-right: 6px; font-family: var(--font-manrope), ui-sans-serif, sans-serif; font-weight: 600; }
+  .cmp-cap-v { display: inline; margin-right: 6px; font-family: -apple-system, BlinkMacSystemFont, var(--font-inter), ui-sans-serif, system-ui, sans-serif; font-weight: 600; }
   .cmp-bar { flex-wrap: wrap; }
 }
 
@@ -353,7 +353,7 @@
   .cmp-show > .motion-showcase > .grid > .min-w-0:nth-child(1) > p { grid-row: 3; }
   .cmp-show > .motion-showcase > .grid > .min-w-0:nth-child(2) > p { grid-row: 4; padding-top: 8px; }
   .cmp-show > .motion-showcase > .grid > .min-w-0 > div:not([class]) { width: calc(100% - 32px); margin: 40px 0 32px; }
-  .cmp-show > .motion-showcase > .grid > .min-w-0 > p::before { margin-right: 8px; font-family: var(--font-manrope), ui-sans-serif, sans-serif; font-weight: 600; }
+  .cmp-show > .motion-showcase > .grid > .min-w-0 > p::before { margin-right: 8px; font-family: -apple-system, BlinkMacSystemFont, var(--font-inter), ui-sans-serif, system-ui, sans-serif; font-weight: 600; }
   .cmp-show > .motion-showcase > .grid > .min-w-0:nth-child(1) > p::before { content: "Do"; }
   .cmp-show > .motion-showcase > .grid > .min-w-0:nth-child(2) > p::before { content: "Don’t"; }
 }

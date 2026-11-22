@@ -138,7 +138,7 @@ function textWidth(variant: Variant) {
             </div>
             {/* Keep the aria-hidden illustration out of the scroll-container tab order. */}
             <div tabIndex={-1} className="@container w-full min-w-0 overflow-x-auto overscroll-x-contain">
-                {/* In Manrope, 52ch is about 31.7em. Size the text to fit that measure. */}
+                {/* ch follows the face's zero, so 52ch shifts with the font. Size the text to fit that measure. */}
                 <div className="text-[clamp(8px,3.125cqi,13px)] leading-[1.54]" style={{ width: pageWidth }}>
                     <div data-text-column="" className="w-full" style={{ maxWidth: isDo ? columnWidth : undefined }}>
                         <div aria-hidden="true" className="h-1 border-x border-t border-blue-500 dark:border-blue-400" />
