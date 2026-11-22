@@ -39,7 +39,10 @@ async function expectSources(page: Page, id: string) {
   const list = why(page).getByRole("list", { name: "Sources" });
   await expect(list.getByRole("link")).toHaveCount(sources.length);
   for (const { title, href } of sources) {
-    await expect(list.getByRole("link", { name: title, exact: true })).toHaveAttribute("href", href);
+    // References open in a new tab, and their names say so.
+    const link = list.getByRole("link", { name: `${title} (opens in a new tab)`, exact: true });
+    await expect(link).toHaveAttribute("href", href);
+    await expect(link).toHaveAttribute("target", "_blank");
   }
 }
 
@@ -491,7 +494,7 @@ test.describe("deep dive toggle", () => {
     ["closing", 140],
     ["opening", 220],
   ] as const) {
-    test(`a click ${step} it keeps the reading column still during one ${ms} ms step and ends exactly on the layout`, async ({ page }) => {
+    test(`a click ${step} it slides the reading column in one ${ms} ms step and ends exactly on the layout`, async ({ page }) => {
       await openCatalog(page, ruleUrl("typo-1"));
       const toggle = page.locator(".rv-head").getByRole("button", { name: "Deep dive", exact: true });
       if (step === "opening") {
@@ -534,9 +537,11 @@ test.describe("deep dive toggle", () => {
         cmpY: document.querySelector(".rv-compare")!.getBoundingClientRect().top,
       }));
       expect(layout).toEqual({ title: end.title, cmpY: end.cmpY });
-      expect(end.title, "the reading column stays anchored").toBe(before);
+      // With the dive hidden the column re-centres at its 1040 cap; shown, it returns to the left edge.
+      expect(Math.sign(end.title - before), "the reading column slides to its new x").toBe(step === "closing" ? 1 : -1);
       for (const frame of after) {
-        expect(frame.cmpX).toBe(end.cmpX);
+        // The comparison travels with the title, never on its own, and never vertically.
+        expect(Math.abs(frame.cmpX - frame.title - (end.cmpX - end.title))).toBeLessThan(1);
         expect(frame.cmpY).toBe(end.cmpY);
       }
     });
@@ -560,7 +565,8 @@ test.describe("deep dive toggle", () => {
     await page.keyboard.press("i");
     expect(await runningIn(page)).toEqual([]);
     const closed = await x();
-    expect(closed).toBe(open);
+    // Hidden, the column re-centres; with nothing animating, it is already there.
+    expect(closed).toBeGreaterThan(open);
     await expect(page.locator(".rv-ghost")).toHaveCount(0);
     const toggle = page.locator(".rv-head").getByRole("button", { name: "Deep dive", exact: true });
     await toggle.focus();
@@ -575,7 +581,8 @@ test.describe("deep dive toggle", () => {
     await openCatalog(page, ruleUrl("typo-1"));
     await page.keyboard.press("i");
     const opening = await page.evaluate(async () => {
-      const side = document.querySelector<HTMLElement>(".rv-dd")!;
+      // Docked, the whole column travels (deep-dive-motion.ts); the dive inside it is only its scroller.
+      const side = document.querySelector<HTMLElement>(".rv-stage > .rv-side")!;
       document.querySelector(".rv-head button[aria-controls]")!
         .dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
       const animation = side.getAnimations().find((item) => !(item instanceof CSSTransition))!;
@@ -608,11 +615,11 @@ test.describe("deep dive toggle", () => {
         const click = () => toggle.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
         if (interrupt) {
           click();
-          const entering = document.querySelector(".rv-dd")!.getAnimations().find((item) => !(item instanceof CSSTransition))!;
+          const entering = document.querySelector(".rv-stage > .rv-side")!.getAnimations().find((item) => !(item instanceof CSSTransition))!;
           entering.pause();
           entering.currentTime = 40;
         }
-        const start = document.querySelector(".rv-dd")!.getBoundingClientRect().left;
+        const start = document.querySelector(".rv-stage > .rv-side")!.getBoundingClientRect().left;
         click();
         const ghost = document.querySelector(".rv-ghost[data-surface]")!;
         const animation = ghost.getAnimations().find((item) => !(item instanceof CSSTransition))!;
@@ -653,15 +660,24 @@ test.describe("deep dive toggle", () => {
         const samples: { gap: number; relatedShift: number; mainShift: number }[] = [];
         const reversals: number[] = [];
         const click = () => button.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
-        const surface = () => document.querySelector<HTMLElement>(".rv-ghost") ?? panel;
+        // Docked, the column itself (or its exit copy) travels and carries Related
+        // with it: measure Related and the gap inside that surface. The main
+        // column re-centres sideways there, so only its vertical position is fixed.
+        const side = related.parentElement!;
+        const firstSide = side.getBoundingClientRect();
+        const surface = () => document.querySelector<HTMLElement>(".rv-ghost") ?? (docked ? side : panel);
         function record() {
           const box = surface().getBoundingClientRect();
-          const links = related.getBoundingClientRect();
+          const links = (docked ? surface().querySelector(".rv-related")! : related).getBoundingClientRect();
+          const card = docked ? surface().querySelector(".rv-dd-card")!.getBoundingClientRect() : box;
           const compare = main.getBoundingClientRect();
+          const vertical = Math.abs(compare.top - firstMain.top);
           samples.push({
-            gap: docked ? box.top - links.bottom : Math.min(links.top, ship.getBoundingClientRect().top) - box.bottom,
-            relatedShift: Math.max(Math.abs(links.top - firstRelated.top), Math.abs(links.left - firstRelated.left)),
-            mainShift: Math.max(Math.abs(compare.top - firstMain.top), Math.abs(compare.left - firstMain.left)),
+            gap: docked ? links.top - card.bottom : Math.min(links.top, ship.getBoundingClientRect().top) - box.bottom,
+            relatedShift: docked
+              ? Math.max(Math.abs(links.top - box.top - (firstRelated.top - firstSide.top)), Math.abs(links.left - box.left - (firstRelated.left - firstSide.left)))
+              : Math.max(Math.abs(links.top - firstRelated.top), Math.abs(links.left - firstRelated.left)),
+            mainShift: docked ? vertical : Math.max(vertical, Math.abs(compare.left - firstMain.left)),
           });
         }
         // Record actual painted frames in each direction, then reverse a second
@@ -874,12 +890,15 @@ test.describe("deep dive toggle", () => {
       const edges = await page.evaluate(() => {
         const head = document.querySelector<HTMLElement>(".rv-head")!;
         const side = document.getElementById("rule-deep-dive")!;
+        const card = document.querySelector<HTMLElement>(".rv-dd-card")!;
         const related = document.querySelector<HTMLElement>(".rv-related")!;
         const sheet = document.querySelector<HTMLElement>(".shell-sheet")!.getBoundingClientRect();
         const style = getComputedStyle(head);
         return {
           headBottom: head.getBoundingClientRect().bottom,
-          sideTop: side.getBoundingClientRect().top,
+          sideTop: card.getBoundingClientRect().top,
+          cardBottom: card.getBoundingClientRect().bottom,
+          cardRadius: getComputedStyle(card).borderRadius,
           relatedTop: related.getBoundingClientRect().top,
           relatedBottom: related.getBoundingClientRect().bottom,
           relatedRadius: getComputedStyle(related).borderRadius,
@@ -895,12 +914,17 @@ test.describe("deep dive toggle", () => {
         };
       });
       expect(edges.divider).toContain("inset");
-      expect(edges.relatedTop - edges.headBottom).toBe(16);
-      expect(edges.sideTop - edges.relatedBottom).toBe(12);
-      expect(edges.relatedRadius).toBe("10px");
-      expect(edges.relatedBorder).toContain("inset");
+      // The reading card (a bezel: shell, header row, inset dive) leads the column, 32 under the
+      // header (the title's own offset); Related, a bezel too, follows 12 below.
+      expect(edges.sideTop - edges.headBottom).toBe(32);
+      expect(edges.relatedTop - edges.cardBottom).toBe(12);
+      expect(edges.relatedBottom).toBeLessThanOrEqual(edges.sheetBottom);
+      expect(edges.cardRadius).toBe("20px");
+      expect(edges.relatedRadius).toBe("20px");
+      expect(edges.relatedBorder).toContain("0px 0px 0px 1px");
       expect(edges.sideBottom).toBeLessThanOrEqual(edges.sheetBottom);
-      expect(edges.radius).toBe("10px");
+      // The dive is the shell's inset panel: 20 − 6 padding.
+      expect(edges.radius).toBe("14px");
       expect(edges.floor).toBe(edges.line);
       // The header spans the panel too, so its floor meets the divider in a T.
       expect(edges.headRight).toBeGreaterThanOrEqual(edges.sideRight);

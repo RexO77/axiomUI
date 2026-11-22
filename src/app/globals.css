@@ -74,8 +74,9 @@
   --ax-line-strong: rgb(0 0 0 / 0.14);
 
   /* The one focus ring: the muted ink, so a ring reads quietly, never as an
-     accent, while clearing 3:1 against every surface (5.7:1 light, 7.2:1
-     dark). It draws only for keyboard focus (see :focus-visible below). */
+     accent, while clearing 3:1 against every surface (at least 5.2:1 light,
+     on the backdrop, and 5.0:1 dark, on raised). It draws only for keyboard
+     focus (see :focus-visible below). */
   --ax-ring: #666666;
 
   /* Verdicts: icon tone, then the darker label tone */

@@ -72,7 +72,7 @@ export const rules: Rule[] = [
     title: "Give each typeface a job",
     id: "typo-5",
     desc: "Start with one family for product headings and body text. Add another family when it serves a recognizable role, such as code, editorial display, or coverage for another script.",
-    do: "Manrope for headings + body",
+    do: "One sans for headings + body",
     dont: "Arial headings + Verdana body",
     tags: ["System", "Consistency"],
   },

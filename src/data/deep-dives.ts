@@ -211,7 +211,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "typo-15": {
-    whyItMatters: "In the two-line Manrope headline, tighter tracking compresses the gap between the o and g in together. The same em value moves the letters farther in pixels as the heading gets larger, so check the spacing again when the size changes.",
+    whyItMatters: "In the two-line headline, tighter tracking compresses the gap between the o and g in together. The same em value moves the letters farther in pixels as the heading gets larger, so check the spacing again when the size changes.",
     riskWhenIgnored: "Neighboring strokes can nearly join in a large headline, making pairs of letters harder to distinguish during a quick read.",
     implementationNotes: [
       "Search heading styles for letter-spacing, letterSpacing, and tracking- classes. Inspect the computed spacing on the rendered headline after the webfont loads.",
@@ -241,7 +241,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "layout-2": {
-    whyItMatters: "A 95ch canvas can accommodate a wide table and a narrower reading column. The sample caps the column at 52ch to fit about 65 characters per full line in Manrope. The exact count depends on the font and the words.",
+    whyItMatters: "A 95ch canvas can accommodate a wide table and a narrower reading column. The sample caps the column at 52ch to fit about 65 characters per full line. The exact count depends on the font and the words.",
     riskWhenIgnored: "A paragraph that inherits the width of a dashboard can grow very long on a wide display. Hard-coding its minimum width to preserve an ideal measure can create horizontal scrolling at zoom.",
     implementationNotes: [
       "Set a maximum inline size on the article text while allowing the column to shrink.",
