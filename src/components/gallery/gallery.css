@@ -132,6 +132,8 @@
   background: var(--ax-surface);
   box-shadow: inset 0 0 0 1px var(--ax-line-strong), 0 0 0 2px var(--ax-ring);
 }
+/* Clicked into, the field shows it is active by its fill and edge alone; the ring is for keyboard focus. */
+:root[data-focus-origin="pointer"] .gw-search input:focus-visible { box-shadow: inset 0 0 0 1px var(--ax-line-strong); }
 .gw-search-key,
 .gw-search-clear { position: absolute; right: 7px; }
 .gw-search-clear {
