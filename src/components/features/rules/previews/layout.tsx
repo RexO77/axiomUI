@@ -111,7 +111,7 @@ function fourPtGrid(variant: Variant) {
                     <Annotation className={cn(FINE, TICK_TEXT)}>p·{pad}</Annotation>
                     <Annotation className={cn(FINE, TICK_TEXT)}>gap·{gap}</Annotation>
                     <Annotation className={ANNOT}>
-                        {isDo ? "16, 8 ÷ 4 = 4, 2" : "13, 5 ÷ 4 = 3.25, 1.25"}
+                        {isDo ? "16px = 4 steps · 8px = 2 steps of 4px" : "13px = 3.25 steps · 5px = 1.25 steps of 4px"}
                     </Annotation>
                 </div>
             </div>
@@ -138,24 +138,24 @@ function textWidth(variant: Variant) {
             </div>
             {/* Keep the aria-hidden illustration out of the scroll-container tab order. */}
             <div tabIndex={-1} className="@container w-full min-w-0 overflow-x-auto overscroll-x-contain">
-                {/* In Manrope, 52ch is about 31.7em. Size the text to fit that measure. */}
+                {/* In SF and Inter, 52ch is about 32.5em. Size the text to fit that measure. */}
                 <div className="text-[clamp(8px,3.125cqi,13px)] leading-[1.54]" style={{ width: pageWidth }}>
                     <div data-text-column="" className="w-full" style={{ maxWidth: isDo ? columnWidth : undefined }}>
                         <div aria-hidden="true" className="h-1 border-x border-t border-blue-500 dark:border-blue-400" />
                         <div className="mt-1 min-h-[14.3em] text-neutral-600 dark:text-neutral-300">
                             <p>
-                                Workspaces keep every project, doc, and thread in one shared place
-                                your team can search, so onboarding an engineer stops meaning a week
-                                of asking where things live.
+                                A workspace keeps projects, documents and discussions together.
+                                A new teammate can search past conversations to find out why
+                                the team made a decision.
                             </p>
                             <p className="mt-[0.75em]">
-                                Each workspace has its own members, permissions, and billing, and
-                                anything you move between them keeps its history, comments, and links
-                                intact.
+                                Each workspace has its own members, permissions and billing. Move a
+                                project to another workspace and its history, comments and links
+                                move with it.
                             </p>
                             <p className="mt-[0.75em]">
-                                Start with one for the whole company and split it later, when a team
-                                needs a room of its own.
+                                Start with one workspace for the company. Create another when a team
+                                needs its own permissions or billing.
                             </p>
                         </div>
                     </div>
@@ -285,12 +285,12 @@ function iconAlignment(variant: Variant) {
                         Backup complete
                     </span>
                     <span className={cn("mt-0.5 block text-[10px] leading-[14px]", PRODUCT_MUTED)}>
-                        128 files synced to cloud storage two minutes ago
+                        128 files backed up to cloud storage 2 minutes ago
                     </span>
                 </div>
             </div>
             <Annotation className={ANNOT}>
-                {isDo ? "items-start + 1px — first line" : "items-center — icon on the block"}
+                {isDo ? "items-start + 1px · bell aligns with first line" : "items-center · bell centered on full text block"}
             </Annotation>
         </PreviewFrame>
     );
@@ -362,7 +362,7 @@ function containerFallacy(variant: Variant) {
                 </div>
                 {/* Match the annotation ink to each pane’s surface. */}
                 <Annotation className={cn("mt-2 block", isDo ? ANNOT_ON_FILL : ANNOT)}>
-                    {isDo ? "0 borders — surface + space" : "4 borders, 1 idea"}
+                    {isDo ? "0 borders · spacing groups the stats" : "4 borders around one group of stats"}
                 </Annotation>
             </div>
         </PreviewFrame>
@@ -397,7 +397,7 @@ function responsiveSpacing(variant: Variant) {
                 {frame(128, 24, "lg · p·24")}
             </div>
             <Annotation className={ANNOT}>
-                {isDo ? "12 → 24 scales with the screen" : "24 → 24 at every breakpoint"}
+                {isDo ? "Padding grows from 12px to 24px" : "Padding stays at 24px on both cards"}
             </Annotation>
         </PreviewFrame>
     );
@@ -492,7 +492,7 @@ function stickyHeaderClearance(variant: Variant) {
                     <Annotation className={cn("absolute right-2 top-2", FINE, ANNOTATION_INK_ON_FILL)}>{headerHeight}px</Annotation>
                 </div>
             </div>
-            <Annotation className={ANNOT}>Tab to Work email · {scrollInset}px inset</Annotation>
+            <Annotation className={ANNOT}>{scrollInset}px inset · {variant === "do" ? "Work email visible after Tab" : "Work email hidden after Tab"}</Annotation>
         </PreviewFrame>
     );
 }
@@ -506,7 +506,7 @@ function reserveMediaSpace(variant: Variant) {
         <PreviewFrame className="flex flex-col items-center justify-center gap-2.5">
             <div className="relative isolate flex w-full max-w-40 flex-col items-start gap-2">
                 <div className="grid w-full place-items-center rounded-md border border-neutral-200 bg-neutral-100 text-[10px] font-medium dark:border-neutral-700 dark:bg-neutral-800" style={{ aspectRatio: imageRatio }}>
-                    <span className={cn("mt-4", ANNOTATION_INK_ON_FILL)}>Loading cabin photo…</span>
+                    <span className={cn("mt-4", ANNOTATION_INK_ON_FILL)}>Cabin photo</span>
                 </div>
                 <div className="absolute inset-x-0 top-0 z-[1] flex flex-col items-start gap-2">
                     <div data-reserved-media="" className="w-full" style={{ aspectRatio: isDo ? imageRatio : undefined }} />
@@ -515,7 +515,7 @@ function reserveMediaSpace(variant: Variant) {
                 <MiniButton label="View details" variant="primary" className="relative z-[2]" />
             </div>
             <Annotation className={ANNOT}>
-                {isDo ? "Reserved image space · button stays put" : "Dashed outline · previous button position"}
+                {isDo ? "2:1 space reserved · button stays put" : "0px reserved · button drops from the dashed outline"}
             </Annotation>
         </PreviewFrame>
     );

@@ -502,7 +502,7 @@ export function LikeScene() {
                 className="font-mono text-[9px] font-medium text-emerald-600 dark:text-emerald-400"
                 style={{ opacity: 0 }}
             >
-                synced ✓
+                Synced ✓
             </span>
         </div>
     );
@@ -515,8 +515,8 @@ const ROWS = ["w-full", "w-5/6", "w-2/3"] as const;
  *  the end of its row the way the skeleton bar does. */
 const ROW_TEXT = [
     "Q3 planning review: roadmap, hiring, budget and the launch checklist",
-    "Notes from Tuesday's sync with design, engineering and support",
-    "Owners are assigned and due before the Friday release window",
+    "Notes from Tuesday’s sync with design, engineering and support",
+    "Each task has an owner and a deadline before Friday’s release.",
 ] as const;
 
 /** Loading treatment: skeleton rows or a lone spinner, then content fades in.

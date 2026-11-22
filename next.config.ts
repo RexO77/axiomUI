@@ -4,6 +4,8 @@ import { ruleAliases } from "./src/data/ui-logic";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Development only: the route indicator sat over the rail's theme row and took its clicks.
+  devIndicators: { position: "bottom-right" },
   async redirects() {
     return [
       // Retired ids redirect to the rule that absorbed them (see ruleAliases).

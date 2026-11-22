@@ -110,7 +110,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
                             {copy.title}
                         </p>
                         <p className="mt-1 text-[11px] leading-[1.5] text-neutral-500 dark:text-neutral-400">
-                            Everyone gets an email with a join link
+                            Invitees get an email with a link to join.
                         </p>
                         <div className="mt-3 flex items-center justify-end gap-2">
                             <span className="rounded-sm px-2 py-1 text-[11px] font-semibold text-neutral-500 dark:text-neutral-400">
@@ -182,8 +182,8 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
             return (
                 <PreviewFrame className="flex flex-col justify-center">
                     <Spec className="block">
-                        16px / {isDo ? "24px" : "18px"} ·{" "}
-                        <span className={ACCENT_TEXT}>{isDo ? "1.5" : "1.13"}</span>
+                        16px / {isDo ? "24px" : "18px"}{" "}
+                        <span className={ACCENT_TEXT}>({isDo ? "1.5×" : "1.125×"})</span>
                     </Spec>
                     <p
                         className={cn(
@@ -191,8 +191,8 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
                             isDo ? "leading-[24px]" : "leading-[18px]"
                         )}
                     >
-                        Your changes save automatically and sync to everyone on your team in real
-                        time.
+                        Your changes save automatically. The rest of your team sees them
+                        as you edit.
                     </p>
                 </PreviewFrame>
             );
@@ -203,8 +203,8 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
             return (
                 <PreviewFrame className="flex flex-col justify-center">
                     <Spec className="block">
-                        22px / {isDo ? "24px" : "33px"} ·{" "}
-                        <span className={ACCENT_TEXT}>{isDo ? "1.1" : "1.5"}</span>
+                        22px / {isDo ? "24px" : "33px"}{" "}
+                        <span className={ACCENT_TEXT}>({isDo ? "≈1.09×" : "1.5×"})</span>
                     </Spec>
                     <p
                         className={cn(
@@ -236,19 +236,19 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
                 <PreviewFrame className="flex items-center justify-center">
                     <div className="w-full max-w-[230px]">
                         <Spec className="block">
-                            {isDo ? "1 family · Manrope" : "2 sans · Arial + Verdana"}
+                            {isDo ? "1 family · Inter" : "2 families · Arial + Verdana"}
                         </Spec>
                         <p
                             className="mt-2 text-[17px] font-semibold leading-snug text-neutral-900 dark:text-neutral-50"
                             style={{ fontFamily: headingFamily }}
                         >
-                            Meet your calmer inbox
+                            Priority inbox
                         </p>
                         <p
                             className="mt-1.5 text-[12px] leading-[1.5] text-neutral-500 dark:text-neutral-400"
                             style={{ fontFamily: bodyFamily }}
                         >
-                            Focused messages first, everything else on your schedule
+                            Priority messages appear first.
                         </p>
                     </div>
                 </PreviewFrame>
@@ -286,9 +286,10 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
 
         // Numeric alignment — the same order summary, right-aligned in both
         // panes; only font-variant-numeric changes. The amounts are 1-heavy on
-        // purpose: Manrope's proportional 1 is far narrower than its 0 or 8, so
-        // proportional figures let the decimal points wander while tabular
-        // figures stack every column. Alignment is not the variable here.
+        // purpose: in SF and Inter alike the proportional 1 is far narrower
+        // than 0 or 8, so proportional figures let the decimal points wander
+        // while tabular figures stack every column. Alignment is not the
+        // variable here.
         case "typo-7": {
             const lines: Array<[string, string]> = [
                 ["Subtotal", "$1,111.10"],
@@ -354,8 +355,8 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
                                     isDo ? "text-left" : "text-center"
                                 )}
                             >
-                                Track every release, assign owners, and see what shipped without
-                                leaving your dashboard.
+                                You can now assign an owner to each release and see what shipped
+                        in your dashboard.
                             </p>
                         </div>
                         <Spec className="mt-1.5 block pl-2.5">
@@ -370,8 +371,8 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
         // The avoid pane spends a different weight on every role, including
         // a bold meta line and a medium description, so the four-weight
         // scramble is visible without reading the tags.
-        // app/layout.tsx loads Manrope at 400/500/600/700 only, so every tag
-        // below is a weight the page actually renders — no phantom 300.
+        // The sans is SF or variable Inter, so every tag below is a weight the
+        // page actually renders.
         case "typo-9": {
             const rows: Array<{ text: string; base: string; doW: string; dontW: string }> = [
                 {
@@ -393,7 +394,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
                     dontW: "font-medium",
                 },
                 {
-                    text: "Sent to 12 people",
+                    text: "12 recipients",
                     base: `text-[10px] ${PRODUCT_MUTED}`,
                     doW: "font-normal",
                     dontW: "font-bold",
@@ -452,7 +453,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
             return (
                 <PreviewFrame className="flex flex-col justify-center gap-1.5">
                     <Spec className="block">
-                        {isDo ? "truncate — row keeps its columns" : "nowrap — row overruns"}
+                        {isDo ? "Truncated name leaves room for file size" : "Full name pushes file size out of view"}
                     </Spec>
                     <FileRow name="Team-photo.jpg" meta="1.8 MB" />
                     <FileRow
@@ -514,19 +515,18 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
         // wrap is the same on the card and on the detail page.
         //
         // The sample is a div, not a p or a heading, on purpose. globals.css
-        // gives p/li/figcaption/blockquote `text-wrap: pretty` and h1-h6 both
-        // `text-wrap: balance` and the serif face. Those defaults are now
-        // correctly inside @layer base, so a utility does beat them — but on a
-        // real element the pane would start from `pretty`/`balance` and would
-        // also switch typeface, which is a second variable and would change the
-        // measured wrap below. A div starts from the initial `wrap`, which the
-        // avoid pane also states explicitly, so the utility under test is the
-        // only thing that differs between panes.
+        // gives p/li/figcaption/blockquote `text-wrap: pretty` and h1-h6
+        // `text-wrap: balance`. Those defaults are correctly inside @layer
+        // base, so a utility does beat them — but on a real element the pane
+        // would start from `pretty`/`balance` rather than the wrap under test.
+        // A div starts from the initial `wrap`, which the avoid pane also
+        // states explicitly, so the utility under test is the only thing that
+        // differs between panes.
         case "typo-12":
             return (
                 <PreviewFrame className="flex flex-col justify-center">
                     <Spec className="block">
-                        {isDo ? "balance — even lines" : "wrap — one word alone"}
+                        {isDo ? "Balanced lines" : "Last word sits alone"}
                     </Spec>
                     <div
                         className={cn(

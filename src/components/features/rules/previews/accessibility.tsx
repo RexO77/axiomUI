@@ -85,7 +85,7 @@ function FocusScene({ variant }: DemoProps) {
                     <Annotation className={cn(ANNOT, "block")}>
                         {isDo
                             ? "focus-visible:outline-2 outline-offset-2"
-                            : "outline: none — nothing replaces it"}
+                            : "outline: none · no visible focus indicator"}
                     </Annotation>
                 </div>
             </div>
@@ -152,8 +152,8 @@ function ErrorSignalScene({ variant }: DemoProps) {
             <CardField isDo={isDo} lens="gray" />
             <Annotation className={ANNOT}>
                 {isDo
-                    ? "3 signals — icon and text survive"
-                    : "1 signal — gray border, no meaning"}
+                    ? "3 signals · icon and message remain clear in grayscale"
+                    : "1 signal · border loses its error color in grayscale"}
             </Annotation>
         </PreviewFrame>
     );
@@ -198,7 +198,7 @@ function TargetSpacingScene({ variant }: DemoProps) {
                     <span className="h-px w-full bg-blue-500 dark:bg-blue-400" />
                 </span>
                 <Annotation className={ANNOT}>
-                    {isDo ? "8px gutter · tap → gutter" : "0px gutter · tap → Delete"}
+                    {isDo ? "8px gap · tap lands in the gap" : "0px gap · tap lands on Delete"}
                 </Annotation>
             </div>
         </PreviewFrame>
@@ -245,7 +245,7 @@ function DragAlternativeScene({ variant }: DemoProps) {
                 ))}
             </ol>
             <Annotation className={ANNOT}>
-                {isDo ? "Tap Move up once → Book room moves from 2 to 1" : "Hold and drag Book room from 2 to 1"}
+                {isDo ? "Book room moves from 2 to 1 with its Move up button" : "Hold and drag Book room from 2 to 1"}
             </Annotation>
         </PreviewFrame>
     );
@@ -308,7 +308,7 @@ function PauseUpdatesScene({ variant }: DemoProps) {
             </div>
             <p className="text-[11px]">Set up a shared calendar to keep track of shifts and deadlines.</p>
             <Annotation className={ANNOT}>
-                {isDo ? "Paused · quote stays put" : "Quote changes every 4s"}
+                {isDo ? "Pause keeps the current quote on screen" : "Quote changes every 4s"}
             </Annotation>
         </PreviewFrame>
     );
@@ -356,7 +356,7 @@ function ReturnFocusScene({ variant }: DemoProps) {
                 </Annotation>
                 <Annotation className={cn(FINE, "flex flex-wrap items-center gap-1.5")}>
                     <Kbd>Esc</Kbd>
-                    {isDo ? "Focus returns to Edit" : <><Kbd>Tab</Kbd> Focus starts at New project</>}
+                    {isDo ? "Focus returns to Edit" : <><Kbd>Tab</Kbd> Focus restarts at New project</>}
                 </Annotation>
             </div>
         </PreviewFrame>

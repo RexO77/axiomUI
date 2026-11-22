@@ -39,7 +39,10 @@ async function expectSources(page: Page, id: string) {
   const list = why(page).getByRole("list", { name: "Sources" });
   await expect(list.getByRole("link")).toHaveCount(sources.length);
   for (const { title, href } of sources) {
-    await expect(list.getByRole("link", { name: title, exact: true })).toHaveAttribute("href", href);
+    // References open in a new tab, and their names say so.
+    const link = list.getByRole("link", { name: `${title} (opens in a new tab)`, exact: true });
+    await expect(link).toHaveAttribute("href", href);
+    await expect(link).toHaveAttribute("target", "_blank");
   }
 }
 
@@ -189,38 +192,45 @@ test.describe("paging", () => {
 });
 
 test.describe("exits and the copy menu", () => {
-  test("a pointer exit morphs the canvas out in 220 ms", async ({ page }) => {
+  test("a pointer exit blurs the page out in 220 ms", async ({ page }) => {
     const id = "typo-5";
     await openCatalog(page, wallUrl());
     await page.locator(sel.tile(id)).click();
     await awaitView(page, "rule");
     const timing = page.evaluate(
       () =>
-        new Promise<{ mode: string | null; durations: number[] }>((resolve) => {
+        new Promise<{ mode: string | null; durations: number[]; filters: string[] }>((resolve) => {
           const root = document.documentElement;
           const observer = new MutationObserver(() => {
             if (root.getAttribute("data-vt") !== "out") return;
             observer.disconnect();
             requestAnimationFrame(() =>
-              requestAnimationFrame(() =>
+              requestAnimationFrame(() => {
+                const outgoing = document
+                  .getAnimations()
+                  .filter((animation) => (animation.effect as KeyframeEffect | null)?.pseudoElement === "::view-transition-old(root)");
                 resolve({
                   mode: root.getAttribute("data-vt"),
-                  durations: document
-                    .getAnimations()
-                    .filter((animation) => (animation.effect as KeyframeEffect | null)?.pseudoElement === "::view-transition-group(rule-canvas)")
-                    .map((animation) => Number(animation.effect?.getTiming().duration)),
-                }),
-              ),
+                  durations: outgoing.map((animation) => Number(animation.effect?.getTiming().duration)),
+                  // Where each outgoing effect ends: the blur is half of the exit, not just its fade.
+                  filters: outgoing.flatMap((animation) => {
+                    const frames = (animation.effect as KeyframeEffect).getKeyframes();
+                    const last = frames[frames.length - 1] as { filter?: string } | undefined;
+                    return last?.filter ? [last.filter] : [];
+                  }),
+                });
+              }),
             );
           });
           observer.observe(root, { attributes: true, attributeFilter: ["data-vt"] });
         }),
     );
     await page.locator(sel.exit).click();
-    const { mode, durations } = await timing;
+    const { mode, durations, filters } = await timing;
     expect(mode).toBe("out");
     expect(durations.length).toBeGreaterThan(0);
     expect(new Set(durations)).toEqual(new Set([220]));
+    expect(filters).toContain("blur(8px)");
     await awaitView(page, "gallery");
   });
 
@@ -253,9 +263,9 @@ test.describe("exits and the copy menu", () => {
 });
 
 test.describe("comparison zoom", () => {
-  test("Esc from the zoom control leaves the rule", async ({ page }) => {
+  test("Esc from the zoom toggle leaves the rule", async ({ page }) => {
     await openCatalog(page, ruleUrl("typo-1"));
-    const zoom = page.getByRole("radio", { name: "1×, 100%", exact: true });
+    const zoom = page.getByRole("button", { name: "2× zoom (Z)", exact: true });
     await zoom.focus();
     await expect(zoom).toBeFocused();
     await page.keyboard.press("Escape");
@@ -266,9 +276,15 @@ test.describe("comparison zoom", () => {
     await openCatalog(page, ruleUrl("typo-1"));
     const box = page.locator(".cmp-canvas .cmp-box").first();
     expect(await box.evaluate((el) => getComputedStyle(el).transform)).toBe("none");
-    await page.getByRole("radio", { name: "2×, 200%", exact: true }).click();
+    await page.locator("[data-compare-canvas]").hover();
+    await page.getByRole("button", { name: "2× zoom (Z)", exact: true }).click();
     await expect.poll(() => box.evaluate((el) => getComputedStyle(el).transform)).toMatch(/^matrix\(2, 0, 0, 2, /);
-    await page.getByRole("radio", { name: "1×, 100%", exact: true }).click();
+    await page.locator("[data-compare-canvas]").hover();
+    const zoom = page.getByRole("button", { name: "2× zoom (Z)", exact: true });
+    await zoom.click();
+    // The second press turns 2× off again, not only on.
+    await expect(zoom).toHaveAttribute("aria-pressed", "false");
+    await expect.poll(() => box.evaluate((el) => getComputedStyle(el).transform)).toBe("none");
   });
 });
 
@@ -277,7 +293,8 @@ test.describe("comparison zoom, by hand", () => {
     await openCatalog(page, ruleUrl("typo-1"));
     const canvas = page.locator(".cmp-canvas").first();
     expect(await canvas.evaluate((el) => getComputedStyle(el).touchAction)).toBe("manipulation");
-    await page.getByRole("radio", { name: "2×, 200%", exact: true }).click();
+    await page.locator("[data-compare-canvas]").hover();
+    await page.getByRole("button", { name: "2× zoom (Z)", exact: true }).click();
     // A pan the browser could claim would end the drag with pointercancel.
     await expect.poll(() => canvas.evaluate((el) => getComputedStyle(el).touchAction)).toBe("none");
 
@@ -288,7 +305,111 @@ test.describe("comparison zoom, by hand", () => {
     await page.mouse.move(from.x + 40, from.y + 20, { steps: 4 });
     await page.mouse.up();
     expect(await canvas.evaluate((el) => [el.style.getPropertyValue("--cmp-pan-x"), el.style.getPropertyValue("--cmp-pan-y")])).toEqual(["40px", "20px"]);
-    await page.getByRole("radio", { name: "1×, 100%", exact: true }).click();
+    await page.locator("[data-compare-canvas]").hover();
+    await page.getByRole("button", { name: "2× zoom (Z)", exact: true }).click();
+  });
+});
+
+test.describe("comparison Measure", () => {
+  test("measures both panes and links caption values to their redlines", async ({ page }) => {
+    await openCatalog(page, ruleUrl("comp-3"));
+    await page.keyboard.press("m");
+    const canvas = page.locator("[data-compare-canvas]");
+    await expect(canvas.locator(".ml-overlay")).toHaveCount(2);
+    const cap = page.locator(".cmp-captions").getByRole("button", { name: "Outer radius, 12px" });
+    await cap.click();
+    await expect(cap).toHaveAttribute("aria-pressed", "true");
+    await expect(canvas.locator('[data-group="0"][data-dim]')).toHaveCount(0);
+    await expect(canvas.locator('[data-group="1"][data-dim]')).toHaveCount(2);
+    await page.keyboard.press("Escape");
+    await expect(canvas.locator(".ml-overlay")).toHaveCount(0);
+  });
+
+  test("picks with the keyboard, then Escape closes Measure before leaving the rule", async ({ page }) => {
+    await openCatalog(page, ruleUrl("comp-7"));
+    const canvas = page.locator("[data-compare-canvas]");
+    const measure = page.getByRole("button", { name: "Measure (M)", exact: true });
+    await page.keyboard.press("m");
+    await expect(measure).toHaveAttribute("aria-pressed", "true");
+    await expect(canvas).toBeFocused();
+    await page.keyboard.press("ArrowRight");
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("button", { name: "Copy measurements" })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(measure).toHaveAttribute("aria-pressed", "false");
+    await expect(measure).toBeFocused();
+    await awaitView(page, "rule");
+  });
+
+  test("Enter on the Measure button hands focus to the canvas, so an arrow picks instead of paging", async ({ page }) => {
+    await openCatalog(page, ruleUrl("comp-7"));
+    const canvas = page.locator("[data-compare-canvas]");
+    const measure = page.getByRole("button", { name: "Measure (M)", exact: true });
+    await measure.focus();
+    await page.keyboard.press("Enter");
+    await expect(measure).toHaveAttribute("aria-pressed", "true");
+    await expect(canvas).toBeFocused();
+    await page.keyboard.press("ArrowRight");
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("button", { name: "Copy measurements" })).toBeVisible();
+    // Still on comp-7: the arrow picked an element rather than paging to the next rule.
+    expect(new URL(page.url()).pathname).toBe(ruleUrl("comp-7"));
+  });
+
+  test("Escape on a focused dock tooltip closes only the tooltip, then Measure", async ({ page }) => {
+    await openCatalog(page, ruleUrl("comp-7"));
+    const measure = page.getByRole("button", { name: "Measure (M)", exact: true });
+    const zoom = page.getByRole("button", { name: "2× zoom (Z)", exact: true });
+    await page.keyboard.press("m");
+    await expect(measure).toHaveAttribute("aria-pressed", "true");
+    await zoom.focus();
+    await page.keyboard.press("Shift+Tab");
+    await page.keyboard.press("Tab");
+    await expect(zoom).toBeFocused();
+    const tip = page.getByRole("tooltip").filter({ hasText: "2× zoom" });
+    await expect(tip).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(tip).toBeHidden();
+    await expect(measure).toHaveAttribute("aria-pressed", "true");
+    await expect(zoom).toBeFocused();
+    await page.keyboard.press("Escape");
+    await expect(measure).toHaveAttribute("aria-pressed", "false");
+    await awaitView(page, "rule");
+  });
+
+  test("pins a preview element, measures its neighbor and copies CSS pixels at either zoom", async ({ page, context }) => {
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    await openCatalog(page, ruleUrl("comp-7"));
+    const pane = page.locator("[data-compare-canvas] [data-side=do]");
+    const panel = page.getByRole("region", { name: "Measurements" });
+    const gap = panel.getByText("Gap to Share", { exact: true });
+    const centre = async (label: string) => {
+      const box = await pane.getByText(label, { exact: true }).boundingBox();
+      if (!box) throw new Error(`Preview element ${label} should have a box`);
+      return [box.x + box.width / 2, box.y + box.height / 2] as const;
+    };
+    await pane.hover();
+    await page.getByRole("button", { name: "Measure (M)", exact: true }).click();
+    await page.mouse.move(...await centre("Archive"));
+    await expect(pane.locator(".ml-overlay")).toBeVisible();
+    await page.mouse.click(...await centre("Archive"));
+    await expect(panel.getByRole("heading", { name: "Do · Archive" })).toBeVisible();
+    await expect(panel.getByText("Half-leading", { exact: true })).toBeVisible();
+    await page.keyboard.down("Alt");
+    await page.mouse.move(...await centre("Share"));
+    await expect(gap).toBeVisible();
+    await page.keyboard.up("Alt");
+    await expect(gap).toBeHidden();
+    await page.mouse.click(...await centre("Share"));
+    await expect(gap).toBeVisible();
+    const size = await panel.getByText("Box size", { exact: true }).locator("..").locator("dd").textContent();
+    const values = await panel.locator("dd").allTextContents();
+    await page.locator("[data-compare-canvas]").hover();
+    await page.getByRole("button", { name: "2× zoom (Z)", exact: true }).click();
+    await expect(panel.locator("dd")).toHaveText(values);
+    await panel.getByRole("button", { name: "Copy measurements" }).click();
+    await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toContain(`Box size: ${size}`);
+    await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toContain(`Gap to Share: ${values.at(-1)}`);
   });
 });
 
@@ -491,7 +612,7 @@ test.describe("deep dive toggle", () => {
     ["closing", 140],
     ["opening", 220],
   ] as const) {
-    test(`a click ${step} it keeps the reading column still during one ${ms} ms step and ends exactly on the layout`, async ({ page }) => {
+    test(`a click ${step} it slides the reading column in one ${ms} ms step and ends exactly on the layout`, async ({ page }) => {
       await openCatalog(page, ruleUrl("typo-1"));
       const toggle = page.locator(".rv-head").getByRole("button", { name: "Deep dive", exact: true });
       if (step === "opening") {
@@ -534,9 +655,11 @@ test.describe("deep dive toggle", () => {
         cmpY: document.querySelector(".rv-compare")!.getBoundingClientRect().top,
       }));
       expect(layout).toEqual({ title: end.title, cmpY: end.cmpY });
-      expect(end.title, "the reading column stays anchored").toBe(before);
+      // With the dive hidden the column re-centres at its 1040 cap; shown, it returns to the left edge.
+      expect(Math.sign(end.title - before), "the reading column slides to its new x").toBe(step === "closing" ? 1 : -1);
       for (const frame of after) {
-        expect(frame.cmpX).toBe(end.cmpX);
+        // The comparison travels with the title, never on its own, and never vertically.
+        expect(Math.abs(frame.cmpX - frame.title - (end.cmpX - end.title))).toBeLessThan(1);
         expect(frame.cmpY).toBe(end.cmpY);
       }
     });
@@ -560,7 +683,8 @@ test.describe("deep dive toggle", () => {
     await page.keyboard.press("i");
     expect(await runningIn(page)).toEqual([]);
     const closed = await x();
-    expect(closed).toBe(open);
+    // Hidden, the column re-centres; with nothing animating, it is already there.
+    expect(closed).toBeGreaterThan(open);
     await expect(page.locator(".rv-ghost")).toHaveCount(0);
     const toggle = page.locator(".rv-head").getByRole("button", { name: "Deep dive", exact: true });
     await toggle.focus();
@@ -575,7 +699,8 @@ test.describe("deep dive toggle", () => {
     await openCatalog(page, ruleUrl("typo-1"));
     await page.keyboard.press("i");
     const opening = await page.evaluate(async () => {
-      const side = document.querySelector<HTMLElement>(".rv-dd")!;
+      // Docked, the whole column travels (deep-dive-motion.ts); the dive inside it is only its scroller.
+      const side = document.querySelector<HTMLElement>(".rv-stage > .rv-side")!;
       document.querySelector(".rv-head button[aria-controls]")!
         .dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
       const animation = side.getAnimations().find((item) => !(item instanceof CSSTransition))!;
@@ -608,11 +733,11 @@ test.describe("deep dive toggle", () => {
         const click = () => toggle.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
         if (interrupt) {
           click();
-          const entering = document.querySelector(".rv-dd")!.getAnimations().find((item) => !(item instanceof CSSTransition))!;
+          const entering = document.querySelector(".rv-stage > .rv-side")!.getAnimations().find((item) => !(item instanceof CSSTransition))!;
           entering.pause();
           entering.currentTime = 40;
         }
-        const start = document.querySelector(".rv-dd")!.getBoundingClientRect().left;
+        const start = document.querySelector(".rv-stage > .rv-side")!.getBoundingClientRect().left;
         click();
         const ghost = document.querySelector(".rv-ghost[data-surface]")!;
         const animation = ghost.getAnimations().find((item) => !(item instanceof CSSTransition))!;
@@ -653,15 +778,24 @@ test.describe("deep dive toggle", () => {
         const samples: { gap: number; relatedShift: number; mainShift: number }[] = [];
         const reversals: number[] = [];
         const click = () => button.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
-        const surface = () => document.querySelector<HTMLElement>(".rv-ghost") ?? panel;
+        // Docked, the column itself (or its exit copy) travels and carries Related
+        // with it: measure Related and the gap inside that surface. The main
+        // column re-centres sideways there, so only its vertical position is fixed.
+        const side = related.parentElement!;
+        const firstSide = side.getBoundingClientRect();
+        const surface = () => document.querySelector<HTMLElement>(".rv-ghost") ?? (docked ? side : panel);
         function record() {
           const box = surface().getBoundingClientRect();
-          const links = related.getBoundingClientRect();
+          const links = (docked ? surface().querySelector(".rv-related")! : related).getBoundingClientRect();
+          const card = docked ? surface().querySelector(".rv-dd-card")!.getBoundingClientRect() : box;
           const compare = main.getBoundingClientRect();
+          const vertical = Math.abs(compare.top - firstMain.top);
           samples.push({
-            gap: docked ? box.top - links.bottom : Math.min(links.top, ship.getBoundingClientRect().top) - box.bottom,
-            relatedShift: Math.max(Math.abs(links.top - firstRelated.top), Math.abs(links.left - firstRelated.left)),
-            mainShift: Math.max(Math.abs(compare.top - firstMain.top), Math.abs(compare.left - firstMain.left)),
+            gap: docked ? links.top - card.bottom : Math.min(links.top, ship.getBoundingClientRect().top) - box.bottom,
+            relatedShift: docked
+              ? Math.max(Math.abs(links.top - box.top - (firstRelated.top - firstSide.top)), Math.abs(links.left - box.left - (firstRelated.left - firstSide.left)))
+              : Math.max(Math.abs(links.top - firstRelated.top), Math.abs(links.left - firstRelated.left)),
+            mainShift: docked ? vertical : Math.max(vertical, Math.abs(compare.left - firstMain.left)),
           });
         }
         // Record actual painted frames in each direction, then reverse a second
@@ -874,12 +1008,15 @@ test.describe("deep dive toggle", () => {
       const edges = await page.evaluate(() => {
         const head = document.querySelector<HTMLElement>(".rv-head")!;
         const side = document.getElementById("rule-deep-dive")!;
+        const card = document.querySelector<HTMLElement>(".rv-dd-card")!;
         const related = document.querySelector<HTMLElement>(".rv-related")!;
         const sheet = document.querySelector<HTMLElement>(".shell-sheet")!.getBoundingClientRect();
         const style = getComputedStyle(head);
         return {
           headBottom: head.getBoundingClientRect().bottom,
-          sideTop: side.getBoundingClientRect().top,
+          sideTop: card.getBoundingClientRect().top,
+          cardBottom: card.getBoundingClientRect().bottom,
+          cardRadius: getComputedStyle(card).borderRadius,
           relatedTop: related.getBoundingClientRect().top,
           relatedBottom: related.getBoundingClientRect().bottom,
           relatedRadius: getComputedStyle(related).borderRadius,
@@ -895,12 +1032,17 @@ test.describe("deep dive toggle", () => {
         };
       });
       expect(edges.divider).toContain("inset");
-      expect(edges.relatedTop - edges.headBottom).toBe(16);
-      expect(edges.sideTop - edges.relatedBottom).toBe(12);
-      expect(edges.relatedRadius).toBe("10px");
-      expect(edges.relatedBorder).toContain("inset");
+      // The reading card (a bezel: shell, header row, inset dive) leads the column, 32 under the
+      // header (the title's own offset); Related, a bezel too, follows 12 below.
+      expect(edges.sideTop - edges.headBottom).toBe(32);
+      expect(edges.relatedTop - edges.cardBottom).toBe(12);
+      expect(edges.relatedBottom).toBeLessThanOrEqual(edges.sheetBottom);
+      expect(edges.cardRadius).toBe("20px");
+      expect(edges.relatedRadius).toBe("20px");
+      expect(edges.relatedBorder).toContain("0px 0px 0px 1px");
       expect(edges.sideBottom).toBeLessThanOrEqual(edges.sheetBottom);
-      expect(edges.radius).toBe("10px");
+      // The dive is the shell's inset panel: 20 − 6 padding.
+      expect(edges.radius).toBe("14px");
       expect(edges.floor).toBe(edges.line);
       // The header spans the panel too, so its floor meets the divider in a T.
       expect(edges.headRight).toBeGreaterThanOrEqual(edges.sideRight);

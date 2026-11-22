@@ -14,7 +14,7 @@ test("pasting a six-digit example preserves the leading zero through the check",
   await code.press("Enter");
   await expect(yes.getByRole("status")).toContainText("Received 012345");
   await no.getByRole("textbox", { name: "Digit 1 of 6" }).press("ControlOrMeta+v");
-  await no.getByRole("button", { name: "Check example" }).click();
+  await no.getByRole("button", { name: "Check code", exact: true }).click();
   await expect(no.getByRole("status")).toContainText("Received 0 · expected 012345");
 });
 

@@ -31,9 +31,9 @@ export function ThreadMeter({
     const longest = stalls.reduce((m, s) => Math.max(m, s.gapMs), 0);
 
     let caption: string;
-    if (reduced) caption = "main thread — not sampled while reduced motion is on";
-    else if (recording) caption = "main thread — recording…";
-    else if (!recorded) caption = "main thread — run it to record";
+    if (reduced) caption = "Reduced motion skips the main-thread recording.";
+    else if (recording) caption = "Recording gaps between main-thread callbacks…";
+    else if (!recorded) caption = "Start the race to record gaps between main-thread callbacks.";
     else if (stalls.length === 0)
         caption = `No callback gap exceeded ${STALL_THRESHOLD_MS}ms on this run.`;
     else

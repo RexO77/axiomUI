@@ -150,7 +150,7 @@ function useMirroredDrag(handlers: DragHandlers) {
 
 /** The hand still drives the cards. Reduced motion removes the release animation. */
 const DRAG_REDUCED_NOTE =
-    "Reduced motion: the cards still follow your pointer; only the release lands instantly.";
+    "With reduced motion, the cards follow your drag and settle instantly on release.";
 
 function DragSurface({
     hint,
@@ -421,7 +421,7 @@ function VelocityDismiss() {
                     (x / Math.max(1, travel.current)) * 100
                 )}% · ${
                     flick && !farEnough
-                        ? "dismissed by flick"
+                        ? "Only the Do card was dismissed"
                         : farEnough
                           ? "dismissed by distance"
                           : "snapped back"
@@ -435,7 +435,7 @@ function VelocityDismiss() {
         <DragSurface
             {...surface}
             readoutRef={readout}
-            hint="Flick short and fast: the Do card reads intent, the Don’t card demands mileage"
+            hint="Flick right and release before the card reaches the 60% line. See which card slides away."
         >
             <PaneChrome variant="do" caption={spec.do.caption}>
                 <DragCard cardRef={doCard} railRef={rail} showThreshold />
@@ -532,7 +532,7 @@ function DampedBoundary() {
         <DragSurface
             {...surface}
             readoutRef={readout}
-            hint="Pull both cards past the marked limit, then let go."
+            hint="Drag either card right. Keep pulling at the wall, then release."
         >
             <PaneChrome variant="do" caption={spec.do.caption}>
                 <DragCard cardRef={doCard} railRef={rail} wallRef={wall} showWall />
@@ -574,7 +574,7 @@ function SliderPane({
                     Volume
                 </span>
                 <span ref={chipRef} className={cn(CHIP_BASE, CHIP_IDLE)}>
-                    {capture ? "capture ON" : "capture OFF"}
+                    {capture ? "Pointer capture on" : "Pointer capture off"}
                 </span>
             </div>
             <div
@@ -621,7 +621,7 @@ function PointerCaptureSlider() {
         const el = dontChip.current;
         if (!el) return;
         lostAtRelease.current = lost;
-        el.textContent = lost ? "pointer lost" : "capture OFF";
+        el.textContent = lost ? "Pointer lost" : "Pointer capture off";
         // Wholesale write, so this must stay in sync with the chip's JSX
         // className in SliderPane — both are cn(CHIP_BASE, <state>).
         el.className = cn(CHIP_BASE, lost ? CHIP_LOST : CHIP_IDLE);
@@ -677,7 +677,7 @@ function PointerCaptureSlider() {
             {...surface}
             surfaceRef={surfaceEl}
             readoutRef={readout}
-            hint="Drag a knob, then swing your pointer outside the panes mid-drag"
+            hint="Drag a knob, move the pointer above the comparison, then drag sideways."
             reducedNote="Reduced motion changes nothing here: the knobs only ever follow your pointer."
         >
             <PaneChrome variant="do" caption={spec.do.caption}>

@@ -135,7 +135,7 @@ export function TooltipToolbarShowcase() {
             </div>
             <ShowcaseControls
                 hints={[
-                    "Hover across Cut, Copy and Paste to compare delays. In the Do toolbar, keyboard focus reveals the shortcut immediately.",
+                    "Hover over or tap Cut, Copy and Paste in turn. Tabbing shows each Do shortcut immediately.",
                 ]}
                 reducedNote="Reduced motion: the tooltips appear without their fade. The waits are the same."
             />
@@ -230,7 +230,7 @@ function ToolbarPane({
                                     </span>
                                     <span className="absolute left-1/2 top-full -mt-px h-0 w-0 -translate-x-1/2 border-x-4 border-t-4 border-x-transparent border-t-neutral-900 dark:border-t-neutral-100" />
                                 </div>
-                                <span className="sr-only" id={`${id}-${i}`}>Shortcut {SHORTCUTS[i]}</span>
+                                <span className="sr-only" id={`${id}-${i}`}>Example shortcut: Command {SHORTCUTS[i].slice(1)}</span>
                                 <button
                                     type="button"
                                     aria-label={label}
@@ -266,7 +266,7 @@ function ToolbarPane({
                                     : "bg-neutral-200/80 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400"
                             )}
                         >
-                            {sessionOpen ? "session open · 0ms" : "first wait 300ms"}
+                            {sessionOpen ? "Next tooltip · 0ms" : "First hover · 300ms"}
                         </span>
                     ) : (
                         <span className="whitespace-nowrap rounded-full bg-neutral-200/80 px-1.5 py-0.5 text-[9px] font-medium text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">

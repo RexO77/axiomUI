@@ -113,7 +113,7 @@ function tapTargets(variant: Variant) {
                         <span className="flex size-11 items-center justify-center rounded-md border border-dashed border-blue-500/60 dark:border-blue-400/60">
                             <Trash2 aria-hidden className="size-3.5 stroke-[1.5] text-neutral-500 dark:text-neutral-400" />
                         </span>
-                        <Annotation className={ANNOT}>44×44</Annotation>
+                        <Annotation className={ANNOT}>44 × 44px</Annotation>
                     </div>
                 ) : (
                     <div className="flex shrink-0 items-center gap-2">
@@ -125,7 +125,7 @@ function tapTargets(variant: Variant) {
                                 <Trash2 aria-hidden className="size-3 stroke-[1.5] text-neutral-500 dark:text-neutral-400" />
                             </span>
                         </span>
-                        <Annotation className={ANNOT}>16×16</Annotation>
+                        <Annotation className={ANNOT}>16 × 16px</Annotation>
                     </div>
                 )}
             </div>
@@ -353,7 +353,7 @@ function gracefulDegradation(variant: Variant) {
                         <ImageOff aria-hidden className="size-3.5 stroke-[1.5] text-neutral-400 dark:text-neutral-500" />
                         <span className="inline-flex items-center gap-1 text-[10px] font-semibold leading-none text-blue-600 dark:text-blue-400">
                             <RotateCw aria-hidden className="size-2.5 stroke-[2]" />
-                            Retry
+                            Reload image
                         </span>
                     </div>
                 ) : (
@@ -426,8 +426,8 @@ function reflow(variant: Variant) {
             </div>
             <Annotation className={ANNOT}>
                 {isDo
-                    ? `scrollWidth ${REFLOW_VIEWPORT} = viewport ${REFLOW_VIEWPORT}`
-                    : `scrollWidth ${REFLOW_MIN_WIDTH} > viewport ${REFLOW_VIEWPORT}`}
+                    ? `Content fits the ${REFLOW_VIEWPORT}px viewport`
+                    : `${REFLOW_MIN_WIDTH}px of content overflows the ${REFLOW_VIEWPORT}px viewport`}
             </Annotation>
         </PreviewFrame>
     );
@@ -554,7 +554,7 @@ function persistentError(variant: Variant) {
             <div className="space-y-1.5">
                 <div className="flex items-baseline justify-between">
                     <span className="text-[10px] font-semibold text-neutral-700 dark:text-neutral-200">Files</span>
-                    <Annotation className={ANNOT}>t = 6s</Annotation>
+                    <Annotation className={ANNOT}>6s after the upload failed</Annotation>
                 </div>
                 <FileRow name="Roadmap.fig" meta="12.1 MB" />
                 <FileRow name="Assets.zip" meta="88.4 MB" />
