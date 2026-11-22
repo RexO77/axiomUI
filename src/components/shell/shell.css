@@ -18,7 +18,7 @@
   overflow: hidden;
   background: var(--ax-backdrop);
   color: var(--ax-ink);
-  font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -849,7 +849,7 @@
   background: var(--ax-overlay);
   box-shadow: var(--ax-shadow-popover);
   color: var(--ax-ink);
-  font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   outline: none;
   touch-action: pan-y;
   user-select: none;

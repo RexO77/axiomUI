@@ -94,10 +94,11 @@ function hex(tokens: Map<string, string>, name: string): string {
 }
 
 describe("globals.css token layer", () => {
-  it("registers the three type faces with Tailwind", () => {
-    for (const face of ["sans", "serif", "mono"]) {
+  it("registers the two type faces with Tailwind, and no serif", () => {
+    for (const face of ["sans", "mono"]) {
       expect(theme.get(`--font-${face}`), `--font-${face} in @theme`).toBeDefined();
     }
+    expect(theme.get("--font-serif"), "--font-serif in @theme").toBeUndefined();
   });
 
   it("keeps component classes inside @layer components, below the utilities", () => {

@@ -40,7 +40,7 @@ const FRAMEWORK = new Set(["--default-transition-duration", "--default-transitio
 const isFramework = (name: string) => FRAMEWORK.has(name) || name.startsWith("--tw-");
 
 /** Set on <body> by next/font. */
-const NEXT_FONT = new Set(["--font-manrope", "--font-source-serif", "--font-plex-mono"]);
+const NEXT_FONT = new Set(["--font-inter", "--font-plex-mono"]);
 
 /** Deleted on purpose. Any definition of, or reference to, one of these fails. The list only grows. */
 const RETIRED = [
@@ -75,6 +75,12 @@ const RETIRED = [
   "--sidebar-open",
   "--expand-clearance",
   "--drawer-footprint",
+  // The serif display face. Every heading and title is the sans.
+  "--font-source-serif",
+  "--font-serif",
+  "font-serif",
+  // Manrope, the earlier sans. The sans is SF Pro on Apple devices, else Inter.
+  "--font-manrope",
 ];
 
 const GLOBALS_PATH = "src/app/globals.css";
@@ -711,7 +717,7 @@ describe("the usage guard", () => {
     const result = analyse(
       tree({
         ...used,
-        "src/components/ui/b.tsx": `<div style={{ "--inset": "4px", width: "var(--inset)", font: "var(--font-manrope)", x: "var(--tw-duration)" }} />`,
+        "src/components/ui/b.tsx": `<div style={{ "--inset": "4px", width: "var(--inset)", font: "var(--font-inter)", x: "var(--tw-duration)" }} />`,
         "src/components/shell/shell.css": `.s { --gap: 2px; margin: var(--gap); }`,
       }),
       BASE

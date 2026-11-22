@@ -227,10 +227,10 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
         // a Linux face so the avoid pane still renders two distinct sans.
         case "typo-5": {
             const headingFamily = isDo
-                ? "var(--font-manrope), sans-serif"
+                ? "var(--font-inter), sans-serif"
                 : "Arial, Helvetica, 'Liberation Sans', sans-serif";
             const bodyFamily = isDo
-                ? "var(--font-manrope), sans-serif"
+                ? "var(--font-inter), sans-serif"
                 : "Verdana, 'DejaVu Sans', Geneva, sans-serif";
             return (
                 <PreviewFrame className="flex items-center justify-center">
@@ -592,7 +592,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
                 <PreviewFrame className="flex flex-col items-center justify-center gap-2">
                     <p
                         className="whitespace-nowrap text-[38px] leading-none font-semibold text-neutral-900 dark:text-neutral-50"
-                        style={{ fontFamily: "var(--font-manrope), sans-serif", letterSpacing }}
+                        style={{ fontFamily: "var(--font-inter), sans-serif", letterSpacing }}
                     >
                         Work<br />together
                     </p>

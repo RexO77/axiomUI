@@ -1,6 +1,6 @@
 // design-system: strict
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Manrope, Source_Serif_4 } from "next/font/google";
+import { IBM_Plex_Mono, Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { rules } from "@/data/ui-logic";
@@ -11,18 +11,19 @@ import { brandIcons } from "@/lib/brand";
 import "./globals.css";
 
 const ruleCount = rules.length;
-const description = `${ruleCount} UI design rules with live do/don’t previews: typography, layout, color, components, forms, system states, motion, and accessibility.`;
+const description = `Explore ${ruleCount} UI design rules with live Do and Don’t previews, from typography and layout to motion and accessibility.`;
 
-const sourceSerif = Source_Serif_4({
-  variable: "--font-source-serif",
+/*
+ * The sans is SF Pro on Apple devices (the system face, named first in
+ * --font-sans) and Inter everywhere else. Inter is the variable cut with its
+ * optical-size axis, so headings take the Display design the way SF switches
+ * to SF Display. It is not preloaded: an Apple device never needs the file.
+ */
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
-});
-
-const manrope = Manrope({
-  variable: "--font-manrope",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  axes: ["opsz"],
+  preload: false,
 });
 
 /*
@@ -36,7 +37,10 @@ const themeScript =
   "try{var stored=window.localStorage.getItem('axiom-theme:v1');" +
   "if(stored==='light'||stored==='dark'||stored==='system')mode=stored}catch(e){}" +
   "try{dark=mode==='dark'||(mode==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches)}catch(e){dark=mode==='dark'}" +
-  "d.classList.toggle('dark',dark);d.dataset.theme=dark?'dark':'light';d.style.colorScheme=dark?'dark':'light'})();";
+  "d.classList.toggle('dark',dark);d.dataset.theme=dark?'dark':'light';d.style.colorScheme=dark?'dark':'light';" +
+  // Off Apple devices the sans is Inter, which takes its own tracking (globals.css).
+  "try{var u=navigator.userAgentData,p=(u&&u.platform)||navigator.platform||'';" +
+  "if(!/mac|iphone|ipad|ipod/i.test(p))d.dataset.face='inter'}catch(e){}})();";
 const firstPaintScript = themeScript + bootScript();
 
 /** Vercel's analytics endpoints exist only on a Vercel deployment; anywhere else they 404 on every load. */
@@ -50,8 +54,8 @@ const plexMono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Axiom UI — UI logic repository",
-    template: "%s | Axiom UI",
+    default: "All rules · Axiom UI",
+    template: "%s · Axiom UI",
   },
   description,
   keywords: [
@@ -76,13 +80,13 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: siteConfig.origin,
-    title: "Axiom UI — UI logic repository",
+    title: "UI design rules · Axiom UI",
     description,
     siteName: "Axiom UI",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Axiom UI — UI logic repository",
+    title: "UI design rules · Axiom UI",
     description,
   },
   robots: {
@@ -153,7 +157,7 @@ export default function RootLayout({
         "@type": "CollectionPage",
         "@id": `${siteConfig.origin}/#collection`,
         url: siteConfig.origin,
-        name: "UI logic rules",
+        name: "UI design rules",
         description,
         isPartOf: {
           "@id": `${siteConfig.origin}/#website`,
@@ -173,7 +177,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: firstPaintScript }} />
       </head>
       <body
-        className={`${sourceSerif.variable} ${manrope.variable} ${plexMono.variable} antialiased`}
+        className={`${inter.variable} ${plexMono.variable} antialiased`}
       >
         <script
           type="application/ld+json"

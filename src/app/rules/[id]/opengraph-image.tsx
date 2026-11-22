@@ -85,17 +85,16 @@ let fontsPromise: Promise<LoadedFont[]> | null = null;
 
 function loadBrandFonts(): Promise<LoadedFont[]> {
   fontsPromise ??= Promise.all([
-    loadGoogleFont("Source Serif 4", 600),
-    loadGoogleFont("Manrope", 500),
-    loadGoogleFont("Manrope", 700),
+    loadGoogleFont("Inter", 500),
+    loadGoogleFont("Inter", 600),
+    loadGoogleFont("Inter", 700),
     loadGoogleFont("IBM Plex Mono", 400),
   ]).catch(() => []);
 
   return fontsPromise;
 }
 
-const SERIF = "'Source Serif 4', Georgia, serif";
-const SANS = "Manrope, sans-serif";
+const SANS = "Inter, sans-serif";
 const MONO = "'IBM Plex Mono', monospace";
 
 // ── Shared pieces ───────────────────────────────────────────────────
@@ -134,7 +133,7 @@ function layerLines(text: string): string[] | null {
 /** One half of the controlled experiment: label chrome + mono evidence. */
 function VerdictPanel({ kind, text }: { kind: "do" | "dont"; text: string }) {
   const evidence = text.length > 80 ? `${text.slice(0, 77)}…` : text;
-  const lines = evidence === text ? layerLines(text) : null;
+  const lines = layerLines(text);
 
   return (
     <div
@@ -256,7 +255,7 @@ export default async function Image({ params }: Props) {
             <div
               style={{
                 display: "flex",
-                fontFamily: SERIF,
+                fontFamily: SANS,
                 fontSize: 84,
                 fontWeight: 600,
                 letterSpacing: -1,
@@ -275,7 +274,7 @@ export default async function Image({ params }: Props) {
                 color: INK_MUTED,
               }}
             >
-              UI logic repository
+              UI design rules
             </div>
           </div>
         </Stage>
@@ -328,7 +327,7 @@ export default async function Image({ params }: Props) {
           </div>
         </div>
 
-        {/* Hero: category eyebrow + serif display title */}
+        {/* Hero: category eyebrow + display title */}
         <div
           style={{
             display: "flex",
@@ -354,7 +353,7 @@ export default async function Image({ params }: Props) {
           <div
             style={{
               display: "flex",
-              fontFamily: SERIF,
+              fontFamily: SANS,
               fontSize: heroSize,
               fontWeight: 600,
               lineHeight: 1.08,

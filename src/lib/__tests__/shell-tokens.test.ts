@@ -140,7 +140,7 @@ describe("shell tokens match the design's values", () => {
     ["--ax-raised", "#ffffff", "#333333"],
     ["--ax-overlay", "#ffffff", "#1f1f1f"],
     ["--ax-ink", "#171717", "#ededed"],
-    ["--ax-ink-secondary", "#525252", "#b4b4b4"],
+    ["--ax-ink-secondary", "#4d4d4d", "#bdbdbd"],
     ["--ax-hover", "rgb(0 0 0 / 0.04)", "rgb(255 255 255 / 0.05)"],
     ["--ax-press", "rgb(0 0 0 / 0.09)", "rgb(255 255 255 / 0.08)"],
     ["--ax-line", "rgb(0 0 0 / 0.08)", "rgb(255 255 255 / 0.08)"],

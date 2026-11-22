@@ -51,7 +51,11 @@
   --ax-hover: rgb(0 0 0 / 0.04);
   --ax-press: rgb(0 0 0 / 0.09);
 
-  /* Text. ink-muted is the floor for any text a reader is meant to read
+  /* Text, in three readable tiers: ink for titles, the current item and the
+     one thing that needs attention; ink-secondary, a step down, for what the
+     reader should notice (section heads, the Do/Don't claims, group labels,
+     actions); ink-muted for paragraphs and metadata, which recede by size
+     and place as much as colour. ink-muted is the floor for any text a reader is meant to read
      (≥4.5:1 on backdrop, canvas, surface, sunken, stage, raised and overlay),
      and for any glyph that means something on its own, placeholders included.
      #737373 was 4.31:1 on the backdrop, hence #666666. ink-faint is decorative
@@ -59,7 +63,7 @@
      thing, hidden from assistive tech. In light mode it is under 3:1 on every
      surface, so nothing a reader needs may depend on it. */
   --ax-ink: #171717;
-  --ax-ink-secondary: #525252;
+  --ax-ink-secondary: #4d4d4d;
   --ax-ink-muted: #666666;
   --ax-ink-faint: #a3a3a3;
 
@@ -69,8 +73,10 @@
   --ax-line: rgb(0 0 0 / 0.08);
   --ax-line-strong: rgb(0 0 0 / 0.14);
 
-  /* The one focus ring */
-  --ax-ring: #2563eb;
+  /* The one focus ring: the muted ink, so a ring reads quietly, never as an
+     accent, while clearing 3:1 against every surface (5.7:1 light, 7.2:1
+     dark). It draws only for keyboard focus (see :focus-visible below). */
+  --ax-ring: #666666;
 
   /* Verdicts: icon tone, then the darker label tone */
   --ax-do: #059669;
@@ -127,14 +133,14 @@
   --ax-press: rgb(255 255 255 / 0.08);
 
   --ax-ink: #ededed;
-  --ax-ink-secondary: #b4b4b4;
+  --ax-ink-secondary: #bdbdbd;
   --ax-ink-muted: #a3a3a3;
   --ax-ink-faint: #737373;
 
   --ax-line: rgb(255 255 255 / 0.08);
   --ax-line-strong: rgb(255 255 255 / 0.14);
 
-  --ax-ring: #60a5fa;
+  --ax-ring: #a3a3a3;
 
   --ax-do: #34d399;
   --ax-do-ink: #6ee7b7;
@@ -191,8 +197,7 @@
   --shadow-keycap: var(--ax-shadow-keycap);
   --shadow-keycap-off: var(--ax-shadow-keycap-off);
 
-  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-source-serif), ui-serif, Georgia, serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
@@ -262,15 +267,83 @@
   }
 
   /* --theme() inlines each stack instead of reading var(--font-sans): next/font
-     sets --font-manrope on <body>, so a --font-sans resolved at :root would hold
+     sets --font-inter on <body>, so a --font-sans resolved at :root would hold
      an undefined reference and the face would be lost. */
   body {
     font-family: --theme(--font-sans);
+    font-kerning: normal;
     color: var(--ax-ink);
     background: var(--ax-canvas);
     min-height: 100vh;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Inter is set to overlay SF Pro. Apple devices draw SF, which carries its
+     own size-specific tracking in Safari and Chrome alike, so none of this
+     applies there; data-face marks every other device before first paint.
+
+     Size. SF's caps stand 0.7045em tall, Inter's 0.7275em: font-size-adjust
+     scales Inter to SF's cap height, which also lands its x-height on SF's
+     up to 28px (0.5px short at 36-48px). Mono text keeps its own size.
+
+     Width. Scaled so, untuned Inter Regular runs 5.6% narrower than SF at
+     10px, 2.9% wider at 22px and 1% narrower from 32px; Inter Semibold runs
+     up to 7.7% narrower, because SF widens more with weight. Letter-spacing
+     brings each line back to SF's width, as clamp() ramps of 1em fitted on
+     a mixed sample at every size from 10px to 48px:
+       --face-track, fitted to Regular: within 0.75% of SF at 400, with
+       Medium up to 1.5% narrower;
+       --face-track-strong, for headings, strong, b, th, .font-semibold and
+       .font-bold: within 0.5% of SF at 600.
+     The ramps are custom properties on the root, so each element resolves
+     1em at its own size. An explicit letter-spacing wins over them, so a
+     rule that sets its own tracking adds the correction back:
+     calc(var(--face-track-strong, 0px) - 0.02em).
+
+     font-size-adjust with a metric keyword needs Chrome 127, Firefox 118 or
+     Safari 17; an older browser draws Inter about 3% larger. */
+  :where(:root[data-face="inter"]) {
+    font-size-adjust: cap-height 0.7045;
+    --face-track: calc(
+      0.074px +
+      clamp(0px, (14px - 1em) * 0.0485, 0.194px) +
+      clamp(-0.309px, (14px - 1em) * 0.0386, 0px) +
+      clamp(0px, (1em - 23px) * 0.0508, 0.457px)
+    );
+    --face-track-strong: calc(
+      0.223px +
+      clamp(0px, (14px - 1em) * 0.04, 0.16px) +
+      clamp(-0.257px, (14px - 1em) * 0.0321, 0px) +
+      clamp(0px, (1em - 22px) * 0.0484, 0.484px) +
+      clamp(0px, (1em - 32px) * 0.0035, 0.056px)
+    );
+  }
+  :where(:root[data-face="inter"]) * {
+    letter-spacing: var(--face-track);
+  }
+  :where(:root[data-face="inter"]) :where(h1, h2, h3, h4, h5, h6, strong, b, th, .font-semibold, .font-bold),
+  :where(:root[data-face="inter"]) :where(h1, h2, h3, h4, h5, h6, strong, b, th, .font-semibold, .font-bold) * {
+    letter-spacing: var(--face-track-strong);
+  }
+  :where(:root[data-face="inter"]) :where(.font-normal, .font-medium) {
+    letter-spacing: var(--face-track);
+  }
+  /* Mono text, wherever a rule sets Plex Mono (the Kbd keycap is sans). */
+  :where(:root[data-face="inter"]) :where(code, samp, pre, kbd:not(.font-sans), .font-mono, .cmp-captions p),
+  :where(:root[data-face="inter"]) :where(code, samp, pre, kbd:not(.font-sans), .font-mono, .cmp-captions p) * {
+    font-size-adjust: none;
+    letter-spacing: normal;
+  }
+  /* Sans set inside mono text (compare.css): the verdict, the tally, the showcase caption's lead. */
+  :where(:root[data-face="inter"]) :where(.cmp-tally) {
+    font-size-adjust: cap-height 0.7045;
+    letter-spacing: var(--face-track);
+  }
+  :where(:root[data-face="inter"]) :where(.cmp-cap-v),
+  :where(:root[data-face="inter"] .cmp-show > .motion-showcase > .grid > .min-w-0 > p)::before {
+    font-size-adjust: cap-height 0.7045;
+    letter-spacing: var(--face-track-strong);
   }
 
   :where(input, textarea, select) {
@@ -291,7 +364,6 @@
   h4,
   h5,
   h6 {
-    font-family: --theme(--font-serif);
     text-wrap: balance;
   }
 
@@ -302,8 +374,9 @@
     font-family: --theme(--font-mono);
   }
 
-  /* One focus treatment for every control: a11y-1's own Do. Zero specificity,
-     so a component can still adjust the offset with a utility. */
+  /* One focus treatment for every control: a11y-1's own Do, 2px at a 2px
+     offset, in --ax-ring. Zero specificity, so a component can still adjust
+     the offset with a utility. */
   :where(
       a[href],
       button,
@@ -317,6 +390,15 @@
     outline: 2px solid var(--ax-ring);
     outline-offset: 2px;
   }
+}
+
+/* Rings are for keyboard focus only. shell.tsx records, as focus arrives,
+   whether the last input was a key or a pointer; focus that came from a
+   pointer (a click into a field, or a script moving focus after a click)
+   draws no ring, whatever a component's own :focus-visible rule says.
+   Unlayered, so it beats those rules; pages without the shell keep them. */
+:root[data-focus-origin="pointer"] :focus-visible {
+  outline-color: transparent;
 }
 
 /* Swapping themes must not tween every colour on the page. Unlayered and

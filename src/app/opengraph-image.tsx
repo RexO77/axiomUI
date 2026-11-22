@@ -1,14 +1,15 @@
 import { ImageResponse } from "next/og";
 import { AxiomLogo } from "@/components/ui/axiom-logo";
-import { categories, rules } from "@/data/ui-logic";
+import { railCategories } from "@/data/taxonomy";
+import { rules } from "@/data/ui-logic";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-export const alt = `Axiom UI — ${rules.length} UI design rules across ${categories.length} categories`;
+export const alt = `Axiom UI design catalog with ${rules.length} rules in ${railCategories.length} categories`;
 
 // The homepage card speaks the same visual language as the per-rule cards in
 // rules/[id]/opengraph-image.tsx: the dark floating stage, the mark and
-// wordmark, a quiet mono pill, a blue eyebrow and a serif display line.
+// wordmark, a quiet mono pill, a blue eyebrow and a display line.
 
 // ── Palette (mirrors the site's dark theme) ─────────────────────────
 const CANVAS = "#0a0a0a"; // neutral-950 page ground
@@ -66,28 +67,22 @@ let fontsPromise: Promise<LoadedFont[]> | null = null;
 
 function loadBrandFonts(): Promise<LoadedFont[]> {
   fontsPromise ??= Promise.all([
-    loadGoogleFont("Source Serif 4", 600),
-    loadGoogleFont("Manrope", 500),
-    loadGoogleFont("Manrope", 700),
+    loadGoogleFont("Inter", 500),
+    loadGoogleFont("Inter", 600),
+    loadGoogleFont("Inter", 700),
     loadGoogleFont("IBM Plex Mono", 400),
   ]).catch(() => []);
 
   return fontsPromise;
 }
 
-const SERIF = "'Source Serif 4', Georgia, serif";
-const SANS = "Manrope, sans-serif";
+const SANS = "Inter, sans-serif";
 const MONO = "'IBM Plex Mono', monospace";
 
-/** "Typography & text" → "Typography": the index needs the noun, not the pair. */
-function shortName(name: string): string {
-  return name.split(" & ")[0];
-}
-
-const index = categories.map((category) => ({
+const index = railCategories.map((category) => ({
   id: category.id,
-  name: shortName(category.name),
-  count: rules.filter((rule) => rule.category === category.id).length,
+  name: category.short,
+  count: category.rules.length,
 }));
 
 export default async function Image() {
@@ -152,11 +147,11 @@ export default async function Image() {
                 backgroundColor: "rgba(255, 255, 255, 0.03)",
               }}
             >
-              {`${rules.length} rules · ${categories.length} categories`}
+              {`${rules.length} rules · ${railCategories.length} categories`}
             </div>
           </div>
 
-          {/* Hero: eyebrow + serif display headline */}
+          {/* Hero: eyebrow + display headline */}
           <div
             style={{
               display: "flex",
@@ -176,13 +171,13 @@ export default async function Image() {
                 color: ACCENT,
               }}
             >
-              UI logic repository
+              UI design rules
             </div>
             <div
               style={{
                 display: "flex",
                 maxWidth: 900,
-                fontFamily: SERIF,
+                fontFamily: SANS,
                 fontSize: 64,
                 fontWeight: 600,
                 lineHeight: 1.08,
@@ -191,7 +186,7 @@ export default async function Image() {
                 textWrap: "balance",
               }}
             >
-              The decision engine behind sharp, consistent interfaces
+              Compare the Do and Don’t examples for each rule.
             </div>
           </div>
 

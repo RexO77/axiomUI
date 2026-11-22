@@ -74,7 +74,7 @@
 .skill-toolbar { min-height: 46px; border-bottom: 1px solid var(--ax-line); }
 .skill-toolbar > svg { width: 17px; height: 17px; color: var(--ax-ink-secondary); }
 .skill-toolbar h2, .skill-group h3, .skill-install-heading, .skill-example h4 {
-  font-family: var(--font-manrope), ui-sans-serif, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 .skill-toolbar h2 { font-size: 14px; line-height: 20px; font-weight: 600; outline: none; }
 .skill-toolbar .skill-source-link { margin-left: auto; }

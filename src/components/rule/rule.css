@@ -207,7 +207,6 @@
 /* ── Title, summary, prose code ─────────────────────────────────────── */
 
 .rv-title {
-  font-family: var(--font-source-serif), ui-serif, Georgia, serif;
   font-size: 36px;
   line-height: 40px;
   font-weight: 600;
@@ -270,9 +269,8 @@
 }
 .rv-dd[hidden] { margin: 0; padding: 0; }
 .rv-dd-sec + .rv-dd-sec { margin-top: 40px; }
-/* Section heads are UI type: Manrope, never the serif the base styles give headings (021: serif is for titles). */
+/* Section heads are UI type: small, at body weight scale, not display headings. */
 .rv-dd-h, .rv-ship h2, .rv-next h2, .rv-related h2 {
-  font-family: var(--font-manrope), ui-sans-serif, sans-serif;
   font-size: 14px;
   line-height: 20px;
   font-weight: 600;
