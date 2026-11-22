@@ -77,6 +77,8 @@ describe("ruleProse", () => {
         expect(title.trim(), rule.id).toMatch(/\S/);
         expect(new URL(href).protocol, rule.id).toBe("https:");
         expect(Object.keys(SOURCE_KIND_LABEL), rule.id).toContain(kind);
+        // Reference docs, design patterns and test rules guide; only specifications are standards.
+        if (/developer\.mozilla\.org|w3\.org\/WAI\/ARIA\/apg|w3\.org\/WAI\/standards-guidelines\/act/.test(href)) expect(kind, `${rule.id} ${href}`).toBe("guideline");
       }
     }
   });

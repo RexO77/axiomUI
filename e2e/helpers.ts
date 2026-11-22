@@ -246,7 +246,7 @@ export async function awaitUrl(page: Page, url: string): Promise<void> {
 
 /**
  * The view has changed and its morph has ended (`data-vt` is on `<html>` only
- * while one runs). A morph lasts 360 ms; a loaded host gets 10 s.
+ * while one runs). The swap takes 220 ms out and 280 ms in; a loaded host gets 10 s.
  */
 export async function awaitView(page: Page, view: "gallery" | "rule"): Promise<void> {
   await expect(page.locator(sel.shell)).toHaveAttribute("data-view", view);

@@ -10,7 +10,6 @@ import { SheetLayer } from "./kit/inspection";
 import { filters, finishPull, matchingShoes, sheetMetrics as m, toggleFilter, visitOptions, type Filter } from "./kit/sheets-fixtures";
 import "./sheets.css";
 
-export { isSheetRule } from "./kit/sheets-fixtures";
 type PaneProps = { good: boolean; inspect: boolean; replay: Ref<() => void> };
 const updates = ["Survey filed", "Soil tested", "Beds marked", "Stone delivered", "Paths graded", "Hedges trimmed", "Benches fitted", "Gates opened"];
 const destinations = ["Birchwood", "Westport", "North Quay", "Oxbridge", "Elm Park", "Southbank", "Hill End", "Victoria"];

@@ -69,7 +69,7 @@ export function Tile({ rule, href }: { rule: Rule; href: string }) {
           <VerdictLabel verdict="dont" />
         </span>
       </span>
-      <span className="gw-title" data-tile-title="">
+      <span className="gw-title">
         {rule.title}
       </span>
     </a>

@@ -1,6 +1,5 @@
 import { navigate, startHistory, type HistoryState, type RouteEntry } from "./navigation";
 import { windows, type Size } from "./geometry";
-import { mobileScene } from "./scenes";
 
 export const destinations = ["Home", "Saved", "Orders", "Account"] as const;
 export type Destination = typeof destinations[number];
@@ -36,4 +35,3 @@ export function backGesture(history: HistoryState, event: "preview" | "cancel" |
   return navigate(history, { type: event === "back" && !deferred ? "cancel" : event });
 }
 
-export const isNavigation = (id: string) => mobileScene(id) === "navigation";
