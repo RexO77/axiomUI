@@ -46,7 +46,7 @@ Try tighter line spacing on a heading that wraps to two or three lines. Keep the
 
 Start with one font family for headings and body text. Add another for a specific use, such as code, display headings, or a script the first family lacks.
 
-- Do: Inter for headings + body · Don’t: Arial headings + Verdana body
+- Do: One sans for headings + body · Don’t: Arial headings + Verdana body
 - [ ] What job does the second font family do?
 - [ ] Could the existing family express the same distinction?
 - [ ] Which face actually renders the localized copy?

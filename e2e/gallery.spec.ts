@@ -1,9 +1,9 @@
 import type { Browser, Page } from "@playwright/test";
 
-import { accessibilityCollection } from "../src/data/taxonomy";
+import { accessibilityCollection, keyboardCollection } from "../src/data/taxonomy";
 import { rules } from "../src/data/ui-logic";
 
-import { awaitUrl, awaitView, expect, openCatalog, ORIGIN, railNeighbour, routes, ruleUrl, sel, settledUrl, test, wallUrl } from "./helpers";
+import { awaitUrl, awaitView, expect, openCatalog, ORIGIN, railIds, railNeighbour, routes, ruleUrl, sel, settledUrl, test, wallUrl } from "./helpers";
 
 /*
  * The gallery wall: the Do/Don't side, the search and collection filters, J/K
@@ -43,7 +43,7 @@ async function countPlays(page: Page, id: string): Promise<() => Promise<number>
 const settledRunning = (page: Page) =>
   expect.poll(() => page.evaluate(() => document.getAnimations().filter((a) => a.playState === "running").length), { timeout: 2_000 });
 
-const BORDER = ["layout-7", "a11y-2", "color-6", "color-12", "comp-3", "motion-8"];
+const BORDER = ["layout-7", "a11y-2", "color-6", "color-12", "motion-8"];
 /** A motion rule whose tile replays (an action showcase). */
 const MOTION = "motion-1";
 
@@ -172,12 +172,12 @@ test.describe("search and collections", () => {
       await page.keyboard.press("j");
       expect(await focused(page)).toBe(id);
     }
-    const previousSections = ["comp-3", "a11y-2", "layout-7"];
+    const previousSections = ["a11y-2", "layout-7"];
     for (const id of previousSections) {
       await page.keyboard.press("Shift+K");
       expect(await focused(page)).toBe(id);
     }
-    for (const id of ["a11y-2", "comp-3", "motion-8"]) {
+    for (const id of ["a11y-2", "motion-8"]) {
       await page.keyboard.press("Shift+J");
       expect(await focused(page)).toBe(id);
     }
@@ -264,6 +264,38 @@ test.describe("search and collections", () => {
       await expect.poll(async () => (await visibleTiles(page)).length).toBe(rules.length);
     });
   }
+});
+
+test.describe("Show only", () => {
+  const name = keyboardCollection.name;
+  const count = keyboardCollection.ruleIds.length;
+  const scrolled = (page: Page) => page.locator(sel.wallLayer).evaluate((layer) => Math.round(layer.scrollTop));
+  const status = (page: Page) => page.locator(sel.wall).getByRole("status");
+  const toggle = (page: Page) => page.locator(".shell-rail").getByRole("switch", { name: `${name}, ${count} rules` });
+
+  test("on the wall, a switch starts the collection at its top and announces it", async ({ page }) => {
+    await openCatalog(page, wallUrl());
+    await page.locator(sel.wallLayer).evaluate((layer) => { layer.scrollTop = layer.scrollHeight; });
+    expect(await scrolled(page)).toBeGreaterThan(1000);
+    await page.locator("body").press("[");
+    await toggle(page).click();
+    await awaitUrl(page, wallUrl({ collection: keyboardCollection.id }));
+    await expect.poll(() => scrolled(page)).toBe(0);
+    await expect(status(page)).toHaveText(`${name} collection, ${count} rules`);
+  });
+
+  test("on a rule, a switch goes back to the wall, which starts at the top and announces it", async ({ page }) => {
+    await openCatalog(page, wallUrl());
+    await page.locator(sel.wallLayer).evaluate((layer) => { layer.scrollTop = layer.scrollHeight; });
+    await page.locator(sel.tile(railIds[railIds.length - 1])).click();
+    await awaitView(page, "rule");
+    await page.locator("body").press("[");
+    await toggle(page).click();
+    await awaitView(page, "gallery");
+    await awaitUrl(page, wallUrl({ collection: keyboardCollection.id }));
+    await expect.poll(() => scrolled(page)).toBe(0);
+    await expect(status(page)).toHaveText(`${name} collection, ${count} rules`);
+  });
 });
 
 test.describe("fragments", () => {

@@ -43,7 +43,6 @@ export type ToolbarProps = {
   singleKeys: boolean;
   /** "⌘" or "Ctrl ": ⌘K opens the palette, which an empty field opens too, so its keycap names it. */
   modKey: string;
-  /** The ⌘K palette: a click into the empty field opens it (`/` still types here). */
   /** Opens the ⌘K palette; its close returns focus to `returnTo` when given. */
   onOpenPalette: (returnTo?: HTMLElement | null) => void;
   searchRef: RefObject<HTMLInputElement | null>;

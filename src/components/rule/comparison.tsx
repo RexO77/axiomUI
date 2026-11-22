@@ -271,10 +271,10 @@ function StaticComparison({ rule }: { rule: Rule }) {
           </Tooltip>
           <div className="cmp-tools" role="group" aria-label="Inspect">
             <ToolToggle label="Measure" shortcut="M" keys={keys} pressed={measure.active} onClick={(event) => {
-              // Enter or Space (a click with no pointer detail) opening free
-              // inspection hands focus to the canvas, as M does: the hint
-              // that appears says to press an arrow.
-              if (!measure.active && !spec && event.detail === 0) canvas.current?.focus({ preventScroll: true });
+              // Enter or Space (a click with no pointer detail) opening Measure
+              // hands focus to the canvas, as M does, on authored marks too.
+              // In free inspection the hint that appears says to press an arrow.
+              if (!measure.active && event.detail === 0) canvas.current?.focus({ preventScroll: true });
               measure.toggle();
             }} buttonRef={measureButton}>
               <Ruler />
