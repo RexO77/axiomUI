@@ -498,6 +498,32 @@
     overscroll-behavior-y: contain;
     scrollbar-gutter: stable;
   }
+  /* The panel scrolls inside its card with no visible scrollbar, so its last
+     line used to be cut in half with no sign that more follows. A short fade
+     into the panel's own colour marks the bottom edge while there is more
+     below and clears as the end comes into view. It sits on the text only,
+     1px above the panel's ring, so the panel keeps its edge. A panel that
+     fits has no scroll range, its timeline is inactive, and the fade stays
+     hidden. */
+  @supports (animation-timeline: scroll()) {
+    .rv-side .rv-dd::after {
+      content: "";
+      position: sticky;
+      /* Sticky insets count from inside the panel's 16px padding: -15px puts
+         the fade's foot 1px above the ring. */
+      bottom: -15px;
+      display: block;
+      height: 32px;
+      margin-top: -32px;
+      background: var(--ax-bezel-panel);
+      -webkit-mask-image: linear-gradient(to bottom, transparent, black);
+      mask-image: linear-gradient(to bottom, transparent, black);
+      pointer-events: none;
+      opacity: 0;
+      animation: rv-dd-fade linear both;
+      animation-timeline: scroll(nearest);
+    }
+  }
   .rv-side .rv-dd-sec + .rv-dd-sec,
   .rv-side .rv-dd-col + .rv-dd-col {
     margin-top: 24px;
@@ -635,3 +661,8 @@ html[data-deep="hidden"] .rv-dd { content-visibility: hidden; margin: 0; padding
 }
 .rv-sources a { text-decoration: underline; text-underline-offset: 0.18em; overflow-wrap: anywhere; }
 .rv-sources a:hover { color: var(--ax-ink); }
+
+@keyframes rv-dd-fade {
+  0%, 92% { opacity: 1; }
+  100% { opacity: 0; }
+}

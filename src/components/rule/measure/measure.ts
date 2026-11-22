@@ -500,6 +500,22 @@ function styleReading(element: Element, property: string): string {
   }).join(", ") || "none";
 }
 
+/**
+ * A label set just under a target can straddle the bottom edge of the box the
+ * target sits in (a card's border, when the target is its last line). Drop it
+ * below the first drawn edge it would cross, so it reads as outside the box.
+ */
+function clearEdge(el: Element, root: Element, y: number, env: Env): number {
+  for (let a = el.parentElement; a && a !== root && root.contains(a); a = a.parentElement) {
+    const s = getComputedStyle(a);
+    const drawn = parseFloat(s.borderBottomWidth) > 0 || s.boxShadow !== "none" || s.outlineStyle !== "none";
+    if (!drawn) continue;
+    const bottom = box(a.getBoundingClientRect(), env).b;
+    if (bottom > y - 2 && bottom < y + MD_H + 2) return bottom + 6;
+  }
+  return y;
+}
+
 export function measurePane(root: Element, pane: DOMRect, spec: RuleAnnotations, side: Side, zoom: number, pan: { x: number; y: number }): PaneMeasure {
   const env: Env = { pane, pan, zoom };
   const groups: Group[] = [];
@@ -553,7 +569,7 @@ export function measurePane(root: Element, pane: DOMRect, spec: RuleAnnotations,
           const text = value.length <= 16 ? value : mark.property;
           result = { value, prims: [
             { t: "seg", axis: "x", x: r.l, y: r.b + 2, len: r.w },
-            chipMd((r.l + r.r - mdWidth(text)) / 2, r.b + 7, text),
+            chipMd((r.l + r.r - mdWidth(text)) / 2, clearEdge(el, root, r.b + 7, env), text),
           ] };
         }
       }

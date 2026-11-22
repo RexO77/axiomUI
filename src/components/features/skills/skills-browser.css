@@ -93,6 +93,33 @@
 .skill-browser { display: grid; grid-template-columns: 190px minmax(0, 1fr); flex: 1; min-height: 0; }
 .skill-list, .skill-details { min-width: 0; overflow: auto; overscroll-behavior: contain; }
 .skill-list { padding: 8px; border-inline-end: 1px solid var(--ax-line); background: var(--ax-sunken); }
+/* A list taller than the dialog cut its last option in half with no sign of
+   more below. A short fade into the list's own colour marks the bottom edge
+   while it can scroll further and clears at the end; a list that fits has
+   no scroll range, so its timeline is inactive and the fade stays hidden. */
+@keyframes skill-list-fade {
+  0%, 80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@supports (animation-timeline: scroll()) {
+  .skill-list::after {
+    content: "";
+    position: sticky;
+    /* Sticky insets count from inside the list's 8px padding. */
+    bottom: -8px;
+    display: block;
+    height: 24px;
+    margin-top: -24px;
+    background: var(--ax-sunken);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black);
+    mask-image: linear-gradient(to bottom, transparent, black);
+    pointer-events: none;
+    opacity: 0;
+    animation: skill-list-fade linear both;
+    animation-timeline: scroll(nearest);
+  }
+}
+
 .skill-group + .skill-group { margin-top: 8px; }
 .skill-group h3 { padding: 4px 8px; font-size: 12px; line-height: 18px; font-weight: 500; color: var(--ax-ink-secondary); }
 .skill-option {
