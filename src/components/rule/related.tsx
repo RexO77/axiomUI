@@ -40,7 +40,7 @@ export function Related({ ruleId }: { ruleId: string }) {
 
   return (
     <section ref={group} className="rv-related" aria-labelledby={`${uid}-h`}>
-      <h2 id={`${uid}-h`}>Related</h2>
+      <h2 id={`${uid}-h`}>Related rules</h2>
       <ul>
         {related.map((rule) => {
           const category = railCategory(railCategoryOf(rule));
@@ -50,6 +50,7 @@ export function Related({ ruleId }: { ruleId: string }) {
                 className="rv-rrow"
                 data-related-rule={rule.id}
                 href={shell.hrefFor(rule.id)}
+                aria-label={rule.title}
                 aria-describedby={`${uid}-${rule.id}`}
                 onClick={(event) => {
                   if (!plainClick(event)) return;

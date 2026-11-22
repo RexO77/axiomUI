@@ -2,7 +2,7 @@
 "use client";
 
 /*
- * One rule owns the sheet: the header row, the serif title and summary,
+ * One rule owns the sheet: the header row, the title and summary,
  * the comparison,
  * Copy rule ▾ on phones, the deep dive with Related at its foot, Before
  * you ship, and Next. One scrolling surface: the sheet.

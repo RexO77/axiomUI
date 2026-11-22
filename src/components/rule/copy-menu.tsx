@@ -7,6 +7,7 @@
  *
  * The menu:
  * - opens on the first item; ↑/↓ wrap, Home and End jump;
+ * - a second press of the trigger closes it, focus back on the trigger;
  * - Escape closes it here and returns focus to the trigger, without reaching
  *   the shell, so the rule view stays;
  * - Tab, or any focus leaving the trigger group, closes it, and focus goes on
@@ -39,7 +40,7 @@ function ruleMarkdown(rule: Rule): string {
   return [`## ${rule.title}`, "", rule.desc, "", `- **Do:** ${rule.do}`, `- **Don’t:** ${rule.dont}`, "", ruleLink(rule)].join("\n");
 }
 
-const STATUS = { text: "Rule copied", error: "Couldn’t copy", md: "Copied as Markdown", link: "Link copied" } as const;
+const STATUS = { text: "Copied as plain text", error: "Couldn’t copy", md: "Copied as Markdown", link: "Link copied" } as const;
 
 export function CopyMenu({ rule, className }: { rule: Rule; className?: string }) {
   const [open, setOpen] = useState(false);
@@ -118,9 +119,15 @@ export function CopyMenu({ rule, className }: { rule: Rule; className?: string }
         data-state={done ? (done === "error" ? "error" : "copied") : undefined}
         aria-haspopup="menu"
         aria-expanded={open}
+        // Safari never focuses a clicked button: pressing it would blur the open
+        // menu to nowhere, close it, and the click would open it again.
+        onMouseDown={(event) => {
+          if (open) event.preventDefault();
+        }}
         onClick={() => {
           setDone(null);
-          setOpen((current) => !current);
+          if (open) close(true);
+          else setOpen(true);
         }}
         onKeyDown={(event) => {
           if (event.key === "ArrowDown") {
@@ -133,7 +140,7 @@ export function CopyMenu({ rule, className }: { rule: Rule; className?: string }
         <span>{done === "error" ? "Copy failed" : done ? "Copied" : "Copy rule"}</span>
         <ChevronDown aria-hidden="true" />
       </button>
-      <div ref={menu} role="menu" aria-label="Copy" hidden={!open} inert={!open} className="rv-menu" onKeyDown={onMenuKey}>
+      <div ref={menu} role="menu" aria-label="Copy rule" hidden={!open} inert={!open} className="rv-menu" onKeyDown={onMenuKey}>
         <button type="button" role="menuitem" tabIndex={-1} onClick={() => void pick("text")}>
           <Copy aria-hidden="true" />
           Copy as plain text

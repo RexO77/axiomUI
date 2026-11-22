@@ -1,8 +1,9 @@
 // design-system: strict
 "use client";
 
-import { useRef, type ReactNode } from "react";
+import { useLayoutEffect, useRef, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import "./segmented.css";
 
 export type SegmentOption<T extends string> = {
   value: T;
@@ -53,19 +54,57 @@ export type SegmentedProps<T extends string> = {
 
 /** When wrapped in Tooltip, put flex-row layout classes on the Tooltip wrapper. */
 export function Segmented<T extends string>({ label, value, options, onChange, className, disabled, dir, variant = "default", "aria-describedby": describedBy }: SegmentedProps<T>) {
+  const group = useRef<HTMLDivElement>(null);
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
   const selected = options.findIndex((option) => option.value === value && !option.disabled);
   const tabStop = selected >= 0 ? selected : options.findIndex((option) => !option.disabled);
 
+  useLayoutEffect(() => {
+    const track = group.current;
+    const button = refs.current[options.findIndex((option) => option.value === value)];
+    if (!track) return;
+    const measure = (resized: boolean) => {
+      const box = button?.getBoundingClientRect();
+      if (!box?.width) {
+        delete track.dataset.measured;
+        delete track.dataset.slide;
+        return;
+      }
+      const bounds = track.getBoundingClientRect();
+      const rtl = getComputedStyle(track).direction === "rtl";
+      const start = rtl ? bounds.right - box.right : box.left - bounds.left;
+      const geometry = {
+        "--segment-start": start - track.clientLeft,
+        "--segment-top": box.top - bounds.top - track.clientTop,
+        "--segment-width": box.width,
+        "--segment-height": box.height,
+      };
+      for (const [property, pixels] of Object.entries(geometry)) {
+        const length = `${pixels}px`;
+        if (track.style.getPropertyValue(property) === length) continue;
+        if (resized) delete track.dataset.slide;
+        track.style.setProperty(property, length);
+      }
+      track.dataset.measured = "";
+    };
+    measure(false);
+    // A sibling's webfont or wrapping can move the selected button without resizing it.
+    const observer = new ResizeObserver(() => measure(true));
+    observer.observe(track);
+    for (const option of refs.current) if (option) observer.observe(option);
+    return () => observer.disconnect();
+  }, [value, options, dir]);
+
   return (
     <div
+      ref={group}
       role="radiogroup"
       aria-label={label}
       aria-describedby={describedBy}
       aria-disabled={disabled || undefined}
       dir={dir}
       className={cn(
-        "inline-flex min-h-8 shrink-0 items-center gap-0.5 bg-fill p-0.75 whitespace-nowrap phone:min-h-11",
+        "segmented relative inline-flex min-h-8 shrink-0 items-center gap-0.5 bg-fill p-0.75 whitespace-nowrap phone:min-h-11",
         variant === "capsule" ? "rounded-full" : "rounded-control",
         className,
       )}
@@ -91,11 +130,15 @@ export function Segmented<T extends string>({ label, value, options, onChange, c
           disabled={disabled || option.disabled}
           tabIndex={!disabled && index === tabStop ? 0 : -1}
           className={cn(
-            "relative inline-flex min-h-6.5 shrink-0 items-center justify-center gap-1.5 px-2.5 text-[13px] leading-5 font-medium whitespace-nowrap transition-[background-color,color,box-shadow] duration-fast ease-out-strong focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-ring disabled:opacity-50 phone:min-h-9.5 phone:min-w-11 phone:before:absolute phone:before:inset-x-0 phone:before:top-1/2 phone:before:h-11 phone:before:-translate-y-1/2 [&_svg]:size-3.5",
+            "relative inline-flex min-h-6.5 shrink-0 items-center justify-center gap-1.5 px-2.5 text-[13px] leading-5 font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-ring disabled:opacity-50 phone:min-h-9.5 phone:min-w-11 phone:before:absolute phone:before:inset-x-0 phone:before:top-1/2 phone:before:h-11 phone:before:-translate-y-1/2 [&_svg]:size-3.5",
             variant === "capsule" ? "rounded-full" : "rounded-item",
             option.value === value ? "bg-raised text-ink shadow-item forced-colors:outline" : "text-ink-muted hover:text-ink",
           )}
-          onClick={(event) => onChange(option.value, event.detail === 0)}
+          onClick={(event) => {
+            // Hydration and restored preferences use the static selection until a pointer chooses.
+            group.current?.toggleAttribute("data-slide", event.detail > 0);
+            onChange(option.value, event.detail === 0);
+          }}
         >
           {option.icon ? <span aria-hidden="true" className={option.value === value ? "text-ink-secondary" : "text-ink-muted"}>{option.icon}</span> : null}
           {option.label}

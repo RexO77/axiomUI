@@ -17,17 +17,20 @@ export function generateStaticParams() {
   return rules.map((rule) => ({ id: rule.id }));
 }
 
+/** Ends a caption with one terminator: "First keystrokes land." never becomes "land..". */
+const sentence = (text: string) => (/[.!?…]["”’)]?$/.test(text.trim()) ? text.trim() : `${text.trim()}.`);
+
 /*
  * The social card lives at /rules/<id>/opengraph-image, outside this route
  * group so its URL never changes. File-based images only attach to a page in
  * their own directory, so this page names it explicitly.
  */
-const ogImage = (id: string, title: string) => ({
-  url: `/rules/${id}/opengraph-image`,
+const ogImage = (rule: (typeof rules)[number]) => ({
+  url: `/rules/${rule.id}/opengraph-image`,
   width: 1200,
   height: 630,
   type: "image/png",
-  alt: `${title}: Do and Don’t comparison`,
+  alt: `${sentence(rule.title)} Do: ${sentence(rule.do)} Don’t: ${sentence(rule.dont)}`,
 });
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -36,9 +39,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!rule) return { title: "Rule not found" };
 
   const category = categories.find((candidate) => candidate.id === rule.category);
-  const title = `${rule.title} | Axiom UI`;
+  const title = `${rule.title} · Axiom UI`;
   const url = absoluteUrl(`/rules/${rule.id}`);
-  const image = ogImage(rule.id, rule.title);
+  const image = ogImage(rule);
 
   return {
     title: { absolute: title },

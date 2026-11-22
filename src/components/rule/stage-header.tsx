@@ -43,8 +43,8 @@ export function StageHeader({ rule }: { rule: Rule }) {
     to && deck.kind === "catalog" && railCategoryOf(to) !== category.id ? railCategory(railCategoryOf(to)).name : null;
   const prevCategory = crossing(prev);
   const nextCategory = crossing(next);
-  const prevName = prev ? (prevCategory ? `Previous category: ${prevCategory}` : `Previous rule: ${prev.title}`) : "No previous rule";
-  const nextName = next ? (nextCategory ? `Next category: ${nextCategory}` : `Next rule: ${next.title}`) : "No next rule";
+  const prevName = prev ? (prevCategory ? `Previous rule: ${prev.title} (${prevCategory})` : `Previous rule: ${prev.title}`) : "No previous rule";
+  const nextName = next ? (nextCategory ? `Next rule: ${next.title} (${nextCategory})` : `Next rule: ${next.title}`) : "No next rule";
   const keyHint = (key: string) => (singleKeys ? ` (${key})` : "");
 
   const deckLabel =
@@ -60,7 +60,7 @@ export function StageHeader({ rule }: { rule: Rule }) {
       <button
         type="button"
         className="shell-ctl rv-crumb"
-        aria-label={`${category.name}, all rules`}
+        aria-label={`${category.name}, back to the rule list`}
         onClick={(event) => shell.exit(originOf(event))}
       >
         <CategoryIcon categoryId={category.id} className="size-4" />
@@ -82,7 +82,7 @@ export function StageHeader({ rule }: { rule: Rule }) {
           </button>
         </Tooltip>
         <p className="rv-pager-count">
-          {deck.kind === "catalog" ? "" : "match "}
+          {deck.kind === "search" ? "Match " : deck.kind === "collection" ? "Rule " : ""}
           {position?.label}
         </p>
         <Tooltip content={next ? `${nextCategory ? nextName : next.title}${keyHint("J")}` : nextName} side="bottom">
@@ -105,7 +105,7 @@ export function StageHeader({ rule }: { rule: Rule }) {
           type="button"
           className="rv-deckq"
           onClick={shell.clearDeck}
-          aria-label={`Paging through ${deck.kind === "search" ? `matches for ${deckLabel}` : deckLabel}. Page through all rules instead`}
+          aria-label={deck.kind === "search" ? `Clear search for ${deckLabel}` : `Clear the ${deckLabel} collection filter`}
         >
           <span>{deckLabel}</span>
           <X aria-hidden="true" />

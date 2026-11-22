@@ -145,7 +145,13 @@ function DeepDive({ ruleId, state }: { ruleId: string; state: ProseState }) {
             {sources && sources.length > 0 && (
               <ul className="rv-sources" aria-label="Sources">
                 {sources.map(({ href, title }) => (
-                  <li key={href}><a href={href}>{title}</a></li>
+                  <li key={href}>
+                    {/* References open beside the rule, never in its place; the name says so to a screen reader. */}
+                    <a href={href} target="_blank" rel="noreferrer">
+                      {title}
+                      <span className="sr-only"> (opens in a new tab)</span>
+                    </a>
+                  </li>
                 ))}
               </ul>
             )}
@@ -195,9 +201,14 @@ function ShipCheck({ prose }: { prose: RuleProse }) {
   const uid = useId();
   if (prose.review.length === 0) return null;
   return (
-    <section className="rv-ship" aria-labelledby={`${uid}-h`}>
-      <h2 id={`${uid}-h`}>{PROSE_HEADINGS.review}</h2>
-      <ul>
+    <section className="rv-ship bezel" aria-labelledby={`${uid}-h`}>
+      <div className="bezel-head">
+        <h2 id={`${uid}-h`}>{PROSE_HEADINGS.review}</h2>
+        <span className="bezel-meta" aria-hidden="true">
+          {prose.review.length} {prose.review.length === 1 ? "question" : "questions"}
+        </span>
+      </div>
+      <ul className="bezel-panel">
         {prose.review.map((question, index) => (
           <li key={index}>
             <Prose text={question} />
@@ -206,6 +217,12 @@ function ShipCheck({ prose }: { prose: RuleProse }) {
       </ul>
     </section>
   );
+}
+
+/** The dive's length on the card's header: its three sections at a reading pace of 220 words a minute. */
+function readingTime({ how, why, breaks }: RuleProse) {
+  const words = [...how, why, breaks].join(" ").split(/\s+/).filter(Boolean).length;
+  return `${Math.max(1, Math.round(words / 220))} min read`;
 }
 
 export type InspectorProps = {
@@ -232,7 +249,17 @@ export function Inspector({ ruleId, prose }: InspectorProps) {
   return (
     <>
       <div ref={panel} className="rv-side">
-        <DeepDive ruleId={ruleId} state={state} />
+        {/* Docked, the reading card is a bezel: a header row on the shell and
+            the dive inset below it, still the element that scrolls. Below
+            1160, or hidden, the wrapper is display: contents (rule.css). */}
+        <div className="rv-dd-card">
+          {/* The dive names itself, so only the duplicate label is hidden; the reading time is read out. */}
+          <p className="rv-dd-bar">
+            <span aria-hidden="true">Deep dive</span>
+            {state.status === "ready" ? <span className="rv-dd-meta">{readingTime(state.prose)}</span> : null}
+          </p>
+          <DeepDive ruleId={ruleId} state={state} />
+        </div>
         <Related ruleId={ruleId} />
       </div>
       {state.status === "ready" ? <ShipCheck prose={state.prose} /> : null}

@@ -127,7 +127,7 @@ function tone(tokens: Map<string, string>, name: string): RGB {
   return parseHex(value!);
 }
 
-const BACKGROUNDS = ["backdrop", "canvas", "surface", "sunken", "stage", "raised", "overlay"];
+const BACKGROUNDS = ["backdrop", "canvas", "surface", "sunken", "stage", "raised", "overlay", "bezel", "bezel-panel"];
 const fmt = (ratio: number) => `${ratio.toFixed(2)}:1`;
 
 // ── The spec's values ────────────────────────────────────────────────
@@ -188,6 +188,8 @@ describe("shell tokens match the design's values", () => {
       ["--radius-track", "2px"],
     ];
     for (const [name, value] of RADII) expect(statics.get(name), name).toBe(value);
+    // The bezel card's radii stay concentric around its padding: 14 + 6 = 20.
+    expect(parseFloat(statics.get("--radius-bezel-panel")!) + parseFloat(light.get("--bezel-pad")!)).toBe(parseFloat(statics.get("--radius-bezel")!));
     // The item nests in its control: 5 + 3 padding = 8, as the comment says.
     expect(parseFloat(statics.get("--radius-item")!) + 3).toBe(parseFloat(statics.get("--radius-control")!));
     expect(GLOBALS).toMatch(/8 track − 3 padding\. \*\/\s*--radius-item:/);

@@ -1,0 +1,29 @@
+/* The selected button paints the server-rendered pill. Once measured, its
+   background and shadow transfer to a single layer beneath the buttons. */
+.segmented[data-measured]::before {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  inset-inline-start: var(--segment-start);
+  top: var(--segment-top);
+  width: var(--segment-width);
+  height: var(--segment-height);
+  border-radius: var(--radius-item);
+  background: var(--ax-raised);
+  box-shadow: var(--ax-shadow-item);
+}
+.segmented.rounded-full::before { border-radius: inherit; }
+.segmented:has([aria-checked="true"]:disabled)::before { opacity: .5; }
+.segmented[data-measured] > [aria-checked="true"] {
+  background: transparent;
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :root:not([data-input="keyboard"]) .segmented[data-slide]::before {
+    transition: inset-inline-start 200ms var(--ease-out-strong), width 200ms var(--ease-out-strong);
+  }
+  :root:not([data-input="keyboard"]) .segmented[data-slide] :is([role="radio"], [aria-hidden="true"], svg) {
+    transition: color 200ms var(--ease-out-strong);
+  }
+}
