@@ -42,6 +42,7 @@ const shell: ShellApi = {
   inputOrigin: () => "pointer",
   openPalette: noop,
   openShortcuts: noop,
+  openMenu: noop,
 };
 
 function render(wall: Partial<WallApi> = {}): string {

@@ -4,7 +4,8 @@
 /*
  * The title opens the rules menu. Its real href also reaches the current
  * deck's wall before hydration or in a new tab. The visible title and count
- * lead its accessible name. Esc on a rule still returns to its tile.
+ * lead its accessible name. It opens on Space as well as Enter, like the
+ * button it acts as. Esc on a rule still returns to its tile.
  */
 
 import { CategoryIcon } from "@/components/ui/category-icon";
@@ -63,6 +64,12 @@ export function PhoneBar({ routes, menuOpen, onMenu }: PhoneBarProps) {
           event.preventDefault();
           event.currentTarget.focus({ preventScroll: true });
           onMenu();
+        }}
+        onKeyDown={(event) => {
+          // It works as a button here, so Space opens the menu as Enter does, instead of scrolling the page.
+          if (event.key !== " " || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+          event.preventDefault();
+          if (!event.repeat) onMenu();
         }}
       >
         {position ? <CategoryIcon categoryId={position.category} className="size-5" /> : null}

@@ -76,6 +76,8 @@ export type ShellApi = {
   /** `returnTo` takes focus when the palette closes, instead of whatever had it before. */
   openPalette: (returnTo?: HTMLElement | null) => void;
   openShortcuts: () => void;
+  /** The phone's rules menu: the title, and the strip's one category button under 352px. */
+  openMenu: () => void;
 };
 
 export const ShellContext = createContext<ShellApi | null>(null);

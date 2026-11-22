@@ -429,8 +429,9 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
       inputOrigin,
       openPalette,
       openShortcuts,
+      openMenu,
     }),
-    [view, currentId, deck, openRule, restorePanel, page, exit, home, onClearDeck, hrefFor, phone, scrolled, modKey, inspectorOpen, toggleInspector, singleKeys, inputOrigin, openPalette, openShortcuts],
+    [view, currentId, deck, openRule, restorePanel, page, exit, home, onClearDeck, hrefFor, phone, scrolled, modKey, inspectorOpen, toggleInspector, singleKeys, inputOrigin, openPalette, openShortcuts, openMenu],
   );
 
   /* The phone menu's list: the rail's sidebar, with the gallery's search dimming what it leaves out. */
