@@ -1,33 +1,36 @@
-# Make required and optional choices clear
+# Mark optional fields
 
 - ID: form-3
 - Category: Forms & inputs
 - Tags: Labels, Clarity
 - URL: https://axiomui.nischal.fyi/rules/form-3
 
-When most questions are required, state that convention and mark the optional exceptions in words. Keep the visible instructions and the form’s actual validation in agreement.
+When most fields are required, say so before the first field. Label the others “optional” and accept them blank.
 
-- Do: Full name · Email · Phone (Optional)
-- Don't: Full name * · Email * · Phone *
+- Do: Phone labeled optional
+- Don’t: Optional phone number marked required
 
 ## Why it works
 
-“Phone (optional)” answers a practical question before someone looks up their number. An asterisk can also communicate a requirement when its meaning is explained before the form and exposed to assistive technology.
+Labeling Phone as optional tells people they can skip it. If you use an asterisk, explain it before the first field and make sure screen readers announce which fields are required.
 
-- [W3C WAI · Form instructions](https://www.w3.org/WAI/tutorials/forms/instructions/)
 - [GOV.UK · Question pages](https://design-system.service.gov.uk/patterns/question-pages/)
+- [W3C WAI · Form instructions](https://www.w3.org/WAI/tutorials/forms/instructions/)
+- [W3C WAI · Indicating required form fields](https://www.w3.org/WAI/WCAG22/Techniques/html/H90)
+- [HTML · The required attribute](https://html.spec.whatwg.org/multipage/input.html#the-required-attribute)
+- [Baymard · Required and optional form fields](https://baymard.com/research-articles/required-optional-form-fields)
 
 ## What breaks
 
-Marking Phone as required while the service accepts an empty value invites unnecessary disclosure. Leaving a truly required field unmarked under an unclear convention produces avoidable errors at submission.
+Someone may share a phone number just because it looks required. If a required field looks optional, they may discover the mistake only after submitting.
 
 ## How to apply it
 
 1. Ask only for information the task needs.
 2. State the marking convention before the first field and label exceptions consistently.
-3. Set native required semantics on required controls and verify the server enforces the same contract.
+3. Set the required attribute on required fields and check that the server rejects them when empty.
 
-## Review questions
+## Before you ship
 
 1. Can someone tell which questions may be skipped?
 2. Do announced and visual requirements agree?

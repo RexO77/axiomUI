@@ -5,16 +5,19 @@
 - Tags: Hierarchy, Readability
 - URL: https://axiomui.nischal.fyi/rules/typo-6
 
-Size secondary text for the task it supports. An email below a member’s name still needs to be easy to read when it helps someone choose the right person.
+When two members share a name, their email addresses help you choose whom to invite. Keep the addresses large enough to read.
 
 - Do: 14px member email
-- Don't: 10px member email
+- Don’t: 10px member email
 
 ## Why it works
 
-The email is secondary to the name, yet it can be the detail that distinguishes two people. At 14px, the address in the member row is easier to read than the same address at 10px.
+When two members share a name, check the email address. The same address is easier to read at 14px than at 10px.
 
 - [USWDS · Typesetting and optical size](https://designsystem.digital.gov/design-tokens/typesetting/overview/)
+- [Rello et al. · Make It Big! (CHI 2016)](https://pielot.org/pubs/Rello2016-Fontsize.pdf)
+- [WCAG 2.2 · Resize text](https://www.w3.org/WAI/WCAG22/Understanding/resize-text.html)
+- [Microsoft Fluent 2 · Typography](https://fluent2.microsoft.design/typography)
 
 ## What breaks
 
@@ -23,10 +26,10 @@ If two people share a display name, a hard-to-read address can lead someone to i
 ## How to apply it
 
 1. Start with a readable text size for any detail someone needs to make a choice.
-2. Hold weight and ink steady when comparing sizes in the shipped font.
+2. Keep the font, weight, and text color the same when comparing sizes.
 3. Try two people with the same display name and different addresses.
 
-## Review questions
+## Before you ship
 
 1. Can a reader distinguish the people by their addresses?
 2. Can you read the address at the normal zoom level?

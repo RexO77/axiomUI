@@ -11,27 +11,27 @@ import { SkillInstallCommand } from "./skill-install-command";
 
 const tasks: Record<string, { title: string; description: string; prompt: string }> = {
   axiomui: {
-    title: "Axiom reference",
-    description: "Look up the rules behind a design decision. Your agent can compare two treatments and explain which fits the interface.",
-    prompt: "Which Axiom rules apply to this signup form, and why?",
+    title: "Rule reference",
+    description: "Ask your agent to compare two designs and explain which rules support its choice.",
+    prompt: "Which Axiom UI rules apply to this signup form, and why?",
   },
   "axiomui-audit": {
     title: "Design audit",
-    description: "Get a prioritized review of an existing interface. Each finding points to a location, the rule it breaks, and a proposed fix.",
+    description: "Get a prioritized review of an existing interface. Each finding names the location, the rule it breaks and a suggested fix.",
     prompt: "Review this signup form. Cite the rule behind each finding and leave the code as it is.",
   },
   "axiomui-website-upgrade": {
     title: "Website upgrade",
-    description: "Give your agent an interface to improve in code. It can use the rules to choose changes and check the result.",
+    description: "Have your agent fix an interface in code and check the changes against the rules.",
     prompt: "Improve this signup form in code, then verify the changes at desktop and phone widths.",
   },
 };
 
 const domainPrompts: Record<string, string> = {
-  typography: "Review the line height, measure, and alignment in this settings page.",
+  typography: "Check the line height, line length and text alignment on this settings page.",
   layout: "Check how this two-column layout behaves when the viewport narrows.",
   color: "Check the contrast of these controls against their backgrounds in both themes.",
-  components: "Review the action hierarchy and dismissal behavior in this confirmation dialog.",
+  components: "Is it clear how to confirm the change or close the dialog?",
   forms: "Check whether this signup form keeps its labels and gives useful feedback after an error.",
   system: "Review the loading, empty, and error states of this activity feed.",
   motion: "Review this panel’s opening and closing transitions, including reduced motion.",
@@ -39,8 +39,8 @@ const domainPrompts: Record<string, string> = {
 };
 
 const groups = [
-  { label: "Core", items: skillCatalog.filter(skill => skill.group === "core") },
-  { label: "Domains", items: skillCatalog.filter(skill => skill.group === "domain") },
+  { label: "By task", items: skillCatalog.filter(skill => skill.group === "core") },
+  { label: "By topic", items: skillCatalog.filter(skill => skill.group === "domain") },
 ];
 
 function labelOf(skill: SkillSpec) {

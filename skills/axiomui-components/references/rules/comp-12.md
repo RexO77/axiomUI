@@ -1,32 +1,36 @@
-# Make overlay dismissal discoverable
+# Show how to close a dialog
 
 - ID: comp-12
 - Category: Components & actions
 - Tags: Overlays, Keyboard, Accessibility
 - URL: https://axiomui.nischal.fyi/rules/comp-12
 
-Give dismissible dialogs a visible Close or Cancel action and support Escape. Choose outside-click behavior according to the cost of an accidental dismissal.
+Give dismissible dialogs a visible Close or Cancel button and support Escape. Allow a click outside to close the dialog when closing it loses no work.
 
-- Do: X button + backdrop close + Esc key
-- Don't: No close button, only backdrop click
+- Do: Close button, Escape or click outside
+- Don’t: No close button, only backdrop click
 
 ## Why it works
 
-The shortcuts sheet in the example contains reference material. Closing it loses nothing, so outside-click dismissal is convenient. An editor containing an unsaved draft needs a decision about saving or discarding the work, regardless of how dismissal starts.
+Closing the Keyboard shortcuts dialog loses no work, so a click outside can close it. In an editor, preserve the draft or ask what to do with unsaved changes before closing.
 
 - [WAI-ARIA APG · Modal dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/)
+- [Apple HIG · Modality](https://developer.apple.com/design/human-interface-guidelines/modality)
+- [HTML · Dialog light dismiss](https://html.spec.whatwg.org/multipage/interactive-elements.html#attr-dialog-closedby)
+- [MDN · The dialog element](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog)
+- [Fluent · Dialog dismissal](https://fluent2.microsoft.design/components/web/react/core/dialog/usage/#dismissal)
 
 ## What breaks
 
-A backdrop-only exit leaves no obvious control to focus. Closing on every outside tap can create the opposite problem when a slight miss discards edits.
+A backdrop-only exit gives keyboard users no Close button to focus. In an editor, one stray click outside can discard a draft.
 
 ## How to apply it
 
 1. Include a labeled dismissal control in the dialog’s tab sequence.
-2. Make Escape act on the topmost dismissible overlay and return focus to a logical place.
-3. Route all dismissal paths through the same unsaved-work handling.
+2. Have Escape close the topmost dismissible dialog. Return focus to its opener if it’s still available, or to the next control in the task.
+3. Check for unsaved edits whether someone uses Close, Escape or a click outside.
 
-## Review questions
+## Before you ship
 
 1. Can a keyboard user discover how to leave?
 2. What happens to an unsaved edit after Escape or a backdrop click?

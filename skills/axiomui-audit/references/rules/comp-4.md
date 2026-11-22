@@ -5,28 +5,31 @@
 - Tags: Shape, Semantics
 - URL: https://axiomui.nischal.fyi/rules/comp-4
 
-Use a consistent shape for person avatars in mixed lists. A circular portrait beside a rectangular document thumbnail gives readers an extra cue about what each row represents.
+In a list of people and files, use circles for people and rectangles for files. Readers can tell the rows apart before reading their names.
 
-- Do: Avatar = circle, file = rectangle
-- Don't: Avatar = square, file = rectangle
+- Do: Initials in a circle, file icon in a rounded square
+- Don’t: Initials and file icon both in rounded squares
 
 ## Why it works
 
-A person, a workspace and a file can all have an uploaded image. A consistent crop helps readers distinguish the kinds of items before examining each image. Shape gets its meaning from repeated use within the product.
+A profile picture and a file thumbnail can both be photos. Consistent shapes let readers tell them apart even before they recognize the image.
 
+- [GitLab Pajamas · Avatar shapes and fallbacks](https://design.gitlab.com/components/avatar/)
 - [Fluent · Avatar shapes and variations](https://fluent2.microsoft.design/components/web/react/core/avatar/usage)
+- [Atlassian · Avatar usage](https://atlassian.design/components/avatar/usage)
+- [W3C WAI · Images with adjacent text](https://www.w3.org/WAI/tutorials/images/decorative/)
 
 ## What breaks
 
-If a document cover and a profile picture have identical crops and the same generic label, the destination may be unclear even after the image loads.
+When both tiles are rounded squares, readers have to inspect the contents or read the names to tell a person from a file.
 
 ## How to apply it
 
-1. Choose separate treatments for the entity types people actually need to distinguish.
+1. Give people and files distinct shapes wherever readers need to tell them apart.
 2. Show the person’s name or another meaningful identifier alongside the picture when identity matters.
-3. Keep the fallback for a missing photo recognizable as the same kind of item.
+3. If a profile photo is missing, keep the initials in the same circle.
 
-## Review questions
+## Before you ship
 
 1. Can a reader distinguish a person from a file without recognizing the photo?
 2. How does a team avatar differ from an individual in this system?

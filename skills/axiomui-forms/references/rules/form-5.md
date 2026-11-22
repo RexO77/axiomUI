@@ -5,29 +5,31 @@
 - Tags: Semantics, Forms
 - URL: https://axiomui.nischal.fyi/rules/form-5
 
-Use a radio group for one choice among alternatives and checkboxes for independent selections. A required radio group needs one answer by submission and can start unanswered.
+Use radio buttons for one choice and checkboxes for independent choices. A required radio group can start empty and require a selection on submission.
 
 - Do: Pick a plan: radios (1 selected)
-- Don't: Pick a plan: checkboxes (2 selected)
+- Don’t: Pick a plan: checkboxes (2 selected)
 
 ## Why it works
 
-Selecting Pro should replace Starter because one subscription has one plan. Independent add-ons have different behavior: choosing storage need not change the support option.
+A subscription has one plan, so choosing Business should clear Pro. Add-ons are independent. Selecting extra storage leaves the support option alone.
 
+- [HTML · Radio button input state](https://html.spec.whatwg.org/multipage/input.html#radio-button-state-(type=radio))
 - [GOV.UK · Radio buttons](https://design-system.service.gov.uk/components/radios/)
 - [GOV.UK · Checkboxes](https://design-system.service.gov.uk/components/checkboxes/)
+- [WAI-ARIA APG · Radio group pattern](https://www.w3.org/WAI/ARIA/apg/patterns/radio/)
 
 ## What breaks
 
-Two checked plans leave the purchaser unable to predict the charge. Silently unchecking a neighboring checkbox also makes an independent-looking choice behave unexpectedly.
+With two plans checked, will you pay $12 for Pro, $24 for Business or $36 for both? If choosing one clears the other, use radio buttons.
 
 ## How to apply it
 
 1. Name the group and give each option a distinct label.
-2. Put native radios with the same purpose in the same named group.
+2. Give the radio buttons for each question their own shared name attribute.
 3. For an optional choice that must be clearable, provide a meaningful None option or another clear reset.
 
-## Review questions
+## Before you ship
 
 1. Can more than one answer be valid?
 2. Can a person leave an optional question unanswered after changing their mind?

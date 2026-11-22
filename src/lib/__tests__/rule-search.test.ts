@@ -63,13 +63,13 @@ describe("searchRules", () => {
   it("ranks an exact id first", () => {
     expect(ranked("motion-12")).toEqual(["motion-12"]);
     expect(ranked("MOTION-1")[0]).toBe("motion-1");
-    expect(searchRules("motion-12")[0].reasons[0]).toEqual({ field: "id", label: "Rule id" });
+    expect(searchRules("motion-12")[0].reasons[0]).toEqual({ field: "id", label: "Rule ID" });
   });
 
   it("reads an id typed as words, and ranks that rule first", () => {
     expect(ranked("motion 1")[0]).toBe("motion-1");
     expect(ranked("Typo 1")[0]).toBe("typo-1");
-    expect(searchRules("typo 1")[0].reasons).toEqual([{ field: "id", label: "Rule id" }]);
+    expect(searchRules("typo 1")[0].reasons).toEqual([{ field: "id", label: "Rule ID" }]);
     // The id's words are a field of their own, so a category prefix reaches its rules.
     expect(ranked("typo")).toEqual(expect.arrayContaining(rules.filter((rule) => rule.id.startsWith("typo-")).map((rule) => rule.id)));
   });
@@ -77,7 +77,7 @@ describe("searchRules", () => {
   it("finds a retired id's successor", () => {
     expect(ranked("sys-12")[0]).toBe("motion-3");
     expect(ranked("SYS 12")[0]).toBe("motion-3");
-    expect(searchRules("sys-12")[0].reasons[0]).toEqual({ field: "id", label: "Rule id" });
+    expect(searchRules("sys-12")[0].reasons[0]).toEqual({ field: "id", label: "Rule ID" });
   });
 
   it("among equal matches, ranks the title the query covers most of first", () => {
@@ -161,7 +161,7 @@ describe("synonyms", () => {
   it("says why a rule matched", () => {
     const reasons = (id: string, query: string) => searchRules(query).find((hit) => hit.rule.id === id)?.reasons ?? [];
     expect(reasons("typo-2", "kerning")).toEqual([{ field: "synonym", label: "Also known as “kerning”" }]);
-    expect(reasons("comp-6", "toast").map((r) => r.label)).toEqual(["In Don't", "Also known as “toast”"]);
+    expect(reasons("comp-6", "toast").map((r) => r.label)).toEqual(["In Don’t", "Also known as “toast”"]);
     expect(reasons("typo-2", "zzqx")).toEqual([]);
   });
 });

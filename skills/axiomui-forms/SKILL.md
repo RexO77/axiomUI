@@ -11,139 +11,139 @@ metadata:
 
 # Axiom UI: Forms & inputs
 
-Follow an answer from entry through submission. Check which keyboard and autofill the field offers, where its label and format are explained, when the user has enough information to correct it, and whether every answer survives a rejected submission and the next step. A pasted sign-in code beginning with zero is one useful test of the entire path.
+Follow an answer from entry through submission. Check the label, format hint, keyboard and autofill suggestions. Submit an invalid answer and check that the form explains how to correct it and retains the other entries. For a sign-in code, paste one beginning with zero and check the submitted value.
 
 ## How to use these rules
 
 1. Find the rule that governs the decision in front of you.
 2. Read the rule’s description and compare its example with the task, platform, language and state you are working on.
-3. Test the failure the comparison illustrates. For a standard, verify the applicable requirement and its exceptions. For a design convention, judge the outcome with representative content and input.
-4. Read the file on its Reasoning line when the case is ambiguous or high-stakes, or when you have to justify the choice. Cite the rule id and URL when you explain a change.
+3. Test for the failure the Don’t example shows. For a standard, check the applicable requirement and its exceptions. For a design convention, test with representative content and input.
+4. Read the file on its Reasoning line when the case is ambiguous or high-stakes, or when you have to justify the choice. Cite the rule ID and URL when you explain a change.
 
 Where the project already has a token or component for the decision, use it. When that token contradicts a rule, flag the conflict instead of quietly rewriting the system.
 
 ## Rules
 
-### Keep labels close to their fields (`form-1`)
+### Stack labels when space is tight (`form-1`)
 
-Stack labels above fields when space is narrow or label lengths vary. A side-label layout can work when it preserves the association and has room for translated text.
+Stack labels above fields on narrow screens or when label lengths vary. On wider screens, a shared label column can keep fields aligned. Leave room for translations to wrap.
 
-- Do: Label above input
-- Don't: Label left of input
+- Do: Labels above · fields share one left edge
+- Don’t: Uneven side labels push fields out of alignment
 - Reasoning: `references/rules/form-1.md` · https://axiomui.nischal.fyi/rules/form-1
 
 ### Keep field labels visible (`form-2`)
 
-Keep a visible label after typing or autofill. A placeholder can illustrate an entry, but it disappears precisely when someone needs to review the completed form.
+Give each field a label that stays visible after typing or autofill. Use the placeholder for an example that can disappear.
 
 - Do: Label: Work email / Placeholder: you@company.com
-- Don't: Label: none / Placeholder: Email address
+- Don’t: Label: none / Placeholder: Email address
 - Reasoning: `references/rules/form-2.md` · https://axiomui.nischal.fyi/rules/form-2
 
-### Make required and optional choices clear (`form-3`)
+### Mark optional fields (`form-3`)
 
-When most questions are required, state that convention and mark the optional exceptions in words. Keep the visible instructions and the form’s actual validation in agreement.
+When most fields are required, say so before the first field. Label the others “optional” and accept them blank.
 
-- Do: Full name · Email · Phone (Optional)
-- Don't: Full name * · Email * · Phone *
+- Do: Phone labeled optional
+- Don’t: Optional phone number marked required
 - Reasoning: `references/rules/form-3.md` · https://axiomui.nischal.fyi/rules/form-3
 
-### Match field width to plausible answers (`form-4`)
+### Size fields for the expected answer (`form-4`)
 
-Use width as a cue when an answer has a predictable shape. Leave enough room for every supported format, including postal codes from the regions the form serves.
+Size fields for the answers you expect. For postal codes, allow room for the longest format you accept.
 
 - Do: Short ZIP field / wider street address field
-- Don't: Five-digit ZIP in a street-width field
+- Don’t: Five-digit ZIP in a street-width field
 - Reasoning: `references/rules/form-4.md` · https://axiomui.nischal.fyi/rules/form-4
 
 ### Match selection controls to the choice (`form-5`)
 
-Use a radio group for one choice among alternatives and checkboxes for independent selections. A required radio group needs one answer by submission and can start unanswered.
+Use radio buttons for one choice and checkboxes for independent choices. A required radio group can start empty and require a selection on submission.
 
 - Do: Pick a plan: radios (1 selected)
-- Don't: Pick a plan: checkboxes (2 selected)
+- Don’t: Pick a plan: checkboxes (2 selected)
 - Reasoning: `references/rules/form-5.md` · https://axiomui.nischal.fyi/rules/form-5
 
-### Expose alternatives worth comparing (`form-6`)
+### Show options people need to compare (`form-6`)
 
-Show a short set of meaningful alternatives directly when space permits. A select works well when someone knows the answer they are looking for and displaying the full list would overwhelm the page.
+Show short lists in full so people can compare options. Use a dropdown for a long list when people already know their answer, such as their country.
 
 - Do: Three billing cycles visible together
-- Don't: Closed select hides the billing cycles
+- Don’t: Closed select hides the billing cycles
 - Reasoning: `references/rules/form-6.md` · https://axiomui.nischal.fyi/rules/form-6
 
-### Match the control to when the change takes effect (`form-7`)
+### Use switches for changes that apply immediately (`form-7`)
 
-Use a switch for an on/off setting that applies as it changes. A checkbox fits an option submitted with the rest of a form. Make the save behavior clear wherever the two appear together.
+Use a switch for a setting that takes effect immediately. Use a checkbox for a choice that waits for Save. When both appear together, label which changes need saving.
 
-- Do: Dark mode = switch, email updates = checkbox
-- Don't: Dark mode = switch, email updates = switch
+- Do: Email updates · checkbox takes effect after Save changes
+- Don’t: Email updates · switch still waits for Save changes
 - Reasoning: `references/rules/form-7.md` · https://axiomui.nischal.fyi/rules/form-7
 
-### Validate when a correction is useful (`form-8`)
+### Show format errors on submission (`form-8`)
 
-Show the first format error after the person submits the form. Give them time to finish and move between fields. Clear the error when the correction is accepted.
+Let people type and move between fields. Show format errors on submission and clear each one when the field is valid.
 
 - Do: Error appears after Continue
-- Don't: Error appears while typing
+- Don’t: Error appears while typing
 - Reasoning: `references/rules/form-8.md` · https://axiomui.nischal.fyi/rules/form-8
 
-### Show format constraints before entry (`form-9`)
+### Show the expected format before typing (`form-9`)
 
-When a format really matters, show a persistent hint and a valid example. Accept equivalent input when it can be interpreted reliably.
+Show the expected format before typing and keep it visible during editing. Accept other formats you can read without guessing.
 
-- Do: MM / YY hint
-- Don't: No format hint
+- Do: MM / YY shown before typing
+- Don’t: MM / YY shown only after an error
 - Reasoning: `references/rules/form-9.md` · https://axiomui.nischal.fyi/rules/form-9
 
 ### Give the form one clear reading order (`form-10`)
 
-Stack unrelated questions so the next field is obvious. Group related short fields on one row only when their reading order, focus order and reflow remain clear.
+Stack unrelated fields in one column. Short related fields can share a row if Tab follows reading order and the fields stay readable on narrow screens.
 
-- Do: Single column, stacked fields
-- Don't: Two columns of unrelated fields
+- Do: One column · Tab follows reading order
+- Don’t: Two columns · Tab order differs from reading order
 - Reasoning: `references/rules/form-10.md` · https://axiomui.nischal.fyi/rules/form-10
 
-### Reuse answers the user has supplied (`form-11`)
+### Reuse answers from earlier steps (`form-11`)
 
-When a later booking step needs the same answer, carry it forward or let the person select it. Keep the answer editable when it may have changed. Ask for information the booking cannot supply.
+When a later step needs an earlier answer, fill it in or offer it as a choice. Let people change it.
 
-- Do: Country and date reused from this booking
-- Don't: Already supplied country and date requested again
+- Do: Country and start date carried forward
+- Don’t: Country and start date requested again
 - Reasoning: `references/rules/form-11.md` · https://axiomui.nischal.fyi/rules/form-11
 
-### Confirm the outcome of a submission (`form-12`)
+### Confirm what was saved (`form-12`)
 
-After the service confirms a save, show the outcome where the user can find it. For a completed transaction, include the reference or next step they may need later.
+When the server confirms a save, show a message beside the Save button. After a purchase or booking, include the reference number or the next step.
 
-- Do: Green checkmark + “Saved successfully”
-- Don't: Saved value stays on screen without confirmation
+- Do: Checkmark and confirmation beside Save changes
+- Don’t: No confirmation beside Save changes
 - Reasoning: `references/rules/form-12.md` · https://axiomui.nischal.fyi/rules/form-12
 
-### Accept a complete sign-in code in one paste (`form-13`)
+### Accept a one-time code in one paste (`form-13`)
 
-Let people paste a one-time code as they receive it. Keep leading zeros and support autofill where available. A design with separate boxes can still accept the entire code in one operation.
+Accept the whole one-time code in one paste, even across separate boxes. Keep leading zeros and support autofill where available.
 
 - Do: One paste fills all six digits, including the leading zero
-- Don't: One paste fills only the first box
+- Don’t: One paste fills only the first box
 - Reasoning: `references/rules/form-13.md` · https://axiomui.nischal.fyi/rules/form-13
 
 ### Declare what each field expects (`form-14`)
 
-Declare the input type, keyboard layout, and autocomplete purpose so the browser can offer the right keys and saved answers. Turn off spellcheck and automatic capitalization for identifiers such as emails, usernames, and codes.
+Set type, inputmode and autocomplete so browsers can offer the right keyboard and saved answers. Turn off spellcheck and automatic capitalization for email addresses, usernames and codes.
 
-- Do: Email keyboard · saved address suggested
-- Don't: Plain keyboard · capitalizes Maya@
+- Do: Email keyboard · saved email address suggested
+- Don’t: Plain keyboard · capitalizes Maya@
 - Reasoning: `references/rules/form-14.md` · https://axiomui.nischal.fyi/rules/form-14
 
 ### Keep entered answers when validation fails (`form-15`)
 
-When validation fails, show every submitted answer so the person can correct it in place. Mark the fields that need attention.
+After a validation error, keep answers people can safely review, including the entry they need to correct. Mark the fields that need changes.
 
 - Do: Error on Work email · all answers kept
-- Don't: Error on Work email · every field cleared
+- Don’t: Error on Work email · every field cleared
 - Reasoning: `references/rules/form-15.md` · https://axiomui.nischal.fyi/rules/form-15
 
 ## Related
 
-For every domain at once, use the `axiomui` skill. For a read-only review that cites these rules, use `axiomui-audit`. Either works only if it is installed. This skill does not depend on them.
+If installed, `axiomui` covers every domain and `axiomui-audit` provides a read-only review. You can use this domain skill on its own.

@@ -5,28 +5,31 @@
 - Tags: Hierarchy, Consistency
 - URL: https://axiomui.nischal.fyi/rules/typo-9
 
-Use a small set of weights with named purposes. Regular and semibold can distinguish the body and heading in a settings card. Add another weight only when the distinction remains visible at the intended size.
+In the settings card, semibold marks the heading and action. Regular works for the description. Add another weight only if readers can see what it distinguishes at that size.
 
 - Do: Regular + Semibold
-- Don't: Regular + Medium + Semibold + Bold
+- Don’t: Regular + Medium + Semibold + Bold
 
 ## Why it works
 
-In the digest card, a bold metadata line competes with the title although the metadata is less important. Four weights can work across a product. In this small card the problem is where the emphasis lands.
+With four weights in the digest card, “12 recipients” is bolder than “Weekly digest”. Giving the count regular weight lets the title and action stand out.
 
 - [IBM Carbon · Type sets](https://www.carbondesignsystem.com/building-blocks/foundations/typography/type-sets)
+- [Microsoft Fluent 2 · Typography](https://fluent2.microsoft.design/typography)
+- [Adobe Spectrum · Typography system](https://spectrum.adobe.com/foundations/typography/typography-system)
+- [MDN · Font weight](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/font-weight)
 
 ## What breaks
 
-A different weight on every line can make incidental details look like actions or headings. A font that lacks a requested weight can make two nominally distinct roles render alike.
+A bold recipient count can look like a heading, while “Edit schedule” can look like body text. If the font lacks a requested weight, two roles may look alike.
 
 ## How to apply it
 
 1. Map weights to roles such as heading, body, and emphasis.
 2. Compare those roles together using the loaded font at actual size.
-3. Where two weights look alike, try spacing or a clearer level of type.
+3. If two weights look alike, distinguish the roles with size or spacing.
 
-## Review questions
+## Before you ship
 
 1. Which text should the reader encounter first?
 2. Does incidental metadata compete with the heading?

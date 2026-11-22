@@ -1,33 +1,35 @@
-# Accessible contrast ratios
+# Check text contrast
 
 - ID: color-9
 - Category: Color & depth
 - Tags: Contrast, WCAG, Accessibility
 - URL: https://axiomui.nischal.fyi/rules/color-9
 
-For WCAG AA, ordinary text needs at least 4.5:1 contrast. Large text qualifies at 3:1. Measure unrounded values against the actual background, including overlays and images behind the text.
+WCAG AA requires at least 4.5:1 contrast for ordinary text and 3:1 for large text. Measure against the background behind the letters, including images and overlays. Use the unrounded ratio.
 
 - Do: #737373 on #ffffff (4.7:1)
-- Don't: #aaaaaa on #ffffff (2.3:1)
+- Don’t: #aaaaaa on #ffffff (2.3:1)
 
 ## Why it works
 
-On white, #737373 is about 4.74:1. The helper text passes at its regular size. The other sample, #aaaaaa, is about 2.32:1. The labels round these measurements for display. A measured 4.49:1 still fails the 4.5:1 threshold.
+On white, #737373 measures about 4.74:1 and passes for the 10px helper text. The lighter #aaaaaa measures about 2.32:1 and fails. The labels round for display. A measured 4.49:1 still falls below 4.5:1.
 
 - [WCAG 2.2 · Contrast (minimum)](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)
+- [W3C WAI · Text contrast technique G18](https://www.w3.org/WAI/WCAG22/Techniques/general/G18)
+- [USWDS · Using color](https://designsystem.digital.gov/design-tokens/color/overview/)
 
 ## What breaks
 
-Assuming that every gray in a palette has a fixed rating misses the second color in the calculation. A pair that passes on white can fail on a tinted input or a lighter part of a photo.
+Contrast depends on both colors. Gray text that passes on white can fail on a tinted field or where a photo is close to the same gray.
 
 ## How to apply it
 
 1. Measure the final foreground and background colors, accounting for transparency.
-2. Use the large-text allowance at 18pt regular or 14pt bold and above, or equivalent sizes for CJK fonts.
-3. Check helper text, placeholders, and active state labels. Incidental text and logotypes have specific exceptions.
+2. The 3:1 threshold starts at 18pt (24px) for regular text or 14pt (about 18.7px) for bold text. Use the equivalent sizes for CJK fonts.
+3. Check helper text, placeholders and labels on enabled controls. Exceptions include text on disabled controls, purely decorative text and text in logos.
 
-## Review questions
+## Before you ship
 
-1. What measured pair supports the verdict?
-2. If large-text thresholds are used, what size and weight qualify it?
-3. Does it pass at the least contrasting background behind the letters?
+1. Which text and background colors did you measure, and what was their contrast ratio?
+2. If you used the large-text threshold, do the font size and weight qualify?
+3. Where the text blends most into the background, does the contrast still pass?

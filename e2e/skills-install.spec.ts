@@ -4,9 +4,9 @@ import { expect, openCatalog, test, wallUrl } from "./helpers";
 async function openInstall(page: Page) {
   await page.addInitScript(() => localStorage.setItem("axiom:strip-hint", "seen"));
   await openCatalog(page, wallUrl());
-  await page.getByRole("button", { name: /^Install in your agent/ }).click();
-  await page.getByRole("dialog", { name: "Install in your agent" })
-    .getByRole("button", { name: "Browse the skills" }).click();
+  await page.getByRole("button", { name: "Install agent skills: npx skills add RexO77/axiomUI", exact: true }).click();
+  await page.getByRole("dialog", { name: "Install agent skills", exact: true })
+    .getByRole("button", { name: "Browse agent skills" }).click();
   return page.getByRole("dialog", { name: "Agent skills" });
 }
 
@@ -82,14 +82,15 @@ test("a denied clipboard offers manual copying and a working retry inside the mo
   await copy.click();
   const retry = install.getByRole("button", { name: "Retry copying install command for axiomui-audit" });
   await expect(retry).toBeFocused();
-  await expect(install.locator(".skill-copy-help")).toHaveText("Copy failed. The command is selected for manual copying.");
+  await expect(install.locator(".skill-copy-help")).toHaveText("Copy failed. Use your device’s Copy command on the selected text.");
   await expect.poll(() => page.evaluate(() => getSelection()?.toString())).toBe("npx skills add RexO77/axiomUI --skill axiomui-audit");
   await page.keyboard.press("ControlOrMeta+c");
   await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe("npx skills add RexO77/axiomUI --skill axiomui-audit");
   await retry.click();
-  await expect(copy).toHaveText("Copied");
+  const copied = install.getByRole("button", { name: "Copied install command for axiomui-audit", exact: true });
+  await expect(copied).toHaveText("Copied");
   await expect(install.locator(".skill-copy-help")).toHaveCount(0);
-  await expect(copy).toBeFocused();
+  await expect(copied).toBeFocused();
   await expect(page.locator("html")).toHaveAttribute("data-copied", "npx skills add RexO77/axiomUI --skill axiomui-audit");
   await expect(install.locator("textarea")).toHaveCount(0);
 });
@@ -125,7 +126,7 @@ for (const width of [355, 1440]) {
     if (phone) {
       await openCatalog(page, wallUrl());
       await page.getByRole("button", { name: "Menu", exact: true }).click();
-      await page.getByRole("button", { name: "Install in your agent", exact: true }).click();
+      await page.getByRole("button", { name: "Browse agent skills", exact: true }).click();
     } else await openInstall(page);
     const dialog = page.getByRole("dialog", { name: "Agent skills" });
     if (phone) await dialog.getByRole("combobox").selectOption("axiomui-website-upgrade");
@@ -135,7 +136,7 @@ for (const width of [355, 1440]) {
     const installRow = dialog.locator(".skill-install-command-row").first();
     const height = (await installRow.boundingBox())!.height;
     await copy.click();
-    await expect(copy).toHaveText("Copied");
+    await expect(dialog.getByRole("button", { name: "Copied install command for axiomui-website-upgrade", exact: true })).toHaveText("Copied");
     expect(Math.abs((await installRow.boundingBox())!.height - height)).toBeLessThan(1);
 
     const summary = dialog.locator("summary");

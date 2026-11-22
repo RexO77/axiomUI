@@ -1,34 +1,37 @@
-# Give essential control edges enough contrast
+# Give essential control edges at least 3:1 contrast
 
 - ID: color-6
 - Category: Color & depth
 - Tags: Contrast, WCAG, Accessibility
 - URL: https://axiomui.nischal.fyi/rules/color-6
 
-When a boundary is needed to identify an enabled control, WCAG AA requires at least 3:1 contrast against its adjacent color. A decorative divider may be quieter. Check the actual pair in each theme.
+If a border is how people recognize an enabled control, WCAG AA requires at least 3:1 contrast against the color beside it. Decorative dividers can be fainter. Check both themes.
 
-- Do: input border: neutral-500 · divider: neutral-200
-- Don't: input border: neutral-100 · divider: neutral-200
+- Do: Light mode · input border neutral-500 · divider neutral-200. Dark mode · input border neutral-400 · divider neutral-800
+- Don’t: Light mode · input border neutral-100 · divider neutral-200. Dark mode · input border neutral-900 · divider neutral-800
 
 ## Why it works
 
-The blank area where a teammate’s address goes needs to look editable before anyone reaches it. On white, a pale gray input edge can look stronger than a divider and still miss 3:1. The divider beside it can stay quiet, because the content on either side already reads as separate. The action labeled Cancel may be identifiable from its content and context without a visible border.
+The email field needs to look editable even before it has focus. If its border is the only cue, check for 3:1 against the background. Spacing already separates the sections, so their divider can be fainter. The Cancel label and its position beside Send invite help identify the button.
 
 - [WCAG 2.2 · Contrast at control boundaries](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html#boundaries)
+- [WCAG 2.2 · Non-text contrast criterion](https://www.w3.org/TR/WCAG22/#non-text-contrast)
+- [GitHub Primer · Input border contrast](https://primer.style/accessibility/design-guidance/color-considerations/#input-border-contrast)
+- [IBM Carbon · Text input specifications](https://www.carbondesignsystem.com/building-blocks/core/components/text-input/specifications)
 
 ## What breaks
 
-Reusing a decorative divider token for a field can leave the reader with a label and an apparently blank page. Making only its focused outline visible helps keyboard navigation after focus arrives and leaves the resting field hard to find.
+With a faint border, the email address can look like ordinary text. A focus ring helps only after someone reaches the field.
 
 ## How to apply it
 
-1. Identify which visual feature makes the resting input recognizable.
-2. Measure that feature against its adjacent surface, including themed variants.
-3. Hide each line in turn. If the rows still read as separate, the line is decorative and can use a quiet divider token. If a field or a graphic disappears with it, the line is essential and needs 3:1.
+1. Before the field has focus, what identifies it as editable? Check its border, fill or underline.
+2. Measure its contrast against the surrounding surface in each theme.
+3. Hide each line in turn. If the groups are still clear, the divider can be faint. If people need the line to recognize a control or understand a graphic, check for at least 3:1 against the adjacent color.
 4. Test focus and selected states separately from the resting control.
 
-## Review questions
+## Before you ship
 
 1. Without the border, can a reader still find the field?
-2. Does the required cue reach 3:1 on the adjacent surface?
+2. Does the feature that identifies the field reach 3:1 against its background?
 3. Are focused and selected controls identifiable by their own cues?

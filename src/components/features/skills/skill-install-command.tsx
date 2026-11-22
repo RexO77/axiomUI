@@ -52,7 +52,7 @@ function CommandRow({ command, label, announce }: {
     window.clearTimeout(timer.current);
   }, []);
 
-  const failure = "Copy failed. The command is selected for manual copying.";
+  const failure = "Copy failed. Use your device’s Copy command on the selected text.";
 
   async function handleCopy() {
     const request = ++attempt.current;
@@ -61,7 +61,7 @@ function CommandRow({ command, label, announce }: {
     window.clearTimeout(timer.current);
     setState(copied ? "copied" : "failed");
     if (copied) {
-      announce?.(`Copied: ${command}`);
+      announce?.(`Copied ${label}.`);
       timer.current = window.setTimeout(() => setState("idle"), 1800);
     } else if (commandRef.current) {
       // The native Copy shortcut remains available when clipboard APIs are denied.
@@ -84,7 +84,7 @@ function CommandRow({ command, label, announce }: {
           ))}
         </code>
         <button type="button" className="skill-install-copy" data-state={state}
-          aria-label={state === "failed" ? `Retry copying ${label}` : `Copy ${label}`}
+          aria-label={state === "copied" ? `Copied ${label}` : state === "failed" ? `Retry copying ${label}` : `Copy ${label}`}
           onClick={() => void handleCopy()}>
           <Glyph aria-hidden="true" className="size-4" />
           <span className="skill-copy-label" aria-hidden="true" data-reserve="Copied">
@@ -93,7 +93,7 @@ function CommandRow({ command, label, announce }: {
         </button>
         {!announce && (
           <span role="status" className="sr-only">
-            {state === "copied" && `Copied: ${command}`}
+            {state === "copied" && `Copied ${label}.`}
             {state === "failed" && failure}
           </span>
         )}
@@ -122,7 +122,7 @@ export function SkillInstallCommand({ skill, announce }: {
         </div>
       </div>
       <p className="skill-install-hint">
-        {global ? "Install across projects." : "Run in your project folder."}{" "}
+        {global ? "Run from any folder to install for all your projects." : "Run in your project folder."}{" "}
         Requires <a href="https://github.com/vercel-labs/skills#install-a-skill" target="_blank" rel="noreferrer">Node.js 22.20 or later</a>.
       </p>
       <CommandRow key={install} command={install}
@@ -134,10 +134,10 @@ export function SkillInstallCommand({ skill, announce }: {
         const overflow = disclosure.getBoundingClientRect().bottom - scroller.getBoundingClientRect().bottom;
         if (overflow > 0) scroller.scrollTop += Math.ceil(overflow);
       }}>
-        <summary>After installation</summary>
+        <summary>Verify installation</summary>
         <p>
-          {global ? "In the global list, find" : "From the same project folder, look for"}{" "}
-          {skill ? <code>{skill.name}</code> : "your chosen skills"}. Check the agents listed alongside each skill.
+          {global ? "Run this command." : "Run this command in the same project folder."} Check that{" "}
+          {skill ? <code>{skill.name}</code> : "each skill you chose"} appears with the agents you selected.
         </p>
         <CommandRow key={install} command={list} label="verification command" announce={announce} />
       </details>

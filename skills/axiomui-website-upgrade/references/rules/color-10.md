@@ -1,33 +1,35 @@
-# Give state colors a shared source
+# Derive state fills from one color
 
 - ID: color-10
 - Category: Color & depth
 - Tags: States, Consistency
 - URL: https://axiomui.nischal.fyi/rules/color-10
 
-Map hover and selection colors to named state roles. A translucent fill can adapt to the surface beneath it. An opaque token can be preferable when the state needs a predictable appearance across surfaces.
+Derive hover and selection fills from one base color. A translucent fill picks up the background beneath it. Use an opaque fill when its color should stay the same across surfaces.
 
-- Do: Every state = blue-500 / alpha
-- Don't: Three hand-picked hexes
+- Do: Hover blue-500/10 · selected blue-500/15
+- Don’t: Hover #e8f0fe · selected #dcebf5 with #1967d2 text
 
 ## Why it works
 
-The nav sample derives two tints from the same blue. Alpha mixes the source color with whatever is underneath, so an identical value produces different colors over light and dark panels. A change to the brand updates a derived tint but does not guarantee readable text or visible selection.
+Hover and selection use the same blue at different opacities. Each fill blends with the surface behind it, so the same tint looks different on light and dark. After a brand color change, check that the labels and selected row still stand out.
 
 - [W3C · Simple alpha compositing](https://www.w3.org/TR/compositing-1/#simplealphacompositing)
 - [Atlassian · Elevation](https://atlassian.design/foundations/elevation)
+- [Adobe Spectrum · Design tokens](https://spectrum.adobe.com/page/design-tokens)
+- [IBM Carbon · Selectable tile states](https://www.carbondesignsystem.com/building-blocks/core/components/tile/specifications)
 
 ## What breaks
 
-An opaque light-blue value reused on a dark sidebar can look like a stray light-theme row. A very faint translucent fill can cause the opposite problem and leave selection hard to distinguish.
+A fixed light blue such as #e8f0fe stays light on a dark sidebar. A translucent fill can go too far the other way and leave the selected row hard to see.
 
 ## How to apply it
 
 1. Name hover and selected backgrounds separately.
-2. Use a shared source where those roles intentionally track the brand.
-3. Check the composited result on every supported surface and retain a persistent selected cue.
+2. Use the brand color as the base if both fills should change with it.
+3. Check each fill against every background where it appears. Keep the selected row recognizable after the pointer leaves, for example with heavier text.
 
-## Review questions
+## Before you ship
 
 1. Does the selected row stay distinguishable from a hovered row?
 2. Can the label still be read over the composited fill?

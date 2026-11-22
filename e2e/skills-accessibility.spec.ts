@@ -6,10 +6,10 @@ async function openSkills(page: Page, phone = false) {
   await openCatalog(page, ruleUrl("typo-1"));
   if (phone) {
     await page.locator(".phone-bar").getByRole("button", { name: "Menu" }).click();
-    await page.locator(".phone-menu").getByRole("button", { name: "Install in your agent" }).click();
+    await page.locator(".phone-menu").getByRole("button", { name: "Browse agent skills" }).click();
   } else {
     await page.locator(".install-row .rail-row").click();
-    await page.getByRole("button", { name: "Browse the skills" }).click();
+    await page.getByRole("button", { name: "Browse agent skills" }).click();
   }
   await expect(dialog(page)).toBeVisible();
 }
@@ -135,6 +135,6 @@ test.describe("short touch landscape", () => {
       })).toBe(true);
     }
     await footer.getByRole("button", { name: "Preview the playbook" }).tap();
-    await expect(page.getByRole("dialog", { name: "Website playbook" })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Website upgrade playbook" })).toBeVisible();
   });
 });

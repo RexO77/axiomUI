@@ -1,34 +1,37 @@
-# Define image edges when they disappear
+# Outline images that blend into the page
 
 - ID: color-11
 - Category: Color & depth
 - Tags: Images, Depth, Dark mode
 - URL: https://axiomui.nischal.fyi/rules/color-11
 
-When a thumbnail blends into its surrounding surface, try a subtle inset edge. Choose its tone for the theme. Full-bleed imagery and images with clear edges may need no outline.
+If a thumbnail blends into the page, try a 1px inset outline. The example uses black at 10% opacity on white and white at 10% on dark. Skip the outline when the image already has a clear edge.
 
 - Do: outline-black/10 dark:outline-white/10
-- Don't: outline-slate-900/10 in both themes
+- Don’t: outline-slate-900/10 in both themes
 
 ## Why it works
 
-The preview places pale and dark thumbnails on matching surfaces. A translucent dark line separates the pale edge, while a light line can separate the dark edge. The line serves as a framing detail unless it also identifies a control or a selected state.
+The pale thumbnail blends into white, and the dark thumbnail blends into charcoal. A black outline at 10% opacity defines the pale edge. White at 10% defines the dark one. Keep this frame distinct from focus or selection.
 
+- [Adobe Spectrum · Thumbnail](https://spectrum.adobe.com/web/rsp/components/thumbnail)
 - [W3C · Simple alpha compositing](https://www.w3.org/TR/compositing-1/#simplealphacompositing)
+- [CSS Basic User Interface · Outline offset](https://www.w3.org/TR/css-ui-3/#outline-offset)
 - [WCAG 2.2 · Non-text contrast](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html)
+- [PIE Design System · Thumbnail](https://pie.design/components/thumbnail/web/)
 
 ## What breaks
 
-A dark outline can disappear against a dark crop. A stronger border around every photo can introduce an unintended selection cue or obscure detail along the crop edge.
+A dark outline can disappear against a dark photo. A heavy border around every thumbnail can hide detail at the edge or make every image look selected.
 
 ## How to apply it
 
 1. Test actual images with pale, dark, and transparent edges.
-2. Keep the line inside the thumbnail if preserving its external dimensions matters.
-3. Use a separate, accessible indication for focus and selection.
+2. Set outline-offset to -1px to draw the 1px outline inside the thumbnail.
+3. Give keyboard focus and selection their own visible cues.
 
-## Review questions
+## Before you ship
 
 1. Is the edge difficult to locate in this crop?
-2. Does the line remain subordinate to the image?
+2. Does the outline draw more attention than the thumbnail?
 3. Can people distinguish the frame from focus or selection?

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { rules } from "@/data/ui-logic";
-import { fullCorpusMarkdown, ruleReviewQuestions, ruleToMarkdown } from "@/lib/rule-corpus";
+import { fullCorpusMarkdown, markdownText, ruleReviewQuestions, ruleToMarkdown } from "@/lib/rule-corpus";
 
 describe("fullCorpusMarkdown", () => {
   const markdown = fullCorpusMarkdown();
@@ -14,7 +14,7 @@ describe("fullCorpusMarkdown", () => {
       "Why it works",
       "What breaks",
       "How to apply it",
-      "Review questions",
+      "Before you ship",
     ]) {
       const pattern = new RegExp(`^#### ${heading}$`, "gm");
       expect(markdown.match(pattern)?.length).toBe(rules.length);
@@ -72,7 +72,27 @@ describe("rule markdown", () => {
       const questions = ruleReviewQuestions(rule);
       const markdown = ruleToMarkdown(rule, { headingLevel: 1 });
       expect(questions.length, rule.id).toBeGreaterThan(0);
-      expect(markdown, rule.id).toContain(`## Review questions\n\n${questions.map((question, index) => `${index + 1}. ${question}`).join("\n")}`);
+      expect(markdown, rule.id).toContain(`## Before you ship\n\n${questions.map((question, index) => `${index + 1}. ${question}`).join("\n")}`);
+    }
+  });
+});
+
+describe("rule copy at the Markdown boundary", () => {
+  it("keeps literal tags as code, so a renderer never swallows them", () => {
+    expect(markdownText("Wrap just the name in <bdi> to keep the count")).toBe("Wrap just the name in `<bdi>` to keep the count");
+    expect(markdownText('<a href="/invoices/1042">View invoice</a>')).toBe('`<a href="/invoices/1042">View invoice</a>`');
+    expect(markdownText("<div onClick={() => router.push(…)}>")).toBe("`<div onClick={() => router.push(…)}>`");
+    expect(markdownText("8px from label to input")).toBe("8px from label to input");
+  });
+
+  it("leaves no raw tag in any rule's description or Do/Don't", () => {
+    const outsideCode = (text: string) => text.replace(/`[^`]*`/g, "");
+    for (const rule of rules) {
+      const markdown = ruleToMarkdown(rule, { headingLevel: 1 });
+      for (const field of [rule.desc, rule.do, rule.dont]) {
+        expect(markdown).toContain(markdownText(field));
+        expect(outsideCode(markdownText(field)), rule.id).not.toMatch(/<\/?[A-Za-z][^<>]*>/);
+      }
     }
   });
 });

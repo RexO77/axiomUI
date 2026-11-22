@@ -1,34 +1,36 @@
-# Make status colors dependable
+# Use status colors consistently
 
 - ID: color-4
 - Category: Color & depth
 - Tags: Semantics, States
 - URL: https://axiomui.nischal.fyi/rules/color-4
 
-Give status roles a consistent meaning in context and pair them with labels or recognizable symbols. A red heart can express affection. Reserve a distinct treatment for a destructive command shown beside it.
+Pair each status color with a label or recognizable symbol. If red marks Delete, give the Like heart beside it a different color.
 
-- Do: Like icon: blue-500
-- Don't: Like icon: rose-500
+- Do: Like icon · blue-500 in light mode, blue-400 in dark mode
+- Don’t: Like icon · rose-500 in light mode, rose-400 in dark mode
 
 ## Why it works
 
-The feed places Like and Delete next to one another. Keeping their symbols and wording distinct allows the team to choose a heart color suited to the product. If red is the strongest warning cue in this toolbar, spending it on both items weakens that local distinction.
+The heart identifies Like. The trash icon and Delete label identify the destructive action. A blue heart leaves Delete as the only red action in the row.
 
 - [WCAG 2.2 · Use of color](https://www.w3.org/WAI/WCAG22/Understanding/use-of-color.html)
 - [Atlassian · Color roles](https://atlassian.design/foundations/color)
+- [GOV.UK · Warning buttons](https://design-system.service.gov.uk/components/button/)
+- [Psychological Research · Implicit color–valence associations](https://pmc.ncbi.nlm.nih.gov/articles/PMC10017663/)
 
 ## What breaks
 
-A reader who cannot distinguish the colors can lose the difference between two otherwise identical status marks. Recoloring an ambiguous control addresses only one part of the problem.
+When two status indicators differ only in color, people who cannot distinguish the hues may mistake one status for the other. Give each a label or distinct shape.
 
 ## How to apply it
 
-1. Name the product’s status roles and specify the accompanying text or shape.
-2. Check dangerous actions beside common actions in the same toolbar.
+1. List each status and the label or symbol that identifies it.
+2. Check rows where destructive actions sit beside everyday ones.
 3. Review the task with color removed.
 
-## Review questions
+## Before you ship
 
 1. How does a reader identify the dangerous action?
-2. Could the same accent describe different states within this row?
+2. Does one color mean two things in this row?
 3. Which cue remains if the two hues look identical?

@@ -5,30 +5,33 @@
 - Tags: Readability, Mobile
 - URL: https://axiomui.nischal.fyi/rules/typo-11
 
-Start routine reading around 16px and adjust for the typeface, task, and distance. Give essential details enough space to enlarge without losing content.
+Start body text around 16px. Adjust for the font, the task, and how far away the screen is. Leave room for essential details to wrap when someone enlarges the text.
 
-- Do: Body: 16px / Subtext: 12px
-- Don't: Body: 11px / Subtext: 9px
+- Do: 16px message · 12px details
+- Don’t: 11px message · 9px details
 
 ## Why it works
 
-The alert asks the reader to recognize a sign-in and inspect its supporting detail. The large x-height of one face can make it read differently from another at the same CSS size. The 16px/12px pair in the preview illustrates a hierarchy and needs a reading check in context.
+The time and location help you recognize the sign-in. Check that the 12px details are legible alongside the 16px message. Fonts with taller lowercase letters can look larger at the same size.
 
-- [USWDS · Typesetting and optical size](https://designsystem.digital.gov/design-tokens/typesetting/overview/)
+- [USWDS · Typography](https://designsystem.digital.gov/components/typography/)
 - [WCAG 2.2 · Resize text](https://www.w3.org/WAI/WCAG22/Understanding/resize-text.html)
+- [USWDS · Typesetting and optical size](https://designsystem.digital.gov/design-tokens/typesetting/overview/)
+- [Legge and Bigelow · Does print size matter for reading?](https://pmc.ncbi.nlm.nih.gov/articles/PMC3428264/)
+- [Rello et al. · Make It Big! (CHI 2016)](https://pielot.org/pubs/Rello2016-Fontsize.pdf)
 
 ## What breaks
 
-Shrinking an alert to 11px with 9px detail buys space by making the information harder to inspect. Enlarging it may expose a second problem if the row has a fixed height.
+The 11px alert has 9px text for the time and place, the details that help identify the sign-in. A fixed-height row can clip those details when someone enlarges the text.
 
 ## How to apply it
 
-1. Start with a tested body token and relative units.
+1. Set the body text size in a relative unit such as rem.
 2. Try the smallest supporting text using the actual content on a representative device.
 3. Check enlargement to 200% and allow the row to grow.
 
-## Review questions
+## Before you ship
 
-1. Can the reader make the decision using the smallest essential line?
+1. Can you read the time and location well enough to recognize the sign-in?
 2. At 200% enlargement, are all details and actions available?
 3. Could moving or wrapping a detail recover space?

@@ -1,33 +1,37 @@
-# Place field errors beside the field
+# Show each error under its field
 
 - ID: comp-6
 - Category: Components & actions
 - Tags: Error handling, Feedback
 - URL: https://axiomui.nischal.fyi/rules/comp-6
 
-Identify the field and explain how to fix it where the user can make the change. After submission, a linked error summary can also help people find several errors.
+At the field, say what went wrong and how to fix it. If submission reveals several errors, link to each field from a summary at the top.
 
 - Do: Invalid email = inline, under the field
-- Don't: Invalid email = toast, far from the field
+- Don’t: Invalid email = toast, far from the field
 
 ## Why it works
 
-A notice at the top can say a form failed. The message beside Work email can tell someone that the domain is missing. These serve different purposes and can work together.
+A summary can link to each field with an error. Under Email, “Add the domain after @” tells someone how to fix maya@.
 
 - [GOV.UK · Error messages](https://design-system.service.gov.uk/components/error-message/)
 - [GOV.UK · Error summaries](https://design-system.service.gov.uk/components/error-summary/)
+- [WCAG 2.2 · Error suggestion](https://www.w3.org/WAI/WCAG22/Understanding/error-suggestion.html)
+- [WCAG 2.2 · Error identification](https://www.w3.org/WAI/WCAG22/Understanding/error-identification.html)
+- [Baymard · Adaptive validation error messages](https://baymard.com/research-articles/adaptive-validation-error-messages)
+- [GOV.UK · Service problem pages](https://design-system.service.gov.uk/patterns/problem-with-the-service-pages/)
 
 ## What breaks
 
-A disappearing notice leaves someone who needs more time with the same rejected value and no explanation. A network outage described as a field error sends them looking for a correction they cannot make.
+When an error notice fades, the rejected value stays and its explanation disappears. A network outage shown as a field error sends people looking for a fix they can’t make.
 
 ## How to apply it
 
 1. Preserve the value and put the specific correction by the field.
 2. Associate the message with the control, for example with aria-describedby.
-3. Keep a persistent service-level message when a system failure prevents progress.
+3. If the service fails, keep a message visible at the form level.
 
-## Review questions
+## Before you ship
 
 1. Can someone find the field from the summary?
 2. Does the message explain a correction the user can actually make?

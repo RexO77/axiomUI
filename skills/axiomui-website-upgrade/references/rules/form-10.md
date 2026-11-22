@@ -5,29 +5,31 @@
 - Tags: Forms, Efficiency
 - URL: https://axiomui.nischal.fyi/rules/form-10
 
-Stack unrelated questions so the next field is obvious. Group related short fields on one row only when their reading order, focus order and reflow remain clear.
+Stack unrelated fields in one column. Short related fields can share a row if Tab follows reading order and the fields stay readable on narrow screens.
 
-- Do: Single column, stacked fields
-- Don't: Two columns of unrelated fields
+- Do: One column · Tab follows reading order
+- Don’t: Two columns · Tab order differs from reading order
 
 ## Why it works
 
-In a two-column form, someone may scan across rows while Tab moves down the first column. Choosing one clear sequence reduces the need to reconstruct the form’s order. A compact group such as parts of one date can still read as one question.
+In the two-column form, Company sits beside Full name, but Tab moves down to Work email. One column gives both paths the same order. Parts of one date can still share a row.
 
-- [WCAG 2.2 · Meaningful sequence (1.3.2)](https://www.w3.org/WAI/WCAG22/Understanding/meaningful-sequence.html)
+- [Baymard · Multicolumn form layouts](https://baymard.com/research-articles/avoid-multi-column-forms)
+- [WCAG 2.2 · Meaningful sequence](https://www.w3.org/WAI/WCAG22/Understanding/meaningful-sequence.html)
 - [WCAG 2.2 · Focus order](https://www.w3.org/WAI/WCAG22/Understanding/focus-order.html)
+- [WCAG 2.2 · Reflow](https://www.w3.org/WAI/WCAG22/Understanding/reflow.html)
 
 ## What breaks
 
-A user following the visible sequence may discover a required question several fields later when the keyboard moves somewhere unexpected. Zoom can make that mismatch more disorienting.
+Someone reading across a row can lose their place when Tab moves down instead. At high zoom, the next field may be outside the area they were reading.
 
 ## How to apply it
 
 1. Arrange fields in meaningful document order before applying a grid.
-2. Pair fields only when the task and supported locales give the grouping a clear meaning.
+2. Group fields that belong together, such as the parts of a date. Use the order people expect in each supported locale.
 3. Test the sequence at full width, narrow width and with enlarged text.
 
-## Review questions
+## Before you ship
 
 1. Can someone predict the next question?
 2. Does Tab preserve a meaningful order after reflow?

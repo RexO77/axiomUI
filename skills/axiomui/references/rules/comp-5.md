@@ -1,34 +1,36 @@
-# Choose a surface for the task
+# Choose a dialog, side panel or full page
 
 - ID: comp-5
 - Category: Components & actions
 - Tags: Overlays, Drawers, Semantics
 - URL: https://axiomui.nischal.fyi/rules/comp-5
 
-Use a modal when the current decision needs exclusive attention. Use a side panel when the surrounding page helps someone compare or edit information. Choose a full page if either surface would leave too little working room.
+Use a modal dialog for a decision that needs full attention. Use a side panel when people need the page beside the form. Give the task a full page when it needs more room.
 
-- Do: Profile editor beside the visible record
-- Don't: Six profile fields in a one-row modal viewport
+- Do: All six profile fields visible beside the record
+- Don’t: Only one of six profile fields fully visible
 
 ## Why it works
 
-A drawer describes placement. Modality describes whether someone can continue using the rest of the interface. A side-by-side editor can keep a record in view while a person changes it, but a modal drawer still blocks interaction with that record.
+A side panel can be modal or nonmodal. Both can leave the record visible. Only a nonmodal panel lets someone use the record while editing.
 
 - [Fluent · Inline and overlay drawers](https://fluent2.microsoft.design/components/web/react/core/drawer/usage)
+- [IBM Carbon · Modal content and sizing](https://www.carbondesignsystem.com/building-blocks/core/components/modal/guidelines#overflow-content)
 - [WAI-ARIA APG · Modal dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/)
+- [Apple HIG · Modality](https://developer.apple.com/design/human-interface-guidelines/modality)
 
 ## What breaks
 
-If an editor asks someone to copy a value from a table behind a modal, the needed information can be visible yet unreachable. A narrow drawer can create the same trouble by obscuring the table.
+The small dialog shows just one of six profile fields and dims the record behind it. A side panel can also get in the way if it covers a value someone needs.
 
 ## How to apply it
 
 1. Identify which background information the task requires.
-2. Choose a nonmodal split view when the task requires interaction with both surfaces.
+2. Use a nonmodal side panel when people need to work in the form and the record beside it.
 3. Test a long field, the onscreen keyboard and the smallest supported viewport before committing to the panel.
 
-## Review questions
+## Before you ship
 
 1. Can the user see the information needed to finish?
 2. Can they interact with the underlying page when the task calls for it?
-3. Would a dedicated page give a complex task a clearer sequence?
+3. Would a full page give this task enough room?

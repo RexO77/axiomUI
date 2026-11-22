@@ -28,16 +28,16 @@ reviewed distribution selection as the machine catalog.
 | Skill | Group | Rules | What it covers | Install on its own |
 |---|---|---|---|---|
 | `axiomui` | Core | 112 | Every Axiom UI rule, indexed by domain, with full reasoning one file away. | `npx skills add RexO77/axiomUI --skill axiomui` |
-| `axiomui-website-upgrade` | Core | 112 | A playbook for upgrading a real interface in code, backed by every Axiom UI rule. | `npx skills add RexO77/axiomUI --skill axiomui-website-upgrade` |
+| `axiomui-website-upgrade` | Core | 112 | A step-by-step guide to improving an existing interface in code using Axiom UI rules. | `npx skills add RexO77/axiomUI --skill axiomui-website-upgrade` |
 | `axiomui-audit` | Core | 112 | A read-only design review where every finding cites a rule, a location and a fix. | `npx skills add RexO77/axiomUI --skill axiomui-audit` |
 | `axiomui-typography` | Domain | 17 | Interface text, from labels and display headings to long passages and mixed-direction names. | `npx skills add RexO77/axiomUI --skill axiomui-typography` |
 | `axiomui-layout` | Domain | 15 | Grouping, measure, padding, alignment, sticky headers, media space, crops and reflow. | `npx skills add RexO77/axiomUI --skill axiomui-layout` |
 | `axiomui-color` | Domain | 9 | Accent and status roles, text and control contrast, hover feedback, dark themes and elevation. | `npx skills add RexO77/axiomUI --skill axiomui-color` |
 | `axiomui-components` | Domain | 15 | Action hierarchy, links and buttons, product evidence, overlays, button states and charts. | `npx skills add RexO77/axiomUI --skill axiomui-components` |
-| `axiomui-forms` | Domain | 15 | Labels, input purpose, choice controls, validation, kept answers, submission and sign-in codes. | `npx skills add RexO77/axiomUI --skill axiomui-forms` |
-| `axiomui-system` | Domain | 14 | Loading, empty and error states, recovery, back to results, targets, keyboard, reflow, transitions. | `npx skills add RexO77/axiomUI --skill axiomui-system` |
+| `axiomui-forms` | Domain | 15 | Field labels, input purpose, choices, validation, retaining answers after errors and sign-in codes. | `npx skills add RexO77/axiomUI --skill axiomui-forms` |
+| `axiomui-system` | Domain | 14 | Loading, empty states, error recovery, return to results, hit areas, keyboard, reflow and motion. | `npx skills add RexO77/axiomUI --skill axiomui-system` |
 | `axiomui-motion` | Domain | 26 | Timing, easing, interruption, gestures, reduced motion and browser animation performance. | `npx skills add RexO77/axiomUI --skill axiomui-motion` |
-| `axiomui-accessibility` | Domain | 23 | Focus and its return, targets, contrast, links, headings, drag alternatives, pausing and reflow. | `npx skills add RexO77/axiomUI --skill axiomui-accessibility` |
+| `axiomui-accessibility` | Domain | 23 | Keyboard focus, targets, contrast, links, headings, drag alternatives, pause controls and reflow. | `npx skills add RexO77/axiomUI --skill axiomui-accessibility` |
 <!-- skills:end -->
 
 ## Commands from a checkout

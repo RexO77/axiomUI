@@ -1,34 +1,38 @@
-# Animate by frequency
+# Shorten entrances for frequent actions
 
 - ID: motion-1
 - Category: Motion & interaction
 - Tags: Perceived performance, Intent
 - URL: https://axiomui.nischal.fyi/rules/motion-1
 
-Watch a frequent action several times in succession. Shorten its entrance when it gets between the user and the next input.
+Open the command palette several times in a row. If you keep waiting for its entrance, shorten it or remove it.
 
 - Do: Rare modal: 220ms
-- Don't: Frequent palette: 220ms
+- Don’t: Frequent palette: 220ms per open
 
 ## Why it works
 
-A command palette has a useful test: open it and type the first letter in one motion. A palette can still be settling when the query arrives. If the field already has focus and the first result is readable, the entrance costs less than one that hides the result or defers input.
+Open the dialog once and its entrance takes 220ms. Open the command palette ten times and the same entrance adds up to 2.2 seconds. The tally shows how often people see a motion they already know.
 
+- [Apple HIG · Motion](https://developer.apple.com/design/human-interface-guidelines/motion)
+- [Emil Kowalski · You Don’t Need Animations](https://emilkowal.ski/ui/you-dont-need-animations)
+- [NN/g · Animation for attention and comprehension](https://www.nngroup.com/articles/animation-usability/)
 - [IBM Carbon · Motion principles and timing](https://www.carbondesignsystem.com/building-blocks/foundations/motion/overview)
+- [IJHCS · User perception of animation fluency](https://ir.psych.ac.cn/bitstream/311026/47151/1/User%20perception%20of%20animation%20fluency_%20The%20effect%20of%20time%20duration%20in%20different%20phases%20of%20animated%20transitions%20during%20application%20usage.pdf)
 - [web.dev · Interaction latency and presentation delay](https://web.dev/articles/optimize-inp)
 
 ## What breaks
 
-If the first keystroke lands in the page behind the palette, shortening the fade alone leaves the interaction broken.
+A palette that hides its results during entry makes people wait on every search, even when they know which command they want.
 
 ## How to apply it
 
 1. Identify a repeated task and the next input it invites.
-2. Make its destination ready as soon as the action succeeds.
+2. Shorten or skip the entrance on panels people open repeatedly.
 3. Compare an immediate entrance with the current one over a sequence of realistic tasks.
 
-## Review questions
+## Before you ship
 
-1. Where does the first keystroke land?
+1. How soon can someone use the first result after opening the palette?
 2. Does anything move under the pointer as the user reaches for the next action?
 3. What does the entrance explain on the tenth open?

@@ -5,30 +5,32 @@
 - Tags: Motion, CSS, Performance
 - URL: https://axiomui.nischal.fyi/rules/sys-13
 
-List the properties that should animate in a state change. A broad transition can also animate unrelated changes in computed style.
+List the CSS properties you want to animate. With transition: all, setting a new button width can animate that change too.
 
 - Do: transition-property: scale, background-color
-- Don't: transition: all 150ms ease-out
+- Don’t: transition: all 150ms ease-out
 
 ## Why it works
 
-Suppose a button animates its hover color and scale. Later a layout state changes its explicit width. With a general transition the width can interpolate too, while an explicit property list allows it to settle immediately.
+The Save changes button animates its scale and background color. When the layout sets a new width, `transition: all` animates that too. Listing only `scale` and `background-color` lets the width change immediately.
 
-- [CSS Transitions · Starting a transition](https://www.w3.org/TR/css-transitions-1/#starting)
 - [CSS Transitions · Selecting properties to transition](https://www.w3.org/TR/css-transitions-1/#transition-property-property)
+- [CSS Transitions · Starting a transition](https://www.w3.org/TR/css-transitions-1/#starting)
+- [web.dev · High-performance CSS animations](https://web.dev/articles/animations-guide)
+- [WCAG 2.2 · Animation from interactions](https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions.html)
 
 ## What breaks
 
-A button that stretches for 150ms while adjacent controls reposition can make a layout update look unfinished. A font swap changing intrinsic dimensions alone does not establish a transition between explicit width values.
+A button that stretches for 150ms makes a layout change look unfinished. Test by changing the button between two explicit widths. A font swap alone doesn’t set a new width.
 
 ## How to apply it
 
 1. Define the intended properties, duration and easing for each state change.
-2. Exercise unrelated layout and theme changes while the control is mounted.
-3. Respect reduced motion where animation would distract or disorient.
+2. With the control on screen, switch themes and change the layout. Watch which properties animate.
+3. When someone requests reduced motion, remove the scale animation and keep the color cue.
 
-## Review questions
+## Before you ship
 
-1. Which computed values are intended to interpolate?
+1. Which properties should animate, and are those the only ones listed?
 2. Does an unrelated explicit width change stretch the control?
-3. Does the rest of the interface settle as expected?
+3. When the button changes width, do neighboring controls move straight to their final positions?

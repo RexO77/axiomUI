@@ -5,22 +5,25 @@
 - Tags: Navigation, States
 - URL: https://axiomui.nischal.fyi/rules/sys-15
 
-When someone opens an item from a searched, filtered or scrolled list, Back should bring them to the same query, filters, sort and scroll position, with the item they opened in view. A refresh or a pasted link should restore the same view.
+Back should return to the same scroll position with the item in view. Keep the search, filters, sort and page in the URL so a refresh or shared link restores the same results.
 
 - Do: Back → Overdue · sorted by due date · row 37
-- Don't: Back → All invoices · top of the list
+- Don’t: Back → All invoices · top of the list
 
 ## Why it works
 
-A collections clerk filters invoices to Overdue, sorts by due date, scrolls to row 37 and opens Northwind’s invoice. Pressing Back should put them on that same row with the filter and sort still applied, so they can open row 38 next. Baymard found that sites which reset the list to the top force people to scroll and re-scan for the item they just viewed, and that users read this as the site being broken.
+A clerk opens Northwind’s invoice at row 37 of the overdue list. Back should return to that row with the due-date sort intact so they can check row 38 next. Baymard observed shoppers having to find a product again when Back returned them to the top.
 
 - [Baymard Institute · Return users to the same place in the list](https://baymard.com/research-articles/return-same-place)
+- [Baymard Institute · Back button expectations](https://baymard.com/research-articles/back-button-expectations)
+- [Next.js · Adding search and pagination](https://nextjs.org/learn/dashboard-app/adding-search-and-pagination)
 - [WHATWG HTML · The History interface](https://html.spec.whatwg.org/multipage/nav-history-apis.html#the-history-interface)
 - [MDN · History.scrollRestoration](https://developer.mozilla.org/en-US/docs/Web/API/History/scrollRestoration)
+- [web.dev · Back/forward cache](https://web.dev/articles/bfcache)
 
 ## What breaks
 
-Back lands on All invoices, sorted by newest, at row 1. The clerk has to reapply the filter, re-sort and scroll for every invoice they check, and on a long list they lose track of which ones they have already handled. A refresh or a shared link drops the view the same way.
+Back returns to row 1 of All invoices, sorted by newest. The clerk must restore the filter and sort, then find their place again. If the URL also omits those settings, a colleague opening the link sees a different list.
 
 ## How to apply it
 
@@ -28,8 +31,8 @@ Back lands on All invoices, sorted by newest, at row 1. The clerk has to reapply
 2. Keep scroll position and expanded rows out of the URL. Let the browser restore scroll (`history.scrollRestoration` stays `auto`), or save the position with the history entry and restore it once the rows have rendered. Keep the list data cached so Back does not refetch and render an empty list first.
 3. To find violations, search for filter, sort and search state held only in component state, such as `useState` for a filter with no matching `useSearchParams` or `URLSearchParams`, and for `history.scrollRestoration = "manual"` or a `window.scrollTo(0, 0)` that runs on every route change.
 
-## Review questions
+## Before you ship
 
 1. Filter the list, sort it, scroll down, open row 37 and press Back. Is row 37 in view with the same filter and sort?
-2. Copy the URL while the list is filtered and paste it into a new tab. Does the same view load?
-3. Change the filter three times, open an item and press Back twice. Does the first Back return to the list and the second leave it?
+2. Open the filtered list’s URL in a new tab. Do the search, filters, sort and page match?
+3. Start on another page, open the list, change the filter three times and open an item. Does Back return to the filtered list, then to the starting page?

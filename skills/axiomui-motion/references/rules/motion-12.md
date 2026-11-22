@@ -1,21 +1,22 @@
-# Retarget interrupted motion from its current position
+# Reverse motion from its current position
 
 - ID: motion-12
 - Category: Motion & interaction
 - Tags: Animation API, CSS
 - URL: https://axiomui.nischal.fyi/rules/motion-12
 
-When a control reverses mid-transition, continue from its visible position. A CSS transition handles ordinary state changes. A controlled keyframe animation can reverse too.
+If a control reverses mid-animation, turn it back from where it is. A CSS transition does this automatically. With keyframes, reverse the running animation to avoid a jump.
 
 - Do: transition: transform 420ms
-- Don't: animation: turn 420ms
+- Don’t: Restart from a fixed endpoint (420ms)
 
 ## Why it works
 
-A toggle may receive another click before it finishes moving. A CSS transition uses the current interpolated value when the target changes. Replaying a new animation from a fixed endpoint loses that position. A retained Web Animation can reverse its timeline, preserving continuity.
+Select Move cards twice before the cards finish moving. The CSS transition turns back from its current position. Restarting keyframes from a fixed endpoint makes the card jump. With the Web Animations API, keep the Animation object and call reverse() on it.
 
 - [CSS Transitions · Reversing an interrupted transition](https://www.w3.org/TR/css-transitions-1/#reversing)
 - [W3C · Web Animations timing and playback](https://www.w3.org/TR/web-animations-1/)
+- [web.dev · Web Animations API improvements](https://web.dev/blog/web-animations)
 
 ## What breaks
 
@@ -27,8 +28,8 @@ An interrupted toggle can jump ahead to a state it never visibly reached, then m
 2. For a richer sequence, retain the Animation object and reverse or update it deliberately.
 3. Try repeatedly changing direction during the first and last portions of travel.
 
-## Review questions
+## Before you ship
 
 1. Does the object jump when its destination changes?
-2. Does the semantic state reflect the latest input?
+2. After two quick reversals, does the control’s accessible state match its final setting?
 3. Can a stale completion handler undo a newer choice?

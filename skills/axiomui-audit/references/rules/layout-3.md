@@ -5,16 +5,19 @@
 - Tags: Grouping, Spacing, Forms
 - URL: https://axiomui.nischal.fyi/rules/layout-3
 
-Use a smaller gap within a label–field pair and a larger gap between fields. Keep each label programmatically associated with its control.
+Keep each label closer to its input than to the next field. Connect the label to its input in the markup as well.
 
-- Do: Label (gap-2) Input (gap-6) Next Label
-- Don't: Label (gap-4) Input (gap-4) Next Label
+- Do: 8px from label to input · 24px between fields
+- Don’t: 16px from label to input · 16px between fields
 
 ## Why it works
 
-The form has two different distances to communicate. An 8px label gap and a 24px field gap make the next pair visible. The accessible name and grouping still come from the markup, including a fieldset and legend for related choices.
+Each label sits 8px above its input, with 24px between fields. That spacing shows which input the label describes. Connect each label to its input in the markup. Use a fieldset and legend to name a group of related choices.
 
+- [Scottish Government · Form spacing](https://designsystem.gov.scot/guidance/forms/form-spacing)
+- [W3C WAI · Labeling controls](https://www.w3.org/WAI/tutorials/forms/labels/)
 - [W3C WAI · Grouping form controls](https://www.w3.org/WAI/tutorials/forms/grouping/)
+- [NN/g · Proximity principle in visual design](https://www.nngroup.com/articles/gestalt-proximity/)
 - [IBM Carbon · Spacing](https://www.carbondesignsystem.com/building-blocks/foundations/spacing/overview)
 
 ## What breaks
@@ -25,9 +28,9 @@ When the same 16px separates every row, a label between two fields can appear to
 
 1. Give labels and their fields a shared group container.
 2. Keep hints and errors within the group for the affected field.
-3. A gap implies a group. Keep gaps equal between equivalent siblings, then check that a multiline label still reads with its own field.
+3. Use the same gap between field groups. Check that a label still looks paired with its input when it wraps.
 
-## Review questions
+## Before you ship
 
 1. Which control does each visible label describe?
 2. Does the accessible name match the visible label?

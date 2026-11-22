@@ -5,30 +5,32 @@
 - Tags: Icons, Labels, Clarity
 - URL: https://axiomui.nischal.fyi/rules/comp-7
 
-Add visible text when an icon leaves the action open to interpretation. Give every icon-only button an accessible name that describes what it does.
+Add a visible label when an icon’s meaning is unclear. Give every icon-only button an accessible name that says what it does.
 
-- Do: Icon + label on every toolbar action
-- Don't: Icon only on every toolbar action
+- Do: Archive, Share and Delete with text labels
+- Don’t: Archive, Share and Delete as icons alone
 
 ## Why it works
 
-A box with a downward arrow can mean Download, Move or Archive. Beside “Archive,” the same shape helps a returning user scan the toolbar without asking a first-time user to guess.
+The box with a lid could mean storage or Archive. The label “Archive” tells newcomers what it does, while returning users can scan for the icon.
 
-- [Fluent · Button labels and icons](https://fluent2.microsoft.design/components/web/react/core/button/usage)
+- [NN/g · Icon usability](https://www.nngroup.com/articles/icon-usability/)
 - [WAI-ARIA APG · Button pattern](https://www.w3.org/WAI/ARIA/apg/patterns/button/)
+- [Fluent · Button labels and icons](https://fluent2.microsoft.design/components/web/react/core/button/usage)
+- [NN/g · Evaluating digital icons](https://www.nngroup.com/articles/how-to-test-digital-icons/)
 
 ## What breaks
 
-A tooltip that clarifies Archive on hover provides little help to someone choosing an action on a touchscreen. An accessible name helps assistive technology but does not teach the glyph to a sighted newcomer.
+Someone tapping the toolbar can miss a label shown only on hover. A screen reader can announce an icon’s name, but a sighted newcomer still needs a visible clue.
 
 ## How to apply it
 
-1. Use a short verb for each action whose consequence is ambiguous.
+1. Put a short verb beside any icon whose action is unclear.
 2. Name icon-only controls and hide purely decorative icons from assistive technology.
-3. Try representative tasks with new and experienced users before dropping visible labels.
+3. Before removing a label, check that new and returning users can find the action without it.
 
-## Review questions
+## Before you ship
 
-1. What else might this glyph mean in this context?
+1. What else could this icon mean here?
 2. Can someone identify the action without hover?
 3. Does the accessible name match the visible action?

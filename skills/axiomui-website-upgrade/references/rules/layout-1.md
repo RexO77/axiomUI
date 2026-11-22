@@ -5,20 +5,24 @@
 - Tags: Spacing, Consistency
 - URL: https://axiomui.nischal.fyi/rules/layout-1
 
-Choose named spacing steps for repeated relationships. A 4px base is useful for padding and gaps. Hairlines, optical offsets, and content-driven dimensions can use other values.
+Use a shared scale for padding and gaps. A 4px base is a useful starting point. Hairlines, optical adjustments and sizes set by content can fall between steps.
 
-- Do: 4px, 8px, 16px, 24px, 32px, 48px
-- Don't: 13px, 5px
+- Do: 16px padding · 8px gaps
+- Don’t: 13px padding · 5px gaps
 
 ## Why it works
 
-The settings cards compare 16px padding and 8px gaps with 13px and 5px. A shared scale gives the next person building a settings row a known starting point. The reason to reuse 8px is the relationship between items, even when an equally tidy number would fit the grid.
+One settings card uses 16px padding and 8px gaps. The other uses 13px padding and 5px gaps. Reusing the same gap between related items keeps new settings rows consistent.
 
 - [USWDS · Spacing units](https://designsystem.digital.gov/design-tokens/spacing-units/)
+- [IBM Carbon · Spacing](https://www.carbondesignsystem.com/building-blocks/foundations/spacing/overview)
+- [Adobe Spectrum · Layout spacing](https://spectrum.adobe.com/foundations/layout-and-structure/spacing/layout-spacing)
+- [Designsystems.com · Space, grids, and layouts](https://www.designsystems.com/space-grids-and-layouts/)
+- [Every Layout · The Stack](https://every-layout.dev/layouts/stack/)
 
 ## What breaks
 
-Repeatedly inventing nearly identical gaps makes changes expensive. Conversely, rounding a 1px border or a text container’s intrinsic height onto the spacing grid can visibly damage it.
+Slightly different gaps are harder to change together. Rounding a 1px border up to 4px makes it heavy, and forcing text into a fixed height can clip it.
 
 ## How to apply it
 
@@ -26,8 +30,8 @@ Repeatedly inventing nearly identical gaps makes changes expensive. Conversely, 
 2. Reuse one token wherever the same relationship recurs.
 3. Keep optical adjustments local and explain what required them.
 
-## Review questions
+## Before you ship
 
 1. Do comparable components use the same spacing step?
 2. Does each larger gap represent a different relationship?
-3. Would rounding this exception improve the result?
+3. Would the nearest grid step look better than this off-grid value?

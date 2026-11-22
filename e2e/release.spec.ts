@@ -172,7 +172,7 @@ test.describe("the rule pages", () => {
       expect(metaAll(html, "twitter:image"), rule.id).toEqual([image]);
       expect(metaAll(html, "twitter:card"), rule.id).toEqual(["summary_large_image"]);
       expect(metaAll(html, "description"), rule.id).toEqual([rule.desc]);
-      expect([...html.matchAll(/<title>([^<]*)<\/title>/g)].map(([, title]) => decode(title)), rule.id).toEqual([`${rule.title} | Axiom UI`]);
+      expect([...html.matchAll(/<title>([^<]*)<\/title>/g)].map(([, title]) => decode(title)), rule.id).toEqual([`${rule.title} · Axiom UI`]);
 
       const blocks = jsonLd(html);
       // The category is the rail's, as the page's header and the social card name it.

@@ -1,34 +1,36 @@
-# Match the control to when the change takes effect
+# Use switches for changes that apply immediately
 
 - ID: form-7
 - Category: Forms & inputs
 - Tags: Semantics, Forms
 - URL: https://axiomui.nischal.fyi/rules/form-7
 
-Use a switch for an on/off setting that applies as it changes. A checkbox fits an option submitted with the rest of a form. Make the save behavior clear wherever the two appear together.
+Use a switch for a setting that takes effect immediately. Use a checkbox for a choice that waits for Save. When both appear together, label which changes need saving.
 
-- Do: Dark mode = switch, email updates = checkbox
-- Don't: Dark mode = switch, email updates = switch
+- Do: Email updates · checkbox takes effect after Save changes
+- Don’t: Email updates · switch still waits for Save changes
 
 ## Why it works
 
-Dark mode gives immediate evidence when the theme changes. A subscription preference in an account form may still require Save. The visual position of a toggle alone cannot explain whether an update reached the service.
+Switching on Dark mode changes the theme immediately. “Email me product updates” waits for Save changes. A switch there can make a pending subscription look active.
 
-- [WAI-ARIA APG · Switch pattern](https://www.w3.org/WAI/ARIA/apg/patterns/switch/)
 - [Fluent · Switch behavior](https://fluent2.microsoft.design/components/web/react/core/switch/usage)
+- [Microsoft Windows · Toggle switches](https://learn.microsoft.com/en-us/windows/apps/develop/ui/controls/toggles)
+- [WAI-ARIA APG · Switch pattern](https://www.w3.org/WAI/ARIA/apg/patterns/switch/)
+- [IBM Carbon · Toggle](https://www.carbondesignsystem.com/building-blocks/core/components/toggle/guidelines)
 
 ## What breaks
 
-Someone who turns on product emails and leaves before pressing Save may believe they subscribed. An instantly applied change that fails to save needs equally clear recovery.
+Someone who leaves before pressing Save changes may think they subscribed to product updates. If an instant save fails, show which setting is still active.
 
 ## How to apply it
 
-1. Use a stable setting label as a switch changes state.
-2. Use a checkbox for a pending choice when that matches the surrounding form.
-3. If saving fails, show the actual saved state and an appropriate recovery action.
+1. Keep the switch label “Dark mode” in both states. Let the switch indicate on or off.
+2. Use a checkbox for an option that takes effect when the form is saved.
+3. If saving fails, show the stored setting and how to try again.
 
-## Review questions
+## Before you ship
 
 1. Which settings take effect immediately?
-2. Is the save boundary visible?
+2. Can you tell which settings wait for Save changes?
 3. Does the announced state match the value that will persist?
