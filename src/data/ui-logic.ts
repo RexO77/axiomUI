@@ -924,8 +924,8 @@ export const rules: Rule[] = [
     title: "Preserve feedback with reduced motion",
     id: "motion-17",
     desc: "When reduced motion is on, remove unnecessary travel, zoom and spin. Keep the result visible with a label or icon.",
-    do: "With motion on, the toast fades in place",
-    dont: "With motion on, the toast slides up",
+    do: "With reduced motion, the toast fades in place",
+    dont: "With reduced motion, the toast still slides up",
     tags: ["Accessibility", "Intent"],
   },
   // Gesture rules need physics, pointer ownership, and touch safety.

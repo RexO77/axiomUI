@@ -14,7 +14,7 @@ export async function GET() {
         ``,
         `## Docs`,
         ``,
-        `- [Full rule catalog](${origin}/llms-full.txt): every rule in Markdown, with examples, implementation notes and review questions`,
+        `- [Full rule catalog](${origin}/llms-full.txt): every rule in Markdown, with examples, implementation notes and a Before you ship checklist`,
         `- [Structured data](${origin}/rules.json): every rule as JSON`,
         ``,
         `## Agent skills`,

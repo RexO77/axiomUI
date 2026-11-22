@@ -222,7 +222,7 @@ const rulesJsonUrl = `${siteConfig.origin}/rules.json`;
  * indexes every rule and points at the site instead.
  */
 function ruleLookup(singleFile: boolean): string {
-  const backing = `Every rule ID above is one of Axiom UI's ${rules.length} rules. Its description and Do and Don’t examples are enough for the sweep; its full reference adds why it works, what breaks, implementation notes and review questions.`;
+  const backing = `Every rule ID above is one of Axiom UI's ${rules.length} rules. Its description and Do and Don’t examples are enough for the sweep; its full reference adds why it works, what breaks, implementation notes and a Before you ship checklist.`;
   if (singleFile) {
     return [
       "## Axiom UI rule lookup",

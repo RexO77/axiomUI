@@ -376,7 +376,7 @@ test("the skills dialog reopens on its install view and keeps a loaded playbook"
   const row = page.getByRole("button", { name: "Install agent skills: npx skills add RexO77/axiomUI", exact: true });
   // The dialog takes its name from the view's heading.
   const skills = page.getByRole("dialog", { name: "Agent skills" });
-  const playbook = page.getByRole("dialog", { name: "Website playbook" });
+  const playbook = page.getByRole("dialog", { name: "Website upgrade playbook" });
   const browse = async () => {
     await row.click();
     await page.getByRole("dialog", { name: "Install agent skills", exact: true }).getByRole("button", { name: "Browse agent skills" }).click();

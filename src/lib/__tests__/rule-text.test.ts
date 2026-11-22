@@ -13,7 +13,7 @@ describe("rule-text serializers", () => {
         "Use sentence case for ordinary English labels and headings. Keep the spelling of names and acronyms intact, including title case in official titles. Follow the casing conventions of each translation.",
         "",
         "Do: Invite your team / Skip for now",
-        "Don't: Invite Your Team / Skip For Now",
+        "Don’t: Invite Your Team / Skip For Now",
         "",
         "https://example.com/rules/typo-1",
       ].join("\n"),

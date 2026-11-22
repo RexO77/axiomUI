@@ -43,7 +43,7 @@ async function countPlays(page: Page, id: string): Promise<() => Promise<number>
 const settledRunning = (page: Page) =>
   expect.poll(() => page.evaluate(() => document.getAnimations().filter((a) => a.playState === "running").length), { timeout: 2_000 });
 
-const BORDER = ["layout-7", "a11y-2", "color-6", "color-12", "motion-8"];
+const BORDER = ["layout-7", "a11y-2", "color-6", "color-12", "comp-3", "motion-8"];
 /** A motion rule whose tile replays (an action showcase). */
 const MOTION = "motion-1";
 
@@ -172,12 +172,12 @@ test.describe("search and collections", () => {
       await page.keyboard.press("j");
       expect(await focused(page)).toBe(id);
     }
-    const previousSections = ["a11y-2", "layout-7"];
+    const previousSections = ["comp-3", "a11y-2", "layout-7"];
     for (const id of previousSections) {
       await page.keyboard.press("Shift+K");
       expect(await focused(page)).toBe(id);
     }
-    for (const id of ["a11y-2", "motion-8"]) {
+    for (const id of ["a11y-2", "comp-3", "motion-8"]) {
       await page.keyboard.press("Shift+J");
       expect(await focused(page)).toBe(id);
     }
