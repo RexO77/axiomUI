@@ -5,18 +5,20 @@
 - Tags: Animation API, CSS, Performance
 - URL: https://axiomui.nischal.fyi/rules/motion-21
 
-For fixed movement between two states, try a CSS transform transition. Once a browser can composite it, a busy main thread can delay script callbacks while the visual transition continues.
+For a move between two fixed positions, use a CSS transform transition. If the browser runs it on the compositor, it can keep moving while a long JavaScript task blocks frame callbacks.
 
-- Do: Tab indicator: CSS transition
-- Don't: Tab indicator: rAF + style writes
+- Do: CSS transform transition
+- Don’t: JavaScript updates the transform every frame
 
 ## Why it works
 
-The example moves both indicators across the same distance. One gets a destination once. The other receives a transform write in each animation-frame callback. During a long JavaScript task those callbacks cannot run. The second indicator advances to the current position when the thread becomes available.
+Both cards travel the same distance. The CSS transition gets its destination once. JavaScript moves the other card in requestAnimationFrame callbacks. A long task blocks those callbacks, so that card pauses and then jumps ahead.
 
-- [web.dev · Animation performance and profiling](https://web.dev/articles/animations-guide)
+- [web.dev · Why are some animations slow?](https://web.dev/articles/animations-overview)
 - [W3C · Web Animations timing and playback](https://www.w3.org/TR/web-animations-1/)
+- [web.dev · Animation smoothness](https://web.dev/articles/smoothness)
 - [web.dev · Interaction latency and presentation delay](https://web.dev/articles/optimize-inp)
+- [web.dev · High-performance CSS animations](https://web.dev/articles/animations-guide)
 
 ## What breaks
 
@@ -24,12 +26,12 @@ A smoothly moving indicator can mask an unresponsive application. Keyboard input
 
 ## How to apply it
 
-1. Use a transition when the start and destination are known. For scripted pause, reverse or cancellation, element.animate() returns an Animation controller. Keep that handle and handle cancellation separately from completion.
+1. Use a transition when the endpoints are known. For scripted playback, keep the Animation object returned by element.animate() so you can pause, reverse or cancel it. Handle cancellation separately from completion.
 2. Record the animation and check whether the browser actually composites it.
 3. Break up or remove long main-thread tasks so input can be handled promptly.
 
-## Review questions
+## Before you ship
 
 1. Which updates require JavaScript on every frame?
 2. Does the indicator actually keep moving on the target device?
-3. Can the user activate the destination during the work?
+3. How long does a click or keypress wait during a long task?

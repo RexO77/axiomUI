@@ -14,81 +14,81 @@ export type RuleDeepDive = {
 export const ruleDeepDives: Record<string, RuleDeepDive> = {
   // ── Typography & text ─────────────────────────────────────────────
   "typo-1": {
-    whyItMatters: "In an invite dialog, the title and actions belong to the same conversation. A writer who knows the team uses sentence case can write “Invite your team” without deciding whether “your” counts as a title word. Keeping “Sign in with GitHub” intact also preserves the service’s own spelling.",
-    riskWhenIgnored: "A blanket lowercase transform can silently turn GitHub into Github or change an acronym. In translated copy the same transform can undo an editor’s language-specific choices.",
+    whyItMatters: "“Invite your team” and “Skip for now” follow the same casing rule. Product names keep their own capitals, as in “Sign in with GitHub”.",
+    riskWhenIgnored: "A lowercase transform turns GitHub into github. It can also change acronyms and override a translator’s capitalization.",
     implementationNotes: [
       "Write the final casing in the localized string.",
-      "Keep a short list of the product names and abbreviations writers actually encounter.",
-      "Use the invite dialog to review a title and an action together.",
+      "List product names and abbreviations with their official capitalization.",
+      "Check the casing of a dialog’s title and buttons together.",
     ],
     reviewPrompts: [
       "Does the label follow the convention for this language?",
       "Does a named service retain its own spelling?",
-      "Will the localized string reach the screen as written?",
+      "Does a casing helper or CSS text-transform change the translated text?",
     ],
   },
   "typo-2": {
-    whyItMatters: "A small amount of extra space gives the uppercase Account label more separation between strokes. A face with generous sidebearings can already have enough room.",
+    whyItMatters: "A little extra spacing separates the letters in ACCOUNT. Some fonts already leave enough room between capitals at their default spacing.",
     riskWhenIgnored: "A tracking value copied from a larger heading can push a small label onto a second line. A fixed-width, single-line label can clip when someone increases text spacing.",
     implementationNotes: [
-      "Compare the font’s default spacing with USWDS’s 0.025em token for short caps at the actual weight and size.",
+      "At the label’s actual size and weight, compare the default spacing with the U.S. Web Design System’s 0.025em for short uppercase labels.",
       "Check the longest localized label at the narrowest supported width.",
       "Apply the WCAG 1.4.12 text-spacing overrides and check that the label can expand without clipping.",
     ],
     reviewPrompts: [
-      "Do adjacent forms stay distinct at the rendered size?",
+      "Can you tell neighboring capitals apart at this size?",
       "Does the label fit when the reader increases spacing?",
-      "Is this treatment appropriate for the script being displayed?",
+      "Does the label’s script use capitals that need extra spacing?",
     ],
   },
   "typo-3": {
-    whyItMatters: "A paragraph asks the reader to move repeatedly from the end of one line to the start of the next. In the sample, 24px leading gives a 16px face more separation than 18px. Compare a full paragraph because single-line labels reveal little about that return.",
-    riskWhenIgnored: "Tight leading can bring tall marks and descenders on neighboring lines together. Fixing the text container’s height then clips content when a reader increases line spacing.",
+    whyItMatters: "Read the whole paragraph at 16px. Compare how easily you find the next line with a 24px line height and an 18px line height.",
+    riskWhenIgnored: "With tight line spacing, descenders can touch accents on the line below. Increasing the spacing can push text outside a fixed-height box. If the box hides overflow, it clips the text.",
     implementationNotes: [
       "Set a unitless line-height so it follows changes in text size.",
-      "Try short and wide measures in the scripts you ship. WCAG 1.4.8 (AAA) calls for a way to get at least 1.5 line spacing in blocks of text.",
+      "Try narrow and wide paragraphs in each script you support. WCAG 1.4.8 (AAA) calls for a way to get at least 1.5 line spacing in blocks of text.",
       "Apply the WCAG 1.4.12 text-spacing overrides to catch clipping in fixed-height text containers.",
     ],
     reviewPrompts: [
-      "Can you follow the next line throughout a realistic paragraph?",
+      "Can you find the next line in a full paragraph without losing your place?",
       "Do accents and descenders clear adjacent lines?",
       "When spacing increases, is all text still present and usable?",
     ],
   },
   "typo-4": {
-    whyItMatters: "At 22px, the sample’s 24px lines form a compact heading. Increasing the leading to 33px changes the relationship between its two lines even though the words and weight stay the same. A font with taller marks can need more room for the same title.",
-    riskWhenIgnored: "A one-line mockup can hide collisions until a heading wraps in translation. Excess leading can make the second line look as closely related to the following paragraph as to the first line.",
+    whyItMatters: "In the 22px heading, a 24px line height keeps the two lines close. At 33px they look farther apart. A font with taller accents may need that extra room.",
+    riskWhenIgnored: "A one-line mockup can hide collisions until a translated heading wraps. Too much line spacing can make its second line look like part of the paragraph below.",
     implementationNotes: [
-      "Set separate heading and body tokens when they serve different reading tasks.",
+      "Give headings their own line-height token when they need tighter spacing than paragraphs.",
       "Try a long title with capitals, accents, and descenders.",
       "Compare the space within the heading with the space between it and the body.",
     ],
     reviewPrompts: [
       "Do both lines still read as one title?",
       "Do accented capitals and descending marks clear adjacent lines?",
-      "Does the heading remain intact when enlarged?",
+      "When you enlarge the heading, do all its lines stay visible and clear of the paragraph below?",
     ],
   },
   "typo-5": {
-    whyItMatters: "In the landing card, changing from Arial to Verdana announces a change of texture without explaining why. A consistent family already has size, weight, and position available to mark the transition from title to description. A second face earns its place when readers encounter a different kind of content.",
-    riskWhenIgnored: "Two interchangeable body styles can creep into adjacent screens and wrap the same string differently. Conversely, forcing one font across every language can introduce unpredictable fallback within a word.",
+    whyItMatters: "The card’s heading is already larger and heavier than its description. Switching from Arial to Verdana adds little. A monospace font for code would signal a different kind of content.",
+    riskWhenIgnored: "Two body fonts can wrap the same text differently on neighboring screens. If a font lacks characters for a language, another font can appear mid-word.",
     implementationNotes: [
       "Name the role a new family will serve before adding it.",
       "Check the heading and body together at their final sizes and widths.",
       "Inspect fallback coverage in the languages your product supports.",
     ],
     reviewPrompts: [
-      "Where does the change of family signal a change of role?",
+      "What job does the second font family do?",
       "Could the existing family express the same distinction?",
       "Which face actually renders the localized copy?",
     ],
   },
   "typo-6": {
-    whyItMatters: "The email is secondary to the name, yet it can be the detail that distinguishes two people. At 14px, the address in the member row is easier to read than the same address at 10px.",
+    whyItMatters: "When two members share a name, check the email address. The same address is easier to read at 14px than at 10px.",
     riskWhenIgnored: "If two people share a display name, a hard-to-read address can lead someone to invite the wrong person.",
     implementationNotes: [
       "Start with a readable text size for any detail someone needs to make a choice.",
-      "Hold weight and ink steady when comparing sizes in the shipped font.",
+      "Keep the font, weight, and text color the same when comparing sizes.",
       "Try two people with the same display name and different addresses.",
     ],
     reviewPrompts: [
@@ -98,12 +98,12 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "typo-7": {
-    whyItMatters: "The amounts in the preview already share a right edge. Equal-width digits keep the two decimal places aligned even as narrow 1s give way to wider 8s. Account numbers and phone numbers are identifiers and invite different grouping decisions.",
-    riskWhenIgnored: "A column mixing whole amounts, two decimals, currency suffixes, and negative signs can look neatly right-aligned while its decimal marks still wander. Adding trailing zeroes to measurements can falsely imply precision.",
+    whyItMatters: "Both examples right-align prices to two decimal places. With proportional digits, the 1 and 8 take different widths, so .10 and .08 can start at different points. Tabular digits line up the decimal points.",
+    riskWhenIgnored: "Even right-aligned amounts can have uneven decimal points if some are whole numbers, others have two decimals, or currency symbols follow the amount. Adding zeros to measurements can imply more precision than you have.",
     implementationNotes: [
       "Format comparable currency values consistently for the locale.",
       "Give amounts a common alignment edge and verify the font provides tabular figures.",
-      "Use explicit decimal alignment when different precision levels carry meaning.",
+      "When measurements use different numbers of decimal places, align them on the decimal point.",
     ],
     reviewPrompts: [
       "Do the decimal marks line up in representative amounts?",
@@ -112,26 +112,26 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "typo-8": {
-    whyItMatters: "The changelog heading can sit in the center while its paragraph starts repeatedly at the same edge. As the measure narrows, centering gives each line a different starting point. Logical alignment preserves the intended edge when the paragraph changes direction.",
-    riskWhenIgnored: "A two-word empty-state message can grow into a four-line instruction after translation. The centered composition that suited the short phrase now asks the reader to find a new starting point on each line.",
+    whyItMatters: "The changelog heading stays centered in both examples. In the left-aligned paragraph, each line starts at the guide. In the centered paragraph, the starting point changes with the line length.",
+    riskWhenIgnored: "A two-word message can grow to four lines in translation. If it’s centered, the reader has to find the start of each line again.",
     implementationNotes: [
-      "Use text-align: start for ordinary prose and set the correct language direction.",
+      "Set the paragraph’s direction with dir when needed. Use text-align: start to align it to that edge.",
       "Review centered content with longer translations.",
-      "Check a narrow measure and enlarged text before making an exception.",
+      "Before centering a passage, read it in a narrow column and with enlarged text.",
     ],
     reviewPrompts: [
       "Can the reader return to a consistent starting edge?",
       "Does right-to-left text follow its own reading direction?",
-      "Is the centered treatment still suitable at its longest length?",
+      "Is the centered text still easy to read in its longest translation?",
     ],
   },
   "typo-9": {
-    whyItMatters: "In the digest card, a bold metadata line competes with the title although the metadata is less important. Four weights can work across a product. In this small card the problem is where the emphasis lands.",
-    riskWhenIgnored: "A different weight on every line can make incidental details look like actions or headings. A font that lacks a requested weight can make two nominally distinct roles render alike.",
+    whyItMatters: "With four weights in the digest card, “12 recipients” is bolder than “Weekly digest”. Giving the count regular weight lets the title and action stand out.",
+    riskWhenIgnored: "A bold recipient count can look like a heading, while “Edit schedule” can look like body text. If the font lacks a requested weight, two roles may look alike.",
     implementationNotes: [
       "Map weights to roles such as heading, body, and emphasis.",
       "Compare those roles together using the loaded font at actual size.",
-      "Where two weights look alike, try spacing or a clearer level of type.",
+      "If two weights look alike, distinguish the roles with size or spacing.",
     ],
     reviewPrompts: [
       "Which text should the reader encounter first?",
@@ -140,35 +140,35 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "typo-10": {
-    whyItMatters: "A file list must accommodate a long name and a size column in the same row. Ellipsis preserves the column boundary while indicating omitted text. The omitted part may include the version or extension that distinguishes two files.",
+    whyItMatters: "An ellipsis keeps the file size visible, but it can hide the version or extension that tells two files apart.",
     riskWhenIgnored: "A row of identically shortened filenames can make choosing a file guesswork. A hover-only title leaves people on touchscreens without a way to resolve the ambiguity.",
     implementationNotes: [
       "Try wrapping first for instructions and error messages.",
-      "For a single-line filename, give its flex item room to shrink and apply the truncate utility.",
+      "Apply min-w-0 and truncate to the filename in its flex row.",
       "Provide access to the full name through a details view or another keyboard- and touch-operable action.",
     ],
     reviewPrompts: [
       "Can two files with the same prefix still be distinguished?",
       "Can keyboard and touch users reveal the complete value?",
-      "Do the size and actions stay accessible at narrow widths?",
+      "At narrow widths, can you still see the file size?",
     ],
   },
   "typo-11": {
-    whyItMatters: "The alert asks the reader to recognize a sign-in and inspect its supporting detail. The large x-height of one face can make it read differently from another at the same CSS size. The 16px/12px pair in the preview illustrates a hierarchy and needs a reading check in context.",
-    riskWhenIgnored: "Shrinking an alert to 11px with 9px detail buys space by making the information harder to inspect. Enlarging it may expose a second problem if the row has a fixed height.",
+    whyItMatters: "The time and location help you recognize the sign-in. Check that the 12px details are legible alongside the 16px message. Fonts with taller lowercase letters can look larger at the same size.",
+    riskWhenIgnored: "The 11px alert has 9px text for the time and place, the details that help identify the sign-in. A fixed-height row can clip those details when someone enlarges the text.",
     implementationNotes: [
-      "Start with a tested body token and relative units.",
+      "Set the body text size in a relative unit such as rem.",
       "Try the smallest supporting text using the actual content on a representative device.",
       "Check enlargement to 200% and allow the row to grow.",
     ],
     reviewPrompts: [
-      "Can the reader make the decision using the smallest essential line?",
+      "Can you read the time and location well enough to recognize the sign-in?",
       "At 200% enlargement, are all details and actions available?",
       "Could moving or wrapping a detail recover space?",
     ],
   },
   "typo-12": {
-    whyItMatters: "The 19ch sample lets the browser choose two more even lines. The same setting on a different heading may move a name, number, or modifier away from the words it belongs with. Line shapes and meaning both deserve a check.",
+    whyItMatters: "In the 19ch heading, ordinary wrapping can leave “project” alone. Balanced wrapping gives the two lines more even lengths. Check that a break still keeps names and phrases together.",
     riskWhenIgnored: "Hard-coded breaks fitted to one title can fragment a translation or waste an entire line on a smaller screen. A balanced arrangement can also look awkward when its break cuts across a phrase.",
     implementationNotes: [
       "Compare natural and balanced breaks in the actual heading width.",
@@ -182,26 +182,26 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "typo-13": {
-    whyItMatters: "The example fixes the card measure and changes one CSS property. Some engines primarily rebalance the final lines, while others consider breaks earlier in the paragraph. The value requests better wrapping and leaves the exact line breaks to the browser.",
-    riskWhenIgnored: "If a card depends on a particular word moving to its last line, a change of font, translation, or browser can expose clipping. The problem belongs to the card height if an extra line would hide content.",
+    whyItMatters: "At 23ch, ordinary wrapping can leave “work.” alone on the last line. With text-wrap: pretty, “your work.” can stay together. The exact break depends on the browser.",
+    riskWhenIgnored: "A translation, font change, or different browser can add a line. If the card has a fixed height, the last line may be clipped.",
     implementationNotes: [
       "Let the card grow with its text.",
       "Compare pretty with ordinary wrapping at the card widths the grid produces.",
-      "Review captions in more than one engine before declaring the final line fixed.",
+      "Check the last line in each browser you support.",
     ],
     reviewPrompts: [
       "Does the closing phrase read naturally?",
-      "Can the description gain a line without losing its action?",
+      "Can the description gain a line without clipping anything in the card?",
       "Does ordinary wrapping still give a usable result?",
     ],
   },
 
   "typo-14": {
-    whyItMatters: "On an English restaurant list, a Hebrew name may sit directly before a dash and a number. The browser resolves these characters using their neighbors. Marking the name as its own span of directional text lets the number stay with the English word “reviews”. The same issue arises with a Latin name on a Hebrew page.",
-    riskWhenIgnored: "A restaurant can appear to have a number in its name, or the dash can move to the wrong side of the count. Aligning the whole row to the reading start leaves the ambiguous character sequence intact.",
+    whyItMatters: "In the English list, the dash and 5 can appear before the Hebrew name. Isolating just the name keeps the 5 with “reviews”. The same issue can arise with an English name in a Hebrew list.",
+    riskWhenIgnored: "A misplaced dash or count can make the number look like part of the restaurant’s name. Changing the row’s alignment leaves that order unchanged.",
     implementationNotes: [
       "Set the document’s base direction for the interface language. The language attribute alone does not set direction.",
-      "Wrap an inserted name of unknown direction in `<bdi>`. A tightly wrapped element with `dir=\"auto\"` can also isolate the name. Keep the separator and count outside that wrapper.",
+      "Wrap just the name in `<bdi>` if its direction is unknown. If it already has its own wrapper, use `dir=\"auto\"` on that element. Leave the dash and count outside.",
       "Keep the sentence in translation resources so the translator can position the name and count. Keep the name in its original character order.",
     ],
     reviewPrompts: [
@@ -211,7 +211,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "typo-15": {
-    whyItMatters: "In the two-line headline, tighter tracking compresses the gap between the o and g in together. The same em value moves the letters farther in pixels as the heading gets larger, so check the spacing again when the size changes.",
+    whyItMatters: "Compare the o and g in “together”. At 38px, -0.015em removes 0.57px between letters and -0.05em removes 1.9px. Check the gap again at larger sizes.",
     riskWhenIgnored: "Neighboring strokes can nearly join in a large headline, making pairs of letters harder to distinguish during a quick read.",
     implementationNotes: [
       "Search heading styles for letter-spacing, letterSpacing, and tracking- classes. Inspect the computed spacing on the rendered headline after the webfont loads.",
@@ -219,7 +219,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
       "Check the narrowest gaps between neighboring glyphs in the actual headline and its translations at each display size.",
     ],
     reviewPrompts: [
-      "Open the hero at its largest breakpoint, wait for the webfont, and toggle the tracking declaration in DevTools. Is there still a visible gap between the closest strokes with the declaration on?",
+      "Once the font loads, check the heading at its largest size. With letter spacing applied, can you still see a gap between the closest strokes?",
       "Which letter pair comes closest at the smaller heading size?",
       "Do the closest pairs in translated headlines still have visible space between them?",
     ],
@@ -227,8 +227,8 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
 
   // ── Layout & spacing ─────────────────────────────────────────────
   "layout-1": {
-    whyItMatters: "The settings cards compare 16px padding and 8px gaps with 13px and 5px. A shared scale gives the next person building a settings row a known starting point. The reason to reuse 8px is the relationship between items, even when an equally tidy number would fit the grid.",
-    riskWhenIgnored: "Repeatedly inventing nearly identical gaps makes changes expensive. Conversely, rounding a 1px border or a text container’s intrinsic height onto the spacing grid can visibly damage it.",
+    whyItMatters: "One settings card uses 16px padding and 8px gaps. The other uses 13px padding and 5px gaps. Reusing the same gap between related items keeps new settings rows consistent.",
+    riskWhenIgnored: "Slightly different gaps are harder to change together. Rounding a 1px border up to 4px makes it heavy, and forcing text into a fixed height can clip it.",
     implementationNotes: [
       "Choose tokens for common spaces within a group and between groups.",
       "Reuse one token wherever the same relationship recurs.",
@@ -237,30 +237,30 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     reviewPrompts: [
       "Do comparable components use the same spacing step?",
       "Does each larger gap represent a different relationship?",
-      "Would rounding this exception improve the result?",
+      "Would the nearest grid step look better than this off-grid value?",
     ],
   },
   "layout-2": {
-    whyItMatters: "A 95ch canvas can accommodate a wide table and a narrower reading column. The sample caps the column at 52ch to fit about 65 characters per full line. The exact count depends on the font and the words.",
-    riskWhenIgnored: "A paragraph that inherits the width of a dashboard can grow very long on a wide display. Hard-coding its minimum width to preserve an ideal measure can create horizontal scrolling at zoom.",
+    whyItMatters: "The sample page is 95ch wide. Its 52ch text column fits about 60 to 65 characters per full line in SF Pro or Inter, depending on the words.",
+    riskWhenIgnored: "When a paragraph spans a wide dashboard, readers can lose their place between lines. A fixed minimum width can force them to scroll sideways when they zoom in.",
     implementationNotes: [
       "Set a maximum inline size on the article text while allowing the column to shrink.",
-      "Count characters on several full lines of representative material.",
+      "Count characters on a few full lines of real copy.",
       "Review translated text and the largest supported text size.",
     ],
     reviewPrompts: [
-      "Does the paragraph retain a comfortable measure on a wide display?",
+      "On a wide screen, do full lines of English text stay near 65 characters?",
       "Can the column shrink to fit a narrow viewport?",
       "Do tables and figures have the width their content needs?",
     ],
   },
   "layout-3": {
-    whyItMatters: "The form has two different distances to communicate. An 8px label gap and a 24px field gap make the next pair visible. The accessible name and grouping still come from the markup, including a fieldset and legend for related choices.",
+    whyItMatters: "Each label sits 8px above its input, with 24px between fields. That spacing shows which input the label describes. Connect each label to its input in the markup. Use a fieldset and legend to name a group of related choices.",
     riskWhenIgnored: "When the same 16px separates every row, a label between two fields can appear to describe either one. Adding an error or wrapping the label can make the ambiguity worse.",
     implementationNotes: [
       "Give labels and their fields a shared group container.",
       "Keep hints and errors within the group for the affected field.",
-      "A gap implies a group. Keep gaps equal between equivalent siblings, then check that a multiline label still reads with its own field.",
+      "Use the same gap between field groups. Check that a label still looks paired with its input when it wraps.",
     ],
     reviewPrompts: [
       "Which control does each visible label describe?",
@@ -269,12 +269,12 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "layout-4": {
-    whyItMatters: "In the play button, the visible mass of a right-facing glyph can sit toward the vertical edge of the triangle. Comparing the centered glyph with a 2px nudge exposes the difference between the SVG box and the marks inside it. Padding built into the icon artwork affects the result.",
+    whyItMatters: "The right-facing play triangle carries more weight on the left. Even with its SVG box centered, the triangle can look off-center. Here, a 2px shift to the right balances it.",
     riskWhenIgnored: "Applying the same offset to every icon can make a symmetric pause symbol jump sideways when playback starts. A mirrored arrow can even need a correction in the opposite direction.",
     implementationNotes: [
       "Compare the glyph with a centered guide at the actual button size.",
       "Check the paired state, such as play and pause.",
-      "Move the artwork inside the control and preserve the hit area.",
+      "Move the icon within the button so the hit area stays put.",
     ],
     reviewPrompts: [
       "Does the artwork appear centered with the guide removed?",
@@ -283,53 +283,53 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "layout-5": {
-    whyItMatters: "With 8px block padding, the sample compares 8px and 16px at each side of the label. The second shape gives the word more lateral breathing room. Icon-only buttons, toolbar commands, and full-width actions answer different constraints.",
-    riskWhenIgnored: "A strict ratio can make a translated button exceed its container or allow a compact control to miss its target-size requirement. Measuring padding alone leaves out both the text and the clickable area.",
+    whyItMatters: "Both buttons have 8px above and below “Get started”. Increasing the side padding from 8px to 16px gives the label room without making the button taller. Icon-only, toolbar and full-width buttons need their own sizing.",
+    riskWhenIgnored: "A long translated label can overflow even with the same padding ratio. A compact button can meet that ratio and still be too small to tap.",
     implementationNotes: [
       "Use a button-size token that accounts for the line height.",
       "Test the shortest and longest supported labels, including an optional icon.",
-      "Measure the actual target and spacing under the relevant accessibility requirement.",
+      "Measure the clickable area. If it falls below 24 × 24 CSS pixels, check the spacing test or another exception in WCAG 2.5.8.",
     ],
     reviewPrompts: [
       "Does the label have enough space beside it?",
       "Can the button wrap or grow when text enlarges?",
-      "How large is the area that actually responds?",
+      "How large is the clickable area?",
     ],
   },
   "layout-6": {
-    whyItMatters: "The bell introduces “Backup complete”. Its location should remain stable when the supporting detail grows from one to three lines. Aligning the items at the start and tuning the bell against the title gives that relationship a fixed reference.",
-    riskWhenIgnored: "Centering the bell across the entire group can leave it beside a continuation of the description. A top-aligned box can also look high if the icon artwork has unusual internal padding.",
+    whyItMatters: "The bell belongs beside “Backup complete”, even when the description wraps. In this row, aligning the bell to the top and moving it down 1px lines it up with the title.",
+    riskWhenIgnored: "Center the bell on the whole text block and it drops beside the description. With top alignment, check the space inside the SVG too. It affects where the bell appears.",
     implementationNotes: [
-      "Identify the line the glyph introduces.",
+      "Find the line the icon belongs to, usually the title.",
       "Anchor the icon to that first line, then inspect the artwork and font at their real sizes.",
       "Test the row with a long description and larger text.",
     ],
     reviewPrompts: [
       "Does the bell still sit beside the title after a wrap?",
       "Does the artwork look aligned inside its SVG box?",
-      "Would a single-line version need a different treatment?",
+      "Would the bell look centered beside a single line of text?",
     ],
   },
   "layout-7": {
-    whyItMatters: "In the stat panel, four nested outlines give the wrapper, label, and two values similar visual status. One surface can hold the same material together. In a grid of independently actionable records, a repeated border can instead clarify where each item begins and ends.",
+    whyItMatters: "Four borders give the panel, the “This week” heading and the two stats equal weight. A contrasting background separates each stat, and the heading groups them. Borders can help when each item has its own action.",
     riskWhenIgnored: "Removing all outlines can hide the bounds of separate interactive items. Adding a frame to every label makes it harder to see which pieces share a single action.",
     implementationNotes: [
       "Identify whether a group is an independent item, a section, or a control.",
       "Try a heading and a change in spacing before adding an inner frame.",
-      "Keep the boundary when its removal obscures an action or ownership.",
+      "Keep the border if it shows which item an action belongs to.",
     ],
     reviewPrompts: [
-      "What does this edge tell the reader?",
-      "Can the items be reordered independently?",
+      "Which items does this border group together?",
+      "Can you tell that both stats belong to “This week”?",
       "Can a reader tell which action belongs to each item?",
     ],
   },
   "layout-9": {
-    whyItMatters: "A card with 24px padding on both sides spends 48px of its width before the first word is set. In a narrow slot, using 12px on each side gives the copy another 24px. The same change can be unnecessary inside a compact form field.",
+    whyItMatters: "On the 72px card, 24px of padding on each side takes up 48px. Reducing it to 12px per side gives the content 24px more room. The wider card keeps its 24px padding.",
     riskWhenIgnored: "Holding on to a wide gutter can push an action onto a second line. Scaling every gap down indiscriminately can crowd touch targets or erase a group boundary.",
     implementationNotes: [
       "Compare the content area at the narrowest and widest widths.",
-      "Use responsive tokens for large insets and static ones for stable internal relationships.",
+      "Let outer padding shrink with the card. Keep the gap between a label and its control consistent.",
       "Check the card inside a narrow desktop column as well as on a phone.",
     ],
     reviewPrompts: [
@@ -340,7 +340,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
   },
   "layout-10": {
     whyItMatters: "Both panes keep the first two gaps at 8px and 16px. A 32px section break makes the next heading read as a new group. When the break repeats the 16px gap, the heading looks like the next item in the same group.",
-    riskWhenIgnored: "A section break close in size to an ordinary row gap can make two groups run together. Multiples of a single unit can still produce that problem if the wrong token is assigned.",
+    riskWhenIgnored: "A section break close in size to an ordinary row gap can make two groups run together. Even on a 4px grid, a section break needs more space than a row gap.",
     implementationNotes: [
       "Give the smallest gap to closely related details.",
       "Pick a visibly larger step for new groups and sections.",
@@ -349,29 +349,29 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     reviewPrompts: [
       "Where does one item end and the next section begin?",
       "Do repeated sections have consistent spacing?",
-      "Does a larger break correspond to a meaningful boundary?",
+      "Does each section start with a larger gap than the items inside it?",
     ],
   },
   "layout-11": {
-    whyItMatters: "The Export menu has z-index 9999 in both panes. Inside the transformed panel, that number only orders it within the panel, so Activity can cover it. Moving the menu outside the panel lets it stack directly against Activity.",
-    riskWhenIgnored: "Activity can cover part of the Export menu and take pointer input where a menu item should be clickable.",
+    whyItMatters: "The Export menu has z-index 9999 in both examples. Inside the transformed panel, it sits behind Activity because the whole panel does. Outside the panel, the same 9999 places the menu above Activity.",
+    riskWhenIgnored: "Activity covers the right side of the Export menu. In a working menu, clicks in that area would miss the menu items.",
     implementationNotes: [
       "List which overlays may appear together and which must take input.",
       "Inspect ancestor stacking contexts before changing a layer value.",
-      "Use a suitable portal or a native top-layer primitive when the overlay must escape its context.",
+      "To move a menu outside its panel’s stacking context, render it in a portal outside the panel or open it as a native popover.",
     ],
     reviewPrompts: [
-      "Which context owns each competing element?",
+      "Which stacking context contains Export, and which contains Activity?",
       "Does the visual order match focus and pointer behavior?",
       "Can you select every Export item with the menu open over Activity?",
     ],
   },
   "layout-12": {
-    whyItMatters: "The Account settings header stays in place when you Tab to Work email. A 64px inset leaves the field and its focus ring visible below the header. An in-page link to a heading needs the same clearance.",
+    whyItMatters: "With a 64px scroll inset, the focused “Work email” field and its outline sit below the 64px “Account settings” header. An in-page link to a heading needs the same clearance.",
     riskWhenIgnored: "The Work email field can receive keystrokes while the header hides it. An anchor link can appear to land in the wrong section when its heading is covered.",
     implementationNotes: [
       "Search for sticky and fixed headers, then identify the scroll container they overlap. In DevTools, compare the focused element’s bounds with the header’s bottom edge.",
-      "Set scroll-padding-block-start on that container using the header’s rendered height. Include any space needed for the focus outline and account for a sticky footer at the block end.",
+      "Set scroll-padding-block-start to the header’s rendered height, plus room for an outside focus outline. For a sticky footer, set scroll-padding-block-end too.",
       "Check the inset when the header wraps, switches at a breakpoint, or sits inside a nested scroller.",
     ],
     reviewPrompts: [
@@ -381,21 +381,21 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "layout-13": {
-    whyItMatters: "Both panes show the cabin photo while it’s still loading and its dimensions are known. Reserving that space on the first render keeps View details in place. The dashed button records where it was before the unreserved image took up space.",
+    whyItMatters: "The dashed “View details” outline marks the button’s starting position. The solid button shows where it lands once the image takes up space. Reserve the 2:1 image area and the two positions coincide.",
     riskWhenIgnored: "The button can move away from the pointer just as someone goes to open the details. On a longer page, another control can take its place.",
     implementationNotes: [
       "Search for img, video, and iframe elements. With cache disabled and the network throttled, check whether each element’s box has a height before its response arrives.",
       "Set image width and height to the intrinsic dimensions, or reserve the displayed aspect ratio on a wrapper when an embed or crop has its own shape. Match the placeholder to the final size at each breakpoint.",
-      "For shifts caused by swapping fonts, match fallback metrics with size-adjust and font metric overrides.",
+      "Keep the space reserved if the media request fails so nearby controls stay in place.",
     ],
     reviewPrompts: [
-      "Disable cache, throttle the network, and reload. Keep the pointer over View details while the image starts loading and finishes rendering. Does the button stay under the pointer?",
+      "On a page with a loading image, disable the cache, throttle the network and reload. Place the pointer over the button below the image. Does it stay under the pointer as the image loads?",
       "Does the placeholder match the final crop at both narrow and wide widths?",
       "Does the same space remain reserved when the media request fails?",
     ],
   },
   "layout-14": {
-    whyItMatters: "The wide cabin photo shows the brass latch on the right. The narrow center crop cuts it out. Shifting the crop toward the right keeps the latch visible in both frames.",
+    whyItMatters: "The wide cabin image shows the brass latch on the right. A centered crop cuts it out of the narrow frame. Right alignment keeps it visible in both frames.",
     riskWhenIgnored: "A narrow detail card can show only cabin siding when the image is meant to help someone identify the latch.",
     implementationNotes: [
       "Search for object-cover, object-fit: cover, and background-size: cover. Open each use at its narrowest frame and inspect which part of the source gets cut off.",
@@ -411,97 +411,97 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
 
   // ── Color & depth ────────────────────────────────────────────────
   "color-1": {
-    whyItMatters: "In the sample, the New report action shares its blue with the header and navigation. Keeping the surrounding chrome neutral makes the button’s fill distinctive. A branded masthead can work just as well if another cue identifies the primary action.",
-    riskWhenIgnored: "A palette quota can reward the wrong change. Shrinking a warning to hit a target percentage could make the most important information on the screen less visible.",
+    whyItMatters: "New report is the only blue button against the neutral header and sidebar. When both are blue too, the button is harder to spot. A branded header can still work if size or placement draws attention to the main action.",
+    riskWhenIgnored: "Shrinking a warning to fit the 60-30-10 split can make it easier to miss.",
     implementationNotes: [
-      "Identify the decision the page supports.",
+      "Name the action or information people should notice first.",
       "Compare the action with nearby elements using the same accent.",
       "Check status, navigation, and content on a representative screen before changing the palette.",
     ],
     reviewPrompts: [
       "Which item should a reader find first?",
       "Where else does its accent appear nearby?",
-      "Can the intended action still be identified without color?",
+      "Can you still find the main action in grayscale?",
     ],
   },
   "color-4": {
-    whyItMatters: "The feed places Like and Delete next to one another. Keeping their symbols and wording distinct allows the team to choose a heart color suited to the product. If red is the strongest warning cue in this toolbar, spending it on both items weakens that local distinction.",
-    riskWhenIgnored: "A reader who cannot distinguish the colors can lose the difference between two otherwise identical status marks. Recoloring an ambiguous control addresses only one part of the problem.",
+    whyItMatters: "The heart identifies Like. The trash icon and Delete label identify the destructive action. A blue heart leaves Delete as the only red action in the row.",
+    riskWhenIgnored: "When two status indicators differ only in color, people who cannot distinguish the hues may mistake one status for the other. Give each a label or distinct shape.",
     implementationNotes: [
-      "Name the product’s status roles and specify the accompanying text or shape.",
-      "Check dangerous actions beside common actions in the same toolbar.",
+      "List each status and the label or symbol that identifies it.",
+      "Check rows where destructive actions sit beside everyday ones.",
       "Review the task with color removed.",
     ],
     reviewPrompts: [
       "How does a reader identify the dangerous action?",
-      "Could the same accent describe different states within this row?",
+      "Does one color mean two things in this row?",
       "Which cue remains if the two hues look identical?",
     ],
   },
   "color-6": {
-    whyItMatters: "The blank area where a teammate’s address goes needs to look editable before anyone reaches it. On white, a pale gray input edge can look stronger than a divider and still miss 3:1. The divider beside it can stay quiet, because the content on either side already reads as separate. The action labeled Cancel may be identifiable from its content and context without a visible border.",
-    riskWhenIgnored: "Reusing a decorative divider token for a field can leave the reader with a label and an apparently blank page. Making only its focused outline visible helps keyboard navigation after focus arrives and leaves the resting field hard to find.",
+    whyItMatters: "The email field needs to look editable even before it has focus. If its border is the only cue, check for 3:1 against the background. Spacing already separates the sections, so their divider can be fainter. The Cancel label and its position beside Send invite help identify the button.",
+    riskWhenIgnored: "With a faint border, the email address can look like ordinary text. A focus ring helps only after someone reaches the field.",
     implementationNotes: [
-      "Identify which visual feature makes the resting input recognizable.",
-      "Measure that feature against its adjacent surface, including themed variants.",
-      "Hide each line in turn. If the rows still read as separate, the line is decorative and can use a quiet divider token. If a field or a graphic disappears with it, the line is essential and needs 3:1.",
+      "Before the field has focus, what identifies it as editable? Check its border, fill or underline.",
+      "Measure its contrast against the surrounding surface in each theme.",
+      "Hide each line in turn. If the groups are still clear, the divider can be faint. If people need the line to recognize a control or understand a graphic, check for at least 3:1 against the adjacent color.",
       "Test focus and selected states separately from the resting control.",
     ],
     reviewPrompts: [
       "Without the border, can a reader still find the field?",
-      "Does the required cue reach 3:1 on the adjacent surface?",
+      "Does the feature that identifies the field reach 3:1 against its background?",
       "Are focused and selected controls identifiable by their own cues?",
     ],
   },
   "color-7": {
-    whyItMatters: "Hover changes what the pointer is over. It does not submit the form. In the example a blue button deepens on hover. Turning it green could resemble the confirmation treatment used after a successful action. In another system a deliberate hue change may be a recognizable brand interaction.",
+    whyItMatters: "The blue button darkens when the pointer moves over it. If green signals success elsewhere, turning the button green on hover can make it look as though the action already happened.",
     riskWhenIgnored: "If hover alone makes a button look selected or complete, a person can misread the state before acting. A touch user may never see a hover cue at all.",
     implementationNotes: [
       "Define resting, hover, pressed, focus, and completed states separately.",
       "Inspect the label and icon contrast through each state.",
-      "Ensure the action can be identified and operated with touch and keyboard.",
+      "Check that people can find and use the button with a touchscreen or keyboard.",
     ],
     reviewPrompts: [
       "What does the color change communicate here?",
-      "Is completion still distinct from hovering?",
+      "Can you tell when the action has succeeded and when the pointer is just hovering?",
       "Can the control be found before hover occurs?",
     ],
   },
   "color-8": {
-    whyItMatters: "In the storage card, the raised panel needs to separate from its page and the usage bar needs to stay legible on its track. Those are two different color decisions. A page-wide inversion would also change the colors of the image preview.",
+    whyItMatters: "The lighter storage card stands out against the dark page. A muted blue keeps the usage bar visible on its track. Inverting the whole page also turns the file thumbnail into a negative.",
     riskWhenIgnored: "A newly themed panel may look convincing on its own while merging into the page behind it. An inverted thumbnail can misrepresent the file a person is choosing.",
     implementationNotes: [
       "Compare page, card, and overlay colors as a stack.",
-      "Measure text, icons, and meaningful graph elements on their own surfaces.",
+      "Check the contrast of text, icons and chart marks against their backgrounds.",
       "Inspect photos and illustrative or monochrome assets separately.",
     ],
     reviewPrompts: [
       "Are the surface boundaries clear at each level?",
-      "Can the usage indicator be read on the dark track?",
-      "Is the preview still a faithful representation of the file?",
+      "Can you see the usage bar against the dark track?",
+      "Does the thumbnail preserve the colors of the original file?",
     ],
   },
   "color-9": {
-    whyItMatters: "On white, #737373 is about 4.74:1. The helper text passes at its regular size. The other sample, #aaaaaa, is about 2.32:1. The labels round these measurements for display. A measured 4.49:1 still fails the 4.5:1 threshold.",
-    riskWhenIgnored: "Assuming that every gray in a palette has a fixed rating misses the second color in the calculation. A pair that passes on white can fail on a tinted input or a lighter part of a photo.",
+    whyItMatters: "On white, #737373 measures about 4.74:1 and passes for the 10px helper text. The lighter #aaaaaa measures about 2.32:1 and fails. The labels round for display. A measured 4.49:1 still falls below 4.5:1.",
+    riskWhenIgnored: "Contrast depends on both colors. Gray text that passes on white can fail on a tinted field or where a photo is close to the same gray.",
     implementationNotes: [
       "Measure the final foreground and background colors, accounting for transparency.",
-      "Use the large-text allowance at 18pt regular or 14pt bold and above, or equivalent sizes for CJK fonts.",
-      "Check helper text, placeholders, and active state labels. Incidental text and logotypes have specific exceptions.",
+      "The 3:1 threshold starts at 18pt (24px) for regular text or 14pt (about 18.7px) for bold text. Use the equivalent sizes for CJK fonts.",
+      "Check helper text, placeholders and labels on enabled controls. Exceptions include text on disabled controls, purely decorative text and text in logos.",
     ],
     reviewPrompts: [
-      "What measured pair supports the verdict?",
-      "If large-text thresholds are used, what size and weight qualify it?",
-      "Does it pass at the least contrasting background behind the letters?",
+      "Which text and background colors did you measure, and what was their contrast ratio?",
+      "If you used the large-text threshold, do the font size and weight qualify?",
+      "Where the text blends most into the background, does the contrast still pass?",
     ],
   },
   "color-10": {
-    whyItMatters: "The nav sample derives two tints from the same blue. Alpha mixes the source color with whatever is underneath, so an identical value produces different colors over light and dark panels. A change to the brand updates a derived tint but does not guarantee readable text or visible selection.",
-    riskWhenIgnored: "An opaque light-blue value reused on a dark sidebar can look like a stray light-theme row. A very faint translucent fill can cause the opposite problem and leave selection hard to distinguish.",
+    whyItMatters: "Hover and selection use the same blue at different opacities. Each fill blends with the surface behind it, so the same tint looks different on light and dark. After a brand color change, check that the labels and selected row still stand out.",
+    riskWhenIgnored: "A fixed light blue such as #e8f0fe stays light on a dark sidebar. A translucent fill can go too far the other way and leave the selected row hard to see.",
     implementationNotes: [
       "Name hover and selected backgrounds separately.",
-      "Use a shared source where those roles intentionally track the brand.",
-      "Check the composited result on every supported surface and retain a persistent selected cue.",
+      "Use the brand color as the base if both fills should change with it.",
+      "Check each fill against every background where it appears. Keep the selected row recognizable after the pointer leaves, for example with heavier text.",
     ],
     reviewPrompts: [
       "Does the selected row stay distinguishable from a hovered row?",
@@ -510,39 +510,39 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "color-11": {
-    whyItMatters: "The preview places pale and dark thumbnails on matching surfaces. A translucent dark line separates the pale edge, while a light line can separate the dark edge. The line serves as a framing detail unless it also identifies a control or a selected state.",
-    riskWhenIgnored: "A dark outline can disappear against a dark crop. A stronger border around every photo can introduce an unintended selection cue or obscure detail along the crop edge.",
+    whyItMatters: "The pale thumbnail blends into white, and the dark thumbnail blends into charcoal. A black outline at 10% opacity defines the pale edge. White at 10% defines the dark one. Keep this frame distinct from focus or selection.",
+    riskWhenIgnored: "A dark outline can disappear against a dark photo. A heavy border around every thumbnail can hide detail at the edge or make every image look selected.",
     implementationNotes: [
       "Test actual images with pale, dark, and transparent edges.",
-      "Keep the line inside the thumbnail if preserving its external dimensions matters.",
-      "Use a separate, accessible indication for focus and selection.",
+      "Set outline-offset to -1px to draw the 1px outline inside the thumbnail.",
+      "Give keyboard focus and selection their own visible cues.",
     ],
     reviewPrompts: [
       "Is the edge difficult to locate in this crop?",
-      "Does the line remain subordinate to the image?",
+      "Does the outline draw more attention than the thumbnail?",
       "Can people distinguish the frame from focus or selection?",
     ],
   },
   "color-12": {
-    whyItMatters: "The payment cards use a zero-blur shadow with a 1px spread to draw the edge and a second blurred shadow to suggest lift. The first layer extends outside the box. Either shadows or outlines can suit payment methods, depending on whether the design treats them as raised cards or rows.",
-    riskWhenIgnored: "Forced-color modes suppress box shadows. If a shadow is the sole cue that a field or selected card exists, that distinction can disappear even while its content remains visible.",
+    whyItMatters: "Each payment card uses three shadows. A zero-blur ring with a 1px spread draws the edge, a tight shadow sits just below it, and a wider, softer shadow makes the card look raised. Flat payment rows may need only a divider.",
+    riskWhenIgnored: "Forced-colors mode removes box shadows. If a shadow alone marks a field or a selected card, people can still see the content but may miss the field edge or selection.",
     implementationNotes: [
-      "Decide whether the surface is raised, flat, or selected.",
+      "Decide whether the card should look raised or flat. Give selection its own cue.",
       "Use the corresponding elevation token and examine it on each theme surface.",
-      "A shadow tinted with the surface’s own hue, such as indigo under an indigo promotion, is optional art direction for a one-off branded surface. Keep reusable cards, menus and dialogs on the neutral elevation token, where a colored glow can read as focus or a special state.",
-      "Supply a visible system-color border or outline in forced colors when the boundary carries meaning.",
+      "Use the neutral elevation token on shared cards, menus and dialogs. Save tinted shadows for one-off promotions where the glow won’t be mistaken for focus or selection.",
+      "Where the edge matters, add a transparent outline. It remains visible in forced-colors mode when box shadows disappear.",
     ],
     reviewPrompts: [
       "What relationship does elevation communicate here?",
       "Does the boundary remain visible when shadows are suppressed?",
-      "Can selection be distinguished from ordinary elevation?",
+      "Can you tell a selected card from one that is only raised?",
     ],
   },
 
   // ── Components & actions ─────────────────────────────────────────
   "comp-1": {
-    whyItMatters: "In a project editor, Save, Cancel and Preview sit together but do different jobs. Giving Save a distinct treatment helps someone who has finished editing find their way out. A screen can contain several independent tasks with their own action groups.",
-    riskWhenIgnored: "A filled “Accept” next to a faint “Decline” can steer a decision about consent. Equal prominence is appropriate when the choice belongs to the person making it.",
+    whyItMatters: "Publish, Preview and Discard sit together. Filling only Publish makes the next step easy to find. A separate task on the same screen can have its own primary button.",
+    riskWhenIgnored: "Three filled buttons give Discard as much weight as Publish. In a consent prompt, equal weight is deliberate. Accept and Decline should be equally easy to find.",
     implementationNotes: [
       "Group controls by the task they affect.",
       "Use one prominent button within a group that has a clear next step.",
@@ -550,17 +550,17 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
     reviewPrompts: [
       "What is someone trying to finish here?",
-      "Can someone who wants to cancel find that option?",
+      "Can readers find Discard when they want to abandon their edits?",
       "Is there a reason to recommend one of these choices?",
     ],
   },
   "comp-2": {
-    whyItMatters: "“Delete project” can mean removing a shortcut, sending a project to Trash, or erasing a shared workspace for everyone. Two red buttons can conceal three very different consequences. Name the object, scope and recovery path where the decision is made.",
+    whyItMatters: "“Delete project” could remove a shortcut, move a project to Trash or erase it for the whole team. Before someone confirms, say which project they’ll lose, who’s affected and whether they can restore it.",
     riskWhenIgnored: "Someone who only meant to clean up their own sidebar could erase files their team still uses. A generic “Are you sure?” gives them little reason to reconsider.",
     implementationNotes: [
       "Distinguish leaving a project from deleting it for everyone.",
       "Name the affected project and whether recovery is possible in the confirmation.",
-      "Offer an explicit Cancel action and consider initial focus on the least destructive choice.",
+      "Include a Cancel button. For permanent deletion, give it initial focus so an accidental Enter cancels.",
     ],
     reviewPrompts: [
       "Whose data changes?",
@@ -569,26 +569,26 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "comp-3": {
-    whyItMatters: "The centers of two circular arcs coincide when their radii differ by the inset. Measure between the edges you want to align. A border can add to the distance between a card’s outer edge and the child’s edge.",
-    riskWhenIgnored: "Matching token names alone can leave the diagonal gap around a corner visibly wider or narrower than the straight gutter.",
+    whyItMatters: "The gap stays even around a circular corner when both curves share a center. Here, 7px of padding and a 1px border make an 8px inset. Subtract that from the 12px outer radius to get 4px.",
+    riskWhenIgnored: "Giving both the card and the field a 4px radius makes the corner gap wider than the 8px gap along the sides.",
     implementationNotes: [
       "Measure from painted edge to painted edge, including any intervening border.",
-      "Subtract the inset and use zero if the result would be negative.",
-      "Inspect other corner shapes separately, especially unequal insets and elliptical radii.",
+      "Subtract the inset from the outer radius. Use zero if the result is negative.",
+      "Check the curves separately when the insets differ or the corners are elliptical.",
     ],
     reviewPrompts: [
       "Which two edges should track each other?",
-      "Has the border been included in their separation?",
+      "Did you include the border in the inset?",
       "Does the corner still read as an even inset at the smallest component size?",
     ],
   },
   "comp-4": {
-    whyItMatters: "A person, a workspace and a file can all have an uploaded image. A consistent crop helps readers distinguish the kinds of items before examining each image. Shape gets its meaning from repeated use within the product.",
-    riskWhenIgnored: "If a document cover and a profile picture have identical crops and the same generic label, the destination may be unclear even after the image loads.",
+    whyItMatters: "A profile picture and a file thumbnail can both be photos. Consistent shapes let readers tell them apart even before they recognize the image.",
+    riskWhenIgnored: "When both tiles are rounded squares, readers have to inspect the contents or read the names to tell a person from a file.",
     implementationNotes: [
-      "Choose separate treatments for the entity types people actually need to distinguish.",
+      "Give people and files distinct shapes wherever readers need to tell them apart.",
       "Show the person’s name or another meaningful identifier alongside the picture when identity matters.",
-      "Keep the fallback for a missing photo recognizable as the same kind of item.",
+      "If a profile photo is missing, keep the initials in the same circle.",
     ],
     reviewPrompts: [
       "Can a reader distinguish a person from a file without recognizing the photo?",
@@ -597,26 +597,26 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "comp-5": {
-    whyItMatters: "A drawer describes placement. Modality describes whether someone can continue using the rest of the interface. A side-by-side editor can keep a record in view while a person changes it, but a modal drawer still blocks interaction with that record.",
-    riskWhenIgnored: "If an editor asks someone to copy a value from a table behind a modal, the needed information can be visible yet unreachable. A narrow drawer can create the same trouble by obscuring the table.",
+    whyItMatters: "A side panel can be modal or nonmodal. Both can leave the record visible. Only a nonmodal panel lets someone use the record while editing.",
+    riskWhenIgnored: "The small dialog shows just one of six profile fields and dims the record behind it. A side panel can also get in the way if it covers a value someone needs.",
     implementationNotes: [
       "Identify which background information the task requires.",
-      "Choose a nonmodal split view when the task requires interaction with both surfaces.",
+      "Use a nonmodal side panel when people need to work in the form and the record beside it.",
       "Test a long field, the onscreen keyboard and the smallest supported viewport before committing to the panel.",
     ],
     reviewPrompts: [
       "Can the user see the information needed to finish?",
       "Can they interact with the underlying page when the task calls for it?",
-      "Would a dedicated page give a complex task a clearer sequence?",
+      "Would a full page give this task enough room?",
     ],
   },
   "comp-6": {
-    whyItMatters: "A notice at the top can say a form failed. The message beside Work email can tell someone that the domain is missing. These serve different purposes and can work together.",
-    riskWhenIgnored: "A disappearing notice leaves someone who needs more time with the same rejected value and no explanation. A network outage described as a field error sends them looking for a correction they cannot make.",
+    whyItMatters: "A summary can link to each field with an error. Under Email, “Add the domain after @” tells someone how to fix maya@.",
+    riskWhenIgnored: "When an error notice fades, the rejected value stays and its explanation disappears. A network outage shown as a field error sends people looking for a fix they can’t make.",
     implementationNotes: [
       "Preserve the value and put the specific correction by the field.",
       "Associate the message with the control, for example with aria-describedby.",
-      "Keep a persistent service-level message when a system failure prevents progress.",
+      "If the service fails, keep a message visible at the form level.",
     ],
     reviewPrompts: [
       "Can someone find the field from the summary?",
@@ -625,26 +625,26 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "comp-7": {
-    whyItMatters: "A box with a downward arrow can mean Download, Move or Archive. Beside “Archive,” the same shape helps a returning user scan the toolbar without asking a first-time user to guess.",
-    riskWhenIgnored: "A tooltip that clarifies Archive on hover provides little help to someone choosing an action on a touchscreen. An accessible name helps assistive technology but does not teach the glyph to a sighted newcomer.",
+    whyItMatters: "The box with a lid could mean storage or Archive. The label “Archive” tells newcomers what it does, while returning users can scan for the icon.",
+    riskWhenIgnored: "Someone tapping the toolbar can miss a label shown only on hover. A screen reader can announce an icon’s name, but a sighted newcomer still needs a visible clue.",
     implementationNotes: [
-      "Use a short verb for each action whose consequence is ambiguous.",
+      "Put a short verb beside any icon whose action is unclear.",
       "Name icon-only controls and hide purely decorative icons from assistive technology.",
-      "Try representative tasks with new and experienced users before dropping visible labels.",
+      "Before removing a label, check that new and returning users can find the action without it.",
     ],
     reviewPrompts: [
-      "What else might this glyph mean in this context?",
+      "What else could this icon mean here?",
       "Can someone identify the action without hover?",
       "Does the accessible name match the visible action?",
     ],
   },
   "comp-8": {
-    whyItMatters: "A disabled Export button may mean the selection is empty, the user lacks permission, or a request is still running. Each state calls for a different response. Native disabled buttons normally leave the tab sequence, so a tooltip attached only to the button is easy to miss.",
-    riskWhenIgnored: "“Not available” leaves someone hunting through a form. “Select at least one row to export” points to an action they can take.",
+    whyItMatters: "Export CSV might be disabled because the plan excludes it, nothing is selected or an export is running. Keyboard users skip native disabled buttons when tabbing, so a tooltip on the button can go unseen.",
+    riskWhenIgnored: "Without an explanation, people may look for a missing selection. “Available on the Pro plan” tells them why Export CSV is disabled.",
     implementationNotes: [
-      "Prefer a persistent explanation at the point of need.",
-      "When the user can submit and then correct errors, consider leaving the action available and explaining the errors on submission.",
-      "If using aria-disabled to retain focusability, suppress activation in the handler and check every input method.",
+      "Keep the reason visible beside the disabled control.",
+      "When a form can explain errors on submission, consider keeping Submit available so people can find out what needs fixing.",
+      "If you use `aria-disabled` to keep a control focusable, block activation in its handler. Check mouse, keyboard and touch.",
     ],
     reviewPrompts: [
       "Is the cause apparent before trying the control?",
@@ -653,12 +653,12 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "comp-9": {
-    whyItMatters: "A submit control has two audiences. The person needs to know whether the request started, and the service needs to know whether a retry represents the same operation. A spinner can answer the first question. The server must handle the second.",
+    whyItMatters: "A spinner tells someone their order is being submitted. If the connection drops and they retry, the server still needs to recognize the original order.",
     riskWhenIgnored: "A connection can drop after a payment succeeds but before the receipt reaches the browser. Disabling the original button cannot make a later retry safe.",
     implementationNotes: [
-      "Keep a meaningful label and preserve the button’s dimensions during loading.",
-      "Prevent duplicate activation while pending and give important operations an idempotent server contract.",
-      "Expose a meaningful status, preserve input on failure and tell the user how to recover.",
+      "Keep the button the same size and announce the pending state to screen readers, for example “Submitting…”.",
+      "Block repeat submissions while a request is pending. Have the server recognize retries so the same order or payment goes through only once.",
+      "Announce success only after confirmation. If the request fails, keep the entered values and explain how to retry.",
     ],
     reviewPrompts: [
       "Does the user know the request is still pending?",
@@ -667,12 +667,12 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "comp-10": {
-    whyItMatters: "A 20px artboard can hold a compact solid shape or an open outline. Matching the boxes establishes a baseline. Matching the apparent scale also requires looking at the drawings, stroke weights and internal whitespace.",
-    riskWhenIgnored: "A 24px trash icon beside a 16px archive icon can give a secondary action more emphasis purely through size. Enlarging the glyph alone still leaves its clickable area uncertain.",
+    whyItMatters: "Two icons on 20px artboards can look different in size or weight. Compare the strokes and the space around each drawing at toolbar size.",
+    riskWhenIgnored: "At 24px, Delete draws more attention than the 16px Archive icon. Check the button separately to see how much of the toolbar responds to a click.",
     implementationNotes: [
-      "Choose one artboard size for a peer group.",
+      "Start icons in the same toolbar group on the same size artboard.",
       "Review thin, dense and asymmetric glyphs beside each other at their rendered size.",
-      "Adjust optical imbalance within the icon family while keeping focus and pointer targets consistent.",
+      "Adjust drawings that look too heavy or light. Keep button hit areas and focus indicators consistent.",
     ],
     reviewPrompts: [
       "Which actions belong to the same group?",
@@ -681,26 +681,26 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "comp-11": {
-    whyItMatters: "If the image, heading and whitespace all advertise the same destination, a generous target matches that promise. Cards containing a menu, a checkbox or another link require distinct interaction areas.",
-    riskWhenIgnored: "An invisible link stretched over an entire card can intercept its Save button or block selecting a tracking number. A generic clickable container can also lose native link features such as opening in a new tab.",
+    whyItMatters: "If the image, title and padding all suggest one link, readers expect any of them to open it. A menu, checkbox or second link needs its own target.",
+    riskWhenIgnored: "If only the title is linked, clicking the card’s padding does nothing. Stretching a link over a Save button can block that button or prevent text selection. A clickable div also loses the browser’s link menu.",
     implementationNotes: [
       "Use a native link with a concise, descriptive name for navigation.",
-      "Keep other interactive elements outside that link, with independently reachable targets.",
+      "Keep buttons, checkboxes and other links outside the card link so each can receive clicks and keyboard focus.",
       "Check the image, padding, text selection, context menu and keyboard focus in the rendered card.",
     ],
     reviewPrompts: [
-      "Does the visual affordance agree with the clickable area?",
+      "Can readers click anywhere the card looks clickable?",
       "Can each secondary action be operated independently?",
       "Can readers select text that they may need to copy?",
     ],
   },
   "comp-12": {
-    whyItMatters: "The shortcuts sheet in the example contains reference material. Closing it loses nothing, so outside-click dismissal is convenient. An editor containing an unsaved draft needs a decision about saving or discarding the work, regardless of how dismissal starts.",
-    riskWhenIgnored: "A backdrop-only exit leaves no obvious control to focus. Closing on every outside tap can create the opposite problem when a slight miss discards edits.",
+    whyItMatters: "Closing the Keyboard shortcuts dialog loses no work, so a click outside can close it. In an editor, preserve the draft or ask what to do with unsaved changes before closing.",
+    riskWhenIgnored: "A backdrop-only exit gives keyboard users no Close button to focus. In an editor, one stray click outside can discard a draft.",
     implementationNotes: [
       "Include a labeled dismissal control in the dialog’s tab sequence.",
-      "Make Escape act on the topmost dismissible overlay and return focus to a logical place.",
-      "Route all dismissal paths through the same unsaved-work handling.",
+      "Have Escape close the topmost dismissible dialog. Return focus to its opener if it’s still available, or to the next control in the task.",
+      "Check for unsaved edits whether someone uses Close, Escape or a click outside.",
     ],
     reviewPrompts: [
       "Can a keyboard user discover how to leave?",
@@ -711,44 +711,44 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
 
   "comp-13": {
     whyItMatters: "A support lead reviewing ticket volume has two questions. Which queue grew this quarter, and how many billing tickets arrived in March? A short trend sentence answers the first. A table with row and column headers lets the reader look up the second without estimating a bar’s height.",
-    riskWhenIgnored: "“Bar chart of support tickets” identifies the graphic but omits its finding. A table left on January through March after the chart switches to April through June can give a precise answer for the wrong period.",
+    riskWhenIgnored: "“Bar chart of monthly support tickets, Jan–Mar” identifies the graphic but omits its finding. A table left on January through March after the chart switches to April through June can give a precise answer for the wrong period.",
     implementationNotes: [
-      "Write the question the chart should answer. Name the measure, time period and series where the reader encounters the chart.",
+      "Write the question the chart should answer. Name the measure, period and series in its title or caption.",
       "Summarize the meaningful change in words. Include structured values when the reader needs to look them up. A simple chart whose entire point fits in a sentence may need only that sentence.",
       "Build the plot, summary and table from the same filtered data. Give data tables real headers and make the control that reveals them keyboard accessible.",
     ],
     reviewPrompts: [
       "With the bars hidden, which queue grew over the selected period?",
-      "Can a reader find March’s billing count and identify its unit using the table headers?",
+      "With January through March selected, can readers find March’s Billing count and tell it represents tickets?",
       "After changing the quarter, do the plotted values, summary and table still agree?",
     ],
   },
   "comp-14": {
-    whyItMatters: "Someone reconciling accounts often wants three invoices open side by side. When “View invoice” is an `<a href>`, right-click offers Open link in new tab, hovering shows acme.app/invoices/1042 in the status bar, and Cmd-click or middle-click opens it without any extra code. The same control built as a div that calls `router.push` looks identical, but the browser never learns it leads anywhere, so right-click shows the page menu and hovering shows no address.",
-    riskWhenIgnored: "Cmd-click on the div does nothing, so the reader has to open each invoice, press Back and find their place again. Screen-reader users who list the page’s links never find it, Copy link address is missing when someone wants to send the invoice to a colleague, and crawlers do not follow it.",
+    whyItMatters: "To compare three invoices, a reader can open each in a new tab and keep the list in place. A native link shows its address on hover and offers a link menu. A div that calls `router.push` gets the page menu instead.",
+    riskWhenIgnored: "Command-clicking a div that calls `router.push` can open the invoice in the current tab. “View invoice” is missing from a screen reader’s list of links, and the browser offers no link address to copy.",
     implementationNotes: [
       "Render navigation as a native `<a>` with a real `href`. Router link components such as Next.js `<Link>` render one and still navigate on the client. Style it as a button if the design calls for one; the element stays a link.",
-      "To find violations, search for click handlers that navigate: `grep -rnE \"onClick=.*(router\\.(push|replace)|navigate\\(|location\\.(href|assign))\" src`. Any match on an element other than `<a href>` is a candidate. In the DOM, check that every control whose click changes the URL matches `a[href]`, and flag `<a>` without `href` or `[role=link]` on a div.",
+      "Inspect controls meant for navigation in the rendered page. For “View invoice”, check for an `a[href]` whose address opens that invoice. A Save button can redirect after saving.",
       "Keep `<button>` for work on the current page: submitting, opening a menu or dialog, toggling, deleting. An action that ends by navigating, such as Save and view, stays a button and navigates only after it succeeds.",
     ],
     reviewPrompts: [
       "Right-click the control. Does the menu offer Open link in new tab and Copy link address?",
-      "Hover the control, then Cmd-click or middle-click it. Does the status bar show the destination, and does a new tab open while this page stays where it was?",
-      "Does anything styled as a button change the URL, or anything styled as a link only change the current page?",
+      "Does hovering show the invoice address? Can you open it in another tab with Command-click on macOS, Ctrl-click on Windows or Linux, or a middle click?",
+      "Does “View invoice” expose a link to the invoice? Does “Save” submit the changes before leaving the page?",
     ],
   },
   "comp-15": {
-    whyItMatters: "“Find the deploy that broke checkout” is a claim a visitor can check. A crop of the deploy list with #418 flagged beside a 38% rise in checkout errors lets them see the product keep the promise before reading a word of copy. Eye-tracking studies by Nielsen Norman Group found that people study images that carry information, such as real products and real people, and skip generic decorative imagery.",
-    riskWhenIgnored: "Floating avatars, a green check and soft blobs would sit just as well under a competitor’s headline, so the most prominent element on the page tells the visitor nothing. They have to take the claim on trust or scroll to find out what the product looks like, and a skeptical evaluator often leaves first.",
+    whyItMatters: "The deploy list flags #418 beside a 38% rise in checkout errors. That row shows how the product helps someone find the deploy linked to the increase. In Nielsen Norman Group’s eye-tracking studies, people examined informative images and often passed over decorative ones.",
+    riskWhenIgnored: "The headline promises to identify the deploy linked to checkout errors. The floating avatars and green check show neither the deploy nor the error.",
     implementationNotes: [
       "Choose the frame from the headline: the screen and state where the promised result is visible. Use real or realistic data, then crop and enlarge until the evidence is readable at the size the image ships.",
-      "Keep the proof legible without hover or animation. Mark the result with the product’s own highlight, and write alt text that states what the image shows, such as “Deploy 418 flagged as the cause of a 38% rise in checkout errors”.",
-      "To find violations, open each hero and feature section and list what the image depicts. Flag images whose files or components are named like `blob`, `gradient`, `avatars`, `illustration` or `abstract`, and heroes where no element of the product’s interface or output appears. Alt text that is empty or generic, such as “dashboard” or “team”, is a second signal.",
+      "Keep the proof legible without hover or animation. Mark the result with the product’s own highlight, and write alt text that states what the image shows, such as “Deploy #418 flagged beside a 38% rise in checkout errors”.",
+      "For each product claim, find the detail in the image that supports it. If it appears only in the image, describe it in the alt text.",
     ],
     reviewPrompts: [
       "Cover the headline. What does the image alone show the product doing?",
       "Swap a competitor’s name into the headline. Does the image still fit? If so, it proves nothing.",
-      "Point to the exact spot in the image that delivers the headline’s promise. Can someone else find it at the size the image ships?",
+      "At the smallest display size, can readers identify the flagged deploy and read the change in checkout errors?",
     ],
   },
 
@@ -757,18 +757,18 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     whyItMatters: "In the billing form, “Billing address” is longer than “Full name.” Putting each label directly above its control gives the controls a shared left edge even as either label wraps. On a wide, dense editor a shared label column can achieve the same alignment.",
     riskWhenIgnored: "Giving each side label only its own text width makes the input column jump from row to row. Truncating labels to fix the alignment can hide the distinction between two questions.",
     implementationNotes: [
-      "Give each field a programmatic label.",
+      "Connect each visible label to its field. In HTML, match the label’s for attribute to the field’s id.",
       "Leave space for long labels and instructions to wrap.",
-      "Inspect the association at a narrow width, with larger text and in a supported language with longer strings.",
+      "At narrow widths and with larger text, check that each label stays with its field. Repeat with a longer translation.",
     ],
     reviewPrompts: [
       "Can someone match each label to its control at a glance?",
-      "Does the full label survive reflow?",
+      "Can you still read the whole label when it wraps?",
       "Does the accessible name still make sense when read on its own?",
     ],
   },
   "form-2": {
-    whyItMatters: "Returning to a filled address form, “London” could be the city of birth or a delivery destination. The field’s value cannot reliably tell the reader which question it answered.",
+    whyItMatters: "In a filled form, “London” could be a birthplace or a delivery city. A visible label tells you which answer you’re checking.",
     riskWhenIgnored: "A browser can fill several fields before the user sees the placeholders. A screen full of values without labels becomes difficult to check or correct.",
     implementationNotes: [
       "Associate each visible label with its control.",
@@ -782,12 +782,12 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "form-3": {
-    whyItMatters: "“Phone (optional)” answers a practical question before someone looks up their number. An asterisk can also communicate a requirement when its meaning is explained before the form and exposed to assistive technology.",
-    riskWhenIgnored: "Marking Phone as required while the service accepts an empty value invites unnecessary disclosure. Leaving a truly required field unmarked under an unclear convention produces avoidable errors at submission.",
+    whyItMatters: "Labeling Phone as optional tells people they can skip it. If you use an asterisk, explain it before the first field and make sure screen readers announce which fields are required.",
+    riskWhenIgnored: "Someone may share a phone number just because it looks required. If a required field looks optional, they may discover the mistake only after submitting.",
     implementationNotes: [
       "Ask only for information the task needs.",
       "State the marking convention before the first field and label exceptions consistently.",
-      "Set native required semantics on required controls and verify the server enforces the same contract.",
+      "Set the required attribute on required fields and check that the server rejects them when empty.",
     ],
     reviewPrompts: [
       "Can someone tell which questions may be skipped?",
@@ -796,12 +796,12 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "form-4": {
-    whyItMatters: "Street addresses vary substantially in length. A compact ZIP field in a US-specific example suggests a short answer, while a wider street field leaves room to read an address during review. Width and allowed length are separate decisions.",
-    riskWhenIgnored: "A five-character maximum copied from a compact example can reject ZIP+4 or international postal codes. A plausible-looking field width alone does not explain those restrictions.",
+    whyItMatters: "A short ZIP field suggests a short answer. A wider street address field gives people room to reread what they typed. Choose the character limit separately from the width.",
+    riskWhenIgnored: "A five-character limit rejects ZIP+4 and longer postal codes such as SW1A 1AA. Keep the field compact without cutting off valid answers.",
     implementationNotes: [
       "Choose the width from representative answers, including longer valid ones.",
       "Set length restrictions only when the data contract requires them.",
-      "Accept common formatting variations and preserve leading zeroes in postal codes.",
+      "Accept common formatting variations and preserve leading zeros in postal codes.",
     ],
     reviewPrompts: [
       "Which regions and formats does this form support?",
@@ -810,11 +810,11 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "form-5": {
-    whyItMatters: "Selecting Pro should replace Starter because one subscription has one plan. Independent add-ons have different behavior: choosing storage need not change the support option.",
-    riskWhenIgnored: "Two checked plans leave the purchaser unable to predict the charge. Silently unchecking a neighboring checkbox also makes an independent-looking choice behave unexpectedly.",
+    whyItMatters: "A subscription has one plan, so choosing Business should clear Pro. Add-ons are independent. Selecting extra storage leaves the support option alone.",
+    riskWhenIgnored: "With two plans checked, will you pay $12 for Pro, $24 for Business or $36 for both? If choosing one clears the other, use radio buttons.",
     implementationNotes: [
       "Name the group and give each option a distinct label.",
-      "Put native radios with the same purpose in the same named group.",
+      "Give the radio buttons for each question their own shared name attribute.",
       "For an optional choice that must be clearable, provide a meaningful None option or another clear reset.",
     ],
     reviewPrompts: [
@@ -824,11 +824,11 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "form-6": {
-    whyItMatters: "Monthly, yearly and every two years are easier to compare when all three billing cycles are in view. The benefit comes from seeing alternatives or descriptions together. A count of four or five by itself says little about the task.",
-    riskWhenIgnored: "A collapsed select can hide a meaningful price or eligibility difference. Dozens of expanded radio rows can make a familiar item arduous to locate.",
+    whyItMatters: "Showing all three billing cycles lets people compare them before choosing. With four or five options, consider which differences people need to see together.",
+    riskWhenIgnored: "A closed dropdown can hide a price difference. Dozens of radio buttons can make a familiar answer, such as a country, slow to find.",
     implementationNotes: [
-      "Consider option length, explanatory detail and available vertical space.",
-      "Use a native select for an appropriate compact list and consider search for a long familiar vocabulary.",
+      "Show options together when there is room for the details people need to compare, such as prices.",
+      "Use a native dropdown when space is tight and people know which option they want. For long lists, consider adding search.",
       "Preserve keyboard use, focus visibility and a clear group label.",
     ],
     reviewPrompts: [
@@ -838,16 +838,16 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "form-7": {
-    whyItMatters: "Dark mode gives immediate evidence when the theme changes. A subscription preference in an account form may still require Save. The visual position of a toggle alone cannot explain whether an update reached the service.",
-    riskWhenIgnored: "Someone who turns on product emails and leaves before pressing Save may believe they subscribed. An instantly applied change that fails to save needs equally clear recovery.",
+    whyItMatters: "Switching on Dark mode changes the theme immediately. “Email me product updates” waits for Save changes. A switch there can make a pending subscription look active.",
+    riskWhenIgnored: "Someone who leaves before pressing Save changes may think they subscribed to product updates. If an instant save fails, show which setting is still active.",
     implementationNotes: [
-      "Use a stable setting label as a switch changes state.",
-      "Use a checkbox for a pending choice when that matches the surrounding form.",
-      "If saving fails, show the actual saved state and an appropriate recovery action.",
+      "Keep the switch label “Dark mode” in both states. Let the switch indicate on or off.",
+      "Use a checkbox for an option that takes effect when the form is saved.",
+      "If saving fails, show the stored setting and how to try again.",
     ],
     reviewPrompts: [
       "Which settings take effect immediately?",
-      "Is the save boundary visible?",
+      "Can you tell which settings wait for Save changes?",
       "Does the announced state match the value that will persist?",
     ],
   },
@@ -866,8 +866,8 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "form-9": {
-    whyItMatters: "A card can print its expiry as “03/27.” A nearby MM / YY hint lets the user match the two parts to the field. If the service can normalize spaces and separators, making the user reproduce them adds no information.",
-    riskWhenIgnored: "A form that first reveals its expiry format in an error message has charged an extra submission attempt for an instruction it could have given earlier.",
+    whyItMatters: "A card might show 03/27 as its expiry date. A nearby MM / YY hint lets the user match the two parts to the field. If the form can read the expiry with or without spaces, accept both.",
+    riskWhenIgnored: "Someone who enters “March 2027” has to change it to “03 / 27” and submit again. Showing MM / YY beside the field would save that attempt.",
     implementationNotes: [
       "Show the hint before entry and keep it available during editing.",
       "Associate the hint with the field and localize it for the supported formats.",
@@ -880,11 +880,11 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "form-10": {
-    whyItMatters: "In a two-column form, someone may scan across rows while Tab moves down the first column. Choosing one clear sequence reduces the need to reconstruct the form’s order. A compact group such as parts of one date can still read as one question.",
-    riskWhenIgnored: "A user following the visible sequence may discover a required question several fields later when the keyboard moves somewhere unexpected. Zoom can make that mismatch more disorienting.",
+    whyItMatters: "In the two-column form, Company sits beside Full name, but Tab moves down to Work email. One column gives both paths the same order. Parts of one date can still share a row.",
+    riskWhenIgnored: "Someone reading across a row can lose their place when Tab moves down instead. At high zoom, the next field may be outside the area they were reading.",
     implementationNotes: [
       "Arrange fields in meaningful document order before applying a grid.",
-      "Pair fields only when the task and supported locales give the grouping a clear meaning.",
+      "Group fields that belong together, such as the parts of a date. Use the order people expect in each supported locale.",
       "Test the sequence at full width, narrow width and with enlarged text.",
     ],
     reviewPrompts: [
@@ -894,12 +894,12 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "form-11": {
-    whyItMatters: "The itinerary already holds the booking date. Asking the traveler to recall it on the next screen adds work and invites a conflicting answer. Offer the date for review. A country inferred from the browser language has a different origin and deserves a question.",
-    riskWhenIgnored: "A wrong prefilled destination can survive review precisely because the form looks complete. Defaulting an effective date to today can also create an unintended commitment.",
+    whyItMatters: "The itinerary already has the start date. Show it so the traveler can confirm or change it. Ask for the country if the only clue is the browser language.",
+    riskWhenIgnored: "A traveler may overlook the wrong country in a form that looks complete. Defaulting the start date to today can book a trip for the wrong day.",
     implementationNotes: [
-      "For a repeated required answer within one process, prefill it or make the prior answer available to select. WCAG 3.3.7 allows exceptions for essential re-entry, security, and information that has become invalid.",
-      "Give browser autofill the correct field metadata as a separate convenience. A browser may have no saved value for the date supplied earlier in this booking.",
-      "Ask for a consequential unknown, and let people review a known answer before committing. The repeated-entry criterion does not require storing personal answers between visits.",
+      "If a later step requires an earlier answer, prefill it or offer it for selection. WCAG 3.3.7 allows re-entry when it is essential, needed for security, or the earlier answer is no longer valid.",
+      "Set up browser autofill, too. The browser may have a saved address even if it has no record of the date entered earlier in this booking.",
+      "Ask when a wrong guess could affect the booking. Let travelers review earlier answers before confirming. WCAG 3.3.7 applies within one process. It does not require storing answers between visits.",
     ],
     reviewPrompts: [
       "Where did this answer come from?",
@@ -908,12 +908,12 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "form-12": {
-    whyItMatters: "An unchanged edit form can look identical before and after a successful save. “Saved successfully” distinguishes those states. A booking may require more, such as the reference needed to make a change.",
-    riskWhenIgnored: "A generic success message shown when a request starts can contradict a later rejection. Clearing the fields early also destroys the information needed to try again.",
+    whyItMatters: "After Save changes, Display name still reads Maya Chen. The message beside the button confirms the save. For a booking, include the reference travelers need to make changes later.",
+    riskWhenIgnored: "A success message shown when saving starts can be wrong if the request fails. Clearing the fields then also erases what the person needs to try again.",
     implementationNotes: [
       "Distinguish pending, saved and failed states.",
-      "Announce a meaningful inline completion message without moving focus unnecessarily.",
-      "For a completed transaction, provide a durable confirmation and explain what happens next.",
+      "Announce the inline save message through a live region so focus can stay on the current control.",
+      "After a transaction, explain what happens next and give people a confirmation they can save or find again.",
     ],
     reviewPrompts: [
       "Was success confirmed by the service?",
@@ -924,28 +924,28 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
 
   "form-13": {
     whyItMatters: "A person signing in can copy a code from their authenticator once. If six boxes each accept one character, pasting 012345 into the first box may leave only 0. The visual grouping can stay the same while one text field accepts the complete code.",
-    riskWhenIgnored: "The person must look back and forth between the sign-in page and the authenticator. Casting a code to a number introduces a second failure by dropping its leading zero, even when all six characters were pasted.",
+    riskWhenIgnored: "If pasting fills just one box, the person must type the other five digits. Even when all six arrive, converting 012345 to a number drops the leading zero.",
     implementationNotes: [
       "For a digit-only code, use a labeled text field with `inputmode=\"numeric\"` and `autocomplete=\"one-time-code\"`. Carry the value as a string through submission.",
       "If the design uses separate input boxes, distribute a full paste in order and allow keyboard correction. Verify paste with a code copied from the source users actually receive.",
-      "Check the entire existing-account sign-in flow, including password-manager fill. WCAG 2.2 allows an assisting mechanism or another qualifying path when a step requires a cognitive test; the criterion also has specific recognition exceptions.",
+      "Test every sign-in step for an existing account, including password-manager fill. For a one-time code, accepting a full paste is one way to meet WCAG 2.2 criterion 3.3.8.",
     ],
     reviewPrompts: [
-      "Can a person paste 012345 once, correct a digit and submit the intended string?",
+      "Can you paste 012345, correct a digit and submit the code with its leading zero intact?",
       "Does signing in with a saved password work before the code step?",
-      "If transcription is required on one path, which available path lets someone complete authentication without it?",
+      "If one sign-in method requires retyping the code, which method lets someone skip that step?",
     ],
   },
   "form-14": {
-    whyItMatters: "A phone can put @ on the first keyboard layer for Work email and offer an address the person has already saved. Declaring the field’s purpose gives the browser the information it needs to offer both.",
+    whyItMatters: "An email field can put @ on the phone’s main keyboard. With `autocomplete=email`, the browser can also suggest a saved email address.",
     riskWhenIgnored: "A generic field can capitalize the first letter, hide @ behind a keyboard switch, and leave people to type the entire address.",
     implementationNotes: [
       "Inspect generated inputs for type, inputmode, and autocomplete. Start with all fields labeled Email, Username, Card number, or Code, including fields rendered by shared components.",
-      "Use type=email and autocomplete=email for an email field. Turn off spellcheck and autocapitalize for emails, usernames, and codes. Use the autocomplete token that matches the field’s purpose, such as username or one-time-code.",
-      "Use type=text with inputmode=numeric for digit strings such as card numbers and numeric codes. Keep them as strings so leading zeros survive. Reserve type=number for quantities that can be incremented.",
+      "For email fields, set `type=email` and `autocomplete=email`. Turn off spellcheck and automatic capitalization for email addresses, usernames and codes. Use the matching autocomplete token, such as `username` or `one-time-code`.",
+      "Use `type=text` with `inputmode=numeric` for card numbers and numeric codes. Keep the value as text to preserve leading zeros. Reserve `type=number` for quantities people can increase or decrease.",
     ],
     reviewPrompts: [
-      "On a phone with a saved autofill address, tap Work email, check for @ and the saved address, then type maya@. Does the name stay lowercase?",
+      "On a phone with a saved email address, tap Work email. Is @ on the main keyboard? Is the saved address offered? Type maya@. Does the m stay lowercase?",
       "Does the sign-in field declare the purpose the browser’s credential manager expects?",
       "If you enter 012345 in a numeric code field, does the first zero reach the form submission?",
     ],
@@ -954,8 +954,8 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     whyItMatters: "When Work email comes back with a format error, leaving maya@ in place lets the person see what was missing and finish the address. Preserving Full name and Company lets them submit again after that one correction.",
     riskWhenIgnored: "A reset erases the address the error refers to and makes the person re-enter answers that already passed validation.",
     implementationNotes: [
-      "Search for <form action=, formAction=, and reset() in submit handlers. In React 19, an action that completes without throwing resets uncontrolled inputs by default, even when it returns a validation error.",
-      "Keep fields controlled in local state, or return the submitted values alongside field errors from the action. With useActionState, pass those returned values to the inputs as their new defaultValue.",
+      "Check forms that pass a function to action or formAction, and submit handlers that call reset(). In React 19, an action that returns validation errors still completes normally and resets uncontrolled fields.",
+      "Keep fields controlled in local state, or return only the values needed to restore the form. With useActionState, return those values with the field errors and use them as the new defaultValue. Keep passwords out of the response.",
       "Keep the inline error attached to Work email and let the person edit that answer in place before submitting again.",
     ],
     reviewPrompts: [
@@ -967,26 +967,26 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
 
   // ── System & logic ───────────────────────────────────────────────
   "sys-1": {
-    whyItMatters: "Both example panes wait 900ms. One reserves the spaces where the title and content will appear. The other communicates activity alone. The skeleton gives an early map of the page, without measuring the request’s progress.",
-    riskWhenIgnored: "A skeleton shaped like a dense list can be misleading if the result is an empty search. A spinner that replaces the whole page during a background refresh also removes information someone could still use.",
+    whyItMatters: "Both previews wait 900ms. The skeleton reserves three lines at their final widths, so the text lands in place. The spinner shows activity. Neither tells you how much work remains.",
+    riskWhenIgnored: "A skeleton full of rows promises results even when the search may be empty. A spinner that replaces the page during a refresh hides content someone may still be reading.",
     implementationNotes: [
       "Preserve useful loaded content during refresh.",
-      "Reserve space for predictable content and respect reduced-motion preferences.",
-      "Give slow or failed operations an accessible status and a recovery path.",
+      "Match the skeleton to the incoming layout. Turn off its pulse when someone requests reduced motion.",
+      "Announce a slow load or failure in a live region. Offer Retry when another attempt can help.",
     ],
     reviewPrompts: [
-      "Does the loading treatment accurately describe what is known?",
+      "When the content arrives, does it fit the space the skeleton reserved?",
       "Can someone keep using content that has already loaded?",
       "What appears if the request fails or returns no records?",
     ],
   },
   "sys-2": {
-    whyItMatters: "An empty project list, an empty search result and a failed request can all paint the same blank rectangle. The first may invite creation, the second may invite a different query, and the third needs recovery.",
-    riskWhenIgnored: "A “Create project” button shown after a failed fetch implies there are no projects. Someone may duplicate work while their existing records remain temporarily unavailable.",
+    whyItMatters: "A blank project list can mean there are no projects, no search matches or a loading error. Offer New project for the first, a way to change the search for the second and Retry for the third.",
+    riskWhenIgnored: "Showing “New project” after a failed request suggests there are no projects. Someone may recreate a project that already exists.",
     implementationNotes: [
       "Represent loading, failure and a successful empty response separately.",
       "Match the explanation to the cause and the action to the person’s permissions.",
-      "Allow a quiet confirmation when an empty inbox or completed queue is a desirable outcome.",
+      "If the queue is empty because the work is finished, “All caught up” is enough.",
     ],
     reviewPrompts: [
       "Which state produced the empty view?",
@@ -995,12 +995,12 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "sys-3": {
-    whyItMatters: "A 16px glyph can sit inside a 44px button and retain its intended visual scale. Enlarging the hit box helps at the moment the pointer arrives. Adding a margin gives separation but leaves the clickable area itself unchanged.",
-    riskWhenIgnored: "A small Delete icon next to a clickable file row can turn a near miss into opening the file. Enlarging the target into its neighbor creates a different ambiguity about which action owns the overlap.",
+    whyItMatters: "A 16px icon can fit inside a 44px button. Padding inside the button gives a tap more room to land. Margin separates neighboring buttons without enlarging either target.",
+    riskWhenIgnored: "A tap just outside Delete can hit Download. Give each button enough room to grow without overlapping its neighbor.",
     implementationNotes: [
       "Measure the actual interactive box in CSS pixels.",
-      "For undersized targets, check the spacing or another exception in WCAG 2.5.8 rather than counting any gap as sufficient.",
-      "Consider 44 × 44 CSS px for important touch controls. WCAG 2.5.5 uses that size at AAA with its own exceptions.",
+      "For the WCAG 2.5.8 spacing exception, center a circle 24 CSS pixels across on each undersized target’s bounding box. The circle must not overlap another target or another such circle. Otherwise, check whether another exception applies.",
+      "Consider 44 × 44 CSS pixels for important touch controls. WCAG 2.5.5 uses that size at AAA with its own exceptions.",
     ],
     reviewPrompts: [
       "Where does the click actually land around the glyph?",
@@ -1009,12 +1009,12 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "sys-4": {
-    whyItMatters: "“Two minutes ago” answers whether a file has just changed. Comparing an invoice with a bank record requires a stable date and sometimes a time zone. A single timestamp can support both views without changing the underlying instant.",
+    whyItMatters: "“2m ago” tells you how recently Maya pushed to main. Matching an invoice to a bank record needs an exact date and sometimes a time zone. One stored timestamp can supply either format.",
     riskWhenIgnored: "Relative labels become ambiguous in a screenshot or an audit trail. A raw UTC string can also hide a day boundary for someone working in another zone.",
     implementationNotes: [
-      "Store an unambiguous instant for events and handle calendar-only dates as dates.",
+      "Store events as unambiguous instants. Store calendar dates, such as birthdays, without a time or time zone.",
       "Format for the reader’s locale and specify the relevant time zone for exact records.",
-      "Offer a persistent detail or focusable disclosure when a relative label needs an exact counterpart.",
+      "Show the exact time alongside the relative label or behind a control people can open by touch or keyboard.",
     ],
     reviewPrompts: [
       "Is the task about recency or a specific point in time?",
@@ -1024,24 +1024,24 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
   },
   "sys-5": {
     whyItMatters: "The invoice card asks for the text role, which resolves to #f5f5f5 on the dark theme and measures 13.9:1 on its #262626 surface. The same card with the light theme’s #0f172a written into it keeps that ink after the switch and measures 1.2:1, so the invoice number all but vanishes. Roles also keep features apart: a Save button and an overdue warning can share a blue today and still change separately in the next theme.",
-    riskWhenIgnored: "A literal hex looks right on the theme it was picked on and fails on the next one, usually discovered by a user in dark mode. Reusing a button-specific token for a warning couples the two, so a brand update to the button changes the warning’s meaning and contrast as well.",
+    riskWhenIgnored: "A fixed text color that works on a light surface can disappear on a dark one. If a warning uses the button’s color token, restyling the button also changes the warning.",
     implementationNotes: [
       "Define roles for text, muted text, surfaces, borders and states, and give each a value per theme. Components ask for the role. Use aliases where the system needs that indirection rather than three layers for every value.",
       "To find literal colors in components, search outside the token files: `grep -rnE \"#[0-9a-fA-F]{3,8}\\b|rgb\\(|hsl\\(|text-\\[#|bg-\\[#\" src/components`. Each match either becomes a role or is a deliberate fixed color, such as a brand logo, with a comment saying so.",
       "Render each screen in every supported theme and measure the resolved text and surface pairs. Check that a deliberately high-contrast palette and forced colors still show every boundary.",
     ],
     reviewPrompts: [
-      "Switch the theme. Does any text or icon keep its light-theme color?",
+      "When you switch themes, can you still read the text and recognize the icons against their backgrounds?",
       "Which role does this component request, and can the warning change without the action changing with it?",
-      "Do the resolved pairs clear 4.5:1 for text in every theme?",
+      "Does the invoice text have at least 4.5:1 contrast against its card in every theme?",
     ],
   },
   "sys-6": {
-    whyItMatters: "A short Undo notice is convenient for the person who catches a mistake immediately. A Trash folder covers someone who returns later or needs more time to reach the control. Both depend on the service retaining enough state to restore the original item.",
-    riskWhenIgnored: "A five-second notice as the only recovery route can expire before a keyboard or screen-reader user reaches it. Client-side restoration can also mislead if the server has already erased the item or its permissions.",
+    whyItMatters: "Undo helps someone who notices a deletion right away. Trash lets them restore the file later. Both depend on the server keeping the file and its sharing settings.",
+    riskWhenIgnored: "A five-second notice as the only recovery route can expire before a keyboard or screen-reader user reaches it. Putting the row back on screen is misleading if the server has already deleted the file or its permissions.",
     implementationNotes: [
-      "Define what restoration recovers and for how long.",
-      "Make Undo keyboard accessible and provide durable recovery when the transient control is missed.",
+      "Decide how long Trash keeps the file and whether restoring it also restores its comments and sharing settings.",
+      "Make Undo reachable by keyboard and keep the item in Trash after the message closes.",
       "Reserve a confirmation or review step for consequences that cannot be undone.",
     ],
     reviewPrompts: [
@@ -1051,10 +1051,10 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "sys-7": {
-    whyItMatters: "“Step 2 of 4” is useful in a fixed sequence because the denominator is credible. In a branching application the same answer could add dependents, documents or eligibility questions, making a confident total misleading.",
+    whyItMatters: "“Step 2 of 4” tells someone at Shipping how much checkout remains. In an application, adding a dependent might add another section. Show stage names until the total is known.",
     riskWhenIgnored: "A progress bar that moves backward after a new section appears can make completing an answer feel like losing progress. Counting every field as a step can also exaggerate the remaining effort.",
     implementationNotes: [
-      "Use the terms people recognize for major stages.",
+      "Name the stages people recognize, such as Shipping, Payment and Review.",
       "Show a reliable total only when the route is known.",
       "Preserve completed answers when users review or return to an earlier stage.",
     ],
@@ -1065,12 +1065,12 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "sys-8": {
-    whyItMatters: "A button commonly accepts Enter or Space, whereas a link normally follows its destination on Enter. A radio group may be one Tab stop with arrow navigation inside. Matching those expectations gives a person a usable path without making every child a separate stop.",
-    riskWhenIgnored: "A modal whose actions are missing from the tab sequence can leave the keyboard behind the overlay. Conversely, a long toolbar with a separate stop for every possible child can make repeated navigation expensive.",
+    whyItMatters: "Enter or Space activates a button. Enter follows a link. In a radio group, Tab enters the group and arrow keys move between options.",
+    riskWhenIgnored: "In the preview, Tab skips Archive and Escape cannot close the dialog. In a long toolbar, a Tab stop on every button forces someone to cross the whole toolbar to leave it.",
     implementationNotes: [
       "Keep a meaningful focus order and a visible focus indicator.",
-      "Implement the keyboard pattern for the actual widget, including arrow keys in composites where specified.",
-      "Contain Tab within an open modal, support Escape and restore focus to the opener or a logical successor.",
+      "Follow the keyboard pattern for the widget. For tabs, menus and radio groups, support arrow keys within the group.",
+      "Keep Tab inside an open modal and close it on Escape. Return focus to the control that opened it, or to the next logical control if the opener is gone.",
     ],
     reviewPrompts: [
       "Can the task be completed end to end without a pointer?",
@@ -1079,26 +1079,26 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "sys-9": {
-    whyItMatters: "Filling a heart at the tap gives immediate feedback. The saved favorite is a separate fact that the server confirms later. Designing both states forces the team to decide what the person sees if the connection drops or they tap again.",
-    riskWhenIgnored: "If the first response arrives after a second tap, applying responses in arrival order can reverse the person’s latest choice. A silent rollback can leave someone convinced an item is saved when it is absent from Favorites.",
+    whyItMatters: "The heart starts filling at 0ms. Synced starts appearing at 700ms. Between those events, the save can fail or the person can change their mind.",
+    riskWhenIgnored: "An older reply can undo a second tap if you apply replies in arrival order. If the heart empties silently after a failed save, someone who looked away may still think they liked the post.",
     implementationNotes: [
-      "Track pending intent separately from confirmed state.",
-      "Reconcile retries and out-of-order responses with the latest intended value.",
-      "If persistence fails, show the actual state with a concise explanation and an appropriate retry.",
+      "Track what the person last chose and what the server last confirmed.",
+      "If someone taps twice, keep the second choice even if the first reply arrives last. Apply the same rule to retries.",
+      "If saving fails, show the last confirmed state, explain what failed and offer Retry when another attempt can help.",
     ],
     reviewPrompts: [
-      "Is the result safe to predict?",
-      "Does a rapid second action survive a late response?",
+      "Is the action low-risk and reversible enough to show before the server confirms it?",
+      "If someone taps twice, can a late reply undo their second tap?",
       "Can the person tell what was actually saved after failure?",
     ],
   },
   "sys-10": {
-    whyItMatters: "A missing decorative image and a missing invoice total have very different consequences. Reserving media dimensions can keep a product grid stable. A missing required value needs an explicit unavailable state so nobody mistakes a blank for zero.",
-    riskWhenIgnored: "A decorative placeholder used in place of a diagram can hide the only explanation of a task. An unrestricted retry on a nonrepeatable action can also duplicate the operation.",
+    whyItMatters: "Reserve space for a failed image so the article title stays in place. For a missing invoice total, show that the amount is unavailable so nobody reads a blank as zero.",
+    riskWhenIgnored: "A placeholder where a setup diagram failed can hide the only instructions. Retrying a payment that already went through can charge someone twice.",
     implementationNotes: [
-      "Reserve image dimensions and provide an appropriate text alternative for informative images.",
+      "Set image dimensions or an aspect ratio. Give informative images alt text that conveys what the reader needs from them.",
       "Keep usable content in place and distinguish failure from loading or an empty result.",
-      "Offer a scoped retry for recoverable failures and an alternative for persistent ones.",
+      "Put Retry on the part that failed. If another attempt is unlikely to help, offer another route, such as a download link.",
     ],
     reviewPrompts: [
       "What information does the missing resource carry?",
@@ -1107,36 +1107,36 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "sys-11": {
-    whyItMatters: "A 1280px window zoomed to 400% lays out like a 320 CSS px phone, so the people who enlarge text get the narrowest layout there is. In the example, one row keeps Street and Postcode side by side with a 512px minimum. The page then scrolls sideways and Continue sits past the right edge.",
+    whyItMatters: "At 400% zoom, a viewport that started at 1280 CSS pixels has 320 CSS pixels of layout width. Keeping Street and Postcode side by side forces a 512px row and pushes Continue off screen. Stacking the fields keeps it in view.",
     riskWhenIgnored: "Someone reading at 400% scrolls left and right on every line and may never see the action. Hiding the overflow with `overflow-x: hidden` on the page removes the scrollbar but not the problem, so Continue becomes unreachable instead of hard to find.",
     implementationNotes: [
-      "Find it: at 320 CSS px run `document.documentElement.scrollWidth > window.innerWidth` in the console, then inspect the widest element. In code, search for `min-width` above 320px, fixed widths on rows, `whitespace-nowrap` on long labels, and `overflow-x: hidden` on html or body. A viewport tag with `user-scalable=no` or `maximum-scale=1` blocks the zoom this test simulates, so remove it.",
+      "At 320 CSS pixels, check `document.documentElement.scrollWidth > document.documentElement.clientWidth`. Inspect fixed-width rows, `min-width` above 320px and labels that cannot wrap. Even if the widths match, check whether `overflow-x: hidden` clips a control. Remove viewport settings such as `user-scalable=no` or `maximum-scale=1` that can restrict mobile zoom.",
       "Let content choose breakpoints: resize until something breaks, then prefer intrinsic fixes (wrapping, `minmax()` grids, container queries) before adding a device-sized query.",
-      "Two-dimensional content is excepted. Give a data table, map or diagram its own scroll region with a visible scrollbar, a label and keyboard access (`tabindex=\"0\"`), and keep the rest of the page in one column.",
+      "If a table, map or diagram needs two dimensions to make sense, give it a labeled scroll region people can use by keyboard. Let text wrap inside table cells and keep the rest of the page within the viewport.",
     ],
     reviewPrompts: [
-      "At 320 CSS px, does `document.documentElement.scrollWidth` equal the viewport width?",
-      "Zoom a 1280px window to 400% and complete the main task. Did any step need sideways scrolling?",
+      "At 320 CSS pixels, does `document.documentElement.scrollWidth` equal the viewport width?",
+      "Zoom a 1280px viewport to 400% and complete the main task. Do you have to scroll the page sideways?",
       "Which element sets the overflowing width, and does it need that width?",
     ],
   },
   "sys-13": {
-    whyItMatters: "Suppose a button animates its hover color and scale. Later a layout state changes its explicit width. With a general transition the width can interpolate too, while an explicit property list allows it to settle immediately.",
-    riskWhenIgnored: "A button that stretches for 150ms while adjacent controls reposition can make a layout update look unfinished. A font swap changing intrinsic dimensions alone does not establish a transition between explicit width values.",
+    whyItMatters: "The Save changes button animates its scale and background color. When the layout sets a new width, `transition: all` animates that too. Listing only `scale` and `background-color` lets the width change immediately.",
+    riskWhenIgnored: "A button that stretches for 150ms makes a layout change look unfinished. Test by changing the button between two explicit widths. A font swap alone doesn’t set a new width.",
     implementationNotes: [
       "Define the intended properties, duration and easing for each state change.",
-      "Exercise unrelated layout and theme changes while the control is mounted.",
-      "Respect reduced motion where animation would distract or disorient.",
+      "With the control on screen, switch themes and change the layout. Watch which properties animate.",
+      "When someone requests reduced motion, remove the scale animation and keep the color cue.",
     ],
     reviewPrompts: [
-      "Which computed values are intended to interpolate?",
+      "Which properties should animate, and are those the only ones listed?",
       "Does an unrelated explicit width change stretch the control?",
-      "Does the rest of the interface settle as expected?",
+      "When the button changes width, do neighboring controls move straight to their final positions?",
     ],
   },
   "sys-15": {
-    whyItMatters: "A collections clerk filters invoices to Overdue, sorts by due date, scrolls to row 37 and opens Northwind’s invoice. Pressing Back should put them on that same row with the filter and sort still applied, so they can open row 38 next. Baymard found that sites which reset the list to the top force people to scroll and re-scan for the item they just viewed, and that users read this as the site being broken.",
-    riskWhenIgnored: "Back lands on All invoices, sorted by newest, at row 1. The clerk has to reapply the filter, re-sort and scroll for every invoice they check, and on a long list they lose track of which ones they have already handled. A refresh or a shared link drops the view the same way.",
+    whyItMatters: "A clerk opens Northwind’s invoice at row 37 of the overdue list. Back should return to that row with the due-date sort intact so they can check row 38 next. Baymard observed shoppers having to find a product again when Back returned them to the top.",
+    riskWhenIgnored: "Back returns to row 1 of All invoices, sorted by newest. The clerk must restore the filter and sort, then find their place again. If the URL also omits those settings, a colleague opening the link sees a different list.",
     implementationNotes: [
       "Keep shareable view state, such as the query, filters, sort and page, in the URL (for example `?status=overdue&sort=due`), and render the list from it. Update it with `history.replaceState` or the router’s replace so changing a filter does not stack a Back step per click.",
       "Keep scroll position and expanded rows out of the URL. Let the browser restore scroll (`history.scrollRestoration` stays `auto`), or save the position with the history entry and restore it once the rows have rendered. Keep the list data cached so Back does not refetch and render an empty list first.",
@@ -1144,45 +1144,45 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
     reviewPrompts: [
       "Filter the list, sort it, scroll down, open row 37 and press Back. Is row 37 in view with the same filter and sort?",
-      "Copy the URL while the list is filtered and paste it into a new tab. Does the same view load?",
-      "Change the filter three times, open an item and press Back twice. Does the first Back return to the list and the second leave it?",
+      "Open the filtered list’s URL in a new tab. Do the search, filters, sort and page match?",
+      "Start on another page, open the list, change the filter three times and open an item. Does Back return to the filtered list, then to the starting page?",
     ],
   },
   "sys-16": {
-    whyItMatters: "Six seconds after an upload fails, the toast reporting it is the only place that offers Retry. If it is still on screen, the person can retry when they notice. If a five-second timer has already removed it, the failure and the way to fix it are both gone. A success message such as Saved can time out safely, because the saved result is visible elsewhere.",
+    whyItMatters: "Six seconds after the upload failed, one preview still offers Retry. In the other, the message disappeared after five seconds and took the only Retry button with it. A success message can time out when the saved result is visible elsewhere.",
     riskWhenIgnored: "Someone who looked away, is reading with a screen magnifier or takes longer to reach the toast with a keyboard finds an empty corner and no sign the file was not uploaded. WCAG 2.2.1 (Timing Adjustable) asks that people can turn off, adjust or extend time limits, and a timed toast holding the only Retry is such a limit.",
     implementationNotes: [
       "Give each message a dismissal policy by type. Success confirmations whose result is visible elsewhere may close after a few seconds. Errors and any message holding the only Undo or Retry stay until the person acts on it or closes it, as Carbon’s inline and actionable notifications do.",
-      "Pause any timer while the message is hovered or holds focus, and while the tab is hidden (`document.visibilityState === \"hidden\"`). Restart it, not resume a nearly expired one, when the person leaves. Announce the message through a live region, and make its actions reachable from the keyboard.",
-      "To find violations, search for toast calls with a duration on an error or an action: `grep -rnE \"toast\\.(error|warning)|duration:|setTimeout\\(.*(dismiss|close)\" src`. Flag any error toast with a finite duration and any toast whose Undo or Retry has no other route, such as a Trash folder or a retry control on the item.",
+      "Pause any timer while the message is hovered or holds focus, and while the tab is hidden (`document.visibilityState === \"hidden\"`). Restart the full timer once the tab is visible and neither the pointer nor keyboard focus is on the message. Announce the message through a live region, and make its actions reachable from the keyboard.",
+      "Check error messages and messages offering Undo or Retry for dismissal timers, including library defaults. Flag any error that times out. If Undo or Retry times out, check where the person can still take that action.",
     ],
     reviewPrompts: [
       "Trigger the failure, then wait ten seconds without touching anything. Are the error and Retry still on screen?",
-      "Trigger it again, rest the pointer on the toast, then tab to it. Does it stay put while hovered or focused?",
-      "Trigger it, switch to another tab for a minute and come back. Is the message still there?",
+      "Show a timed confirmation. Does it stay visible past its timeout while the pointer rests on it? Repeat with keyboard focus on an action.",
+      "Show a timed confirmation and switch tabs for a minute. When you return, is the message still there for its full timeout?",
     ],
   },
 
   // ── Motion & interaction ────────────────────────────────────────
   "motion-1": {
-    whyItMatters: "A command palette has a useful test: open it and type the first letter in one motion. A palette can still be settling when the query arrives. If the field already has focus and the first result is readable, the entrance costs less than one that hides the result or defers input.",
-    riskWhenIgnored: "If the first keystroke lands in the page behind the palette, shortening the fade alone leaves the interaction broken.",
+    whyItMatters: "Open the dialog once and its entrance takes 220ms. Open the command palette ten times and the same entrance adds up to 2.2 seconds. The tally shows how often people see a motion they already know.",
+    riskWhenIgnored: "A palette that hides its results during entry makes people wait on every search, even when they know which command they want.",
     implementationNotes: [
       "Identify a repeated task and the next input it invites.",
-      "Make its destination ready as soon as the action succeeds.",
+      "Shorten or skip the entrance on panels people open repeatedly.",
       "Compare an immediate entrance with the current one over a sequence of realistic tasks.",
     ],
     reviewPrompts: [
-      "Where does the first keystroke land?",
+      "How soon can someone use the first result after opening the palette?",
       "Does anything move under the pointer as the user reaches for the next action?",
       "What does the entrance explain on the tenth open?",
     ],
   },
   "motion-2": {
-    whyItMatters: "Opening a palette and typing a query is one keyboard sequence. Both palettes share the same entrance, and the field focused on open receives the first keystrokes. Waiting for the panel to settle can send those characters to the previous control.",
+    whyItMatters: "Both palettes take 180ms to open. Halfway through, the example types “op”. The field focused on open shows both letters. The field focused after the entrance stays empty.",
     riskWhenIgnored: "A missing first character sends the user into a different set of results. Escape during entry can also leave focus behind a closing overlay.",
     implementationNotes: [
-      "Choose the initial focus target when mounting the panel.",
+      "Focus the field as soon as the panel mounts.",
       "Keep the input and its focus indicator visible while typing.",
       "Open, type and dismiss without pausing between keys.",
     ],
@@ -1193,21 +1193,21 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-3": {
-    whyItMatters: "An edge drawer can teach its relationship to the page in a single opening. The direction and resting position tell the same story. A bounce on a routine dialog adds a second movement after the dialog is already in place. Decide what that second movement conveys.",
-    riskWhenIgnored: "Movement that repeats with every minor update can compete with the item the user is trying to read. Essential feedback also needs a recognizable end state.",
+    whyItMatters: "The Details panel slides in from the right, showing which edge it belongs to. The dialog grows to 115% of its final size and shrinks back. That bounce draws attention to the frame while someone is trying to read.",
+    riskWhenIgnored: "A bounce on every open draws attention back to the dialog frame while someone is trying to read its contents.",
     implementationNotes: [
       "Describe the change the user should notice.",
       "Match a directional transition to the panel’s actual placement.",
       "Compare the transition with an immediate change and inspect what information disappears.",
     ],
     reviewPrompts: [
-      "Can someone explain where the drawer went?",
+      "Can someone tell which edge the Details panel came from?",
       "Does the animation call attention to the right event?",
       "Does the end state communicate the result with reduced motion enabled?",
     ],
   },
   "motion-4": {
-    whyItMatters: "At the same duration, changing the curve redistributes the travel. One third of the way through this 360ms example, CSS ease covers about 58% of the distance and the stronger curve covers about 88%. Both finish at the same time. The choice changes how long the content stays far from its destination.",
+    whyItMatters: "Both curves finish in 360ms. At 120ms, CSS ease has covered about 58% of the distance and the stronger ease-out about 88%. The stronger curve keeps the panel near its final position for longer.",
     riskWhenIgnored: "A curve tuned for an 8px menu entrance can produce a jarring first movement on a wide panel. A keyword curve may already suit a short move.",
     implementationNotes: [
       "Keep distance and duration fixed for the comparison.",
@@ -1238,9 +1238,9 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     whyItMatters: "A toast introduces information on entry, but by dismissal the next task may already be underway. The example gives entry 220ms and exit 160ms. A drawer returning to its edge or a card moving into an archive may need more time and travel to show where it went.",
     riskWhenIgnored: "An exit can block the next click if its invisible layer still intercepts input. An exit that is too brief can hide where the object went.",
     implementationNotes: [
-      "Leave enough time to read a message. For routine dismissals, use a short fade or small movement so the next action gets the attention.",
-      "Keep focus on the person’s current task when a passive status toast appears or disappears. If a person dismisses it from a focused toast action, move focus to a logical surviving control.",
-      "Interrupt an entrance with a dismissal and check the result.",
+      "Keep the toast visible long enough to read. When someone dismisses it, use a short fade or slide.",
+      "Keep focus where it is when a passive toast appears or disappears. If someone dismisses it with a focused button inside the toast, move focus to the next control for their task.",
+      "Dismiss the toast mid-entrance. Does it leave from its current position?",
     ],
     reviewPrompts: [
       "Can the message be read before it goes away?",
@@ -1249,11 +1249,11 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-8": {
-    whyItMatters: "Feedback on contact lets a person see which control is under their finger. A small scale change can suit a compact icon button. The same factor moves the edges of a wide button much farther, and scaling the actual hit target can move it out from under a pointer near the edge.",
+    whyItMatters: "Feedback on contact shows that the button registered the press. A small scale change can suit a compact icon button. The same factor moves the edges of a wide button much farther, and scaling the actual hit target can move it out from under a pointer near the edge.",
     riskWhenIgnored: "Committing a destructive action on pointer down can take away the chance to slide off and cancel before release.",
     implementationNotes: [
       "Apply decorative scale to an inner surface when the outer hit area should stay fixed.",
-      "Use the native activation event for the action and the pressed state for feedback.",
+      "Run the button’s action on click. Use :active for the pressed appearance.",
       "Check keyboard activation, release outside and reduced motion.",
     ],
     reviewPrompts: [
@@ -1264,7 +1264,7 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
   },
   "motion-9": {
     whyItMatters: "Scaling a menu from zero makes every line pass through sizes too small to read. Starting at 95% of the final size keeps the text close to its resting geometry. On a small status glyph, the same relative change represents much less travel in pixels.",
-    riskWhenIgnored: "A person can reach for a control before its moving edges align with the visible destination. Oversized scaling also adds motion to a routine action.",
+    riskWhenIgnored: "As a menu grows from zero, its items move under the pointer. Someone reaching for a familiar item can hit the next row instead.",
     implementationNotes: [
       "Compare the same scale change on the smallest and largest surfaces.",
       "Try opacity alone when text moves noticeably.",
@@ -1277,8 +1277,8 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-10": {
-    whyItMatters: "A menu may open below its button in the middle of a page and above it at the bottom. A hardcoded top edge looks plausible in the first case and makes the second menu grow away from its button. The resolved placement gives the animation a stable reference.",
-    riskWhenIgnored: "A flipped panel can slide visually toward its trigger while the placement arrow points the other way. The two cues disagree.",
+    whyItMatters: "A menu below its button grows from its top edge. If it opens above the button, use its bottom edge. Keeping the origin at the top makes the menu grow toward the button from the wrong side.",
+    riskWhenIgnored: "If a menu opens above its button but grows from its top edge, it looks as though it came from farther up the page.",
     implementationNotes: [
       "Choose the origin after placement and collision handling.",
       "Use the positioning library’s resolved origin if it provides one.",
@@ -1291,21 +1291,21 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-11": {
-    whyItMatters: "Hovering briefly while traveling to another control is different from pausing to read a label. A short warmup handles the first case. A shared cooldown lets someone move between neighboring tools before that delay starts again. Keyboard focus is deliberate and can reveal the tip immediately.",
+    whyItMatters: "The first delay keeps tooltips from flashing as the pointer crosses the toolbar. Once a tooltip opens, a short grace period lets someone cross gaps between buttons without waiting again. Keyboard focus can show the tooltip immediately.",
     riskWhenIgnored: "Independent delays make a row of unfamiliar icons tedious to inspect. Hiding a tip as soon as the pointer leaves its trigger can also prevent someone from moving over the text to read it.",
     implementationNotes: [
-      "Share one warmup state across neighboring triggers.",
+      "Share the first-hover delay across neighboring toolbar buttons.",
       "Provide the information on keyboard focus and allow Escape to dismiss it.",
       "Keep the tip open while the pointer is over the trigger or its content where WCAG hover-content requirements apply.",
     ],
     reviewPrompts: [
-      "Does a pass across unopened tools avoid a flash of unwanted tips?",
+      "Do any tooltips flash when you move quickly across the toolbar?",
       "Can someone travel from a trigger onto its tip?",
       "After leaving and returning, does the initial delay reset?",
     ],
   },
   "motion-12": {
-    whyItMatters: "A toggle may receive another click before it finishes moving. A CSS transition uses the current interpolated value when the target changes. Replaying a new animation from a fixed endpoint loses that position. A retained Web Animation can reverse its timeline, preserving continuity.",
+    whyItMatters: "Select Move cards twice before the cards finish moving. The CSS transition turns back from its current position. Restarting keyframes from a fixed endpoint makes the card jump. With the Web Animations API, keep the Animation object and call reverse() on it.",
     riskWhenIgnored: "An interrupted toggle can jump ahead to a state it never visibly reached, then move back toward the requested one.",
     implementationNotes: [
       "Use a transition for two stable CSS states.",
@@ -1314,21 +1314,21 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
     reviewPrompts: [
       "Does the object jump when its destination changes?",
-      "Does the semantic state reflect the latest input?",
+      "After two quick reversals, does the control’s accessible state match its final setting?",
       "Can a stale completion handler undo a newer choice?",
     ],
   },
   "motion-13": {
-    whyItMatters: "A transition normally needs a previous computed style. A newly rendered row may have none. A starting style supplies that missing state in the cascade and lets the row settle into its normal style. A second render solely to toggle an animation class adds timing to coordinate.",
-    riskWhenIgnored: "A base style that keeps the row transparent until an effect runs can leave real content invisible when the script is delayed.",
+    whyItMatters: "When a row first appears, the browser may have no previous style to transition from. @starting-style supplies one, so the row can animate into its normal style without a second render to change its class.",
+    riskWhenIgnored: "If a row stays transparent until a script reveals it, someone can tab to its controls before seeing them.",
     implementationNotes: [
       "Define final opacity and position in the normal rule.",
-      "Place the starting declaration inside the row’s style rule, or target the row with a selector inside a standalone @starting-style block. At equal specificity, put the starting rule after the final declaration so its starting value wins.",
+      "Write the row’s final style first. Then nest @starting-style inside the row’s rule, or put the row selector inside a separate @starting-style block. At equal specificity, the later starting value wins on entry.",
       "Insert successive rows and test with animation disabled.",
     ],
     reviewPrompts: [
       "Does the row appear on its first insertion?",
-      "Is its ordinary computed style visible?",
+      "Can you see the row before a script runs to reveal it?",
       "Does removing the animation leave the information accessible?",
     ],
   },
@@ -1347,11 +1347,11 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-15": {
-    whyItMatters: "translateY(100%) moves an element by the height of its transform reference box. If a toast starts inset from the edge, moving one full height can leave that inset visible. An exit distance can combine a percentage with the known offset, or a surrounding container can clip the travel.",
-    riskWhenIgnored: "One fixed offset can hide a short message yet leave part of a translated or multi-line message on screen. A visually hidden control may also remain focusable.",
+    whyItMatters: "translateY(100%) moves a toast by its own height. If it starts 10px above the bottom edge, its top 10px can still be visible. Add the gap to the exit distance or clip the toast at its starting bottom edge.",
+    riskWhenIgnored: "A fixed exit distance can hide a short message but leave a longer, localized or wrapped message on screen. Even after the toast disappears, its controls can still receive focus.",
     implementationNotes: [
       "Identify the edge or clipping boundary the object must cross.",
-      "Test short, wrapped and translated content with the actual inset.",
+      "Test short, wrapped and localized messages with the actual inset.",
       "Remove the dismissed surface from interaction when its state changes.",
     ],
     reviewPrompts: [
@@ -1361,10 +1361,10 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-16": {
-    whyItMatters: "The hover media feature describes the primary pointing mechanism. A laptop with a trackpad and touch screen can satisfy this query while the person is tapping. The query is suitable for a CSS enhancement. An event-driven interaction that depends on the current pointer needs to inspect that event.",
-    riskWhenIgnored: "If the only sign of an action appears on hover, a person using a keyboard or touch screen can miss it. Synthesized hover can also leave decoration active after a tap.",
+    whyItMatters: "The hover media query describes the primary pointing device. A laptop with a trackpad can match it even while someone taps the screen. For scripted hover, check pointerType on the event.",
+    riskWhenIgnored: "If the only sign of an action appears on hover, a person using a keyboard or touch screen can miss it. A tap can leave a button looking hovered after the finger lifts.",
     implementationNotes: [
-      "Use (hover: hover) for primary-pointer hover decoration.",
+      "Use (hover: hover) to check whether the primary pointing device can hover.",
       "For scripted hover behavior, check the current pointer type and handle keyboard focus separately.",
       "Test with a mouse and touch on the same device.",
     ],
@@ -1375,10 +1375,10 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-17": {
-    whyItMatters: "Large movement can cause discomfort for some users. A message can arrive at its final location immediately and still communicate that an action succeeded. WCAG 2.3.3, a Level AAA criterion, addresses the ability to disable interaction-triggered motion animation unless it is essential.",
-    riskWhenIgnored: "Removing an animated checkmark without leaving a result can make a successful action indistinguishable from one that failed. An opacity change alone may also be too subtle to carry the message.",
+    whyItMatters: "Large movements can cause discomfort. A confirmation toast can fade in place and still show that the action succeeded. WCAG 2.3.3 (Level AAA) requires a way to disable nonessential motion triggered by interaction.",
+    riskWhenIgnored: "If success appears only as an animated checkmark, removing the animation can erase the confirmation. Keep a message or icon visible after the fade.",
     implementationNotes: [
-      "Start with the final content and add movement only when appropriate.",
+      "Build the final state first. Add movement inside @media (prefers-reduced-motion: no-preference).",
       "Use @media (prefers-reduced-motion: reduce) in CSS and matchMedia(\"(prefers-reduced-motion: reduce)\") for scripted animations.",
       "Preserve status announcements for results that assistive technology should report.",
     ],
@@ -1389,12 +1389,12 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-18": {
-    whyItMatters: "Dragging slowly past a visible threshold gives a person spatial feedback. A fast flick in the dismissal direction can express the same intent with less travel. An old velocity sample can misread a drag that moved quickly, paused and then released.",
+    whyItMatters: "A slow drag past the 60% line and a short flick faster than 0.5 px/ms toward the edge both dismiss the card. Measure speed just before release so a drag that ends in a pause doesn’t count as a flick.",
     riskWhenIgnored: "High sensitivity can dismiss an item during scrolling or a small correction. If the gesture is the only way to dismiss, people who cannot drag have no equivalent action.",
     implementationNotes: [
       "Measure recent movement along the dismissal axis and settle on release.",
       "Test a quick flick, slow drag, reversal and flick followed by a pause.",
-      "Offer an ordinary dismiss control and a way to recover where loss matters.",
+      "Provide a Dismiss button. If dismissal removes something important, let people undo it.",
     ],
     reviewPrompts: [
       "Does a stationary release below the distance threshold keep the card?",
@@ -1403,12 +1403,12 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-19": {
-    whyItMatters: "When a custom draggable card reaches a meaningful limit, moving it less for each additional pixel of pull can make the boundary tangible. A thumb beyond a slider’s maximum can imply a value the control cannot store, so keep numerical sliders in their valid range.",
-    riskWhenIgnored: "Unbounded overdrag can resemble valid progress. A spring that settles far from the value the application commits makes the control feel inaccurate.",
+    whyItMatters: "Past a card’s drag limit, each extra pixel of pull moves the card a little less. A slider thumb that moves past its maximum suggests a value it cannot save, so keep it within range.",
+    riskWhenIgnored: "Dragging past a slider’s limit can suggest a value it cannot save. On release, the control should show the saved value.",
     implementationNotes: [
       "Define the visual limit from a meaningful boundary such as a drawer’s last snap point.",
       "Cap visual travel beyond the edge and preserve the valid underlying value.",
-      "Give a clear release destination and a reduced-motion settle.",
+      "Return the card to its resting position on release. With reduced motion enabled, return it immediately.",
     ],
     reviewPrompts: [
       "What does movement beyond the edge mean here?",
@@ -1417,12 +1417,12 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-20": {
-    whyItMatters: "Pointer capture retargets events for a particular active pointer to the capture element. A mouse drag can then continue outside the handle. Direct-manipulation devices may supply implicit capture, so a touch demo alone can conceal a missing capture path.",
+    whyItMatters: "Pointer capture keeps sending the drag element events from the pointer that started the drag, even outside the handle. Touch input can capture a pointer automatically, so also test with a mouse.",
     riskWhenIgnored: "If a second contact overwrites the active pointer or a canceled drag follows the commit path, the handle can jump or submit an unintended change.",
     implementationNotes: [
       "Record the active pointerId and call setPointerCapture(pointerId) on the drag element when the drag starts.",
-      "Choose touch-action to preserve the page gestures the control does not own.",
-      "Handle pointerup, pointercancel and lostpointercapture with idempotent cleanup.",
+      "Choose touch-action for the gestures the page still needs. On a horizontal drag surface, pan-y preserves vertical scrolling.",
+      "Clean up on pointerup, pointercancel and lostpointercapture. Make cleanup safe to run twice. If release triggers an action, skip it on cancellation.",
       "For a slider, let a tap on the track set the value as well. Check the keyboard path and the single-pointer path separately.",
     ],
     reviewPrompts: [
@@ -1432,36 +1432,36 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
   },
   "motion-21": {
-    whyItMatters: "The example moves both indicators across the same distance. One gets a destination once. The other receives a transform write in each animation-frame callback. During a long JavaScript task those callbacks cannot run. The second indicator advances to the current position when the thread becomes available.",
+    whyItMatters: "Both cards travel the same distance. The CSS transition gets its destination once. JavaScript moves the other card in requestAnimationFrame callbacks. A long task blocks those callbacks, so that card pauses and then jumps ahead.",
     riskWhenIgnored: "A smoothly moving indicator can mask an unresponsive application. Keyboard input and event handlers can still wait behind the same long task.",
     implementationNotes: [
-      "Use a transition when the start and destination are known. For scripted pause, reverse or cancellation, element.animate() returns an Animation controller. Keep that handle and handle cancellation separately from completion.",
+      "Use a transition when the endpoints are known. For scripted playback, keep the Animation object returned by element.animate() so you can pause, reverse or cancel it. Handle cancellation separately from completion.",
       "Record the animation and check whether the browser actually composites it.",
       "Break up or remove long main-thread tasks so input can be handled promptly.",
     ],
     reviewPrompts: [
       "Which updates require JavaScript on every frame?",
       "Does the indicator actually keep moving on the target device?",
-      "Can the user activate the destination during the work?",
+      "How long does a click or keypress wait during a long task?",
     ],
   },
   "motion-24": {
-    whyItMatters: "Three rows with a 220ms entrance and 60ms between starts finish in 340ms. At 220ms between starts, the last finishes at 660ms. Extending either pattern to a long list changes when later items can be seen, even if the first row feels responsive.",
+    whyItMatters: "Three rows with a 220ms entrance and 60ms between starts finish in 340ms. At 220ms between starts, the last finishes at 660ms. With thirty rows, the last would finish at 1,960ms or 6,600ms respectively.",
     riskWhenIgnored: "A search result can already accept clicks while its opacity is zero. Keyboard focus can also advance to a row that has not become visible.",
     implementationNotes: [
       "Sequence items only when their order explains a relationship or change. Show a familiar dialog together when people need its title and action immediately.",
-      "Budget for the last useful item. For an even stagger, add the item duration to the interval times the number of gaps. Cap the animated group or start the remaining items together.",
-      "Ensure a focused or actionable item is visible immediately.",
+      "Budget for the last useful item. For evenly spaced starts, the last row finishes at duration + interval × (rows − 1). Cap the animated group or start the remaining items together.",
+      "Show each row before it can receive focus or clicks.",
     ],
     reviewPrompts: [
-      "How long does the last useful item take to appear?",
+      "When does the last row finish its entrance?",
       "What happens when the list has thirty items?",
       "Can someone tab to or click an invisible result?",
     ],
   },
   "motion-28": {
     whyItMatters: "Two glyphs in one stable slot can communicate a state change without shifting the label or pointer target. In the matched crossfades, the sharp check is recognizable sooner than the blurred one. The final state still needs to make sense to someone who looks back after the transition.",
-    riskWhenIgnored: "An icon can animate beautifully and still leave an assistive-technology user unaware of completion. A long blur can also obscure the one cue a sighted user needs.",
+    riskWhenIgnored: "A checkmark alone can leave a screen reader user unaware that the action succeeded. Blurring it also makes the confirmation harder to recognize as it appears.",
     implementationNotes: [
       "Keep both glyphs inside one fixed-size slot. Swap instantly if the state is already clear, or use a short crossfade that keeps the incoming glyph legible at its actual size.",
       "Give the resulting control or status an appropriate accessible name, state or announcement.",
@@ -1469,79 +1469,79 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     ],
     reviewPrompts: [
       "Can someone identify the final state after looking away?",
-      "Does the control retain its name and focus during the swap?",
+      "Does focus stay on the control, and does its accessible name still describe its action?",
       "Does the glyph remain understandable without movement?",
     ],
   },
   "motion-29": {
-    whyItMatters: "On refresh, a persistent control has no preceding on-screen position to transition from. Delaying its opacity hides something the application already knows how to render. Content that genuinely arrives later can use an entrance to show what changed.",
+    whyItMatters: "On refresh, a persistent control has no preceding on-screen position to transition from. Fading it in hides a control the page could already show. Content that genuinely arrives later can use an entrance to show what changed.",
     riskWhenIgnored: "On a frequently revisited screen, entrance effects can briefly hide the controls needed to resume work or make a restored focus target difficult to locate.",
     implementationNotes: [
-      "Render the initial state visibly in the first usable page.",
+      "Show ready controls at full opacity and in their final position on first paint.",
       "With Motion for React, AnimatePresence initial={false} skips initial animations on children present at first render.",
       "Test refresh, restored state and a later insertion separately.",
     ],
     reviewPrompts: [
       "Which content is known before the first render?",
       "Can the user locate the initial focus target immediately?",
-      "Does the later insertion still communicate a meaningful change?",
+      "When a new item appears, can you tell what was added?",
     ],
   },
 
   // ── Accessibility & inclusivity ──────────────────────────────────
   "a11y-1": {
-    whyItMatters: "A person tabbing across a billing dialog needs to tell whether the next activation will choose Cancel or Delete. The browser’s native indication can do that. Replacing it makes the product responsible for preserving that information in its custom colors and high-contrast modes.",
-    riskWhenIgnored: "A ring with sufficient contrast on white can disappear against a nearby fill or be clipped by an overflow container. A box shadow alone may also disappear in forced-colors mode.",
+    whyItMatters: "The outline on Save changes shows which button Enter will activate. If you replace the browser’s outline, check yours on every background and in high-contrast modes.",
+    riskWhenIgnored: "A focus ring can disappear against a colored background or be clipped by a parent with overflow: hidden. Forced-colors mode can also hide a ring drawn with box-shadow alone.",
     implementationNotes: [
-      "Keep the native outline or supply an equally discernible indicator.",
-      "Check author-styled focus against the relevant adjacent colors and test forced colors.",
-      "Tab past sticky headers and footers in both directions. WCAG 2.4.11 at AA also addresses focused components entirely hidden by author-created content.",
-      "Use :focus-visible where appropriate and respect the browser’s input heuristics, including text controls focused by pointer.",
+      "Keep the browser’s focus outline or replace it with one that’s just as easy to see.",
+      "Check a custom focus ring against every color it touches and in forced-colors mode.",
+      "Use Tab and Shift+Tab to move past sticky headers and footers. Check that neither completely hides the focused control (WCAG 2.4.11, level AA).",
+      "Use :focus-visible to follow the browser’s focus cues. Clicking a text field can show the focus ring too.",
     ],
     reviewPrompts: [
-      "Can someone locate focus throughout the keyboard path?",
+      "As you tab through the page, can you always see which control has focus?",
       "Is the indicator distinguishable wherever it is drawn?",
       "Does it remain visible under zoom, clipping and forced colors?",
     ],
   },
   "a11y-2": {
-    whyItMatters: "Changing a border from gray to red marks a difference in hue, but it tells someone little about how to correct a card number. A specific message conveys both the affected field and the reason for the rejection. An icon can make that message easier to find.",
-    riskWhenIgnored: "Two equally dark status dots can be indistinguishable in monochrome. Even someone who distinguishes both colors may still have to remember which one means pending.",
+    whyItMatters: "“Card number needs 16 digits, not 14” tells the reader which field to fix and why. The icon helps them find the message even in grayscale.",
+    riskWhenIgnored: "In grayscale, the red border looks gray. Without a message, the reader has to guess what’s wrong with the card number.",
     implementationNotes: [
       "Use text, shape, pattern or another suitable cue for the meaning carried by color.",
-      "Identify form errors in text and associate the explanation with the control.",
-      "Inspect without color and check labels with assistive technology.",
+      "Explain the error in text and connect the message to the field, for example with aria-describedby.",
+      "View the field in grayscale. Then focus it with a screen reader and listen for the error message.",
     ],
     reviewPrompts: [
-      "Can someone tell the two states apart without their hues?",
+      "Can you tell the two states apart in grayscale?",
       "Does the message explain what needs correcting?",
-      "Does the nonvisual presentation carry the same meaning?",
+      "When you focus the field with a screen reader, do you hear the error message?",
     ],
   },
   "a11y-3": {
-    whyItMatters: "The preview places a tap three pixels past Cancel. With an eight-pixel gap it lands on neither button. With adjacent buttons it lands on Delete. Both targets are already 44px high, so the example illustrates error tolerance beyond simply meeting a size criterion.",
-    riskWhenIgnored: "A toolbar can show ample space between visible glyphs while their invisible hit boxes overlap. Conversely, adjacent large segments can be usable without an eight-pixel gap.",
+    whyItMatters: "Both buttons are 44px tall. A tap 3px past Cancel lands in the 8px gap. When the buttons touch, the same tap lands on Delete.",
+    riskWhenIgnored: "Toolbar icons can look well spaced while their hit areas overlap. Large adjacent buttons can be easy to tap without an 8px gap.",
     implementationNotes: [
       "Measure hit areas as well as glyphs.",
-      "For targets below 24 × 24 CSS px, apply the WCAG 2.5.8 spacing test or its other exceptions.",
-      "Separate high-cost competing actions and try the arrangement on the intended touchscreen.",
+      "If a target falls short of 24 × 24 CSS pixels, check the spacing exception in WCAG 2.5.8. Center a 24px-diameter circle on each undersized target’s bounding box. Unless another exception applies, each circle must avoid overlapping other targets and other undersized targets’ circles.",
+      "Separate actions that are costly to confuse, such as Cancel and Delete. Test them on the intended touchscreen.",
     ],
     reviewPrompts: [
       "Where does a near miss land?",
       "Do expanded hit areas overlap?",
-      "Is the protection appropriate to the cost of choosing the wrong action?",
+      "Could a tap just past Cancel trigger Delete?",
     ],
   },
   "a11y-4": {
-    whyItMatters: "Moving Book room up one place takes a single tap when the row has a Move up button. Keeping that path alongside the drag handle lets someone change the order without holding a pointer down while moving it.",
+    whyItMatters: "One tap on Move up moves Book room one place. Someone who can tap but struggles to hold and drag can still reorder the list.",
     riskWhenIgnored: "Someone who can tap a task but can’t hold it steady while dragging may release it into the wrong position or leave the list unchanged.",
     implementationNotes: [
       "Search for draggable, onDragEnd and pointer handlers that change positions. For each outcome, trace a click or tap path to the same update.",
       "Use Move up and Move down for a list, a destination menu for a board, or step buttons or a value field for a slider. A sequence of individual clicks or taps can reach the same outcome as one drag.",
-      "WCAG 2.5.7 excepts essential drags, such as drawing a freehand path, and unmodified browser behavior. Check keyboard access separately under sys-8.",
+      "WCAG 2.5.7 allows exceptions for essential dragging and drag behavior the browser provides unchanged. Check keyboard access separately under sys-8.",
     ],
     reviewPrompts: [
-      "On a touch screen, tap Move up once on Book room in position 2. Does it reach position 1 without holding or dragging?",
+      "In your reorderable list, tap Move up once on the item in position 2. Does it move to position 1?",
       "Can taps reach every destination or value the drag can reach?",
       "Do both input paths produce the same saved order or value?",
     ],
@@ -1552,54 +1552,54 @@ export const ruleDeepDives: Record<string, RuleDeepDive> = {
     implementationNotes: [
       "Inspect the rendered h1–h6 elements and any role=heading with aria-level in DOM order. Compare each level with the section the heading introduces.",
       "Use native heading elements and give design system components separate heading-level and text-style props.",
-      "Go down one level when opening a subsection. After finishing it, return to the level of the next section, even if that closes several nested sections.",
+      "Give each subsection the next heading level, such as h3 under h2. When the subsection ends, use the level of the next section.",
     ],
     reviewPrompts: [
-      "Open Settings, then open the screen reader’s heading list. Does it read Settings at level 1, Billing at level 2 and Invoices at level 3?",
+      "Open your page’s heading list in a screen reader. Do the levels show how sections nest, as Settings (1), Billing (2) and Invoices (3) do here?",
       "If the designer shrinks Billing, does it stay a level 2 heading?",
       "Do sections at the same depth use the same heading level?",
     ],
   },
   "a11y-6": {
     whyItMatters: "The testimonial strip replaces the quote while someone is reading the shared-calendar instructions just below it. Pause holds the current quote so the person can finish either passage at their own pace.",
-    riskWhenIgnored: "A reader can lose the end of a testimonial before finishing the sentence, and each replacement can draw attention away from the instructions.",
+    riskWhenIgnored: "A quote can change before someone finishes reading it. Each change can also distract them from the calendar instructions.",
     implementationNotes: [
       "Search for autoplay, setInterval and polling callbacks in carousels, tickers and live feeds. Follow each start path and check which user control can stop the visible change.",
       "Put a visible, keyboard-operable Pause control with the strip and show whether rotation is paused. Keep it paused until the reader resumes it.",
-      "WCAG 2.2.2 applies the five-second threshold to automatic movement, blinking or scrolling alongside other content. Automatic updates alongside other content have their own clause at any interval, including the option to control update frequency. Both clauses except essential activity.",
+      "For nonessential content that starts automatically alongside other content, WCAG 2.2.2 sets two tests. Movement, blinking or scrolling lasting over 5 seconds needs a way to pause, stop or hide it. Automatic updates need one of those controls at any interval, or a way to change the frequency.",
     ],
     reviewPrompts: [
-      "Load the strip, wait for a quote to change, then use Tab and Space to pause it. After two four-second intervals, is the same quote still visible?",
+      "In your own rotating strip, tab to Pause and press Space. With a 4-second interval, does the same quote stay visible for two intervals?",
       "Does the strip stay paused when focus leaves the control?",
       "Can someone tell that the strip is paused before resuming it?",
     ],
   },
   "a11y-7": {
     whyItMatters: "The sharing guide is linked inside a sentence about file access. The underline marks where the link begins and ends, even when its blue looks like the surrounding ink.",
-    riskWhenIgnored: "A reader who can’t distinguish the two hues can read the sentence and miss the route to the sharing guide.",
+    riskWhenIgnored: "Someone who can’t distinguish the link color may read “sharing guide” without realizing it opens the guide.",
     implementationNotes: [
-      "Inspect prose links with a DOM query for p a[href] and check their computed text-decoration-line. Check for a reset such as no-underline or text-decoration: none in the default and visited states.",
+      "Check inline links in paragraphs, lists and captions. Look for no-underline or text-decoration: none in the default and visited states.",
       "Keep underlines on prose links at rest. Navigation menus can omit them when placement already makes their links recognizable.",
-      "If you use the G183 alternative, give the link at least 3:1 contrast against the surrounding text and add a non-color cue on both hover and keyboard focus. Check contrast against the background separately.",
+      "If color alone marks an inline link, WCAG technique G183 calls for at least 3:1 contrast with the surrounding text. Check both text colors against the background separately.",
     ],
     reviewPrompts: [
       "Turn on grayscale, move the pointer off the paragraph and read the sentence. Can you find the sharing guide link before interacting with it?",
       "Does a visited inline link retain an underline or a sufficient visual cue at rest?",
-      "If a prose link uses G183, does the contrast pass at rest, and does the cue appear on both hover and focus?",
+      "If color alone marks a link, does it reach 3:1 contrast with surrounding text before anyone interacts with it?",
     ],
   },
   "a11y-8": {
     whyItMatters: "After closing the edit dialog for Quarterly report, someone using a keyboard is still working in that project row. Returning focus to Edit keeps their place so they can continue through the project list.",
     riskWhenIgnored: "If focus falls back to the page body, the next Tab can land on New project at the top and make the user search for the row again.",
     implementationNotes: [
-      "Use the overlay primitive’s focus restoration if it provides it. For custom overlays, remember the opener and restore focus after the background is available again.",
-      "Inspect document.activeElement after Escape, cancel and save. A body result or a jump to the first page control on the next Tab can reveal dropped focus.",
-      "If saving or deleting removes the opener, focus an action in the next row once the list updates. If no row remains, use a stable control such as New project.",
+      "Use your dialog component’s built-in focus restoration if available. For a custom dialog, save the opener and focus it once the page behind the dialog can receive focus again.",
+      "Check document.activeElement after Escape, Cancel and Save. If focus falls to the page body or the next Tab jumps to the first control, check where the dialog restores focus.",
+      "If deleting a row removes its Edit button, focus Edit in the next row. Use the previous row if you deleted the last one, or New project if the list is empty.",
     ],
     reviewPrompts: [
-      "Tab to Edit for Quarterly report, press Enter, then Esc. Is the focus outline back on Edit before you press Tab again?",
+      "In your project list, open an edit dialog with the keyboard and press Escape. Is focus back on the row’s Edit button before you press Tab again?",
       "Do Cancel and Save also put focus where the task should continue?",
-      "Delete the row from the dialog. Does focus land on the next logical control after the row disappears?",
+      "If your dialog can delete a row, try deleting the last one. Can you continue from the previous row or, in an empty list, from New project?",
     ],
   },
 };

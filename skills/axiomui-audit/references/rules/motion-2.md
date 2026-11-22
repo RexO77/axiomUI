@@ -1,21 +1,24 @@
-# Keep keyboard input responsive
+# Focus the palette field on open
 
 - ID: motion-2
 - Category: Motion & interaction
 - Tags: Keyboard, Perceived performance
 - URL: https://axiomui.nischal.fyi/rules/motion-2
 
-When a shortcut opens a command palette, move focus into the field and accept the next keystroke while the panel settles.
+When a shortcut opens a command palette, focus its field immediately so people can type while it opens.
 
 - Do: Focus on open. First keystrokes land.
-- Don't: Focus after entrance. First keystrokes are lost.
+- Don’t: Focus after entrance. First keystrokes are lost.
 
 ## Why it works
 
-Opening a palette and typing a query is one keyboard sequence. Both palettes share the same entrance, and the field focused on open receives the first keystrokes. Waiting for the panel to settle can send those characters to the previous control.
+Both palettes take 180ms to open. Halfway through, the example types “op”. The field focused on open shows both letters. The field focused after the entrance stays empty.
 
 - [WAI-ARIA APG · Modal dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/)
-- [web.dev · Interaction latency and presentation delay](https://web.dev/articles/optimize-inp)
+- [WHATWG HTML · Focus](https://html.spec.whatwg.org/multipage/interaction.html#focus)
+- [Apple HIG · Motion](https://developer.apple.com/design/human-interface-guidelines/motion)
+- [WCAG 2.2 · Focus visible](https://www.w3.org/WAI/WCAG22/Understanding/focus-visible.html)
+- [Emil Kowalski · You Don’t Need Animations](https://emilkowal.ski/ui/you-dont-need-animations)
 
 ## What breaks
 
@@ -23,11 +26,11 @@ A missing first character sends the user into a different set of results. Escape
 
 ## How to apply it
 
-1. Choose the initial focus target when mounting the panel.
+1. Focus the field as soon as the panel mounts.
 2. Keep the input and its focus indicator visible while typing.
 3. Open, type and dismiss without pausing between keys.
 
-## Review questions
+## Before you ship
 
 1. Does the first character appear in the query?
 2. Where does focus return after Escape during entry?

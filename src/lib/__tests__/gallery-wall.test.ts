@@ -180,9 +180,9 @@ describe("the gallery wall, server-rendered", () => {
     const deck = searchDeck("border");
     const filtered = parse(render({ q: "border", visible: new Set(deck.rules.map((rule) => rule.id)) }));
     const shown = all(filtered, (n) => "data-rule-link" in n.attrs && !hiddenUp(n)).map((tile) => tile.attrs["data-rule"]);
-    expect(shown).toEqual(["layout-7", "a11y-2", "color-6", "color-12", "motion-8"]);
+    expect(shown).toEqual(["layout-7", "a11y-2", "color-6", "color-12", "comp-3", "motion-8"]);
     const sections = all(filtered, (n) => n.tag === "section" && !("hidden" in n.attrs)).map((section) => section.attrs.id);
-    expect(sections).toEqual(["layout", "color", "motion"]);
+    expect(sections).toEqual(["layout", "color", "components", "motion"]);
   });
 
   it("shows a collection in its deck's order, in its own groups, each tile once", () => {

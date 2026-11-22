@@ -8,27 +8,29 @@
 Use @starting-style for a CSS transition on newly rendered content. Leave the normal style visible so the content remains usable if the entry animation is skipped.
 
 - Do: .row { @starting-style { opacity: 0 } }
-- Don't: useEffect(() => setShown(true))
+- Don’t: Row appears immediately on insertion
 
 ## Why it works
 
-A transition normally needs a previous computed style. A newly rendered row may have none. A starting style supplies that missing state in the cascade and lets the row settle into its normal style. A second render solely to toggle an animation class adds timing to coordinate.
+When a row first appears, the browser may have no previous style to transition from. @starting-style supplies one, so the row can animate into its normal style without a second render to change its class.
 
 - [CSS Transitions · Defining a starting style](https://www.w3.org/TR/css-transitions-2/#defining-before-change-style)
+- [MDN · The @starting-style at-rule](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/%40starting-style)
+- [Chrome Developers · Entry and exit animations](https://developer.chrome.com/blog/entry-exit-animations)
 - [React · When effects run](https://react.dev/reference/react/useEffect#caveats)
 
 ## What breaks
 
-A base style that keeps the row transparent until an effect runs can leave real content invisible when the script is delayed.
+If a row stays transparent until a script reveals it, someone can tab to its controls before seeing them.
 
 ## How to apply it
 
 1. Define final opacity and position in the normal rule.
-2. Place the starting declaration inside the row’s style rule, or target the row with a selector inside a standalone @starting-style block. At equal specificity, put the starting rule after the final declaration so its starting value wins.
+2. Write the row’s final style first. Then nest @starting-style inside the row’s rule, or put the row selector inside a separate @starting-style block. At equal specificity, the later starting value wins on entry.
 3. Insert successive rows and test with animation disabled.
 
-## Review questions
+## Before you ship
 
 1. Does the row appear on its first insertion?
-2. Is its ordinary computed style visible?
+2. Can you see the row before a script runs to reveal it?
 3. Does removing the animation leave the information accessible?

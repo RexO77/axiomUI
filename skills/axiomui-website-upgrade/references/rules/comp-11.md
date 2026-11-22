@@ -1,34 +1,37 @@
-# Size a card’s primary link
+# Make a one-link card clickable throughout
 
 - ID: comp-11
 - Category: Components & actions
 - Tags: Click targets, Navigation
 - URL: https://axiomui.nischal.fyi/rules/comp-11
 
-A card with one destination can offer a generous link target. On a card with multiple actions, give each an independent target and preserve text selection where readers need it.
+When a card has one destination, let the whole card open it. Give additional actions their own targets and keep text selectable where readers need to copy it.
 
-- Do: Single-destination card with a card-sized target
-- Don't: Card looks clickable, only its title responds
+- Do: The whole card links to the article
+- Don’t: Only the article title is clickable
 
 ## Why it works
 
-If the image, heading and whitespace all advertise the same destination, a generous target matches that promise. Cards containing a menu, a checkbox or another link require distinct interaction areas.
+If the image, title and padding all suggest one link, readers expect any of them to open it. A menu, checkbox or second link needs its own target.
 
 - [HTML · Links and nested interactive content](https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-a-element)
+- [New York State Design System · Interactive cards](https://designsystem.ny.gov/components/card/)
+- [Inclusive Components · Cards](https://inclusive-components.design/cards/#thepseudocontenttrick)
 - [WCAG 2.2 · Target size (minimum)](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html)
+- [NICE Design System · Clickable cards](https://design-system.nice.org.uk/components/card/)
 
 ## What breaks
 
-An invisible link stretched over an entire card can intercept its Save button or block selecting a tracking number. A generic clickable container can also lose native link features such as opening in a new tab.
+If only the title is linked, clicking the card’s padding does nothing. Stretching a link over a Save button can block that button or prevent text selection. A clickable div also loses the browser’s link menu.
 
 ## How to apply it
 
 1. Use a native link with a concise, descriptive name for navigation.
-2. Keep other interactive elements outside that link, with independently reachable targets.
+2. Keep buttons, checkboxes and other links outside the card link so each can receive clicks and keyboard focus.
 3. Check the image, padding, text selection, context menu and keyboard focus in the rendered card.
 
-## Review questions
+## Before you ship
 
-1. Does the visual affordance agree with the clickable area?
+1. Can readers click anywhere the card looks clickable?
 2. Can each secondary action be operated independently?
 3. Can readers select text that they may need to copy?

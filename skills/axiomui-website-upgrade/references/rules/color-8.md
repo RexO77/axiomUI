@@ -5,16 +5,20 @@
 - Tags: Dark mode, Surfaces, System
 - URL: https://axiomui.nischal.fyi/rules/color-8
 
-Define dark-theme colors for text, surfaces, states, and media. Lighter raised surfaces can distinguish layers when dark shadows are subtle. Tune the accent against its surroundings and preserve meaningful image colors.
+Choose dark-theme colors for each role. A lighter card stands out against a dark page. Adjust the accent for its background and keep photos in their original colors.
 
-- Do: bg neutral-900 / card neutral-800 / brand sat 91% → 55%
-- Don't: filter: invert(1) on the whole page
+- Do: Page neutral-900 · card neutral-800 · blue saturation 91% → 55%
+- Don’t: filter: invert(1) on the whole page
 
 ## Why it works
 
-In the storage card, the raised panel needs to separate from its page and the usage bar needs to stay legible on its track. Those are two different color decisions. A page-wide inversion would also change the colors of the image preview.
+The lighter storage card stands out against the dark page. A muted blue keeps the usage bar visible on its track. Inverting the whole page also turns the file thumbnail into a negative.
 
+- [Apple HIG · Dark Mode](https://developer.apple.com/design/human-interface-guidelines/dark-mode)
 - [Atlassian · Elevation](https://atlassian.design/foundations/elevation)
+- [web.dev · Prefers-color-scheme](https://web.dev/articles/prefers-color-scheme)
+- [Filter Effects · Invert](https://www.w3.org/TR/filter-effects-1/#funcdef-filter-invert)
+- [IBM Carbon · Color themes](https://www.carbondesignsystem.com/building-blocks/foundations/color/overview)
 
 ## What breaks
 
@@ -23,11 +27,11 @@ A newly themed panel may look convincing on its own while merging into the page 
 ## How to apply it
 
 1. Compare page, card, and overlay colors as a stack.
-2. Measure text, icons, and meaningful graph elements on their own surfaces.
+2. Check the contrast of text, icons and chart marks against their backgrounds.
 3. Inspect photos and illustrative or monochrome assets separately.
 
-## Review questions
+## Before you ship
 
 1. Are the surface boundaries clear at each level?
-2. Can the usage indicator be read on the dark track?
-3. Is the preview still a faithful representation of the file?
+2. Can you see the usage bar against the dark track?
+3. Does the thumbnail preserve the colors of the original file?

@@ -4,19 +4,19 @@ Ask each question of the surface under review. Check the rule's description befo
 
 ## Prioritize the next action (`comp-1`)
 
-Give the next step in a task the strongest button treatment. When two choices deserve equal consideration, give them equal weight.
+Give the next step the only filled button in its group. Give equally important choices the same style.
 
-- Do: 1 filled + 1 outline + 1 ghost button · Don't: 3 filled buttons side by side
+- Do: 1 filled + 1 outline + 1 ghost button · Don’t: 3 filled buttons side by side
 - [ ] What is someone trying to finish here?
-- [ ] Can someone who wants to cancel find that option?
+- [ ] Can readers find Discard when they want to abandon their edits?
 - [ ] Is there a reason to recommend one of these choices?
 - Reasoning: `references/rules/comp-1.md`
 
 ## Confirm irreversible deletion (`comp-2`)
 
-Match the safeguard to the loss. Let people recover a reversible removal. Before permanent deletion, identify what will disappear and ask for an explicit decision.
+Offer Undo or a way to restore the item. Before permanent deletion, name what people will lose and ask them to confirm.
 
-- Do: Secondary “Delete project…” → red confirm · Don't: Red “Delete” in the row, no confirm
+- Do: “Delete project…” opens a confirmation naming atlas-api · Don’t: “Delete” removes the project immediately
 - [ ] Whose data changes?
 - [ ] Could the confirmation be mistaken for a harmless removal?
 - [ ] Can someone back out using only the keyboard?
@@ -24,39 +24,39 @@ Match the safeguard to the loss. Let people recover a reversible removal. Before
 
 ## Align nested corner radii (`comp-3`)
 
-For circular corners with an even inset, subtract the distance between the two painted edges from the outer radius. An outer radius of 12px and an 8px inset leave an inner radius of 4px.
+For circular corners with an even inset, subtract the inset from the outer radius. Measure between painted edges, including the border. With a 12px outer radius and an 8px inset, the inner radius is 4px.
 
-- Do: Outer 12px = Inner 4px + Inset 8px · Don't: Outer 4px and inner 4px with an 8px inset
+- Do: Outer 12px = Inner 4px + Inset 8px · Don’t: Outer 4px and inner 4px with an 8px inset
 - [ ] Which two edges should track each other?
-- [ ] Has the border been included in their separation?
+- [ ] Did you include the border in the inset?
 - [ ] Does the corner still read as an even inset at the smallest component size?
 - Reasoning: `references/rules/comp-3.md`
 
 ## Distinguish people from content (`comp-4`)
 
-Use a consistent shape for person avatars in mixed lists. A circular portrait beside a rectangular document thumbnail gives readers an extra cue about what each row represents.
+In a list of people and files, use circles for people and rectangles for files. Readers can tell the rows apart before reading their names.
 
-- Do: Avatar = circle, file = rectangle · Don't: Avatar = square, file = rectangle
+- Do: Initials in a circle, file icon in a rounded square · Don’t: Initials and file icon both in rounded squares
 - [ ] Can a reader distinguish a person from a file without recognizing the photo?
 - [ ] How does a team avatar differ from an individual in this system?
 - [ ] Does a missing image preserve the same identity cue?
 - Reasoning: `references/rules/comp-4.md`
 
-## Choose a surface for the task (`comp-5`)
+## Choose a dialog, side panel or full page (`comp-5`)
 
-Use a modal when the current decision needs exclusive attention. Use a side panel when the surrounding page helps someone compare or edit information. Choose a full page if either surface would leave too little working room.
+Use a modal dialog for a decision that needs full attention. Use a side panel when people need the page beside the form. Give the task a full page when it needs more room.
 
-- Do: Profile editor beside the visible record · Don't: Six profile fields in a one-row modal viewport
+- Do: All six profile fields visible beside the record · Don’t: Only one of six profile fields fully visible
 - [ ] Can the user see the information needed to finish?
 - [ ] Can they interact with the underlying page when the task calls for it?
-- [ ] Would a dedicated page give a complex task a clearer sequence?
+- [ ] Would a full page give this task enough room?
 - Reasoning: `references/rules/comp-5.md`
 
-## Place field errors beside the field (`comp-6`)
+## Show each error under its field (`comp-6`)
 
-Identify the field and explain how to fix it where the user can make the change. After submission, a linked error summary can also help people find several errors.
+At the field, say what went wrong and how to fix it. If submission reveals several errors, link to each field from a summary at the top.
 
-- Do: Invalid email = inline, under the field · Don't: Invalid email = toast, far from the field
+- Do: Invalid email = inline, under the field · Don’t: Invalid email = toast, far from the field
 - [ ] Can someone find the field from the summary?
 - [ ] Does the message explain a correction the user can actually make?
 - [ ] Can someone returning to the field still read the error?
@@ -64,90 +64,90 @@ Identify the field and explain how to fix it where the user can make the change.
 
 ## Label ambiguous actions (`comp-7`)
 
-Add visible text when an icon leaves the action open to interpretation. Give every icon-only button an accessible name that describes what it does.
+Add a visible label when an icon’s meaning is unclear. Give every icon-only button an accessible name that says what it does.
 
-- Do: Icon + label on every toolbar action · Don't: Icon only on every toolbar action
-- [ ] What else might this glyph mean in this context?
+- Do: Archive, Share and Delete with text labels · Don’t: Archive, Share and Delete as icons alone
+- [ ] What else could this icon mean here?
 - [ ] Can someone identify the action without hover?
 - [ ] Does the accessible name match the visible action?
 - Reasoning: `references/rules/comp-7.md`
 
 ## Explain unavailable actions (`comp-8`)
 
-When someone might reasonably try an unavailable action, explain the prerequisite beside it. A disabled button alone gives no indication of what to do next.
+When people are likely to try a disabled control, explain beside it what would make it available.
 
-- Do: Disabled + reason under the button · Don't: Disabled + no reason
+- Do: “Available on the Pro plan” below Export CSV · Don’t: Disabled + no reason
 - [ ] Is the cause apparent before trying the control?
 - [ ] Does the explanation say what can change the state?
 - [ ] Can keyboard and touch users find it?
 - Reasoning: `references/rules/comp-8.md`
 
-## Acknowledge a pending submission (`comp-9`)
+## Show when a submission is in progress (`comp-9`)
 
-Acknowledge a submission while it is pending and prevent accidental repeats. Keep “Saving” distinct from “Saved” until the service confirms the result.
+Show when a submission starts and block repeats while it’s pending. Show “Saved” only after the server confirms success.
 
-- Do: Spinner + disabled during submit · Don't: Static button allows double-click
+- Do: Submit dims and a spinner replaces its label · Don’t: Submit briefly shrinks, then looks ready again
 - [ ] Does the user know the request is still pending?
 - [ ] Can a retry create the same order twice?
 - [ ] Can someone recover after a timeout without re-entering the form?
 - Reasoning: `references/rules/comp-9.md`
 
-## Match icon scale within a toolbar (`comp-10`)
+## Match the size of related toolbar icons (`comp-10`)
 
-Use a shared icon size for controls with equal roles. Check their apparent weight at the actual toolbar size and size the hit areas independently.
+Start related icons at the same size. Check their visual weight in the toolbar and size the buttons’ hit areas separately.
 
-- Do: All toolbar icons: 20px · Don't: Mixed 16px, 20px, 24px icons in toolbar
+- Do: All toolbar icons: 20px · Don’t: 16px, 20px and 24px icons in one toolbar
 - [ ] Which actions belong to the same group?
 - [ ] Does one glyph dominate without a reason?
 - [ ] Can the button remain easy to hit even when the drawing is small?
 - Reasoning: `references/rules/comp-10.md`
 
-## Size a card’s primary link (`comp-11`)
+## Make a one-link card clickable throughout (`comp-11`)
 
-A card with one destination can offer a generous link target. On a card with multiple actions, give each an independent target and preserve text selection where readers need it.
+When a card has one destination, let the whole card open it. Give additional actions their own targets and keep text selectable where readers need to copy it.
 
-- Do: Single-destination card with a card-sized target · Don't: Card looks clickable, only its title responds
-- [ ] Does the visual affordance agree with the clickable area?
+- Do: The whole card links to the article · Don’t: Only the article title is clickable
+- [ ] Can readers click anywhere the card looks clickable?
 - [ ] Can each secondary action be operated independently?
 - [ ] Can readers select text that they may need to copy?
 - Reasoning: `references/rules/comp-11.md`
 
-## Make overlay dismissal discoverable (`comp-12`)
+## Show how to close a dialog (`comp-12`)
 
-Give dismissible dialogs a visible Close or Cancel action and support Escape. Choose outside-click behavior according to the cost of an accidental dismissal.
+Give dismissible dialogs a visible Close or Cancel button and support Escape. Allow a click outside to close the dialog when closing it loses no work.
 
-- Do: X button + backdrop close + Esc key · Don't: No close button, only backdrop click
+- Do: Close button, Escape or click outside · Don’t: No close button, only backdrop click
 - [ ] Can a keyboard user discover how to leave?
 - [ ] What happens to an unsaved edit after Escape or a backdrop click?
 - [ ] Where does focus land after dismissal?
 - Reasoning: `references/rules/comp-12.md`
 
-## Make the chart’s question answerable in text (`comp-13`)
+## State the chart’s main finding in words (`comp-13`)
 
-Identify what the chart shows and describe the comparison readers need. When the task calls for individual values, offer them in a labeled table or another accessible representation that follows the selected period.
+Name what the chart measures and summarize the main comparison. When exact values matter, make them available in a labeled table or another accessible format. Update both with the selected period.
 
-- Do: Summarize the trend and offer the monthly counts · Don't: Leave the trend and counts in the bars alone
+- Do: Trend in words, monthly counts in the interactive example · Don’t: Bars without a written summary or counts table
 - [ ] With the bars hidden, which queue grew over the selected period?
-- [ ] Can a reader find March’s billing count and identify its unit using the table headers?
+- [ ] With January through March selected, can readers find March’s Billing count and tell it represents tickets?
 - [ ] After changing the quarter, do the plotted values, summary and table still agree?
 - Reasoning: `references/rules/comp-13.md`
 
 ## Navigate with links, act with buttons (`comp-14`)
 
-If activating a control takes someone to another URL, make it a link with an href, however it is styled. The browser then offers Open in new tab and Copy link, and shows the address before the click. Keep buttons for actions that change something on the current page.
+Use a link with an href to open a destination. People can then copy its address or open it in another tab. Use a button to perform an action, even if it redirects afterward.
 
-- Do: <a href="/invoices/1042">View invoice</a> · Don't: <div onClick={() => router.push(…)}>
+- Do: `<a href="/invoices/1042">View invoice</a>` · Don’t: `<div onClick={() => router.push(…)}>`
 - [ ] Right-click the control. Does the menu offer Open link in new tab and Copy link address?
-- [ ] Hover the control, then Cmd-click or middle-click it. Does the status bar show the destination, and does a new tab open while this page stays where it was?
-- [ ] Does anything styled as a button change the URL, or anything styled as a link only change the current page?
+- [ ] Does hovering show the invoice address? Can you open it in another tab with Command-click on macOS, Ctrl-click on Windows or Linux, or a middle click?
+- [ ] Does “View invoice” expose a link to the invoice? Does “Save” submit the changes before leaving the page?
 - Reasoning: `references/rules/comp-14.md`
 
 ## Show the product doing what the headline promises (`comp-15`)
 
-When a page makes a product claim, show the product delivering it: a crop of the real interface or output at the moment the headline describes. A reader should be able to point at the proof in the image without reading further. Decorative art that would fit any product's headline proves nothing.
+Show the screen or output that delivers the headline’s claim. Crop it so the result is easy to see at the size the image appears.
 
-- Do: Headline + deploy #418 flagged in the product · Don't: Headline + floating avatars and a green check
+- Do: Headline + deploy #418 flagged in the product · Don’t: Headline + floating avatars and a green check
 - [ ] Cover the headline. What does the image alone show the product doing?
 - [ ] Swap a competitor’s name into the headline. Does the image still fit? If so, it proves nothing.
-- [ ] Point to the exact spot in the image that delivers the headline’s promise. Can someone else find it at the size the image ships?
+- [ ] At the smallest display size, can readers identify the flagged deploy and read the change in checkout errors?
 - Reasoning: `references/rules/comp-15.md`

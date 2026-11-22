@@ -5,17 +5,21 @@
 - Tags: Error handling, Feedback, Accessibility, WCAG
 - URL: https://axiomui.nischal.fyi/rules/sys-16
 
-A success message whose result is visible elsewhere can time out. A failure, or a message that holds the only Undo or Retry, stays until the person acts on it or closes it. Pause any timer while the message is hovered, focused or in a hidden tab.
+A success message whose result is visible elsewhere can time out. A failure, or a message that holds the only Undo or Retry, stays until the person acts on it or closes it. Pause the timer while the pointer is over the message, focus is inside it, or the tab is hidden.
 
-- Do: Upload failed · Retry stays until dismissed
-- Don't: Upload failed · Retry closes after 5s
+- Do: Upload failed · stays until Retry or dismissal
+- Don’t: Upload failed · message closes at 5s · Retry disappears
 
 ## Why it works
 
-Six seconds after an upload fails, the toast reporting it is the only place that offers Retry. If it is still on screen, the person can retry when they notice. If a five-second timer has already removed it, the failure and the way to fix it are both gone. A success message such as Saved can time out safely, because the saved result is visible elsewhere.
+Six seconds after the upload failed, one preview still offers Retry. In the other, the message disappeared after five seconds and took the only Retry button with it. A success message can time out when the saved result is visible elsewhere.
 
-- [WCAG 2.2 · Timing adjustable](https://www.w3.org/WAI/WCAG22/Understanding/timing-adjustable.html)
 - [IBM Carbon · Notification dismissal](https://www.carbondesignsystem.com/building-blocks/core/components/notification/guidelines)
+- [WCAG 2.2 · Timing adjustable](https://www.w3.org/WAI/WCAG22/Understanding/timing-adjustable.html)
+- [Radix Primitives · Toast](https://www.radix-ui.com/primitives/docs/components/toast)
+- [Sonner · Toast timer behavior](https://github.com/emilkowalski/sonner/blob/v2.0.7/src/index.tsx)
+- [MDN · Page Visibility API](https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API)
+- [WCAG 2.2 · Status messages](https://www.w3.org/WAI/WCAG22/Understanding/status-messages.html)
 
 ## What breaks
 
@@ -24,11 +28,11 @@ Someone who looked away, is reading with a screen magnifier or takes longer to r
 ## How to apply it
 
 1. Give each message a dismissal policy by type. Success confirmations whose result is visible elsewhere may close after a few seconds. Errors and any message holding the only Undo or Retry stay until the person acts on it or closes it, as Carbon’s inline and actionable notifications do.
-2. Pause any timer while the message is hovered or holds focus, and while the tab is hidden (`document.visibilityState === "hidden"`). Restart it, not resume a nearly expired one, when the person leaves. Announce the message through a live region, and make its actions reachable from the keyboard.
-3. To find violations, search for toast calls with a duration on an error or an action: `grep -rnE "toast\.(error|warning)|duration:|setTimeout\(.*(dismiss|close)" src`. Flag any error toast with a finite duration and any toast whose Undo or Retry has no other route, such as a Trash folder or a retry control on the item.
+2. Pause any timer while the message is hovered or holds focus, and while the tab is hidden (`document.visibilityState === "hidden"`). Restart the full timer once the tab is visible and neither the pointer nor keyboard focus is on the message. Announce the message through a live region, and make its actions reachable from the keyboard.
+3. Check error messages and messages offering Undo or Retry for dismissal timers, including library defaults. Flag any error that times out. If Undo or Retry times out, check where the person can still take that action.
 
-## Review questions
+## Before you ship
 
 1. Trigger the failure, then wait ten seconds without touching anything. Are the error and Retry still on screen?
-2. Trigger it again, rest the pointer on the toast, then tab to it. Does it stay put while hovered or focused?
-3. Trigger it, switch to another tab for a minute and come back. Is the message still there?
+2. Show a timed confirmation. Does it stay visible past its timeout while the pointer rests on it? Repeat with keyboard focus on an action.
+3. Show a timed confirmation and switch tabs for a minute. When you return, is the message still there for its full timeout?

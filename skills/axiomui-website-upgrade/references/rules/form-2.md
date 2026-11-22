@@ -5,16 +5,19 @@
 - Tags: Labels, Forms, Accessibility
 - URL: https://axiomui.nischal.fyi/rules/form-2
 
-Keep a visible label after typing or autofill. A placeholder can illustrate an entry, but it disappears precisely when someone needs to review the completed form.
+Give each field a label that stays visible after typing or autofill. Use the placeholder for an example that can disappear.
 
 - Do: Label: Work email / Placeholder: you@company.com
-- Don't: Label: none / Placeholder: Email address
+- Don’t: Label: none / Placeholder: Email address
 
 ## Why it works
 
-Returning to a filled address form, “London” could be the city of birth or a delivery destination. The field’s value cannot reliably tell the reader which question it answered.
+In a filled form, “London” could be a birthplace or a delivery city. A visible label tells you which answer you’re checking.
 
 - [HTML · The placeholder attribute](https://html.spec.whatwg.org/multipage/input.html#the-placeholder-attribute)
+- [NN/g · Placeholders in form fields](https://www.nngroup.com/articles/form-design-placeholders/)
+- [W3C WAI · Form instructions](https://www.w3.org/WAI/tutorials/forms/instructions/)
+- [GOV.UK · Text inputs](https://design-system.service.gov.uk/components/text-input/)
 
 ## What breaks
 
@@ -26,7 +29,7 @@ A browser can fill several fields before the user sees the placeholders. A scree
 2. Keep essential format instructions visible outside the placeholder.
 3. Review the form empty, partially filled and autofilled.
 
-## Review questions
+## Before you ship
 
 1. Can someone identify each filled field?
 2. Can they find its instructions while editing?

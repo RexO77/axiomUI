@@ -332,7 +332,7 @@ export function SkillBonus({ open, source, onOpenChange }: SkillBonusProps = {})
       panel.style.setProperty("--skill-surface-scale", fits ? `scale(${bounds.width / width}, ${bounds.height / height})` : "none");
       panel.style.setProperty("--skill-source-clip", fits
         ? `inset(0 ${Math.max(0, width - bounds.width)}px ${Math.max(0, height - bounds.height)}px 0 round var(--radius-sheet))`
-        : "inset(0 round var(--radius-sheet))");
+        : "inset(0 round var(--radius-bezel))");
     };
     measure();
     const observer = new ResizeObserver(measure);
@@ -502,7 +502,7 @@ export function SkillBonus({ open, source, onOpenChange }: SkillBonusProps = {})
       </div>
 
       <div role="region" aria-labelledby="skill-dialog-title" tabIndex={0}
-        className="min-h-0 flex-1 overflow-y-auto overscroll-contain focus-visible:-outline-offset-2">
+        className="skill-preview-body min-h-0 flex-1 overflow-y-auto overscroll-contain focus-visible:-outline-offset-2">
         <article className="skill-playbook mx-auto max-w-[72ch] px-5 py-5 sm:px-7 sm:py-6">
           <header>
             <p className="text-sm font-medium text-ink-muted">
@@ -514,10 +514,10 @@ export function SkillBonus({ open, source, onOpenChange }: SkillBonusProps = {})
               tabIndex={-1}
               className="mt-2 text-2xl font-semibold tracking-tight text-ink outline-none sm:text-3xl md:text-4xl"
             >
-              Website playbook
+              Website upgrade playbook
             </h2>
             <p className="mt-3 max-w-2xl text-pretty text-sm leading-6 text-ink-secondary sm:mt-4 sm:text-base sm:leading-[26px]">
-              The decision framework for auditing, implementing and verifying sharper interfaces, as one file.
+              Five steps to review a website, fix problems in code and verify the changes.
             </p>
           </header>
 
@@ -533,7 +533,7 @@ export function SkillBonus({ open, source, onOpenChange }: SkillBonusProps = {})
 
           {previewState === "error" ? (
             <div className="flex min-h-48 flex-col items-center justify-center gap-3 text-center text-sm text-ink-muted">
-              <p role="status">Could not load the preview. Try again or open the file directly.</p>
+              <p role="status">Couldn’t load the playbook preview.</p>
               <button type="button" className="skill-action" onClick={() => {
                 // Retrying removes this button. Give the reader a stable focus target.
                 viewHeadingRef.current?.focus({ preventScroll: true });

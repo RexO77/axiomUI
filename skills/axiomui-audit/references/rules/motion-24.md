@@ -1,21 +1,25 @@
-# Limit the total stagger
+# Cap the total stagger time
 
 - ID: motion-24
 - Category: Motion & interaction
 - Tags: Stagger, Timing
 - URL: https://axiomui.nischal.fyi/rules/motion-24
 
-When a short sequence helps people follow a group of arrivals, budget for the last useful item. Cap or remove delays as the group grows.
+Stagger rows when their order helps people follow a change. Check when the last row finishes. As the list grows, shorten the delay or show the rows together.
 
-- Do: 60ms between three row starts
-- Don't: 220ms between items
+- Do: Three rows start 60ms apart
+- Don’t: Three rows start 220ms apart
 
 ## Why it works
 
-Three rows with a 220ms entrance and 60ms between starts finish in 340ms. At 220ms between starts, the last finishes at 660ms. Extending either pattern to a long list changes when later items can be seen, even if the first row feels responsive.
+Three rows with a 220ms entrance and 60ms between starts finish in 340ms. At 220ms between starts, the last finishes at 660ms. With thirty rows, the last would finish at 1,960ms or 6,600ms respectively.
 
+- [Fluent 2 · Motion choreography](https://fluent2.microsoft.design/motion/)
+- [Carbon · Motion choreography](https://www.carbondesignsystem.com/building-blocks/foundations/motion/choreography)
 - [Motion · Staggering animations](https://motion.dev/docs/stagger)
+- [MDN · CSS opacity](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/opacity)
 - [WAI-ARIA APG · Modal dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/)
+- [Material Design 1 · Motion choreography](https://m1.material.io/motion/choreography.html)
 
 ## What breaks
 
@@ -24,11 +28,11 @@ A search result can already accept clicks while its opacity is zero. Keyboard fo
 ## How to apply it
 
 1. Sequence items only when their order explains a relationship or change. Show a familiar dialog together when people need its title and action immediately.
-2. Budget for the last useful item. For an even stagger, add the item duration to the interval times the number of gaps. Cap the animated group or start the remaining items together.
-3. Ensure a focused or actionable item is visible immediately.
+2. Budget for the last useful item. For evenly spaced starts, the last row finishes at duration + interval × (rows − 1). Cap the animated group or start the remaining items together.
+3. Show each row before it can receive focus or clicks.
 
-## Review questions
+## Before you ship
 
-1. How long does the last useful item take to appear?
+1. When does the last row finish its entrance?
 2. What happens when the list has thirty items?
 3. Can someone tab to or click an invisible result?

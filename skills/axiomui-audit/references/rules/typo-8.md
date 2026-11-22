@@ -1,33 +1,36 @@
-# Align paragraphs to the reading start
+# Align paragraphs to their starting edge
 
 - ID: typo-8
 - Category: Typography & text
 - Tags: Alignment, Readability
 - URL: https://axiomui.nischal.fyi/rules/typo-8
 
-Give multiline prose a stable starting edge. For horizontal text, start alignment places English on the left and Arabic on the right. Reserve centering for short, self-contained passages that still work when they wrap.
+Start each line of a paragraph at the same edge, left in English and right in Arabic. If you center a short passage, check how it reads when it wraps.
 
 - Do: Left-aligned paragraph text
-- Don't: Centered multi-line paragraph
+- Don’t: Centered paragraph
 
 ## Why it works
 
-The changelog heading can sit in the center while its paragraph starts repeatedly at the same edge. As the measure narrows, centering gives each line a different starting point. Logical alignment preserves the intended edge when the paragraph changes direction.
+The changelog heading stays centered in both examples. In the left-aligned paragraph, each line starts at the guide. In the centered paragraph, the starting point changes with the line length.
 
 - [GOV.UK · Text alignment](https://design-system.service.gov.uk/styles/font-override-classes/#text-alignment)
+- [ONS Service Manual · Accessible text formatting](https://service-manual.ons.gov.uk/brand-guidelines/typography/accessible-text-formatting)
+- [CSS Text · Text alignment](https://www.w3.org/TR/css-text-3/#text-align-property)
+- [Microsoft Fluent 2 · Typography](https://fluent2.microsoft.design/typography)
 
 ## What breaks
 
-A two-word empty-state message can grow into a four-line instruction after translation. The centered composition that suited the short phrase now asks the reader to find a new starting point on each line.
+A two-word message can grow to four lines in translation. If it’s centered, the reader has to find the start of each line again.
 
 ## How to apply it
 
-1. Use text-align: start for ordinary prose and set the correct language direction.
+1. Set the paragraph’s direction with dir when needed. Use text-align: start to align it to that edge.
 2. Review centered content with longer translations.
-3. Check a narrow measure and enlarged text before making an exception.
+3. Before centering a passage, read it in a narrow column and with enlarged text.
 
-## Review questions
+## Before you ship
 
 1. Can the reader return to a consistent starting edge?
 2. Does right-to-left text follow its own reading direction?
-3. Is the centered treatment still suitable at its longest length?
+3. Is the centered text still easy to read in its longest translation?

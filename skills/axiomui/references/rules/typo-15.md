@@ -1,21 +1,25 @@
-# Tighten display tracking only until letters crowd
+# Stop tightening headline letters before they touch
 
 - ID: typo-15
 - Category: Typography & text
 - Tags: Headings, Readability
 - URL: https://axiomui.nischal.fyi/rules/typo-15
 
-When tightening a display headline, check the gaps between neighboring glyphs at the shipped font, weight, and size. An em-based adjustment moves the letters farther as the type gets larger. Stop while the closest pairs still have a visible gap.
+Check the closest letter pairs at the font, weight, and size you’ll use. Negative letter spacing in em units removes more pixels at larger sizes. Leave a visible gap.
 
 - Do: 38px semibold · tracking -0.015em
-- Don't: 38px semibold · tracking -0.05em
+- Don’t: 38px semibold · tracking -0.05em
 
 ## Why it works
 
-In the two-line headline, tighter tracking compresses the gap between the o and g in together. The same em value moves the letters farther in pixels as the heading gets larger, so check the spacing again when the size changes.
+Compare the o and g in “together”. At 38px, -0.015em removes 0.57px between letters and -0.05em removes 1.9px. Check the gap again at larger sizes.
 
-- [USWDS · Letterspacing tokens](https://designsystem.digital.gov/design-tokens/typesetting/letterspacing/)
 - [CSS Text · Letter spacing](https://www.w3.org/TR/css-text-3/#letter-spacing-property)
+- [CSS Values and Units · Font-relative lengths](https://www.w3.org/TR/css-values-4/#font-relative-lengths)
+- [MDN · Letter spacing](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/letter-spacing)
+- [Inter · Dynamic metrics](https://d.rsms.me/inter-website/v3/dynmetrics/)
+- [Yu et al. · Letter spacing and reading speed](https://pmc.ncbi.nlm.nih.gov/articles/PMC2729067/)
+- [USWDS · Letterspacing tokens](https://designsystem.digital.gov/design-tokens/typesetting/letterspacing/)
 
 ## What breaks
 
@@ -27,8 +31,8 @@ Neighboring strokes can nearly join in a large headline, making pairs of letters
 2. Keep the font, weight, size, and line breaks fixed while trying small tracking adjustments.
 3. Check the narrowest gaps between neighboring glyphs in the actual headline and its translations at each display size.
 
-## Review questions
+## Before you ship
 
-1. Open the hero at its largest breakpoint, wait for the webfont, and toggle the tracking declaration in DevTools. Is there still a visible gap between the closest strokes with the declaration on?
+1. Once the font loads, check the heading at its largest size. With letter spacing applied, can you still see a gap between the closest strokes?
 2. Which letter pair comes closest at the smaller heading size?
 3. Do the closest pairs in translated headlines still have visible space between them?

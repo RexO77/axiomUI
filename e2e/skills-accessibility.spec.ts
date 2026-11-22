@@ -135,6 +135,6 @@ test.describe("short touch landscape", () => {
       })).toBe(true);
     }
     await footer.getByRole("button", { name: "Preview the playbook" }).tap();
-    await expect(page.getByRole("dialog", { name: "Website playbook" })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Website upgrade playbook" })).toBeVisible();
   });
 });

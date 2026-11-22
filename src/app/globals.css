@@ -539,7 +539,7 @@
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: var(--ax-surface);
+    background: var(--ax-bezel);
     box-shadow: var(--ax-shadow-popover);
     transform-origin: top left;
     transform: var(--skill-surface-scale, none);
@@ -594,7 +594,7 @@
   }
 
   .skill-modal-root[data-state="open"] .skill-modal-panel[data-rail-motion="anchored"] .skill-modal-content {
-    clip-path: inset(0 round var(--radius-sheet));
+    clip-path: inset(0 round var(--radius-bezel));
     transition-duration: var(--skill-modal-open-duration), calc(var(--skill-modal-open-duration) - 36ms);
     transition-delay: 0ms, 36ms;
   }

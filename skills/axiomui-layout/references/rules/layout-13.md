@@ -5,17 +5,20 @@
 - Tags: States, Perceived performance, Images
 - URL: https://axiomui.nischal.fyi/rules/layout-13
 
-Give images, videos, and embeds dimensions or an aspect ratio before they load. Reserve that space on the first render so nearby controls stay where people expect them.
+Give images, videos and embeds a width and height or an aspect ratio before they load. That keeps nearby controls in place.
 
 - Do: aspect-ratio: 2 / 1 before load
-- Don't: 0px reserved before load
+- Don’t: 0px reserved before load
 
 ## Why it works
 
-Both panes show the cabin photo while it’s still loading and its dimensions are known. Reserving that space on the first render keeps View details in place. The dashed button records where it was before the unreserved image took up space.
+The dashed “View details” outline marks the button’s starting position. The solid button shows where it lands once the image takes up space. Reserve the 2:1 image area and the two positions coincide.
 
 - [web.dev · Optimize Cumulative Layout Shift](https://web.dev/articles/optimize-cls)
+- [web.dev · The CSS aspect-ratio property](https://web.dev/articles/aspect-ratio)
 - [HTML · Dimension attributes](https://html.spec.whatwg.org/multipage/embedded-content-other.html#dimension-attributes)
+- [MDN · aspect-ratio](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/aspect-ratio)
+- [Chrome for Developers · Improved font fallbacks](https://developer.chrome.com/blog/font-fallbacks)
 
 ## What breaks
 
@@ -25,10 +28,10 @@ The button can move away from the pointer just as someone goes to open the detai
 
 1. Search for img, video, and iframe elements. With cache disabled and the network throttled, check whether each element’s box has a height before its response arrives.
 2. Set image width and height to the intrinsic dimensions, or reserve the displayed aspect ratio on a wrapper when an embed or crop has its own shape. Match the placeholder to the final size at each breakpoint.
-3. For shifts caused by swapping fonts, match fallback metrics with size-adjust and font metric overrides.
+3. Keep the space reserved if the media request fails so nearby controls stay in place.
 
-## Review questions
+## Before you ship
 
-1. Disable cache, throttle the network, and reload. Keep the pointer over View details while the image starts loading and finishes rendering. Does the button stay under the pointer?
+1. On a page with a loading image, disable the cache, throttle the network and reload. Place the pointer over the button below the image. Does it stay under the pointer as the image loads?
 2. Does the placeholder match the final crop at both narrow and wide widths?
 3. Does the same space remain reserved when the media request fails?

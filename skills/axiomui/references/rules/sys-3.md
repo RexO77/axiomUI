@@ -1,33 +1,35 @@
-# Size the hit area for the input
+# Give small icons a larger hit area
 
 - ID: sys-3
 - Category: System & logic
 - Tags: Click targets, Touch, WCAG
 - URL: https://axiomui.nischal.fyi/rules/sys-3
 
-Size the clickable area independently of the icon. A 44 × 44 CSS px target is a useful touch-friendly choice. WCAG 2.2 AA generally calls for 24 × 24 CSS px or a qualifying exception.
+Size the hit area separately from the icon. Aim for 44 × 44 CSS pixels on touch. WCAG 2.2 AA requires at least 24 × 24 CSS pixels unless an exception applies.
 
-- Do: 44x44px hit area
-- Don't: 16x16px hit area
+- Do: 44 × 44px hit area
+- Don’t: 16 × 16px hit area
 
 ## Why it works
 
-A 16px glyph can sit inside a 44px button and retain its intended visual scale. Enlarging the hit box helps at the moment the pointer arrives. Adding a margin gives separation but leaves the clickable area itself unchanged.
+A 16px icon can fit inside a 44px button. Padding inside the button gives a tap more room to land. Margin separates neighboring buttons without enlarging either target.
 
 - [WCAG 2.2 · Target size (minimum)](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html)
 - [WCAG 2.2 · Target size (enhanced)](https://www.w3.org/WAI/WCAG22/Understanding/target-size-enhanced.html)
+- [Android Accessibility Help · Touch target size](https://support.google.com/accessibility/android/answer/7101858)
+- [Parhi, Karlson & Bederson · One-handed touch target sizes](https://www.cs.umd.edu/hcil/trs/2006-11/2006-11.htm)
 
 ## What breaks
 
-A small Delete icon next to a clickable file row can turn a near miss into opening the file. Enlarging the target into its neighbor creates a different ambiguity about which action owns the overlap.
+A tap just outside Delete can hit Download. Give each button enough room to grow without overlapping its neighbor.
 
 ## How to apply it
 
 1. Measure the actual interactive box in CSS pixels.
-2. For undersized targets, check the spacing or another exception in WCAG 2.5.8 rather than counting any gap as sufficient.
-3. Consider 44 × 44 CSS px for important touch controls. WCAG 2.5.5 uses that size at AAA with its own exceptions.
+2. For the WCAG 2.5.8 spacing exception, center a circle 24 CSS pixels across on each undersized target’s bounding box. The circle must not overlap another target or another such circle. Otherwise, check whether another exception applies.
+3. Consider 44 × 44 CSS pixels for important touch controls. WCAG 2.5.5 uses that size at AAA with its own exceptions.
 
-## Review questions
+## Before you ship
 
 1. Where does the click actually land around the glyph?
 2. Does an adjacent action overlap its target?

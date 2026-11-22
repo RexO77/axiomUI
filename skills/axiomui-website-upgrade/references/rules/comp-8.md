@@ -5,29 +5,32 @@
 - Tags: States, Tooltips, Clarity
 - URL: https://axiomui.nischal.fyi/rules/comp-8
 
-When someone might reasonably try an unavailable action, explain the prerequisite beside it. A disabled button alone gives no indication of what to do next.
+When people are likely to try a disabled control, explain beside it what would make it available.
 
-- Do: Disabled + reason under the button
-- Don't: Disabled + no reason
+- Do: “Available on the Pro plan” below Export CSV
+- Don’t: Disabled + no reason
 
 ## Why it works
 
-A disabled Export button may mean the selection is empty, the user lacks permission, or a request is still running. Each state calls for a different response. Native disabled buttons normally leave the tab sequence, so a tooltip attached only to the button is easy to miss.
+Export CSV might be disabled because the plan excludes it, nothing is selected or an export is running. Keyboard users skip native disabled buttons when tabbing, so a tooltip on the button can go unseen.
 
-- [GOV.UK · Button emphasis and usage](https://design-system.service.gov.uk/components/button/)
+- [GitLab Pajamas · Disabled buttons](https://design.gitlab.com/components/button/#disabled)
 - [WAI-ARIA APG · Focusability of disabled controls](https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/#focusabilityofdisabledcontrols)
+- [GOV.UK · Button emphasis and usage](https://design-system.service.gov.uk/components/button/)
+- [MDN · aria-disabled](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Attributes/aria-disabled)
+- [GitHub Primer · Tooltip accessibility](https://primer.style/product/components/tooltip/accessibility/)
 
 ## What breaks
 
-“Not available” leaves someone hunting through a form. “Select at least one row to export” points to an action they can take.
+Without an explanation, people may look for a missing selection. “Available on the Pro plan” tells them why Export CSV is disabled.
 
 ## How to apply it
 
-1. Prefer a persistent explanation at the point of need.
-2. When the user can submit and then correct errors, consider leaving the action available and explaining the errors on submission.
-3. If using aria-disabled to retain focusability, suppress activation in the handler and check every input method.
+1. Keep the reason visible beside the disabled control.
+2. When a form can explain errors on submission, consider keeping Submit available so people can find out what needs fixing.
+3. If you use `aria-disabled` to keep a control focusable, block activation in its handler. Check mouse, keyboard and touch.
 
-## Review questions
+## Before you ship
 
 1. Is the cause apparent before trying the control?
 2. Does the explanation say what can change the state?

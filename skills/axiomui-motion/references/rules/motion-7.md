@@ -5,17 +5,20 @@
 - Tags: Timing, Exit, Entry
 - URL: https://axiomui.nischal.fyi/rules/motion-7
 
-A toast can arrive slowly enough to locate and leave quickly once dismissed. Choose each direction’s timing for what the user needs to follow.
+Give people time to notice a toast as it enters. Once they dismiss it, a short exit lets them move on.
 
 - Do: Enter 220ms, exit 160ms
-- Don't: Enter 360ms, exit 360ms
+- Don’t: Enter 360ms, exit 360ms
 
 ## Why it works
 
 A toast introduces information on entry, but by dismissal the next task may already be underway. The example gives entry 220ms and exit 160ms. A drawer returning to its edge or a card moving into an archive may need more time and travel to show where it went.
 
+- [Atlassian Design · Applying motion](https://atlassian.design/foundations/motion/applying-motion)
+- [NN/g · Executing UX animations](https://www.nngroup.com/articles/animation-duration/)
 - [IBM Carbon · Motion principles and timing](https://www.carbondesignsystem.com/building-blocks/foundations/motion/overview)
 - [WCAG 2.2 · Status messages](https://www.w3.org/WAI/WCAG22/Understanding/status-messages.html)
+- [WAI-ARIA APG · Alert pattern](https://www.w3.org/WAI/ARIA/apg/patterns/alert/)
 
 ## What breaks
 
@@ -23,11 +26,11 @@ An exit can block the next click if its invisible layer still intercepts input. 
 
 ## How to apply it
 
-1. Leave enough time to read a message. For routine dismissals, use a short fade or small movement so the next action gets the attention.
-2. Keep focus on the person’s current task when a passive status toast appears or disappears. If a person dismisses it from a focused toast action, move focus to a logical surviving control.
-3. Interrupt an entrance with a dismissal and check the result.
+1. Keep the toast visible long enough to read. When someone dismisses it, use a short fade or slide.
+2. Keep focus where it is when a passive toast appears or disappears. If someone dismisses it with a focused button inside the toast, move focus to the next control for their task.
+3. Dismiss the toast mid-entrance. Does it leave from its current position?
 
-## Review questions
+## Before you ship
 
 1. Can the message be read before it goes away?
 2. Where does the next click or keystroke go?

@@ -22,6 +22,21 @@ export type RuleMarkdownOptions = {
     includeId?: boolean;
 };
 
+const TAG = /<\/?[A-Za-z][^<>]*>/;
+const codeSpan = (text: string) => (text.includes("`") ? `\`\` ${text} \`\`` : `\`${text}\``);
+
+/**
+ * Rule copy (a title, description or Do/Don't) as Markdown text. An HTML tag
+ * in it is code, never markup a renderer would swallow: "in <bdi>" keeps its
+ * tag name. A value that is all markup becomes one code span. The data keeps
+ * the plain text; this is only the Markdown boundary.
+ */
+export function markdownText(text: string): string {
+    if (!TAG.test(text)) return text;
+    if (/^\s*</.test(text) && />\s*$/.test(text)) return codeSpan(text.trim());
+    return text.replace(new RegExp(TAG.source, "g"), codeSpan);
+}
+
 /**
  * One rule as markdown, including its full deep-dive prose. Shared by
  * /llms-full.txt (H3, nested under a category H2) and the generated agent-skill
@@ -44,8 +59,8 @@ export function ruleToMarkdown(rule: Rule, { headingLevel, includeId = false }: 
     const blocks = [
         `${heading} ${rule.title}`,
         meta.join("\n"),
-        rule.desc,
-        [`- Do: ${rule.do}`, `- Don't: ${rule.dont}`].join("\n"),
+        markdownText(rule.desc),
+        [`- Do: ${markdownText(rule.do)}`, `- Don’t: ${markdownText(rule.dont)}`].join("\n"),
     ];
 
     const whyItMatters = findTextSection(deepDive, "Why it matters");
@@ -73,7 +88,7 @@ export function ruleToMarkdown(rule: Rule, { headingLevel, includeId = false }: 
     const reviewPrompts = findListSection(deepDive, "Design review prompts");
     if (reviewPrompts.length > 0) {
         blocks.push(
-            `${subheading} Review questions`,
+            `${subheading} Before you ship`,
             reviewPrompts.map((prompt, index) => `${index + 1}. ${prompt}`).join("\n")
         );
     }
@@ -103,7 +118,7 @@ export function fullCorpusMarkdown(): string {
     // renders as three blank lines.
     return [
         `# Axiom UI`,
-        `The decision engine behind sharp, consistent interfaces. ${rules.length} curated UI decisions across ${categories.length} categories. Each rule carries a Do/Don't pair, context tags, a canonical URL, and its full reasoning: why it works, what breaks without it, how to apply it, and what to ask in review.`,
+        `${rules.length} UI design rules in ${categories.length} source categories. Each rule includes Do and Don’t examples, tags, a link and a deep dive.`,
         ...sections,
     ].join("\n\n");
 }

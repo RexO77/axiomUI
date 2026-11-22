@@ -15,7 +15,7 @@ test("the skills rail uses arrow keys and keeps the selected task when returning
   const box = await dialog.boundingBox();
   await dialog.getByRole("button", { name: "Global", exact: true }).click();
   await dialog.getByRole("button", { name: "Preview the playbook" }).click();
-  const playbook = page.getByRole("dialog", { name: "Website playbook" });
+  const playbook = page.getByRole("dialog", { name: "Website upgrade playbook" });
   await expect(playbook.getByRole("heading", { name: "Step 1: Frame" })).toBeVisible();
   await playbook.getByRole("button", { name: "All skills" }).click();
   await expect(choice).toBeVisible();
@@ -45,8 +45,8 @@ test("the playbook can be read from the keyboard with its toolbar in reach", asy
   await page.getByRole("button", { name: "Install agent skills: npx skills add RexO77/axiomUI", exact: true }).click();
   await page.getByRole("button", { name: "Browse agent skills" }).click();
   await page.getByRole("button", { name: "Preview the playbook" }).click();
-  const dialog = page.getByRole("dialog", { name: "Website playbook" });
-  const reader = dialog.getByRole("region", { name: "Website playbook" });
+  const dialog = page.getByRole("dialog", { name: "Website upgrade playbook" });
+  const reader = dialog.getByRole("region", { name: "Website upgrade playbook" });
   await expect(reader.getByRole("heading", { name: "Step 1: Frame" })).toBeVisible();
   const close = dialog.getByRole("button", { name: "Close agent skills" });
   await close.press("Tab");
@@ -65,11 +65,11 @@ test("retrying a failed playbook keeps focus in the reader", async ({ page }) =>
   await page.route("**/skills/axiomui-website-upgrade/SKILL.md", route =>
     route.fulfill({ contentType: "text/markdown", body: "" }), { times: 1 });
   await page.getByRole("button", { name: "Preview the playbook" }).click();
-  const preview = page.getByRole("dialog", { name: "Website playbook" });
-  await expect(preview.getByRole("status")).toContainText("Could not load the preview");
+  const preview = page.getByRole("dialog", { name: "Website upgrade playbook" });
+  await expect(preview.getByRole("status")).toContainText("Couldn’t load the playbook preview.");
   await preview.getByRole("button", { name: "Try again" }).press("Enter");
   await expect(preview.getByRole("heading", { name: "Step 1: Frame" })).toBeVisible();
-  await expect(preview.getByRole("heading", { name: "Website playbook" })).toBeFocused();
+  await expect(preview.getByRole("heading", { name: "Website upgrade playbook" })).toBeFocused();
 });
 
 test("the phone shows each core example before its install command and identifies the playbook download", async ({ page }) => {
@@ -80,7 +80,7 @@ test("the phone shows each core example before its install command and identifie
   const dialog = page.getByRole("dialog", { name: "Agent skills" });
   const picker = dialog.getByRole("combobox", { name: "Choose a skill" });
   for (const [id, task] of [
-    ["axiomui", "Which Axiom rules apply to this signup form"],
+    ["axiomui", "Which Axiom UI rules apply to this signup form"],
     ["axiomui-audit", "Cite the rule behind each finding and leave the code as it is"],
     ["axiomui-website-upgrade", "Improve this signup form in code"],
   ]) {

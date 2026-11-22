@@ -137,12 +137,12 @@ test("the expanding surface keeps heading text and the close icon at their final
   }
 });
 
-for (const view of ["Agent skills", "Website playbook"]) {
+for (const view of ["Agent skills", "Website upgrade playbook"]) {
   test(`after a desktop-to-phone resize ${view} dismisses locally and returns focus to Menu`, async ({ page }) => {
     await openCatalog(page, wallUrl());
     await rail(page).click();
     await card(page).getByRole("button", { name: "Browse agent skills" }).click();
-    if (view === "Website playbook") {
+    if (view === "Website upgrade playbook") {
       await workspace(page).getByRole("button", { name: "Preview the playbook" }).click();
     }
     const dialog = page.getByRole("dialog", { name: view });

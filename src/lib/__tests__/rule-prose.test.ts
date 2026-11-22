@@ -6,7 +6,7 @@ import { ruleSources } from "@/data/rule-sources";
 import { rules } from "@/data/ui-logic";
 import { findListSection, findTextSection } from "@/lib/deep-dive-sections";
 import { ruleProse } from "@/lib/rule-prose-build";
-import { PROSE_HEADINGS } from "@/lib/rule-prose-types";
+import { PROSE_HEADINGS, SOURCE_KIND_LABEL } from "@/lib/rule-prose-types";
 
 /*
  * The server-only prose payload. The test imports the pure
@@ -32,10 +32,11 @@ describe("ruleProse", () => {
       id: "typo-1",
       how: findListSection(sections, "Implementation notes"),
       why: findTextSection(sections, "Why it matters"),
-      sources: [{ title: "Microsoft Writing Style Guide · Capitalization", href: "https://learn.microsoft.com/en-us/style-guide/capitalization" }],
+      sources: ruleSources["typo-1"],
       breaks: findTextSection(sections, "Risk when ignored"),
       review: findListSection(sections, "Design review prompts"),
     });
+    expect(prose.sources?.[0]).toEqual(expect.objectContaining({ href: "https://learn.microsoft.com/en-us/style-guide/capitalization" }));
     expect(prose.how.length).toBeGreaterThan(0);
     expect(prose.why).not.toBe("");
     expect(prose.breaks).not.toBe("");
@@ -65,16 +66,17 @@ describe("ruleProse", () => {
     expect(ruleProse("__proto__")).toBeNull();
   });
 
-  it("serves one to three distinct, named HTTPS sources for every canonical rule", () => {
+  it("serves one to six distinct, named HTTPS sources of a known kind for every canonical rule", () => {
     expect(Object.keys(ruleSources).sort()).toEqual(rules.map((rule) => rule.id).sort());
     for (const rule of rules) {
       const sources = ruleProse(rule.id)?.sources ?? [];
       expect(sources.length, rule.id).toBeGreaterThanOrEqual(1);
-      expect(sources.length, rule.id).toBeLessThanOrEqual(3);
+      expect(sources.length, rule.id).toBeLessThanOrEqual(6);
       expect(new Set(sources.map(({ href }) => href)).size, rule.id).toBe(sources.length);
-      for (const { title, href } of sources) {
+      for (const { title, href, kind } of sources) {
         expect(title.trim(), rule.id).toMatch(/\S/);
         expect(new URL(href).protocol, rule.id).toBe("https:");
+        expect(Object.keys(SOURCE_KIND_LABEL), rule.id).toContain(kind);
       }
     }
   });

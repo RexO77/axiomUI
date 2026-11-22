@@ -18,7 +18,20 @@ export type RuleProse = Readonly<{
   review: readonly string[];
 }>;
 
-export type RuleSource = Readonly<{ title: string; href: `https://${string}` }>;
+/**
+ * What a source is, so a reader sees what backs a rule: a web or
+ * accessibility standard, a platform or design-system guideline, research
+ * (usability studies, papers), or practitioner writing.
+ */
+export type SourceKind = "standard" | "guideline" | "research" | "practice";
+export const SOURCE_KIND_LABEL: Readonly<Record<SourceKind, string>> = Object.freeze({
+  standard: "Standard",
+  guideline: "Guideline",
+  research: "Research",
+  practice: "Practice",
+});
+
+export type RuleSource = Readonly<{ title: string; href: `https://${string}`; kind: SourceKind }>;
 
 /** The four section headings, in reading order. Shared by the view and its tests. */
 export const PROSE_HEADINGS = Object.freeze({

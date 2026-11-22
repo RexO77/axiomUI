@@ -5,29 +5,33 @@
 - Tags: Hierarchy, Consistency
 - URL: https://axiomui.nischal.fyi/rules/color-1
 
-Reserve the strongest accent for the action or information that should stand out in its immediate context. The familiar 60-30-10 split is a composition prompt. The page has no required color percentages.
+Save the strongest accent for what people should notice first. Use 60-30-10 as a rough guide to how much of each color to use.
 
-- Do: Mostly whites/grays, splashes of blue
-- Don't: Blue header, blue sidebar, blue buttons
+- Do: Blue only on the New report button
+- Don’t: Blue header, blue sidebar, blue buttons
 
 ## Why it works
 
-In the sample, the New report action shares its blue with the header and navigation. Keeping the surrounding chrome neutral makes the button’s fill distinctive. A branded masthead can work just as well if another cue identifies the primary action.
+New report is the only blue button against the neutral header and sidebar. When both are blue too, the button is harder to spot. A branded header can still work if size or placement draws attention to the main action.
 
 - [Atlassian · Color roles](https://atlassian.design/foundations/color)
+- [IBM Design Language · Color](https://www.ibm.com/design/language/color/)
+- [GOV.UK · Button emphasis](https://design-system.service.gov.uk/components/button/)
+- [NN/g · Visual hierarchy](https://www.nngroup.com/articles/visual-hierarchy-ux-definition/)
+- [Manning · Design for Developers](https://livebook.manning.com/learn/concepts/60-30-10-rule--technique/design-for-developers)
 
 ## What breaks
 
-A palette quota can reward the wrong change. Shrinking a warning to hit a target percentage could make the most important information on the screen less visible.
+Shrinking a warning to fit the 60-30-10 split can make it easier to miss.
 
 ## How to apply it
 
-1. Identify the decision the page supports.
+1. Name the action or information people should notice first.
 2. Compare the action with nearby elements using the same accent.
 3. Check status, navigation, and content on a representative screen before changing the palette.
 
-## Review questions
+## Before you ship
 
 1. Which item should a reader find first?
 2. Where else does its accent appear nearby?
-3. Can the intended action still be identified without color?
+3. Can you still find the main action in grayscale?

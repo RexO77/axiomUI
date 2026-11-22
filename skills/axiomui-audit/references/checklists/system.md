@@ -4,39 +4,39 @@ Ask each question of the surface under review. Check the rule's description befo
 
 ## Choose a loading state that explains the wait (`sys-1`)
 
-Use a skeleton when the incoming layout is predictable. An indeterminate indicator fits an operation whose duration is unknown. Use measured progress when the amount of work completed is available.
+Use a skeleton when you know the layout. Show a progress bar when you can measure the work completed. Use a spinner when all you can say is that work is underway.
 
-- Do: Skeleton shaped like the incoming content · Don't: Spinner replaces the whole content area
-- [ ] Does the loading treatment accurately describe what is known?
+- Do: Skeleton shaped like the incoming content · Don’t: Spinner replaces the whole content area
+- [ ] When the content arrives, does it fit the space the skeleton reserved?
 - [ ] Can someone keep using content that has already loaded?
 - [ ] What appears if the request fails or returns no records?
 - Reasoning: `references/rules/sys-1.md`
 
 ## Explain why a view is empty (`sys-2`)
 
-Tell people what an empty view means. Offer a relevant next step when one exists, such as creating a first project or clearing a search filter.
+Say why the view is empty. If someone can create a first project or clear a search filter, offer that action.
 
-- Do: “No projects yet” + “New project” button · Don't: Empty panel, no next step
+- Do: “No projects yet” + “New project” button · Don’t: Blank panel · no message or action
 - [ ] Which state produced the empty view?
 - [ ] Can this person actually perform the suggested action?
 - [ ] Would a message alone be sufficient?
 - Reasoning: `references/rules/sys-2.md`
 
-## Size the hit area for the input (`sys-3`)
+## Give small icons a larger hit area (`sys-3`)
 
-Size the clickable area independently of the icon. A 44 × 44 CSS px target is a useful touch-friendly choice. WCAG 2.2 AA generally calls for 24 × 24 CSS px or a qualifying exception.
+Size the hit area separately from the icon. Aim for 44 × 44 CSS pixels on touch. WCAG 2.2 AA requires at least 24 × 24 CSS pixels unless an exception applies.
 
-- Do: 44x44px hit area · Don't: 16x16px hit area
+- Do: 44 × 44px hit area · Don’t: 16 × 16px hit area
 - [ ] Where does the click actually land around the glyph?
 - [ ] Does an adjacent action overlap its target?
 - [ ] Can someone reliably hit it on the intended input devices?
 - Reasoning: `references/rules/sys-3.md`
 
-## Choose a timestamp for the question (`sys-4`)
+## Use relative time for activity, dates for records (`sys-4`)
 
-Use relative time when recency matters and a localized date or time when someone needs a record. Make the exact timestamp available on touch and keyboard when the distinction matters.
+Use relative time to show how recent an event is. For a record, show the date or time in the reader's locale. If a relative label needs an exact time, make it available by touch and keyboard.
 
-- Do: Activity: 2m ago · Don't: Activity: yyyy-mm-ddThh:mm:ssZ
+- Do: Activity: 2m ago · Don’t: Activity: 2026-08-10T14:02:11Z
 - [ ] Is the task about recency or a specific point in time?
 - [ ] Which time zone determines the displayed date?
 - [ ] Can someone obtain the exact time without a mouse?
@@ -44,59 +44,59 @@ Use relative time when recency matters and a localized date or time when someone
 
 ## Reference colors by role, not by value (`sys-5`)
 
-Have components ask for a role such as text, surface or warning, and resolve each role per theme. A literal value picked on the light theme stays put when the surface turns dark, and two features that share a hex by coincidence change together when one is restyled.
+Give text, surfaces and warnings separate color roles. Set their values per theme so text stays readable and a button can change color independently of a warning.
 
-- Do: var(--text) → #f5f5f5 on #262626 (13.9:1) · Don't: #0f172a on #262626 (1.2:1)
-- [ ] Switch the theme. Does any text or icon keep its light-theme color?
+- Do: var(--text) → #f5f5f5 on #262626 (13.9:1) · Don’t: #0f172a on #262626 (1.2:1)
+- [ ] When you switch themes, can you still read the text and recognize the icons against their backgrounds?
 - [ ] Which role does this component request, and can the warning change without the action changing with it?
-- [ ] Do the resolved pairs clear 4.5:1 for text in every theme?
+- [ ] Does the invoice text have at least 4.5:1 contrast against its card in every theme?
 - Reasoning: `references/rules/sys-5.md`
 
-## Make reversible deletion recoverable (`sys-6`)
+## Let people restore deleted items (`sys-6`)
 
-Offer immediate Undo for a reversible removal and keep a discoverable recovery path when the notice expires. Confirm consequential actions that cannot be reliably reversed.
+Offer Undo when an item moves to Trash. Keep it recoverable from Trash after the message closes. Ask for confirmation before a consequential deletion that cannot reliably be undone.
 
-- Do: Moved to Trash with immediate Undo · Don't: Deleted → gone, no undo
+- Do: Moved to Trash with immediate Undo · Don’t: Permanently deleted · no Undo
 - [ ] Can the item be restored after the notice vanishes?
 - [ ] Do restored content and access match their prior state?
 - [ ] Does the user know when deletion becomes permanent?
 - Reasoning: `references/rules/sys-6.md`
 
-## Orient people in a multi-step flow (`sys-7`)
+## Show the current step in a multi-step flow (`sys-7`)
 
-For a long, predictable sequence, show the current stage and the work ahead. Use stage names without a fixed total when answers can change which steps appear.
+For a fixed sequence, show the current step and how many remain. If answers can add or skip steps, show the step names without a fixed total.
 
-- Do: Step 2 of 4 · Don't: No progress indicator
+- Do: Step 2 of 4 · Don’t: No progress indicator
 - [ ] Can the person identify the current task?
 - [ ] Does the stated total remain accurate on each branch?
 - [ ] Can they review an earlier answer without losing later work?
 - Reasoning: `references/rules/sys-7.md`
 
-## Follow the keyboard model for each control (`sys-8`)
+## Use the keys people expect for each control (`sys-8`)
 
-Make each task operable by keyboard. Use native behavior where available. Tab moves between stops, arrow keys often move within groups, and Escape dismisses a modal dialog.
+Make every task usable by keyboard. Use native controls where possible. Tab moves between controls, arrow keys move within groups such as tabs and radio buttons, and Escape closes a modal dialog.
 
-- Do: Tab → Enter → Esc flow works · Don't: Click-only interactions, no keyboard support
+- Do: Tab moves focus · Enter activates · Esc dismisses · Don’t: Tab skips Archive · Esc does nothing
 - [ ] Can the task be completed end to end without a pointer?
 - [ ] Which keys does this control’s role lead users to expect?
 - [ ] After dismissal, can the person continue from a sensible location?
 - Reasoning: `references/rules/sys-8.md`
 
-## Reconcile optimistic changes (`sys-9`)
+## Show changes before the server confirms them (`sys-9`)
 
-For a low-risk, reversible action, show the intended state immediately when you can reconcile it with the service. Make a failed or superseded action understandable.
+For a low-risk action like liking a post, show the change immediately. If saving fails, say so and show the last confirmed state. If someone taps again, keep their latest choice when earlier replies arrive.
 
-- Do: Heart fills instantly, syncs async · Don't: Spinner on every like button click
-- [ ] Is the result safe to predict?
-- [ ] Does a rapid second action survive a late response?
+- Do: Heart starts filling at 0ms · Synced starts appearing at 700ms · Don’t: Spinner until the heart starts filling at 560ms
+- [ ] Is the action low-risk and reversible enough to show before the server confirms it?
+- [ ] If someone taps twice, can a late reply undo their second tap?
 - [ ] Can the person tell what was actually saved after failure?
 - Reasoning: `references/rules/sys-9.md`
 
-## Recover at the point of failure (`sys-10`)
+## Contain a failure to the part that failed (`sys-10`)
 
-When part of a view fails, preserve the content that still works. Identify the unavailable information and offer a retry or another route when it can help.
+Keep the content that loaded. Say which part failed and offer Retry there, or another way to continue.
 
-- Do: Placeholder image + retry option · Don't: Broken image icon / blank screen
+- Do: Image keeps its space · Reload image · Don’t: Broken image icon and hero@2x.jpg · article title shifts up
 - [ ] What information does the missing resource carry?
 - [ ] Can the rest of the task continue safely?
 - [ ] Is another attempt likely to help, and is it safe to repeat?
@@ -104,40 +104,40 @@ When part of a view fails, preserve the content that still works. Identify the u
 
 ## Keep the task usable at 320 CSS pixels (`sys-11`)
 
-Narrow the viewport to 320 CSS pixels, or zoom a 1280px window to 400%, and complete the page’s main task. Content should reflow without sideways scrolling. A wide table, map or code block may scroll inside its own region.
+Set the viewport to 320 CSS pixels, or start at 1280px and zoom to 400%. Complete the main task without scrolling the page sideways. Let a table, map or code block scroll separately if its layout is essential.
 
-- Do: 320px: fields stack · Continue in view · Don't: 320px: min-width 512px · Continue off-screen
-- [ ] At 320 CSS px, does `document.documentElement.scrollWidth` equal the viewport width?
-- [ ] Zoom a 1280px window to 400% and complete the main task. Did any step need sideways scrolling?
+- Do: 320px: fields stack · Continue in view · Don’t: 320px: min-width 512px · Continue off-screen
+- [ ] At 320 CSS pixels, does `document.documentElement.scrollWidth` equal the viewport width?
+- [ ] Zoom a 1280px viewport to 400% and complete the main task. Do you have to scroll the page sideways?
 - [ ] Which element sets the overflowing width, and does it need that width?
 - Reasoning: `references/rules/sys-11.md`
 
 ## Limit transitions to intended properties (`sys-13`)
 
-List the properties that should animate in a state change. A broad transition can also animate unrelated changes in computed style.
+List the CSS properties you want to animate. With transition: all, setting a new button width can animate that change too.
 
-- Do: transition-property: scale, background-color · Don't: transition: all 150ms ease-out
-- [ ] Which computed values are intended to interpolate?
+- Do: transition-property: scale, background-color · Don’t: transition: all 150ms ease-out
+- [ ] Which properties should animate, and are those the only ones listed?
 - [ ] Does an unrelated explicit width change stretch the control?
-- [ ] Does the rest of the interface settle as expected?
+- [ ] When the button changes width, do neighboring controls move straight to their final positions?
 - Reasoning: `references/rules/sys-13.md`
 
 ## Return people to the result they opened (`sys-15`)
 
-When someone opens an item from a searched, filtered or scrolled list, Back should bring them to the same query, filters, sort and scroll position, with the item they opened in view. A refresh or a pasted link should restore the same view.
+Back should return to the same scroll position with the item in view. Keep the search, filters, sort and page in the URL so a refresh or shared link restores the same results.
 
-- Do: Back → Overdue · sorted by due date · row 37 · Don't: Back → All invoices · top of the list
+- Do: Back → Overdue · sorted by due date · row 37 · Don’t: Back → All invoices · top of the list
 - [ ] Filter the list, sort it, scroll down, open row 37 and press Back. Is row 37 in view with the same filter and sort?
-- [ ] Copy the URL while the list is filtered and paste it into a new tab. Does the same view load?
-- [ ] Change the filter three times, open an item and press Back twice. Does the first Back return to the list and the second leave it?
+- [ ] Open the filtered list’s URL in a new tab. Do the search, filters, sort and page match?
+- [ ] Start on another page, open the list, change the filter three times and open an item. Does Back return to the filtered list, then to the starting page?
 - Reasoning: `references/rules/sys-15.md`
 
 ## Keep errors and the only recovery action on screen (`sys-16`)
 
-A success message whose result is visible elsewhere can time out. A failure, or a message that holds the only Undo or Retry, stays until the person acts on it or closes it. Pause any timer while the message is hovered, focused or in a hidden tab.
+A success message whose result is visible elsewhere can time out. A failure, or a message that holds the only Undo or Retry, stays until the person acts on it or closes it. Pause the timer while the pointer is over the message, focus is inside it, or the tab is hidden.
 
-- Do: Upload failed · Retry stays until dismissed · Don't: Upload failed · Retry closes after 5s
+- Do: Upload failed · stays until Retry or dismissal · Don’t: Upload failed · message closes at 5s · Retry disappears
 - [ ] Trigger the failure, then wait ten seconds without touching anything. Are the error and Retry still on screen?
-- [ ] Trigger it again, rest the pointer on the toast, then tab to it. Does it stay put while hovered or focused?
-- [ ] Trigger it, switch to another tab for a minute and come back. Is the message still there?
+- [ ] Show a timed confirmation. Does it stay visible past its timeout while the pointer rests on it? Repeat with keyboard focus on an action.
+- [ ] Show a timed confirmation and switch tabs for a minute. When you return, is the message still there for its full timeout?
 - Reasoning: `references/rules/sys-16.md`

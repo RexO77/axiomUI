@@ -1,33 +1,36 @@
-# Align comparable numbers
+# Line up amounts in a column
 
 - ID: typo-7
 - Category: Typography & text
 - Tags: Alignment, Readability
 - URL: https://axiomui.nischal.fyi/rules/typo-7
 
-Align amounts at the numeric end of a column and use tabular figures when the font supports them. With consistent fractional precision, corresponding place values then line up.
+Right-align prices in the same currency and use the same number of decimal places. If the font supports tabular digits, turn them on so each digit takes the same width.
 
 - Do: font-variant-numeric: tabular-nums
-- Don't: font-variant-numeric: proportional-nums
+- Don’t: font-variant-numeric: proportional-nums
 
 ## Why it works
 
-The amounts in the preview already share a right edge. Equal-width digits keep the two decimal places aligned even as narrow 1s give way to wider 8s. Account numbers and phone numbers are identifiers and invite different grouping decisions.
+Both examples right-align prices to two decimal places. With proportional digits, the 1 and 8 take different widths, so .10 and .08 can start at different points. Tabular digits line up the decimal points.
 
-- [GOV.UK · Tables with numeric columns](https://design-system.service.gov.uk/components/table/)
+- [Adobe Spectrum · Applying the type system](https://spectrum.adobe.com/foundations/typography/applying-the-type-system)
 - [CSS Fonts · Numeric glyph variants](https://www.w3.org/TR/css-fonts-4/#font-variant-numeric-prop)
+- [OpenType · Tabular figures](https://learn.microsoft.com/en-us/typography/opentype/spec/features_pt#tag-tnum)
+- [GOV.UK · Tables with numeric columns](https://design-system.service.gov.uk/components/table/)
+- [Unicode CLDR · Numbers](https://www.unicode.org/reports/tr35/tr35-numbers.html)
 
 ## What breaks
 
-A column mixing whole amounts, two decimals, currency suffixes, and negative signs can look neatly right-aligned while its decimal marks still wander. Adding trailing zeroes to measurements can falsely imply precision.
+Even right-aligned amounts can have uneven decimal points if some are whole numbers, others have two decimals, or currency symbols follow the amount. Adding zeros to measurements can imply more precision than you have.
 
 ## How to apply it
 
 1. Format comparable currency values consistently for the locale.
 2. Give amounts a common alignment edge and verify the font provides tabular figures.
-3. Use explicit decimal alignment when different precision levels carry meaning.
+3. When measurements use different numbers of decimal places, align them on the decimal point.
 
-## Review questions
+## Before you ship
 
 1. Do the decimal marks line up in representative amounts?
 2. Do negative values and localized currency symbols still fit?

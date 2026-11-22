@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 import { categories, rules, type Rule } from "@/data/ui-logic";
-import { ruleReviewQuestions, ruleToMarkdown } from "@/lib/rule-corpus";
+import { markdownText, ruleReviewQuestions, ruleToMarkdown } from "@/lib/rule-corpus";
 import { categoryNameById } from "@/lib/rule-text";
 import { siteConfig } from "@/lib/site";
 import {
@@ -140,11 +140,11 @@ function frontmatter(skill: SkillSpec, license: string | null): string {
 function ruleEntry(rule: Rule, headingLevel: 2 | 3, from?: string): string {
   return [
     `${"#".repeat(headingLevel)} ${rule.title} (\`${rule.id}\`)`,
-    rule.desc,
+    markdownText(rule.desc),
     [
       ...(from ? [`- From: ${from}`] : []),
-      `- Do: ${rule.do}`,
-      `- Don't: ${rule.dont}`,
+      `- Do: ${markdownText(rule.do)}`,
+      `- Don’t: ${markdownText(rule.dont)}`,
       `- Reasoning: \`${ruleFile(rule)}\` · ${ruleUrl(rule.id)}`,
     ].join("\n"),
   ].join("\n\n");
@@ -168,7 +168,7 @@ function domainTable(fileFor: (categoryId: string) => string, fileHeading: strin
 function categoryReference(categoryId: string): string {
   const blocks = [
     `# ${categoryName(categoryId)}`,
-    "Compact Do/Don't for every rule in this domain. Each Reasoning line names the file with the full write-up.",
+    "Compact Do/Don’t for every rule in this domain. Each Reasoning line names the file with the full write-up.",
     ...rulesIn(categoryId).map((rule) => ruleEntry(rule, 2)),
   ];
   const related = crossListedRules(categoryId);
@@ -189,9 +189,9 @@ function checklistReference(categoryId: string): string {
     ...rulesIn(categoryId).map((rule) =>
       [
         `## ${rule.title} (\`${rule.id}\`)`,
-        rule.desc,
+        markdownText(rule.desc),
         [
-          `- Do: ${rule.do} · Don't: ${rule.dont}`,
+          `- Do: ${markdownText(rule.do)} · Don’t: ${markdownText(rule.dont)}`,
           ...ruleReviewQuestions(rule).map((question) => `- [ ] ${question}`),
           `- Reasoning: \`${ruleFile(rule)}\``,
         ].join("\n"),
@@ -222,16 +222,16 @@ const rulesJsonUrl = `${siteConfig.origin}/rules.json`;
  * indexes every rule and points at the site instead.
  */
 function ruleLookup(singleFile: boolean): string {
-  const backing = `Every rule id above is one of Axiom UI's ${rules.length} rules. Its description and Do/Don't are enough for the sweep; its full reference adds why it works, what breaks, implementation notes and review questions.`;
+  const backing = `Every rule ID above is one of Axiom UI's ${rules.length} rules. Its description and Do and Don’t examples are enough for the sweep; its full reference adds why it works, what breaks, implementation notes and a Before you ship checklist.`;
   if (singleFile) {
     return [
       "## Axiom UI rule lookup",
       `${backing} This is the single-file copy of the skill, so the rules are online rather than beside it:`,
       [
-        `- Every rule's Do and Don't, in one JSON file: ${rulesJsonUrl}`,
+        `- Every rule’s Do and Don’t examples in one JSON file: ${rulesJsonUrl}`,
         `- One rule's full reasoning: ${siteConfig.origin}/rules/<id>, for example ${ruleUrl(rules[0].id)}`,
       ].join("\n"),
-      `Read a rule's description and Do/Don't from the JSON file, open its page when step 3 calls for the full reference, and cite the rule id when you report the change. The index below lists every rule by domain for symptoms the entry lists miss. To keep the rule files offline, install the full skill with \`${githubInstallCommand(findSkill("axiomui-website-upgrade")!)}\`.`,
+      `Read a rule's description and Do and Don’t examples from the JSON file, open its page when step 3 calls for the full reference, and cite the rule ID when you report the change. The index below lists every rule by domain for symptoms the entry lists miss. To keep the rule files offline, install the full skill with \`${githubInstallCommand(findSkill("axiomui-website-upgrade")!)}\`.`,
       ...categories.map((category) =>
         [`### ${category.name}`, rulesIn(category.id).map((rule) => `- \`${rule.id}\` ${rule.title}`).join("\n")].join("\n\n")
       ),
@@ -239,8 +239,8 @@ function ruleLookup(singleFile: boolean): string {
   }
   return [
     "## Axiom UI rule lookup",
-    `${backing} Both live in \`references/rules/<id>.md\`: the first dozen lines hold the description and Do/Don't, and the whole file is the full reference to read when step 3 calls for it. Cite the rule id when you report the change. Each domain file below lists that domain's Do and Don't pairs; read one whole only when a symptom falls outside the entry and symptom lists.`,
-    `If \`references/\` is missing, this is a single-file copy: read ${rulesJsonUrl} for every rule's Do and Don't, and ${siteConfig.origin}/rules/<id> for one rule's reasoning.`,
+    `${backing} Both live in \`references/rules/<id>.md\`: the first dozen lines hold the description and Do and Don’t examples, and the whole file is the full reference to read when step 3 calls for it. Cite the rule ID when you report the change. Each domain file below lists that domain’s Do and Don’t examples; read one whole only when a symptom falls outside the entry and symptom lists.`,
+    `If \`references/\` is missing, this is a single-file copy: read ${rulesJsonUrl} for every rule’s Do and Don’t examples, and ${siteConfig.origin}/rules/<id> for one rule's reasoning.`,
     domainTable(categoryFile, "File"),
   ].join("\n\n");
 }
@@ -258,7 +258,7 @@ function skillBody(
           .filter((candidate) => candidate.group === "domain")
           .map((candidate) => `\`${candidate.name}\``)
           .join(", ") || "no standalone domains are distributed at this checkpoint",
-        domainTable: domainTable(categoryFile, "Compact Do/Don't"),
+        domainTable: domainTable(categoryFile, "Compact Do/Don’t"),
         ruleIndex: categories
           .map((category) =>
             [`### ${category.name}`, rulesIn(category.id).map((rule) => indexLine(rule)).join("\n")].join("\n\n")

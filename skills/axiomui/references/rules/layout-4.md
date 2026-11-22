@@ -1,20 +1,23 @@
-# Optically center asymmetric glyphs
+# Center the icon by eye
 
 - ID: layout-4
 - Category: Layout & spacing
 - Tags: Alignment, Icons, Polish
 - URL: https://axiomui.nischal.fyi/rules/layout-4
 
-Center the icon box first. If an asymmetric glyph still looks displaced inside its control, compare a small offset at the intended size. Some icon sets already provide optical compensation.
+Center the icon box, then check the artwork at its actual size. If it looks off-center, try a small offset. Some icon sets already make this adjustment.
 
-- Do: Play icon nudged +2px right
-- Don't: Play icon on the geometric center
+- Do: Play icon shifted 2px right
+- Don’t: Play icon centered by its SVG box
 
 ## Why it works
 
-In the play button, the visible mass of a right-facing glyph can sit toward the vertical edge of the triangle. Comparing the centered glyph with a 2px nudge exposes the difference between the SVG box and the marks inside it. Padding built into the icon artwork affects the result.
+The right-facing play triangle carries more weight on the left. Even with its SVG box centered, the triangle can look off-center. Here, a 2px shift to the right balances it.
 
 - [Apple · Create custom symbols](https://developer.apple.com/videos/play/wwdc2021/10250/)
+- [Bjango · Formulas for optical adjustments](https://bjango.com/articles/opticaladjustments/)
+- [Unity · Iconography](https://unityeditordesignsystem.unity.com/fundamentals/iconography)
+- [Adobe Spectrum · Using icons](https://spectrum.adobe.com/foundations/icons-and-illustrations/using-icons)
 
 ## What breaks
 
@@ -24,9 +27,9 @@ Applying the same offset to every icon can make a symmetric pause symbol jump si
 
 1. Compare the glyph with a centered guide at the actual button size.
 2. Check the paired state, such as play and pause.
-3. Move the artwork inside the control and preserve the hit area.
+3. Move the icon within the button so the hit area stays put.
 
-## Review questions
+## Before you ship
 
 1. Does the artwork appear centered with the guide removed?
 2. Does the control stay visually stable as its icon changes?

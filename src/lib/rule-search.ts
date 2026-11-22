@@ -126,11 +126,11 @@ type Indexed = {
 const WEIGHT = { title: 8, tags: 4, summary: 2, do: 1, dont: 1, id: 1 } as const;
 
 const FIELD_LABEL: Record<Exclude<MatchField, "synonym">, string> = {
-    id: "Rule id",
+    id: "Rule ID",
     title: "In title",
     summary: "In summary",
     do: "In Do",
-    dont: "In Don't",
+    dont: "In Don’t",
     tags: "In tags",
 };
 

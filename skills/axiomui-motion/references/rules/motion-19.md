@@ -1,33 +1,36 @@
-# Use drag resistance where overshoot is meaningful
+# Add resistance past a drag limit
 
 - ID: motion-19
 - Category: Motion & interaction
 - Tags: Gestures, Touch
 - URL: https://axiomui.nischal.fyi/rules/motion-19
 
-When a custom dragged surface reaches a meaningful limit, use bounded resistance to signal the edge. Never re-implement native scroll bounce. Clamp controls that represent a fixed valid range.
+When a card reaches its drag limit, let it move less with each extra pixel of pull. On release, return it to rest. Leave native scroll bounce alone and keep sliders within their valid range.
 
-- Do: Card yields less as the pull increases
-- Don't: Card stops abruptly at the limit
+- Do: Past the limit, the card moves less with each extra pixel of pull
+- Don’t: Card stops abruptly at the limit
 
 ## Why it works
 
-When a custom draggable card reaches a meaningful limit, moving it less for each additional pixel of pull can make the boundary tangible. A thumb beyond a slider’s maximum can imply a value the control cannot store, so keep numerical sliders in their valid range.
+Past a card’s drag limit, each extra pixel of pull moves the card a little less. A slider thumb that moves past its maximum suggests a value it cannot save, so keep it within range.
 
+- [Apple Developer · Designing Fluid Interfaces](https://developer.apple.com/videos/play/wwdc2018/803/)
 - [Motion · Elastic drag constraints](https://motion.dev/docs/react-drag#elastic-constraints)
+- [HTML · Range input](https://html.spec.whatwg.org/multipage/input.html#range-state-(type=range))
 - [CSS Overscroll Behavior · Scroll boundary default actions](https://www.w3.org/TR/css-overscroll-1/#scroll-chaining)
+- [Flutter · Overscroll friction factor](https://api.flutter.dev/flutter/widgets/BouncingScrollPhysics/frictionFactor.html)
 
 ## What breaks
 
-Unbounded overdrag can resemble valid progress. A spring that settles far from the value the application commits makes the control feel inaccurate.
+Dragging past a slider’s limit can suggest a value it cannot save. On release, the control should show the saved value.
 
 ## How to apply it
 
 1. Define the visual limit from a meaningful boundary such as a drawer’s last snap point.
 2. Cap visual travel beyond the edge and preserve the valid underlying value.
-3. Give a clear release destination and a reduced-motion settle.
+3. Return the card to its resting position on release. With reduced motion enabled, return it immediately.
 
-## Review questions
+## Before you ship
 
 1. What does movement beyond the edge mean here?
 2. Can someone mistake overshoot for a valid value?
