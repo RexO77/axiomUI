@@ -106,7 +106,7 @@ function wallFixture(same = false) {
   const root = {
     closest: (selector: string) => selector === ".shell-sheet" ? sheet : host,
     querySelector: (selector: string) => boxes.get(selector === ".gw-section:not([hidden]) .gw-grid" ? ".gw-grid" : selector),
-    querySelectorAll: vi.fn((selector: string) => selector === ".gw-tile" ? [tile] : [boxes.get(selector)]),
+    querySelectorAll: vi.fn((selector: string) => selector === ".gw-tile" ? [tile] : boxes.has(selector) ? [boxes.get(selector)] : []),
   };
   vi.stubGlobal("document", { createElement: () => probe });
   vi.stubGlobal("getComputedStyle", (node: unknown) => ({

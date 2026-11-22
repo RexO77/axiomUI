@@ -18,7 +18,7 @@ test("every mark is a link under the base, in rail order: each category icon to 
   expect(railIds).toEqual(railCategories.flatMap((category) => category.rules.map((rule) => rule.id)));
   // Named, and not hidden from assistive technology.
   const icon = page.locator(`${link}[href="${wallUrl({ hash: railCategories[2].id })}"]`);
-  await expect(icon).toHaveAccessibleName(`${railCategories[2].short}, ${railCategories[2].rules.length} rules, on the wall`);
+  await expect(icon).toHaveAccessibleName(`Browse ${railCategories[2].short}, ${railCategories[2].rules.length} rules`);
   expect(await icon.evaluate((el) => Boolean(el.closest('[aria-hidden="true"]')))).toBe(false);
 });
 

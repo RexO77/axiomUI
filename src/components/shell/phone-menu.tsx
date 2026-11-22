@@ -104,7 +104,7 @@ export function PhoneMenu({ session, routes, atHome, onHome, onClose, children, 
         role="dialog"
         aria-modal="true"
         data-shell-modal=""
-        aria-label="All rules"
+        aria-label="Rules menu"
         tabIndex={-1}
         onKeyDown={(event) => {
           if (event.key === "Escape") {

@@ -31,7 +31,8 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("⌘K opens a combobox whose active option moves by aria-activedescendant", async ({ page }) => {
-  await openCatalog(page, wallUrl());
+  // ⌘K opens the palette in both views; this case starts on a rule (the wall field takes /).
+  await openCatalog(page, ruleUrl(railIds[0]));
   await page.keyboard.press("ControlOrMeta+k");
   await expect(palette(page)).toBeVisible();
   const input = combobox(page);
@@ -227,14 +228,14 @@ test("a resize below 900px during the delay opens no peek", async ({ page }) => 
 
 test("the install popover follows a [ collapse", async ({ page }) => {
   await openCatalog(page, wallUrl());
-  const row = page.getByRole("button", { name: /^Install in your agent/ });
+  const row = page.getByRole("button", { name: "Install agent skills: npx skills add RexO77/axiomUI", exact: true });
   // Start expanded, so the collapse moves the row's right edge.
   if ((await page.locator(".shell[data-open]").count()) === 0) {
     await page.locator("body").press("[");
     await expect(page.locator(".shell")).toHaveAttribute("data-open", "");
   }
   await row.click();
-  const popover = page.getByRole("dialog", { name: "Install in your agent" });
+  const popover = page.getByRole("dialog", { name: "Install agent skills", exact: true });
   await expect(popover).toBeFocused();
   await expect(popover.locator("code").first()).toHaveText("npx skills add RexO77/axiomUI");
 
@@ -261,7 +262,7 @@ test("a theme switch is one crossfade", async ({ page }) => {
   await openCatalog(page, wallUrl());
   const dark = () => page.evaluate(() => document.documentElement.classList.contains("dark"));
   const before = await dark();
-  const button = page.getByRole("button", { name: /^(Dark|Light) mode$/ });
+  const button = page.getByRole("button", { name: /^Switch to (dark|light) mode$/ });
   await page.evaluate(() => {
     const w = window as unknown as { __animations: Promise<{ kind: string; pseudo: string | null }[]> };
     w.__animations = new Promise((resolve) => {
@@ -289,7 +290,7 @@ test("a theme switch is one crossfade", async ({ page }) => {
 });
 
 test("arrows and Enter while an input method is composing belong to the composition", async ({ page }) => {
-  await openCatalog(page, wallUrl());
+  await openCatalog(page, ruleUrl(railIds[0]));
   await page.keyboard.press("ControlOrMeta+k");
   const input = combobox(page);
   await expect(input).toBeFocused();
@@ -304,7 +305,7 @@ test("arrows and Enter while an input method is composing belong to the composit
   }
   await expect(palette(page)).toBeVisible();
   await expect(input).toHaveAttribute("aria-activedescendant", before!);
-  await awaitUrl(page, wallUrl());
+  await awaitUrl(page, ruleUrl(railIds[0]));
 });
 
 test("a palette opened on a phone keeps the rail inert when the window widens", async ({ page }) => {
@@ -324,9 +325,9 @@ test("a palette opened on a phone keeps the rail inert when the window widens", 
 
 test("the Agent skills panel expands from the rail popover’s rendered bounds", async ({ page }) => {
   await openCatalog(page, ruleUrl("motion-6"));
-  const trigger = page.getByRole("button", { name: /^Install in your agent/ });
+  const trigger = page.getByRole("button", { name: "Install agent skills: npx skills add RexO77/axiomUI", exact: true });
   await trigger.click();
-  const box = page.getByRole("dialog", { name: "Install in your agent" });
+  const box = page.getByRole("dialog", { name: "Install agent skills", exact: true });
   await box.evaluate(async el => { await Promise.all(el.getAnimations().map(a => a.finished)); });
   const source = (await box.boundingBox())!;
   const firstFrame = page.evaluate(() => new Promise<{ x: number; y: number; width: number; height: number }>(resolve => {
@@ -339,7 +340,7 @@ test("the Agent skills panel expands from the rail popover’s rendered bounds",
     });
     observer.observe(document.body, { childList: true, subtree: true });
   }));
-  await box.getByRole("button", { name: "Browse the skills" }).click();
+  await box.getByRole("button", { name: "Browse agent skills" }).click();
   const start = await firstFrame;
   for (const key of ["x", "y", "width", "height"] as const) {
     expect(Math.abs(start[key] - source[key]), key).toBeLessThan(1);
@@ -353,8 +354,8 @@ test("the Agent skills panel expands from the rail popover’s rendered bounds",
 
 test("the skills dialog keeps ⌘K and ⌘/ from opening anything behind it", async ({ page }) => {
   await openCatalog(page, wallUrl());
-  await page.getByRole("button", { name: /^Install in your agent/ }).click();
-  await page.getByRole("dialog", { name: "Install in your agent" }).getByRole("button", { name: "Browse the skills" }).click();
+  await page.getByRole("button", { name: "Install agent skills: npx skills add RexO77/axiomUI", exact: true }).click();
+  await page.getByRole("dialog", { name: "Install agent skills", exact: true }).getByRole("button", { name: "Browse agent skills" }).click();
   const skills = page.getByRole("dialog", { name: "Agent skills" });
   await expect(skills).toBeVisible();
   await expect.poll(() => page.evaluate(() => Boolean(document.activeElement?.closest('[aria-modal="true"]')))).toBe(true);
@@ -372,13 +373,13 @@ test("the skills dialog reopens on its install view and keeps a loaded playbook"
     if (request.url().endsWith("/skills/axiomui-website-upgrade/SKILL.md")) fetches += 1;
   });
   await openCatalog(page, wallUrl());
-  const row = page.getByRole("button", { name: /^Install in your agent/ });
+  const row = page.getByRole("button", { name: "Install agent skills: npx skills add RexO77/axiomUI", exact: true });
   // The dialog takes its name from the view's heading.
   const skills = page.getByRole("dialog", { name: "Agent skills" });
   const playbook = page.getByRole("dialog", { name: "Website playbook" });
   const browse = async () => {
     await row.click();
-    await page.getByRole("dialog", { name: "Install in your agent" }).getByRole("button", { name: "Browse the skills" }).click();
+    await page.getByRole("dialog", { name: "Install agent skills", exact: true }).getByRole("button", { name: "Browse agent skills" }).click();
     await expect(skills).toBeVisible();
   };
   const preview = async () => {

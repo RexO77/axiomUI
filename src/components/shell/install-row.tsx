@@ -15,7 +15,7 @@
  * <body>. Esc closes it from inside, in the bubble phase, so nothing behind
  * it hears that Esc; focus then returns to the row.
  *
- * "Browse the skills" closes the popover and opens the full skills dialog.
+ * "Browse agent skills" closes the popover and opens the full skills dialog.
  * The dialog is its own chunk, fetched when the popover first opens, so the
  * catalog's first load never carries it. Focus returns to the row when it
  * closes.
@@ -180,8 +180,8 @@ function InstallPopover({ id, anchor, onClose, onBrowse }: PopoverProps) {
         if (next && !event.currentTarget.contains(next) && !anchor.contains(next)) onClose(null);
       }}
     >
-      <h2 id={`${uid}-title`}>Install in your agent</h2>
-      <p>Axiom UI’s rules as agent skills.</p>
+      <h2 id={`${uid}-title`}>Install agent skills</h2>
+      <p>Give your coding agent design rules for reviewing interfaces.</p>
       <div className="install-cmd">
         <code>{skillsCliCommand}</code>
         <button type="button" className="install-copy" data-copied={copied === "copied" ? "" : undefined}
@@ -189,7 +189,7 @@ function InstallPopover({ id, anchor, onClose, onBrowse }: PopoverProps) {
           {copied === "copied" ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
         </button>
       </div>
-      <p>Choose which skills and agents to install. Run it in your project, or add <code>-g</code> for every project.</p>
+      <p>Run the command in your project folder. Choose which skills to add and which agents get them. Add <code>-g</code> to use them across projects.</p>
       <button type="button" className="install-link" aria-haspopup="dialog" aria-disabled={status === "loading" || undefined}
         onClick={(event) => browse(event.currentTarget, (dialog) => {
           if (!pop.current || !anchor.getClientRects().length) return;
@@ -198,14 +198,14 @@ function InstallPopover({ id, anchor, onClose, onBrowse }: PopoverProps) {
             viewportWidth: window.innerWidth, viewportHeight: window.innerHeight,
           });
         })}>
-        {status === "loading" ? "Opening skills…" : status === "error" ? "Retry opening skills" : "Browse the skills"}
+        {status === "loading" ? "Opening skills…" : status === "error" ? "Retry opening skills" : "Browse agent skills"}
         <ArrowRight aria-hidden="true" />
       </button>
       <span role="status" className="sr-only">
         {status === "loading" ? "Loading agent skills." : status === "error" ? "Couldn’t load agent skills. Try again." : ""}
       </span>
       <span role="status" className="sr-only">
-        {copied === "copied" ? "Copied" : copied === "failed" ? "Copy failed. Try again." : ""}
+        {copied === "copied" ? "Install command copied." : copied === "failed" ? "Couldn’t copy the install command. Try again." : ""}
       </span>
     </div>
   );
@@ -244,7 +244,7 @@ export function InstallMenuRow({ onOpen }: { onOpen: (dialog: SkillsDialogCompon
       }}>
       <SquareTerminal aria-hidden="true" />
       <span className="rail-row-label" aria-live="polite">
-        {status === "loading" ? "Opening skills…" : status === "error" ? "Retry opening skills" : "Install in your agent"}
+        {status === "loading" ? "Opening skills…" : status === "error" ? "Retry opening skills" : "Browse agent skills"}
       </span>
     </button>
   );
@@ -273,13 +273,13 @@ export function InstallRow({ expanded, fallback }: { expanded: boolean; fallback
 
   return (
     <div className="install-row">
-      <Tooltip content={<>Install in your agent · <code className="install-tip-code">{skillsCliCommand}</code></>} disabled={expanded || anchor !== null} className="w-full">
+      <Tooltip content={<>Install agent skills · <code className="install-tip-code">{skillsCliCommand}</code></>} disabled={expanded || anchor !== null} className="w-full">
         <button ref={button} type="button" className="rail-row" aria-haspopup="dialog" aria-expanded={anchor !== null}
           aria-controls={anchor ? popId : undefined}
           onClick={() => setAnchor(anchor ? null : button.current)}>
           <SquareTerminal aria-hidden="true" />
           <span className="rail-row-label">
-            <span className="sr-only">Install in your agent: </span>
+            <span className="sr-only">Install agent skills: </span>
             <code className="install-row-code">{skillsCliCommand}</code>
           </span>
         </button>
@@ -292,7 +292,7 @@ export function InstallRow({ expanded, fallback }: { expanded: boolean; fallback
       ) : null}
       {expanded ? (
         <span role="status" className="sr-only">
-          {copied === "copied" ? "Copied" : copied === "failed" ? "Copy failed. Try again." : ""}
+          {copied === "copied" ? "Install command copied." : copied === "failed" ? "Couldn’t copy the install command. Try again." : ""}
         </span>
       ) : null}
       {anchor ? <InstallPopover id={popId} anchor={anchor} onClose={close} onBrowse={browse} /> : null}

@@ -164,12 +164,12 @@ export function Rail({ covered = false }: { covered?: boolean }) {
   }, [sheet]);
 
   return (
-    <nav ref={nav} className="shell-rail" aria-label="Rules navigation" inert={phone || covered}
+    <nav ref={nav} className="shell-rail" aria-label="Rule sidebar" inert={phone || covered}
       onFocusCapture={() => { railFocused.current = true; }}
       onBlurCapture={() => { if (!window.matchMedia(PHONE_QUERY).matches) railFocused.current = false; }}>
       <div className="rail-brand-row">
-        <Tooltip content="All rules" disabled={open}>
-          <a className="rail-home" href={routes.galleryHref()} aria-label={`${siteConfig.name} — All rules`}
+        <Tooltip content="All rules" disabled={open} className="rail-home-tip">
+          <a className="rail-home" href={routes.galleryHref()} aria-label={`${siteConfig.name}, all rules`}
             aria-current={view === "gallery" ? "page" : undefined}
             onClick={(event) => {
               if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
@@ -190,12 +190,13 @@ export function Rail({ covered = false }: { covered?: boolean }) {
       <SidebarList ruleId={ruleId} currentCat={currentCat} matches={matches} peek={peek}
         hidden={!open} routes={routes} onOpen={openRule} />
       <div className="rail-bottom">
-        <Tooltip content={<>Expand sidebar <Kbd>[</Kbd></>} disabled={open} className="w-full">
+        <Tooltip content={<>Expand sidebar{singleKeys ? <> <Kbd>[</Kbd></> : null}</>} disabled={open} className="w-full">
           <button ref={toggle} type="button" className="rail-button" aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
             onClick={(event) => change(event.detail === 0 || inputOrigin() === "keyboard")}>
-            <PanelLeftOpen aria-hidden="true" className="rail-icon-expand" />
-            <PanelLeftClose aria-hidden="true" className="rail-icon-collapse" />
-            <span className="rail-button-label">Collapse <Kbd className="ml-2">[</Kbd></span>
+            {/* Hugeicons' names run opposite to the arrows: PanelLeftClose points right (expand), PanelLeftOpen left (collapse). */}
+            <PanelLeftClose aria-hidden="true" className="rail-icon-expand" />
+            <PanelLeftOpen aria-hidden="true" className="rail-icon-collapse" />
+            <span className="rail-button-label">Collapse{singleKeys ? <Kbd className="ml-2">[</Kbd> : null}</span>
           </button>
         </Tooltip>
         <InstallRow expanded={open} fallback={sheet} />

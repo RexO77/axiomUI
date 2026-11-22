@@ -77,8 +77,8 @@ function whereIs(deck: Deck, id: string): string {
   const position = deckPosition(deck, id);
   if (!rule || !position) return rule?.title ?? "";
   const at = `${rule.title}, ${position.label}`;
-  if (deck.kind === "search") return `${at} matches`;
-  if (deck.kind === "collection") return `${at}, ${collections.find((item) => item.id === deck.collection)?.name ?? ""}`;
+  if (deck.kind === "search") return `${rule.title}, match ${position.label}`;
+  if (deck.kind === "collection") return `${rule.title}, rule ${position.label}, ${collections.find((item) => item.id === deck.collection)?.name ?? ""}`;
   return `${at}, ${railCategory(position.category).name}`;
 }
 
@@ -125,7 +125,13 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
     peek.current?.close();
     openModal("menu");
   }, [openModal]);
-  const openPalette = useCallback(() => openModal("palette"), [openModal]);
+  const openPalette = useCallback(
+    (returnTo?: HTMLElement | null) => {
+      openModal("palette");
+      if (returnTo) returnInstead(returnTo);
+    },
+    [openModal, returnInstead],
+  );
   const openShortcuts = useCallback(() => openModal("shortcuts"), [openModal]);
 
   /* Phones on a rule: reading down tucks the strip's category row (and, held sideways, the top bar) away. */
@@ -375,7 +381,8 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
           page(action === "next" || action === "nextSection" ? 1 : -1, action.endsWith("Section"));
           break;
         case "inspector":
-          if (!inRule) return;
+          // Phones keep the deep dive in the page and list no I key: it must not flip the desktop preference.
+          if (!inRule || phone) return;
           toggleInspector();
           break;
         case "escape":
@@ -391,7 +398,7 @@ export function Shell({ view, ruleId, deck, onOpenRule, onExit, onHome, onClearD
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [view, singleKeys, page, toggleInspector, exit, modalOpen]);
+  }, [view, singleKeys, page, toggleInspector, exit, modalOpen, phone]);
 
   const api = useMemo<ShellApi>(
     () => ({

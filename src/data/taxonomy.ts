@@ -229,10 +229,10 @@ function collection(id: string, name: string, groups: RuleGroup[]): Collection {
 export const accessibilityCollection = collection("accessibility", "Accessibility", [
   { label: "Keyboard and focus", ruleIds: ["a11y-1", "sys-8", "comp-12", "a11y-8", "layout-12", "a11y-4"] },
   {
-    label: "Reading visual information",
+    label: "Text, color and charts",
     ruleIds: ["color-9", "color-6", "typo-6", "typo-11", "a11y-2", "a11y-7", "a11y-5", "comp-13"],
   },
-  { label: "Labels and input assistance", ruleIds: ["form-2", "comp-7", "comp-8", "form-14", "form-13"] },
+  { label: "Labels and input help", ruleIds: ["form-2", "comp-7", "comp-8", "form-14", "form-13"] },
   { label: "Targets, timing and motion", ruleIds: ["sys-3", "a11y-3", "motion-17", "a11y-6", "sys-16"] },
 ]);
 
@@ -245,7 +245,66 @@ export const liveDemoCollection = collection("live", "Live demos", [
   },
 ]);
 
-export const collections: readonly Collection[] = [accessibilityCollection, liveDemoCollection];
+
+/*
+ * Cross-category filters for the wall's "Show only" switches, curated rule by
+ * rule (not copied from tags): each holds what a reviewer checking that
+ * concern should look at, first things first.
+ */
+/** Check whether someone can reach, use, and leave controls with a keyboard while keeping track of focus. */
+export const keyboardCollection = collection("keyboard", "Keyboard & focus", [
+  { label: "Keyboard controls and order", ruleIds: ["sys-8", "a11y-1", "form-10", "layout-12", "comp-14"] },
+  { label: "Overlay focus and dismissal", ruleIds: ["motion-2", "comp-12", "a11y-8"] },
+  { label: "Tooltips and sign-in codes", ruleIds: ["motion-11", "form-13"] },
+]);
+/** Check tap targets, touch input, and the alternatives to swiping or dragging. */
+export const touchGesturesCollection = collection("touch-gestures", "Touch & gestures", [
+  { label: "Tap targets", ruleIds: ["sys-3", "a11y-3", "comp-11"] },
+  { label: "Touch input and feedback", ruleIds: ["motion-8", "motion-16", "form-14", "sys-4"] },
+  { label: "Drag and swipe", ruleIds: ["a11y-4", "motion-20", "motion-18", "motion-19"] },
+]);
+/** Find where the interface can show useful content, acknowledge input, or make the next action available sooner. */
+export const perceivedSpeedCollection = collection("perceived-speed", "Perceived speed", [
+  { label: "First paint and loading", ruleIds: ["motion-29", "layout-13", "sys-1"] },
+  { label: "Immediate feedback", ruleIds: ["motion-8", "comp-9", "sys-9"] },
+  { label: "Time to the next action", ruleIds: ["motion-2", "motion-1", "motion-6", "motion-4", "motion-9", "motion-24", "motion-11"] },
+]);
+/** Help people correct input, retry failed operations, and recover from accidental removal. */
+export const errorRecoveryCollection = collection("error-recovery", "Error recovery", [
+  { label: "Form validation and correction", ruleIds: ["comp-6", "form-15", "form-8", "a11y-2", "form-9"] },
+  { label: "Failed operations", ruleIds: ["sys-10", "sys-16", "sys-9"] },
+  { label: "Confirmation and undo", ruleIds: ["comp-2", "sys-6"] },
+]);
+/** Check that tasks, text, and media still work as the viewport narrows or the reader zooms in. */
+export const responsiveUiCollection = collection("responsive-ui", "Responsive UI", [
+  { label: "Space and reading order", ruleIds: ["sys-11", "layout-9", "form-10", "form-1", "comp-5", "layout-12"] },
+  { label: "Text size and wrapping", ruleIds: ["typo-11", "typo-10", "layout-2", "typo-4", "typo-12", "typo-13"] },
+  { label: "Media size and crops", ruleIds: ["layout-14", "layout-13"] },
+]);
+/** Build and review theme palettes so text, controls, focus indicators, and surface edges stay discernible. */
+export const themeContrastCollection = collection("theme-contrast", "Theme & contrast", [
+  { label: "Palette and state colors", ruleIds: ["sys-5", "color-8", "color-10"] },
+  { label: "Text, controls, and focus", ruleIds: ["color-9", "color-6", "a11y-1", "a11y-7"] },
+  { label: "Surface and image edges", ruleIds: ["color-12", "color-11"] },
+]);
+/** Find rules for naming controls, explaining what happened, and making dates, numbers, and names clear in context. */
+export const writingLabelsCollection = collection("writing-labels", "Writing & labels", [
+  { label: "Action and field labels", ruleIds: ["comp-7", "form-2", "form-3", "form-9", "typo-1"] },
+  { label: "Messages and next steps", ruleIds: ["sys-2", "comp-8", "comp-6", "comp-2", "form-12", "sys-7"] },
+  { label: "Dates, numbers, and names", ruleIds: ["sys-4", "comp-13", "typo-14"] },
+]);
+
+export const collections: readonly Collection[] = [
+  accessibilityCollection,
+  liveDemoCollection,
+  keyboardCollection,
+  touchGesturesCollection,
+  perceivedSpeedCollection,
+  errorRecoveryCollection,
+  responsiveUiCollection,
+  themeContrastCollection,
+  writingLabelsCollection,
+];
 
 const liveDemoIds = new Set(liveDemoCollection.ruleIds);
 

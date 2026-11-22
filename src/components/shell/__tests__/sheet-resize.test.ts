@@ -110,10 +110,24 @@ describe("shell.css", () => {
     expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{\s*\.shell\[data-moving\] \.shell-sheet \{ transition: none; \}/);
   });
 
-  it("swaps the strip on the click: fading its hundred mark layers costs every frame of the move", () => {
-    const strip = [...css.matchAll(/([^{}]*\.rail-region[^{}]*)\{([^}]*)\}/g)];
-    expect(strip.length).toBeGreaterThan(0);
-    for (const [, , body] of strip) expect(body).not.toMatch(/transition|opacity/);
+  it("swaps the strip on the click: fading its hundred mark layers would cost every frame of the move", () => {
+    const strip = [...css.matchAll(/([^{}]*\.rail-region[^{}]*)\{([^}]*)\}/g)].map(([, selector, body]) => ({ selector: selector.trim(), body }));
+    // The base rule fades the strip back in once a close has landed, after the move.
+    const base = strip.filter(({ selector, body }) => selector === ".rail-region" && /transition:/.test(body));
+    expect(base.map(({ body }) => body.trim())).toEqual([expect.stringMatching(/^transition: opacity 120ms /)]);
+    // While the rail is wide or closing, the strip is hidden at once, with no transition.
+    const closing = strip.filter(({ selector }) => selector.includes('[data-moving="close"]') && selector.includes("[data-wide]"));
+    expect(closing).toHaveLength(1);
+    expect(closing[0].body).toMatch(/visibility: hidden/);
+    expect(closing[0].body).toMatch(/opacity: 0/);
+    expect(closing[0].body).toMatch(/transition: none/);
+    // Keyboard input swaps it without the fade.
+    expect(strip.some(({ selector, body }) => selector === ':root[data-input="keyboard"] .rail-region' && /transition: none/.test(body))).toBe(true);
+    // No other rule adds a fade of its own.
+    for (const { selector, body } of strip) {
+      if (selector === ".rail-region" || !/transition:/.test(body)) continue;
+      expect(body, selector).toMatch(/transition: none/);
+    }
   });
 });
 

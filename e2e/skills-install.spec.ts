@@ -4,9 +4,9 @@ import { expect, openCatalog, test, wallUrl } from "./helpers";
 async function openInstall(page: Page) {
   await page.addInitScript(() => localStorage.setItem("axiom:strip-hint", "seen"));
   await openCatalog(page, wallUrl());
-  await page.getByRole("button", { name: /^Install in your agent/ }).click();
-  await page.getByRole("dialog", { name: "Install in your agent" })
-    .getByRole("button", { name: "Browse the skills" }).click();
+  await page.getByRole("button", { name: "Install agent skills: npx skills add RexO77/axiomUI", exact: true }).click();
+  await page.getByRole("dialog", { name: "Install agent skills", exact: true })
+    .getByRole("button", { name: "Browse agent skills" }).click();
   return page.getByRole("dialog", { name: "Agent skills" });
 }
 
@@ -125,7 +125,7 @@ for (const width of [355, 1440]) {
     if (phone) {
       await openCatalog(page, wallUrl());
       await page.getByRole("button", { name: "Menu", exact: true }).click();
-      await page.getByRole("button", { name: "Install in your agent", exact: true }).click();
+      await page.getByRole("button", { name: "Browse agent skills", exact: true }).click();
     } else await openInstall(page);
     const dialog = page.getByRole("dialog", { name: "Agent skills" });
     if (phone) await dialog.getByRole("combobox").selectOption("axiomui-website-upgrade");

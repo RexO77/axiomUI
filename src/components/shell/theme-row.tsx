@@ -38,8 +38,8 @@ export function switchTheme(toggle: () => void, instant: boolean): void {
 
 const Label = () => (
   <>
-    <span className="dark:hidden">Dark mode</span>
-    <span className="hidden dark:inline">Light mode</span>
+    <span className="dark:hidden">Switch to dark mode</span>
+    <span className="hidden dark:inline">Switch to light mode</span>
   </>
 );
 

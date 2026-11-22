@@ -122,7 +122,7 @@ export function StripHint({ ruleId, hidden }: { ruleId: string | null; hidden: b
       style={spot ? { left: spot.left, top: spot.top } : undefined}
     >
       <span className="strip-hint-dots" aria-hidden="true" />
-      Each dot on the left is a rule — hover to preview
+      Hover over a dot on the left to preview a rule.
     </p>
   );
 }

@@ -40,6 +40,8 @@ export function Tooltip({ content, children, side = "right", disabled = false, c
   const tipHovered = useRef(false);
   const focused = useRef(false);
   const dismissed = useRef(false);
+  /** A press under the pointer: it keeps the tip shut until the pointer leaves. */
+  const pressed = useRef(false);
   const isOpen = useRef(false);
   const [state, setState] = useState({ open: false, disabled });
   if (state.disabled !== disabled) setState({ open: false, disabled });
@@ -77,7 +79,7 @@ export function Tooltip({ content, children, side = "right", disabled = false, c
   const show = () => {
     clearTimeout(closeTimer.current);
     clearTimeout(openTimer.current);
-    if (disabled || dismissed.current || isOpen.current) return;
+    if (disabled || dismissed.current || pressed.current || isOpen.current) return;
     const commit = () => {
       closeActive?.();
       closeActive = close;
@@ -182,13 +184,22 @@ export function Tooltip({ content, children, side = "right", disabled = false, c
           hovered.current = true;
           show();
         }}
-        onPointerLeave={() => { hovered.current = false; leave(); }}
-        // A click closes the tip and its focus doesn't reopen it: only keyboard
-        // focus (:focus-visible) shows a tip, so one click never pins it open.
-        onPointerDown={() => { focused.current = false; close(); }}
+        onPointerLeave={() => { hovered.current = false; pressed.current = false; leave(); }}
+        // A press closes the tip and it stays closed until the pointer leaves:
+        // a control that swaps its icon or label under a resting pointer gets
+        // a second pointerenter, inside the warm window, with no leave between.
+        // Its focus doesn't reopen it either: only keyboard focus
+        // (:focus-visible) shows a tip, so one click never pins it open.
+        onPointerDown={() => {
+          focused.current = false;
+          close();
+          pressed.current = hovered.current;
+        }}
         onFocus={(event) => {
           if (!(event.target instanceof Element) || !event.target.matches(":focus-visible")) return;
           focused.current = true;
+          // Keyboard focus asks for the description, even under a pointer that pressed it.
+          pressed.current = false;
           show();
         }}
         onBlur={(event) => {
@@ -215,7 +226,7 @@ export function Tooltip({ content, children, side = "right", disabled = false, c
           }}
           onPointerLeave={() => { tipHovered.current = false; leave(); }}
         >
-          <div className="rounded-tip bg-inverse px-2 py-1 text-xs leading-4 font-medium text-on-inverse [overflow-wrap:anywhere] forced-colors:outline">
+          <div className="rounded-tip bg-inverse px-2 py-1 text-xs leading-4 font-medium text-on-inverse [overflow-wrap:anywhere] forced-colors:outline [&_kbd]:text-on-inverse">
             {content}
           </div>
         </div>,

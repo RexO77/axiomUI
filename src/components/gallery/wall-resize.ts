@@ -18,8 +18,13 @@ import type { SheetResizer } from "@/components/shell/sheet-resize";
  * destination, and re-slots them where the column count does. Every tile
  * that moved and is on screen, before or after, settles on the move's own
  * duration and easing (settleFor): a shift glides from where it was, a new
- * slot fades in. The tile the reader is looking at holds its place on screen.
+ * slot fades in. The toolbar's items and the section heads ride the same
+ * gutter, so they glide with the tiles (GUTTER_RIDERS). The tile the reader
+ * is looking at holds its place on screen.
  */
+
+/** Boxes besides the tiles that the pinned gutters shift: they glide, never fade, and never anchor the scroll. */
+const GUTTER_RIDERS = ".gw-bar > *, .gw-section:not([hidden]) .gw-section-head";
 
 /** The gutters gallery.css steps at its container query. */
 export const PINNED_GUTTERS = ["--gw-pad", "--gw-gap", "--gw-row-gap", "--gw-section-gap"] as const;
@@ -101,6 +106,7 @@ function probeLayout(host: HTMLElement, sheetWidth: number, wallWidth: number): 
  */
 export function wallResizer(root: HTMLElement, scroller: () => HTMLElement | null): SheetResizer {
   let tiles: HTMLElement[] = [];
+  let riders: HTMLElement[] = [];
   let before = new Map<HTMLElement, DOMRect>();
   let anchor: HTMLElement | null = null;
   let glided: HTMLElement[] = [];
@@ -131,11 +137,13 @@ export function wallResizer(root: HTMLElement, scroller: () => HTMLElement | nul
         carried = pins.length > 0 || glided.length > 0;
         next = !carried && sameLayout(destination, readLayout(root)) ? null : destination;
         tiles = [];
+        riders = [];
         before.clear();
         anchor = null;
         if (!next) return;
         tiles = [...root.querySelectorAll<HTMLElement>(".gw-tile")].filter((tile) => !tile.closest("[hidden]"));
-        before = new Map(tiles.map((tile) => [tile, tile.getBoundingClientRect()]));
+        riders = [...root.querySelectorAll<HTMLElement>(GUTTER_RIDERS)];
+        before = new Map([...tiles, ...riders].map((box) => [box, box.getBoundingClientRect()]));
         // The reader's place: the first tile whose top is in view, once the wall has scrolled.
         const top = layer && layer.scrollTop > 0 ? layer.getBoundingClientRect().top : null;
         anchor = top === null ? null : tiles.find((tile) => (before.get(tile)?.top ?? -Infinity) >= top) ?? null;
@@ -189,6 +197,14 @@ export function wallResizer(root: HTMLElement, scroller: () => HTMLElement | nul
         const now = tile.getBoundingClientRect();
         const settle = settleFor(from, now);
         if (settle && (overlaps(from, view) || overlaps(now, view))) moves.push([tile, settle]);
+      }
+      for (const rider of riders) {
+        const from = before.get(rider);
+        if (!from) continue;
+        const now = rider.getBoundingClientRect();
+        const x = from.left - now.left;
+        const y = from.top - now.top;
+        if (Math.abs(x) >= 0.5 || Math.abs(y) >= 0.5) moves.push([rider, { glide: { x, y } }]);
       }
       if (!moves.length) return;
       for (const [tile, settle] of moves) {

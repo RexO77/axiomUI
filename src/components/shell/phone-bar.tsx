@@ -76,7 +76,7 @@ export function PhoneBar({ routes, menuOpen, onMenu }: PhoneBarProps) {
         <a
           className="phone-loc phone-up"
           href={routes.galleryHref({ q: deck.q, collection: deck.collection })}
-          aria-label={`${name} · ${count}, back to all rules`}
+          aria-label={`${name}, ${deck.kind === "search" ? "match " : deck.kind === "collection" ? "rule " : ""}${count}, back to the rule list`}
           onClick={(event) => {
             if (!isPlainClick(event)) return;
             event.preventDefault();

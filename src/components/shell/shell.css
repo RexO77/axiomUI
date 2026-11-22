@@ -40,6 +40,9 @@
   box-shadow: var(--ax-shadow-sheet);
   overflow-x: hidden;
   overflow-y: auto;
+  /* Classic scrollbars would narrow only the rule pages that overflow, so the
+     canvas and its 1×/2× control would shift between neighbours. */
+  scrollbar-gutter: stable;
   overscroll-behavior: contain;
   container: sheet / inline-size;
   isolation: isolate;
@@ -122,27 +125,6 @@
    content portalled to <body> (tooltips, overlays) follows it too. */
 :root[data-input="keyboard"] .shell-ctl { transition: none; }
 
-/* ── Rule ↔ wall morph ─────────────────────────────────────────────── */
-
-/* runViewTransition (view-transition.ts) names the pair, sets data-vt and
-   owns the durations. These refine the snapshots: the leaving one keeps its
-   own size, centred, and is gone in 90ms (stretched, it read as a ghost),
-   and a title is text, never a scaled bitmap. */
-:root[data-vt="in"]::view-transition-old(rule-canvas),
-:root[data-vt="in"]::view-transition-old(rule-title),
-:root[data-vt="out"]::view-transition-old(rule-canvas),
-:root[data-vt="out"]::view-transition-old(rule-title) { animation-duration: 90ms; }
-:root[data-vt="in"]::view-transition-old(rule-canvas),
-:root[data-vt="out"]::view-transition-old(rule-canvas) { object-fit: none; object-position: center; }
-:root[data-vt="in"]::view-transition-old(rule-title),
-:root[data-vt="in"]::view-transition-new(rule-title),
-:root[data-vt="out"]::view-transition-old(rule-title),
-:root[data-vt="out"]::view-transition-new(rule-title) {
-  height: 100%;
-  object-fit: none;
-  object-position: left top;
-}
-
 /* ── Phone frame ───────────────────────────────────────────────────── */
 
 /* PHONE_QUERY decides at first paint, so hydration never flips the layout:
@@ -195,6 +177,8 @@
   --rail-visited: color-mix(in oklch, var(--ax-ink) 58%, var(--ax-backdrop));
 }
 .shell-rail :focus-visible { outline: 2px solid var(--ax-ring); outline-offset: 2px; }
+/* Rows touch, so a ring outside one is painted over by the next: inside, it matches the hit box. */
+.rail-list :focus-visible { outline-offset: -2px; }
 .shell-rail button { touch-action: manipulation; }
 .shell-rail a { text-decoration: none; }
 .rail-brand-row {
@@ -217,9 +201,11 @@
   font-size: 14px;
   line-height: 20px;
   font-weight: 600;
-  letter-spacing: -0.01em;
   transition: background-color 140ms var(--ease-out-strong), color 140ms var(--ease-out-strong);
 }
+/* Open, the home link fills its band: the space right of the name opens all rules too. */
+.shell[data-open] .rail-home-tip { flex: 1; }
+.shell[data-open] .rail-home { width: 100%; }
 .rail-logo-tile {
   width: 28px;
   height: 28px;
@@ -248,6 +234,8 @@
   overscroll-behavior: contain;
   scrollbar-width: thin;
   padding: 0 8px 16px;
+  /* A row scrolled into view by the keyboard clears the 24px fade at the foot. */
+  scroll-padding: 16px 0 32px;
   visibility: hidden;
   mask-image: linear-gradient(to bottom, black calc(100% - 24px), transparent);
 }
@@ -262,8 +250,12 @@
    [data-open] keeps the list (and the labels' layout) until a close lands;
    [data-wide] is the target, so the fades turn around with the edge. The
    strip waits for a close to land, as the list waits for an open: it never
-   shows through the list while that fades. */
-.shell:is([data-wide], [data-moving="close"]) .rail-region { visibility: hidden; }
+   shows through the list while that fades. Once a close has landed it
+   fades in over 120ms rather than popping in on the frame the edge stops;
+   that runs after the move, so it costs the move nothing. */
+.rail-region { transition: opacity 120ms var(--ease-out-strong); }
+.shell:is([data-wide], [data-moving="close"]) .rail-region { visibility: hidden; opacity: 0; transition: none; }
+:root[data-input="keyboard"] .rail-region { transition: none; }
 .shell-rail .rail-list { opacity: 0; }
 .shell[data-wide] .shell-rail .rail-list { opacity: 1; }
 .shell[data-rail-ready]:not([data-wide]) .shell-rail :is(.rail-brand-name, .rail-button-label, .rail-row-label) { opacity: 0; }
@@ -294,13 +286,20 @@
 .rail-catrow > svg { position: absolute; left: 11px; width: 18px; height: 18px; flex: none; }
 .rail-catrow[data-active] { color: var(--ax-ink); }
 .rail-count { margin-left: auto; font-size: 12px; line-height: 16px; color: var(--ax-ink-muted); font-variant-numeric: tabular-nums; }
-.rail-minirun { display: flex; align-items: center; height: 24px; margin: -4px 0 4px 37px; max-width: calc(100% - 44px); overflow: hidden; }
-.rail-minidot { flex: none; width: 6px; height: 6px; display: grid; place-items: center; }
+.rail-minirun { position: relative; z-index: 1; display: flex; align-items: center; height: 24px; margin: -4px 0 4px 37px; max-width: calc(100% - 44px); overflow: hidden; }
+/* A closed category's whole block opens it: its row reaches over the 4px above and the run's band
+   below, out to the rail's edges. The dots sit above it in their own columns, so the band around
+   them, never the dots, opens the category. */
+.rail-catrow[aria-expanded="false"]::after { content: ""; position: absolute; inset: -4px -8px -24px; }
+.rail-catrow[aria-expanded="true"]::after { content: ""; position: absolute; inset: -4px -8px 0; }
+/* Each link is its 6px column at the run's full 24px height: the dot the pointer lights (by x alone) is the one a click opens. */
+.rail-minidot { flex: none; align-self: stretch; width: 6px; display: grid; place-items: center; }
 .rail-minidot::before { content: ""; width: 4px; height: 4px; border-radius: 9999px; background: var(--rail-mark); }
 .rail-minidot[data-visited]::before { background: var(--rail-visited); }
 .rail-minidot[data-hot]::before { width: 6px; height: 6px; background: var(--ax-ink); }
 .rail-minidot[data-current]::before { width: 2px; height: 10px; border-radius: var(--radius-kbd); background: var(--ax-ink); }
-.rail-sublabel { padding: 12px 8px 4px 39px; font-size: 12px; line-height: 16px; font-weight: 500; color: var(--ax-ink-muted); }
+.rail-list :is(.rail-rulerow, .rail-switchrow)::after { content: ""; position: absolute; inset: 0 -8px; }
+.rail-sublabel { padding: 8px 8px 4px 39px; font-size: 12px; line-height: 16px; font-weight: 500; color: var(--ax-ink-secondary); }
 .rail-rulerow {
   position: relative;
   display: flex;
@@ -312,14 +311,130 @@
   line-height: 18px;
   color: var(--ax-ink-secondary);
 }
-.rail-rowdot { position: absolute; left: 18px; top: 50%; width: 4px; height: 4px; margin-top: -2px; border-radius: 9999px; background: var(--rail-mark); }
-.rail-rulerow[data-visited] .rail-rowdot { background: var(--rail-visited); }
+/* An open category is a tree: one trunk down from under the category's row
+   (starting at its edge, never inside its hover fill), on the icon's x (19),
+   and from it a rounded elbow and an arrowhead into each rule's first line.
+   The trunk is drawn by each row (and group label) itself, so it runs
+   unbroken through wrapped titles and groups, over the current rule's fill,
+   and fades in with its row as a category opens rather than running ahead
+   of it; the last rule has none, and its elbow reaches up into the row
+   above, so the trunk ends in that final curve. */
+.rail-group .rail-sublabel { position: relative; }
+.rail-group .rail-rulerow::before, .rail-group .rail-sublabel::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  left: 19px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--rail-mark);
+  pointer-events: none;
+}
+.rail-group:last-child li:last-child > .rail-rulerow::before { content: none; }
+.rail-rowtitle { position: relative; min-width: 0; }
+.rail-branch {
+  position: absolute;
+  left: -20px;
+  top: calc(0.5lh - 10.5px);
+  width: 12px;
+  height: 11px;
+  border: 0 solid var(--rail-mark);
+  border-width: 0 0 1px 1px;
+  border-bottom-left-radius: var(--radius-frame);
+  pointer-events: none;
+}
+.rail-group:last-child li:last-child .rail-branch { top: calc(0.5lh - 48.5px); height: 49px; }
+/* The arrowhead: a 5px chevron on the elbow's end, 4px short of the title. */
+.rail-branch::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -3px;
+  width: 5px;
+  height: 5px;
+  border: 0 solid;
+  border-color: inherit;
+  border-width: 1px 1px 0 0;
+  rotate: 45deg;
+}
+.rail-rulerow[data-visited] .rail-branch { border-color: var(--rail-visited); }
 .rail-rulerow[aria-current="page"] { color: var(--ax-ink); background: var(--ax-raised); box-shadow: var(--ax-shadow-item); }
-.rail-rulerow[aria-current="page"] .rail-rowdot { width: 4px; height: 14px; margin-top: -7px; border-radius: var(--radius-kbd); background: var(--ax-ink); }
-.rail-list [data-dim] { opacity: 0.35; }
-.rail-collection { margin-top: 16px; }
+.rail-rulerow[aria-current="page"] .rail-branch { border-color: var(--ax-ink); }
+/* A search that leaves a rule out dims it, but it stays a link a reader can
+   use: its label steps down to the readable floor instead of fading below
+   it; the marks, which carry nothing on their own, fade. */
+.rail-list :is(.rail-catrow, .rail-rulerow)[data-dim] { color: var(--ax-ink-muted); }
+.rail-list :is(.rail-catrow, .rail-rulerow)[data-dim] :is(svg, .rail-branch) { opacity: 0.4; }
+.rail-list .rail-minidot[data-dim] { opacity: 0.35; }
+/* Show only: the collections as switches under the categories. A row is
+   the whole switch, laid out like a category row (icon x 19, label x 47),
+   with the count beside a small track on the right, so it reads as a
+   setting that narrows the wall, not as one more section. */
+.rail-showonly { margin-top: 20px; }
+.rail-showonly-label { padding: 0 8px 6px 11px; font-size: 12px; line-height: 16px; font-weight: 500; color: var(--ax-ink-secondary); }
+.rail-switchrow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: 36px;
+  padding: 0 8px 0 11px;
+  border-radius: var(--radius-control);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--ax-ink-secondary);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 140ms var(--ease-out-strong), color 140ms var(--ease-out-strong);
+}
+.rail-switchrow > svg { width: 16px; height: 16px; flex: none; color: var(--ax-ink-muted); }
+.rail-switchrow .rail-count { margin-left: auto; }
+.rail-switchrow[aria-checked="true"] { color: var(--ax-ink); }
+@media (hover: hover) and (pointer: fine) {
+  .rail-switchrow:hover { background: var(--ax-hover); color: var(--ax-ink); }
+}
+.rail-switchrow:active { background: var(--ax-press); }
+.rail-switch {
+  position: relative;
+  flex: none;
+  width: 26px;
+  height: 16px;
+  border-radius: 9999px;
+  background: var(--ax-fill-strong);
+  transition: background-color 160ms var(--ease-out-strong);
+}
+.rail-switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 9999px;
+  background: var(--ax-surface);
+  box-shadow: var(--ax-shadow-item);
+  transition: translate 160ms var(--ease-out-strong);
+}
+.rail-switchrow[aria-checked="true"] .rail-switch { background: var(--ax-ink); }
+.rail-switchrow[aria-checked="true"] .rail-switch::after { translate: 10px 0; }
+:root[data-input="keyboard"] :is(.rail-switchrow, .rail-switch, .rail-switch::after) { transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  :is(.rail-switchrow, .rail-switch, .rail-switch::after) { transition: none; }
+}
 .rail-bottom { position: absolute; left: 8px; right: 8px; bottom: 8px; display: flex; flex-direction: column; gap: 4px; }
 .shell:not([data-open]):not([data-wide]) .rail-bottom { right: auto; width: 40px; }
+/* Collapsed, each control's hit box is the rail's full 56px width and touches the next:
+   an invisible ::after carries the target out to the screen edge and over the 4px gaps,
+   while the visible fill stays the same 40×36 square. Only collapsed: there are no labels to
+   clip then, so the rows can let it overflow. */
+.shell:not([data-open]):not([data-wide]) .rail-bottom :is(.rail-button, .rail-row),
+.shell:not([data-open]):not([data-wide]) .rail-home { overflow: visible; }
+.shell:not([data-open]):not([data-wide]) .rail-bottom :is(.rail-button, .rail-row)::after { content: ""; position: absolute; inset: -2px -8px; }
+.shell:not([data-open]):not([data-wide]) .rail-home { position: relative; }
+.shell:not([data-open]):not([data-wide]) .rail-home::after { content: ""; position: absolute; inset: -6px -8px; }
 .rail-button {
   position: relative;
   width: 100%;
@@ -361,6 +476,7 @@
 @keyframes rail-pending { to { visibility: visible; } }
 :root[data-input="keyboard"] :is(.rail-home, .rail-button, .rail-row) { transition: none; }
 @media (prefers-reduced-motion: reduce) {
+  .rail-region,
   .rail-home,
   .rail-button,
   .shell[data-moving] .shell-rail :is(.rail-list, .rail-brand-name, .rail-button-label, .rail-row-label) { transition: none; }
@@ -371,7 +487,9 @@
 }
 @media (forced-colors: active) {
   .rail-rulerow[aria-current="page"] { outline: 1px solid CanvasText; }
-  .rail-rowdot, .rail-minidot::before { background: CanvasText; }
+  .rail-minidot::before { background: CanvasText; }
+  .rail-group .rail-rulerow::before, .rail-group .rail-sublabel::before { background: CanvasText; }
+  .rail-branch { border-color: CanvasText; }
 }
 
 /* ── Magnify strip ─────────────────────────────────────────────────── */
@@ -859,6 +977,8 @@
 @keyframes phone-fade-in { from { opacity: 0; } }
 .phone-menu-head { flex: none; display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 4px 0 8px; }
 .phone-menu-home {
+  flex: 1;
+  margin-right: 8px;
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -869,7 +989,6 @@
   font-size: 14px;
   line-height: 20px;
   font-weight: 600;
-  letter-spacing: -0.01em;
   text-decoration: none;
 }
 .phone-menu-home:active { background: var(--ax-press); }
@@ -877,6 +996,9 @@
    a sideways drag reaches the dismiss gesture instead of the browser. */
 .phone-menu .rail-list { position: static; flex: 1; width: auto; visibility: visible; touch-action: pan-y; }
 .phone-menu .rail-catrow { height: 44px; }
+/* Too small to tap: on the phone the dot run previews, and the whole block opens the category. */
+.phone-menu .rail-minirun { pointer-events: none; }
+.phone-menu .rail-switchrow { height: 44px; }
 .phone-menu .rail-rulerow { min-height: 44px; }
 .phone-menu-foot { flex: none; padding: 8px; }
 /* The theme row, always expanded here: its label shows and the row is a full touch target. */

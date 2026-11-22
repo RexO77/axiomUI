@@ -192,38 +192,45 @@ test.describe("paging", () => {
 });
 
 test.describe("exits and the copy menu", () => {
-  test("a pointer exit morphs the canvas out in 220 ms", async ({ page }) => {
+  test("a pointer exit blurs the page out in 220 ms", async ({ page }) => {
     const id = "typo-5";
     await openCatalog(page, wallUrl());
     await page.locator(sel.tile(id)).click();
     await awaitView(page, "rule");
     const timing = page.evaluate(
       () =>
-        new Promise<{ mode: string | null; durations: number[] }>((resolve) => {
+        new Promise<{ mode: string | null; durations: number[]; filters: string[] }>((resolve) => {
           const root = document.documentElement;
           const observer = new MutationObserver(() => {
             if (root.getAttribute("data-vt") !== "out") return;
             observer.disconnect();
             requestAnimationFrame(() =>
-              requestAnimationFrame(() =>
+              requestAnimationFrame(() => {
+                const outgoing = document
+                  .getAnimations()
+                  .filter((animation) => (animation.effect as KeyframeEffect | null)?.pseudoElement === "::view-transition-old(root)");
                 resolve({
                   mode: root.getAttribute("data-vt"),
-                  durations: document
-                    .getAnimations()
-                    .filter((animation) => (animation.effect as KeyframeEffect | null)?.pseudoElement === "::view-transition-group(rule-canvas)")
-                    .map((animation) => Number(animation.effect?.getTiming().duration)),
-                }),
-              ),
+                  durations: outgoing.map((animation) => Number(animation.effect?.getTiming().duration)),
+                  // Where each outgoing effect ends: the blur is half of the exit, not just its fade.
+                  filters: outgoing.flatMap((animation) => {
+                    const frames = (animation.effect as KeyframeEffect).getKeyframes();
+                    const last = frames[frames.length - 1] as { filter?: string } | undefined;
+                    return last?.filter ? [last.filter] : [];
+                  }),
+                });
+              }),
             );
           });
           observer.observe(root, { attributes: true, attributeFilter: ["data-vt"] });
         }),
     );
     await page.locator(sel.exit).click();
-    const { mode, durations } = await timing;
+    const { mode, durations, filters } = await timing;
     expect(mode).toBe("out");
     expect(durations.length).toBeGreaterThan(0);
     expect(new Set(durations)).toEqual(new Set([220]));
+    expect(filters).toContain("blur(8px)");
     await awaitView(page, "gallery");
   });
 
