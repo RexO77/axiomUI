@@ -1,10 +1,13 @@
 // design-system: strict
 "use client";
 
-// Compare state. Mode and zoom are stored preferences (they persist across
-// paging and visits); Flip's side and any hold belong to one rule, so a page
-// turn starts on Do. F and Z come from the shared shortcut table; Space is a
-// hold, handled here and released whenever its release can no longer arrive.
+// Compare state. The reader sees one three-way view, Both | Do | Don't. It is
+// stored as two parts: the compare mode (Both or one side, a preference that
+// persists across paging and visits, still saved as the old "side" | "flip")
+// and which side one rule shows (per rule, so a page turn starts on Do). F
+// cycles the view and Z the zoom from the shared shortcut table; Space is a
+// hold that blinks to the other side, handled here and released whenever its
+// release can no longer arrive.
 
 import { useCallback, useEffect, useEffectEvent, useReducer, useRef, useSyncExternalStore } from "react";
 
@@ -46,14 +49,21 @@ export function panKeyDelta(key: string, large: boolean): Pan | null {
   return x || y ? { x: x * step, y: y * step } : null;
 }
 
-/** The table's F and Z, as a change to the stored preferences. */
-export function compareKeyPatch(action: "flip" | "zoom", prefs: Prefs): Partial<Prefs> {
-  return action === "flip" ? { mode: prefs.mode === "flip" ? "side" : "flip" } : { zoom: prefs.zoom === 2 ? 1 : 2 };
-}
+/** What the view control offers. Do and Don't are the stored "flip" mode showing that side. */
+export type View = "both" | Side;
+
+/** The stored mode a view needs: old preferences ("side", "flip") read unchanged. */
+export const viewMode = (view: View): CompareMode => (view === "both" ? "side" : "flip");
+
+/** F cycles Both → Do → Don't → Both. */
+export const nextView = (view: View): View => (view === "both" ? "do" : view === "do" ? "dont" : "both");
+
+/** Z, as a change to the stored preferences. */
+export const zoomPatch = (prefs: Prefs): Partial<Prefs> => ({ zoom: prefs.zoom === 2 ? 1 : 2 });
 
 export type FlipState = Readonly<{ ruleId: string; flipped: boolean; held: boolean }>;
 type FlipAction = Readonly<
-  { ruleId: string } & ({ type: "toggle" } | { type: "hold"; on: boolean } | { type: "mode" })
+  { ruleId: string } & ({ type: "toggle" } | { type: "hold"; on: boolean } | { type: "show"; side: Side })
 >;
 
 export const freshFlip = (ruleId: string): FlipState => ({ ruleId, flipped: false, held: false });
@@ -66,9 +76,17 @@ export function flipReducer(state: FlipState, action: FlipAction): FlipState {
       return { ...base, flipped: !base.flipped };
     case "hold":
       return base.held === action.on ? base : { ...base, held: action.on };
-    case "mode":
-      return base.flipped || base.held ? freshFlip(base.ruleId) : base;
+    case "show": {
+      // Choosing a side also ends any hold, so the chosen side is what shows.
+      const flipped = action.side === "dont";
+      return base.flipped === flipped && !base.held ? base : { ruleId: base.ruleId, flipped, held: false };
+    }
   }
+}
+
+/** The view control's value: the side chosen, not the one a hold is blinking to. */
+export function compareView(mode: CompareMode, state: FlipState): View {
+  return mode === "side" ? "both" : state.flipped ? "dont" : "do";
 }
 
 /** What a Flip canvas shows: a hold inverts the toggled side. Both shows both sides, led by Do. */
@@ -80,11 +98,11 @@ const singleKeysOn = () => memoryStore.getSnapshot().prefs.singleKeys;
 
 type Compare = {
   mode: CompareMode;
+  view: View;
   zoom: 1 | 2;
   showing: Side;
-  flipped: boolean;
   held: boolean;
-  setMode: (mode: CompareMode) => void;
+  setView: (view: View) => void;
   setZoom: (zoom: 1 | 2) => void;
   toggle: () => void;
   hold: (on: boolean) => void;
@@ -96,10 +114,11 @@ export function useCompare(ruleId: string, stores: CatalogStores = catalogStores
   const [stored, dispatch] = useReducer(flipReducer, ruleId, freshFlip);
   const state = stored.ruleId === ruleId ? stored : freshFlip(ruleId);
 
-  const setMode = useCallback(
-    (mode: CompareMode) => {
-      dispatch({ type: "mode", ruleId });
-      stores.writePrefs({ mode });
+  const setView = useCallback(
+    (view: View) => {
+      // Both keeps the side last shown, so the canvas collapses back from it.
+      dispatch(view === "both" ? { type: "hold", ruleId, on: false } : { type: "show", ruleId, side: view });
+      stores.writePrefs({ mode: viewMode(view) });
     },
     [ruleId, stores],
   );
@@ -114,9 +133,8 @@ export function useCompare(ruleId: string, stores: CatalogStores = catalogStores
     const action = shortcutAction(event, { view: "rule", singleKeys });
     if (action === "flip" || action === "zoom") {
       event.preventDefault();
-      const patch = compareKeyPatch(action, stores.prefs.get());
-      if (patch.mode) setMode(patch.mode);
-      else stores.writePrefs(patch);
+      if (action === "flip") setView(nextView(compareView(stores.prefs.get().mode, state)));
+      else stores.writePrefs(zoomPatch(stores.prefs.get()));
       return;
     }
     if (event.key !== " " || event.defaultPrevented || event.isComposing || prefs.mode !== "flip") return;
@@ -169,11 +187,11 @@ export function useCompare(ruleId: string, stores: CatalogStores = catalogStores
 
   return {
     mode: prefs.mode,
+    view: compareView(prefs.mode, state),
     zoom: prefs.zoom,
     showing: flipShowing(prefs.mode, state),
-    flipped: state.flipped,
     held: state.held,
-    setMode,
+    setView,
     setZoom,
     toggle,
     hold,

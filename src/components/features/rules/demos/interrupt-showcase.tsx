@@ -78,11 +78,11 @@ export function InterruptShowcase() {
                 </PaneChrome>
             </div>
             <ShowcaseControls
-                control={{ label: "Toggle", onClick: toggle, icon: false }}
+                control={{ label: "Move cards", onClick: toggle, icon: false }}
                 hints={[
                     // Nothing is mid-flight under reduced motion; the note says so.
                     !reducedNow &&
-                        "Hit Toggle again mid-flight — the Do card turns from where it is, the Don’t card snaps to the far end first",
+                        "Press again while the cards are moving. The Do card reverses in place. The Don’t card jumps to its previous target first.",
                 ]}
                 reducedNote="Reduced motion: both cards jump to the end. With motion on, the Do card turns around mid-flight."
             />

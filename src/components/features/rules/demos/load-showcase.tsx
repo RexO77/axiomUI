@@ -216,10 +216,10 @@ function BlockedThreadRace() {
                 </PaneChrome>
             </div>
             <ShowcaseControls
-                control={{ label: "Race + block main thread", onClick: race, disabled: running }}
+                control={{ label: "Start race", onClick: race, disabled: running }}
                 hints={[
                     !reduced &&
-                        "Watch both cards during the three long tasks. The strip samples gaps between main-thread callbacks.",
+                        "Watch which card pauses during the three long tasks. After the race, the strip marks gaps over 40ms between callbacks.",
                 ]}
                 reducedNote="With reduced motion, both cards go directly to the finish and the long tasks are skipped."
             />

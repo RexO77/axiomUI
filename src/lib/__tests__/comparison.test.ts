@@ -11,7 +11,7 @@ import { isNativeMotion, MotionCompare, readoutLabel } from "@/components/rule/m
 import { rules as allRules } from "@/data/ui-logic";
 import {
   clampPan,
-  compareKeyPatch,
+  compareView,
   flipReducer,
   flipShowing,
   freshFlip,
@@ -19,7 +19,10 @@ import {
   panKeyDelta,
   PAN_STEP,
   PAN_STEP_LARGE,
+  nextView,
+  viewMode,
   ZOOM_SCALE,
+  zoomPatch,
   type FlipState,
 } from "@/components/rule/use-compare";
 import { createCatalogStores } from "@/lib/catalog/stores";
@@ -27,7 +30,7 @@ import { createMemoryStore, type MemoryStorage } from "@/lib/navigation/memory";
 
 /**
  * The rule comparison: the zoom maths, the compare state
- * (stored mode and zoom, a per-rule Flip), and the layout promises a type
+ * (stored mode and zoom, a per-rule side), and the layout promises a type
  * can't hold: captions are never truncated, previews are 1:1 at rest, and the
  * demo markup compare.css lays out is still the markup the demos render.
  */
@@ -91,29 +94,43 @@ describe("compare state", () => {
     expect(run(held, { type: "toggle", ruleId: "typo-2" })).toEqual({ ruleId: "typo-2", flipped: true, held: false });
   });
 
-  it("drops Flip and the hold when the mode changes, and keeps identity when nothing changes", () => {
-    const held = run(freshFlip("typo-1"), { type: "toggle", ruleId: "typo-1" }, { type: "hold", on: true, ruleId: "typo-1" });
-    expect(run(held, { type: "mode", ruleId: "typo-1" })).toEqual(freshFlip("typo-1"));
+  it("shows a chosen side, ending any hold, and keeps identity when nothing changes", () => {
+    const held = run(freshFlip("typo-1"), { type: "hold", on: true, ruleId: "typo-1" });
+    expect(run(held, { type: "show", side: "dont", ruleId: "typo-1" })).toEqual({ ruleId: "typo-1", flipped: true, held: false });
+    expect(run(held, { type: "show", side: "do", ruleId: "typo-1" })).toEqual(freshFlip("typo-1"));
     const start = freshFlip("typo-1");
-    expect(flipReducer(start, { type: "mode", ruleId: "typo-1" })).toBe(start);
+    expect(flipReducer(start, { type: "show", side: "do", ruleId: "typo-1" })).toBe(start);
     expect(flipReducer(start, { type: "hold", on: false, ruleId: "typo-1" })).toBe(start);
   });
 
-  it("persists F and Z as stored preferences, across paging and visits", () => {
+  it("reads one view from the stored mode and the rule's side, and F cycles it", () => {
+    const toggled = run(freshFlip("typo-1"), { type: "toggle", ruleId: "typo-1" });
+    expect(compareView("side", toggled)).toBe("both");
+    expect(compareView("flip", freshFlip("typo-1"))).toBe("do");
+    expect(compareView("flip", toggled)).toBe("dont");
+    // A hold blinks the canvas, not the control.
+    expect(compareView("flip", run(toggled, { type: "hold", on: true, ruleId: "typo-1" }))).toBe("dont");
+    expect([nextView("both"), nextView("do"), nextView("dont")]).toEqual(["do", "dont", "both"]);
+    expect([viewMode("both"), viewMode("do"), viewMode("dont")]).toEqual(["side", "flip", "flip"]);
+  });
+
+  it("persists the view's mode and Z as stored preferences, across paging and visits", () => {
     const data = new Map<string, string>();
     const storage: MemoryStorage = { getItem: (key) => data.get(key) ?? null, setItem: (key, value) => void data.set(key, value) };
     const open = () => createCatalogStores({ memory: createMemoryStore(() => storage, () => true, () => null), getStorage: () => null, getEvents: () => null });
 
     const first = open();
     expect(first.prefs.get()).toEqual({ mode: "side", zoom: 1 });
-    first.writePrefs(compareKeyPatch("flip", first.prefs.get()));
-    first.writePrefs(compareKeyPatch("zoom", first.prefs.get()));
+    first.writePrefs({ mode: viewMode("dont") });
+    first.writePrefs(zoomPatch(first.prefs.get()));
     expect(first.prefs.get()).toEqual({ mode: "flip", zoom: 2 });
 
+    // A stored "flip" from before the view control opens as Do.
     const visit = open();
     expect(visit.prefs.get()).toEqual({ mode: "flip", zoom: 2 });
-    visit.writePrefs(compareKeyPatch("flip", visit.prefs.get()));
-    visit.writePrefs(compareKeyPatch("zoom", visit.prefs.get()));
+    expect(compareView(visit.prefs.get().mode, freshFlip("typo-2"))).toBe("do");
+    visit.writePrefs({ mode: viewMode("both") });
+    visit.writePrefs(zoomPatch(visit.prefs.get()));
     expect(open().prefs.get()).toEqual({ mode: "side", zoom: 1 });
   });
 });
@@ -232,20 +249,19 @@ describe("the hand-built showcases compare.css lays out", () => {
 describe("reduced-motion text renders on the server and CSS switches it", () => {
   const motionOnly = (id: string) => renderToStaticMarkup(createElement(MotionCompare, { ruleId: id }));
 
-  it("puts the note, the reduced hint and the reduced tally in the server HTML", () => {
+  it("puts the reduced-motion note, both hints and the full-speed tally in the server HTML", () => {
     const html = motionOnly("motion-4");
     expect(html).toContain('<p class="rule-hint rule-hint-reduced">Reduced motion: end states only');
     expect(html).toContain(`<p class="rule-hint rule-hint-motion">${showcaseSpecs["motion-4"].hint}</p>`);
     expect(html).toContain(`<p class="rule-hint rule-hint-reduced">${showcaseSpecs["motion-4"].hintReduced}</p>`);
     const tallied = Object.keys(showcaseSpecs).find((id) => isNativeMotion(id) && showcaseSpecs[id].tallyDontMs)!;
-    expect(motionOnly(tallied)).toMatch(/<span class="rule-hint-motion">[\d.]+s waited<\/span><span class="rule-hint-reduced">would cost/);
+    expect(motionOnly(tallied)).toContain('<span class="cmp-tally">0 opens · 0.0s of motion at 1×</span>');
   });
 
   it("hides them by default and swaps them under prefers-reduced-motion", () => {
     expect(CSS).toMatch(/(^|\})\s*\.rule-hint-reduced \{ display: none; \}/);
     const media = CSS.slice(CSS.indexOf("@media (prefers-reduced-motion: reduce) {\n  .rule-hint-motion"));
     expect(media).toMatch(/^[^}]*\.rule-hint-motion \{ display: none; \}\s*\.rule-hint-reduced \{ display: block; \}/);
-    expect(media).toMatch(/\.cmp-tally \.rule-hint-reduced \{ display: inline; \}/);
   });
 });
 

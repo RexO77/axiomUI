@@ -122,7 +122,7 @@ function actionHierarchy(variant: Variant) {
                     </>
                 )}
             </div>
-            <Annotation className={ANNOT}>{isDo ? "1 primary, 2 quiet" : "3 primaries, 0 hierarchy"}</Annotation>
+            <Annotation className={ANNOT}>{isDo ? "1 primary action · 2 secondary actions" : "All 3 actions have equal emphasis"}</Annotation>
         </PreviewFrame>
     );
 }
@@ -291,7 +291,7 @@ function avatarShapes(variant: Variant) {
                 </div>
             </div>
             <Annotation className={ANNOT}>
-                {isDo ? "person → circle · file → rect" : "person → rect · file → rect"}
+                {isDo ? "Circular avatar · rounded square file thumbnail" : "Avatar and file thumbnail are both rounded squares"}
             </Annotation>
         </PreviewFrame>
     );
@@ -310,7 +310,7 @@ function modalVsDrawer(variant: Variant) {
     // Field labels are scene copy, so they stay in the UI face; w-9 holds
     // "Locale" whole instead of truncating it to "Loca…".
     const fieldRows = fields.map((field) => (
-        <div key={field} className="flex items-center gap-1.5">
+        <div key={field} data-mark="profile-field" className="flex items-center gap-1.5">
             <span className="w-9 shrink-0 text-[9px] font-medium leading-3 text-neutral-500 dark:text-neutral-400">
                 {field}
             </span>
@@ -363,7 +363,7 @@ function modalVsDrawer(variant: Variant) {
                 )}
             </div>
             <Annotation className={ANNOT}>
-                {isDo ? "drawer · 6 of 6 fields · page stays legible" : "modal · 1 of 6 fields · page blacked out"}
+                {isDo ? "drawer · 6 of 6 fields · page stays legible" : "modal · 1 of 6 fields fully visible · page dimmed"}
             </Annotation>
         </PreviewFrame>
     );
@@ -430,7 +430,7 @@ function iconPlusLabel(variant: Variant) {
                     </span>
                 ))}
             </div>
-            <Annotation className={ANNOT}>{isDo ? "0 guesses" : "3 guesses"}</Annotation>
+            <Annotation className={ANNOT}>{isDo ? "3 labeled icons" : "0 labels for 3 icons"}</Annotation>
         </PreviewFrame>
     );
 }
@@ -468,7 +468,7 @@ function disabledReason(variant: Variant) {
                 </span>
             </div>
             <Annotation className={ANNOT}>
-                {isDo ? "reason shown — reads as “not yet”" : "no reason — reads as broken"}
+                {isDo ? "CSV export requires Pro" : "No reason given for disabled export"}
             </Annotation>
         </PreviewFrame>
     );
@@ -498,7 +498,7 @@ function iconSizes(variant: Variant) {
                     />
                 ))}
             </div>
-            <Annotation className={ANNOT}>{sizes.join(" · ")}</Annotation>
+            <Annotation className={ANNOT}>Icon sizes · {sizes.join("px · ")}px</Annotation>
         </PreviewFrame>
     );
 }
@@ -576,7 +576,7 @@ function closeAffordance(variant: Variant) {
                     backdrop
                 </Annotation>
             ) : (
-                <Annotation className={FINE}>1 exit: backdrop only — nothing visible</Annotation>
+                <Annotation className={FINE}>1 exit · click outside the dialog</Annotation>
             )}
         </PreviewFrame>
     );
@@ -724,17 +724,17 @@ function headlineProof(variant: Variant) {
         <PreviewFrame className="flex flex-col gap-2">
             <div>
                 <span className="block text-[12px] font-semibold leading-4 text-neutral-900 dark:text-neutral-50">
-                    Find the deploy that broke checkout
+                    Find the deploy linked to checkout errors
                 </span>
                 <span className={cn("mt-0.5 block text-[9px]", PRODUCT_MUTED)}>
-                    Errors matched to the change that caused them
+                    See the error increase beside the flagged deploy
                 </span>
             </div>
             <div className="h-[84px] overflow-hidden rounded-[8px] border border-neutral-200 dark:border-neutral-800">
                 {isDo ? productCrop() : decorativeHero()}
             </div>
             <Annotation className={ANNOT}>
-                {isDo ? "points to: deploy #418 · checkout 5xx ↑ 38%" : "points to: nothing the headline names"}
+                {isDo ? "points to: deploy #418 · checkout 5xx ↑ 38%" : "Avatars and a checkmark give no deploy details"}
             </Annotation>
         </PreviewFrame>
     );

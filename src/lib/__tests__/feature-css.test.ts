@@ -212,7 +212,7 @@ const growsHitArea = ({ property, value, selector }: Declaration) =>
 
 /**
  * Which @media preludes are allowed: PHONE_QUERY itself, preferences, refinements that only apply
- * on phones, and a bare touch query that only grows hit areas.
+ * on phones, and a bare touch query that only grows hit areas (and makes the phone layout’s room for them).
  */
 function mediaProblems({ media, declarations }: Sheet): string[] {
   const phone = squash(PHONE_QUERY);
@@ -220,7 +220,15 @@ function mediaProblems({ media, declarations }: Sheet): string[] {
     if (prelude === phone) return [];
     if (prelude === TOUCH && !at.length) {
       const inside = declarations.filter((declaration) => declaration.at.some((outer) => squash(outer.slice(6)) === TOUCH));
-      return inside.every(growsHitArea) ? [] : [`@media ${prelude}`];
+      // Grown targets can need the room the phone layout already makes for them
+      // (the comparison dock's landing): the very declaration, never a new one.
+      const onPhone = new Set(
+        declarations
+          .filter((declaration) => declaration.at.some((outer) => squash(outer.slice(6)) === phone))
+          .map(({ selector, property, value }) => `${selector}{${property}:${value}}`),
+      );
+      const sharedWithPhone = ({ selector, property, value }: Declaration) => onPhone.has(`${selector}{${property}:${value}}`);
+      return inside.every((declaration) => growsHitArea(declaration) || sharedWithPhone(declaration)) ? [] : [`@media ${prelude}`];
     }
     const nested = at.some((outer) => squash(outer.slice(6)) === phone);
     const bad = prelude.split(/,(?![^(]*\))/).some((clause) => {
@@ -317,6 +325,9 @@ describe("feature CSS rules (fixtures)", () => {
     // Touch at any size may grow hit areas, and nothing else.
     expect(check(`@media (pointer: coarse) { .a { height: 44px; } .b { position: relative; } .b::before { content: ""; position: absolute; inset: -6px; } }`)).toEqual([]);
     expect(check(`@media (pointer: coarse) { .a { height: 40px; } }`)).toHaveLength(1);
+    // It may also make the room the phone layout makes for those targets, with the same declaration.
+    expect(check(`@media (pointer: coarse) { .s { padding-bottom: 62px; } } @media ${PHONE_QUERY} { .s { padding-bottom: 62px; } }`)).toEqual([]);
+    expect(check(`@media (pointer: coarse) { .s { padding-bottom: 70px; } } @media ${PHONE_QUERY} { .s { padding-bottom: 62px; } }`)).toHaveLength(1);
     expect(check(`@media (pointer: coarse) { .a::before { content: ""; position: absolute; inset: -6px; } .a { display: none; } }`)).toHaveLength(1);
     expect(check(`@media (max-height: 500px) { .a { top: 0; } }`)).toHaveLength(1);
   });

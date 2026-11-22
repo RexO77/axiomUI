@@ -263,9 +263,9 @@ test.describe("exits and the copy menu", () => {
 });
 
 test.describe("comparison zoom", () => {
-  test("Esc from the zoom control leaves the rule", async ({ page }) => {
+  test("Esc from the zoom toggle leaves the rule", async ({ page }) => {
     await openCatalog(page, ruleUrl("typo-1"));
-    const zoom = page.getByRole("radio", { name: "1×, 100%", exact: true });
+    const zoom = page.getByRole("button", { name: "2× zoom (Z)", exact: true });
     await zoom.focus();
     await expect(zoom).toBeFocused();
     await page.keyboard.press("Escape");
@@ -276,9 +276,15 @@ test.describe("comparison zoom", () => {
     await openCatalog(page, ruleUrl("typo-1"));
     const box = page.locator(".cmp-canvas .cmp-box").first();
     expect(await box.evaluate((el) => getComputedStyle(el).transform)).toBe("none");
-    await page.getByRole("radio", { name: "2×, 200%", exact: true }).click();
+    await page.locator("[data-compare-canvas]").hover();
+    await page.getByRole("button", { name: "2× zoom (Z)", exact: true }).click();
     await expect.poll(() => box.evaluate((el) => getComputedStyle(el).transform)).toMatch(/^matrix\(2, 0, 0, 2, /);
-    await page.getByRole("radio", { name: "1×, 100%", exact: true }).click();
+    await page.locator("[data-compare-canvas]").hover();
+    const zoom = page.getByRole("button", { name: "2× zoom (Z)", exact: true });
+    await zoom.click();
+    // The second press turns 2× off again, not only on.
+    await expect(zoom).toHaveAttribute("aria-pressed", "false");
+    await expect.poll(() => box.evaluate((el) => getComputedStyle(el).transform)).toBe("none");
   });
 });
 
@@ -287,7 +293,8 @@ test.describe("comparison zoom, by hand", () => {
     await openCatalog(page, ruleUrl("typo-1"));
     const canvas = page.locator(".cmp-canvas").first();
     expect(await canvas.evaluate((el) => getComputedStyle(el).touchAction)).toBe("manipulation");
-    await page.getByRole("radio", { name: "2×, 200%", exact: true }).click();
+    await page.locator("[data-compare-canvas]").hover();
+    await page.getByRole("button", { name: "2× zoom (Z)", exact: true }).click();
     // A pan the browser could claim would end the drag with pointercancel.
     await expect.poll(() => canvas.evaluate((el) => getComputedStyle(el).touchAction)).toBe("none");
 
@@ -298,7 +305,124 @@ test.describe("comparison zoom, by hand", () => {
     await page.mouse.move(from.x + 40, from.y + 20, { steps: 4 });
     await page.mouse.up();
     expect(await canvas.evaluate((el) => [el.style.getPropertyValue("--cmp-pan-x"), el.style.getPropertyValue("--cmp-pan-y")])).toEqual(["40px", "20px"]);
-    await page.getByRole("radio", { name: "1×, 100%", exact: true }).click();
+    await page.locator("[data-compare-canvas]").hover();
+    await page.getByRole("button", { name: "2× zoom (Z)", exact: true }).click();
+  });
+});
+
+test.describe("comparison Measure", () => {
+  test("measures both panes and links caption values to their redlines", async ({ page }) => {
+    await openCatalog(page, ruleUrl("comp-3"));
+    await page.keyboard.press("m");
+    const canvas = page.locator("[data-compare-canvas]");
+    await expect(canvas.locator(".ml-overlay")).toHaveCount(2);
+    const cap = page.locator(".cmp-captions").getByRole("button", { name: "Outer radius, 12px" });
+    await cap.click();
+    await expect(cap).toHaveAttribute("aria-pressed", "true");
+    await expect(canvas.locator('[data-group="0"][data-dim]')).toHaveCount(0);
+    await expect(canvas.locator('[data-group="1"][data-dim]')).toHaveCount(2);
+    await page.keyboard.press("Escape");
+    await expect(canvas.locator(".ml-overlay")).toHaveCount(0);
+  });
+
+  test("picks with the keyboard, then Escape closes Measure before leaving the rule", async ({ page }) => {
+    await openCatalog(page, ruleUrl("comp-7"));
+    const canvas = page.locator("[data-compare-canvas]");
+    const measure = page.getByRole("button", { name: "Measure (M)", exact: true });
+    await page.keyboard.press("m");
+    await expect(measure).toHaveAttribute("aria-pressed", "true");
+    await expect(canvas).toBeFocused();
+    await page.keyboard.press("ArrowRight");
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("button", { name: "Copy measurements" })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(measure).toHaveAttribute("aria-pressed", "false");
+    await expect(measure).toBeFocused();
+    await awaitView(page, "rule");
+  });
+
+  test("Enter on the Measure button hands focus to the canvas, so an arrow picks instead of paging", async ({ page }) => {
+    await openCatalog(page, ruleUrl("comp-7"));
+    const canvas = page.locator("[data-compare-canvas]");
+    const measure = page.getByRole("button", { name: "Measure (M)", exact: true });
+    await measure.focus();
+    await page.keyboard.press("Enter");
+    await expect(measure).toHaveAttribute("aria-pressed", "true");
+    await expect(canvas).toBeFocused();
+    await page.keyboard.press("ArrowRight");
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("button", { name: "Copy measurements" })).toBeVisible();
+    // Still on comp-7: the arrow picked an element rather than paging to the next rule.
+    expect(new URL(page.url()).pathname).toBe(ruleUrl("comp-7"));
+  });
+
+  test("Enter on the Measure button hands focus to the canvas on authored marks too, as M does", async ({ page }) => {
+    await openCatalog(page, ruleUrl("comp-3"));
+    const measure = page.getByRole("button", { name: "Measure (M)", exact: true });
+    await measure.focus();
+    await page.keyboard.press("Enter");
+    await expect(measure).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("[data-compare-canvas]")).toBeFocused();
+    await expect(page.locator("[data-compare-canvas] .ml-overlay")).toHaveCount(2);
+    await page.keyboard.press("Escape");
+    await expect(measure).toHaveAttribute("aria-pressed", "false");
+    await expect(measure).toBeFocused();
+  });
+
+  test("Escape on a focused dock tooltip closes only the tooltip, then Measure", async ({ page }) => {
+    await openCatalog(page, ruleUrl("comp-7"));
+    const measure = page.getByRole("button", { name: "Measure (M)", exact: true });
+    const zoom = page.getByRole("button", { name: "2× zoom (Z)", exact: true });
+    await page.keyboard.press("m");
+    await expect(measure).toHaveAttribute("aria-pressed", "true");
+    await zoom.focus();
+    await page.keyboard.press("Shift+Tab");
+    await page.keyboard.press("Tab");
+    await expect(zoom).toBeFocused();
+    const tip = page.getByRole("tooltip").filter({ hasText: "2× zoom" });
+    await expect(tip).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(tip).toBeHidden();
+    await expect(measure).toHaveAttribute("aria-pressed", "true");
+    await expect(zoom).toBeFocused();
+    await page.keyboard.press("Escape");
+    await expect(measure).toHaveAttribute("aria-pressed", "false");
+    await awaitView(page, "rule");
+  });
+
+  test("pins a preview element, measures its neighbor and copies CSS pixels at either zoom", async ({ page, context }) => {
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    await openCatalog(page, ruleUrl("comp-7"));
+    const pane = page.locator("[data-compare-canvas] [data-side=do]");
+    const panel = page.getByRole("region", { name: "Measurements" });
+    const gap = panel.getByText("Gap to Share", { exact: true });
+    const centre = async (label: string) => {
+      const box = await pane.getByText(label, { exact: true }).boundingBox();
+      if (!box) throw new Error(`Preview element ${label} should have a box`);
+      return [box.x + box.width / 2, box.y + box.height / 2] as const;
+    };
+    await pane.hover();
+    await page.getByRole("button", { name: "Measure (M)", exact: true }).click();
+    await page.mouse.move(...await centre("Archive"));
+    await expect(pane.locator(".ml-overlay")).toBeVisible();
+    await page.mouse.click(...await centre("Archive"));
+    await expect(panel.getByRole("heading", { name: "Do · Archive" })).toBeVisible();
+    await expect(panel.getByText("Half-leading", { exact: true })).toBeVisible();
+    await page.keyboard.down("Alt");
+    await page.mouse.move(...await centre("Share"));
+    await expect(gap).toBeVisible();
+    await page.keyboard.up("Alt");
+    await expect(gap).toBeHidden();
+    await page.mouse.click(...await centre("Share"));
+    await expect(gap).toBeVisible();
+    const size = await panel.getByText("Box size", { exact: true }).locator("..").locator("dd").textContent();
+    const values = await panel.locator("dd").allTextContents();
+    await page.locator("[data-compare-canvas]").hover();
+    await page.getByRole("button", { name: "2× zoom (Z)", exact: true }).click();
+    await expect(panel.locator("dd")).toHaveText(values);
+    await panel.getByRole("button", { name: "Copy measurements" }).click();
+    await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toContain(`Box size: ${size}`);
+    await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toContain(`Gap to Share: ${values.at(-1)}`);
   });
 });
 

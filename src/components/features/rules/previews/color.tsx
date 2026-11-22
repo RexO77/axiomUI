@@ -173,8 +173,8 @@ function SixtyThirtyTen({ variant }: { variant: Variant }) {
                 </div>
             </div>
             <div className="flex flex-col gap-0.5 leading-3">
-                <Note>{flooded ? "blue: header, sidebar, CTA" : "blue: CTA only"}</Note>
-                <Note>{flooded ? "CTA lost in brand chrome" : "one element owns the blue"}</Note>
+                <Note>{flooded ? "Blue header and sidebar" : "Neutral header and sidebar"}</Note>
+                <Note>{flooded ? "New report blends in with the other blue controls" : "Only New report is blue"}</Note>
             </div>
         </div>
     );
@@ -236,7 +236,7 @@ function SemanticColors({ variant }: { variant: Variant }) {
                         <ThemedValue light="blue-500" dark="400" />
                     )}
                 </Note>
-                <Note>{hijacked ? "same red as Delete" : "red means Delete"}</Note>
+                <Note>{hijacked ? "Like and Delete both use red" : "red means Delete"}</Note>
             </div>
         </div>
     );
@@ -304,9 +304,11 @@ function ControlEdgeContrast({ variant }: { variant: Variant }) {
 }
 
 // ── color-8 · Dark mode isn't inverted ─────────────────────────────
-// Renders its own dark canvas via an inset layer, regardless of site theme. The
-// layer stops 1px short of the frame (inset-px, radius 10 - 1) so the frame's
-// inset hairline still draws its edge in both themes.
+// Renders its own dark canvas, regardless of site theme, as an in-flow block:
+// the wall tile and the rule view both flatten PreviewFrame to a zero-padding,
+// content-height box, so an absolute layer collapses to its own padding and the
+// card spills out under it. In flow, the canvas holds the card and the
+// annotation with room on every side at any width.
 // Do: gray-900 page, gray-800 card sitting lighter, brand genuinely desaturated
 // (#3b82f6 at 91% saturation → #799dd8 at 55%), photo untouched. Don't:
 // filter-invert world — white card, brand flipped to muddy orange (#3b82f6
@@ -314,9 +316,9 @@ function ControlEdgeContrast({ variant }: { variant: Variant }) {
 function DarkModeNotInverted({ variant }: { variant: Variant }) {
     const inverted = variant === "dont";
     return (
-        <div className={cn("absolute inset-px rounded-[9px] p-[15px]", inverted ? "bg-black" : "bg-neutral-900")}>
-            <div className="flex h-[118px] flex-col gap-2">
-                <div className={cn("flex-1 rounded-md p-2.5", inverted ? "bg-white" : "bg-neutral-800")}>
+        <div className={cn("rounded-[10px] p-4", inverted ? "bg-black" : "bg-neutral-900")}>
+            <div className="flex flex-col gap-3">
+                <div className={cn("rounded-md p-2.5", inverted ? "bg-white" : "bg-neutral-800")}>
                     <div className="flex items-center justify-between">
                         <span
                             className={cn(
@@ -327,7 +329,7 @@ function DarkModeNotInverted({ variant }: { variant: Variant }) {
                             Storage
                         </span>
                         <span className={cn(NOTE, inverted ? "text-neutral-500" : "text-neutral-400")}>
-                            82% used
+                            80% used
                         </span>
                     </div>
                     <div
@@ -368,7 +370,7 @@ function DarkModeNotInverted({ variant }: { variant: Variant }) {
                     </div>
                 </div>
                 <Annotation className={cn(NOTE, "text-neutral-400")}>
-                    {inverted ? "invert(1) · brand #3b82f6 → #c47d09" : "card 800 on 900 · brand sat 91% → 55%"}
+                    {inverted ? "invert(1) · brand #3b82f6 → #c47d09" : "neutral-800 card on neutral-900 · blue saturation 91% → 55%"}
                 </Annotation>
             </div>
         </div>
@@ -427,7 +429,7 @@ function OpacityOverNewColors({ variant }: { variant: Variant }) {
             <div className="flex h-6 items-center gap-1.5 rounded-md px-2 text-neutral-600 dark:text-neutral-300">
                 <Inbox aria-hidden className="size-3 stroke-[1.5]" />
                 <span className="text-[10px] font-medium">Inbox</span>
-                <Note className="ml-auto">{handPicked ? "transparent" : "rest"}</Note>
+                <Note className="ml-auto">Default · transparent</Note>
             </div>
             <div
                 className={cn(
@@ -440,7 +442,7 @@ function OpacityOverNewColors({ variant }: { variant: Variant }) {
                 <FileText aria-hidden className="size-3 stroke-[1.5]" />
                 <span className="text-[10px] font-medium">Drafts</span>
                 <Note className="ml-auto" ink={rowInk}>
-                    {handPicked ? "#e8f0fe" : "blue-500/10"}
+                    Hover · {handPicked ? "#e8f0fe" : "blue-500/10"}
                 </Note>
             </div>
             <div
@@ -454,13 +456,13 @@ function OpacityOverNewColors({ variant }: { variant: Variant }) {
                 <Send aria-hidden className="size-3 stroke-[1.5]" />
                 <span className="text-[10px]">Sent</span>
                 <Note className="ml-auto" ink={rowInk}>
-                    {handPicked ? "#dcebf5 + #1967d2" : "blue-500/15"}
+                    Selected · {handPicked ? "#dcebf5 fill · #1967d2 text" : "blue-500/15 fill"}
                 </Note>
             </div>
             {/* In light mode the alpha fills and the hand-picked hexes paint
                 near alike, so a tile keeps the verdict. */}
             <Note className="mt-1" keep>
-                {handPicked ? "3 unrelated hexes · rebrand = 3 edits" : "blue-500 / alpha · rebrand = 1 edit"}
+                {handPicked ? "3 fixed colors for fills and selected text" : "2 fills share blue-500 at different opacities"}
             </Note>
         </div>
     );
@@ -509,28 +511,33 @@ function NeutralImageOutlines({ variant }: { variant: Variant }) {
             {/* On a light page the two outlines paint alike, so a tile keeps the verdict. */}
             <Note keep>
                 {tinted
-                    ? "slate-900/10 pinned — dark edge dissolves"
-                    : "black/10 → white/10 — edge holds on both"}
+                    ? "10% slate outline disappears on the dark surface"
+                    : "10% black on light · 10% white on dark"}
             </Note>
         </div>
     );
 }
 
 // ── color-12 · Shadows can replace borders ─────────────────────────
-// Two payment-method cards. Do lifts them with a layered shadow stack (1px ring
-// for the edge, soft blur for elevation); Don't strokes every card and the list
-// reads as a spreadsheet of boxes.
+// Two payment-method cards. Do raises them with a three-layer stack: a 1px ring
+// for the edge, a tight key shadow under it and a wide, offset ambient shadow,
+// strong enough to read at 1× without turning into a glow. In dark mode a black
+// shadow vanishes into the page, so the raised card steps up a surface
+// (neutral-800 on the dark stage) and the ring turns white; the drop stays
+// underneath. Don't strokes every card on the page's own surface, so the list
+// reads as a spreadsheet of boxes. A transparent outline costs nothing here and
+// becomes a real system-colour edge in forced colors, where shadows are dropped.
 function ShadowsReplaceBorders({ variant }: { variant: Variant }) {
     const stroked = variant === "dont";
     const surface = stroked
         ? "border border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-900"
-        : "bg-white shadow-[0_0_0_1px_rgba(0,0,0,0.06),0_2px_4px_rgba(0,0,0,0.04)] dark:bg-neutral-900 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.09),0_2px_4px_rgba(0,0,0,0.5)]";
+        : "bg-white outline outline-transparent shadow-[0_0_0_1px_rgb(0_0_0/0.06),0_1px_2px_rgb(0_0_0/0.1),0_8px_20px_-6px_rgb(0_0_0/0.18)] dark:bg-neutral-800 dark:shadow-[0_0_0_1px_rgb(255_255_255/0.1),0_1px_2px_rgb(0_0_0/0.6),0_6px_16px_-4px_rgb(0_0_0/0.8)]";
     const cards: Array<[string, string]> = [
         ["Visa ending 4242", "Expires 04/28"],
         ["Mastercard ending 8210", "Expires 11/26"],
     ];
     return (
-        <div className="flex h-[118px] flex-col justify-center gap-1">
+        <div className="flex min-h-[118px] flex-col justify-center gap-2.5">
             {cards.map(([name, expiry]) => (
                 <div key={name} className={cn("flex items-center gap-2.5 rounded-md px-2.5 py-1.5", surface)}>
                     <CreditCard
@@ -553,8 +560,8 @@ function ShadowsReplaceBorders({ variant }: { variant: Variant }) {
                 ) : (
                     <ThemedValue
                         stacked
-                        light="0 0 0 1px black/6% + 0 2px 4px black/4%"
-                        dark="ring white/9% + drop black/50%"
+                        light="ring black/6% + key 0 1px 2px /10% + ambient 0 8px 20px -6px /18%"
+                        dark="neutral-800 + ring white/10% + drop black"
                     />
                 )}
             </Note>

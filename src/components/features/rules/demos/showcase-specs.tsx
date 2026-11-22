@@ -203,7 +203,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
     "motion-1": {
         trigger: "action",
         control: "Open",
-        hint: "Open the palette several times and compare the accumulated entrance duration.",
+        hint: "Open the palette a few times. The total counts 220ms per open at full speed.",
         tallyDontMs: 220,
         do: {
             caption: "Occasional modal · 220ms entrance",
@@ -234,14 +234,14 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
     "motion-3": {
         trigger: "action",
         control: "Open",
-        hint: "Open both and look for a cue to the panel’s resting location.",
+        hint: "Open both examples. Watch where the panel enters and how the dialog settles.",
         do: {
-            caption: "slides from its edge — motion explains where it lives",
+            caption: "The Details panel slides in from the right edge.",
             scene: () => <EdgePanelScene />,
             tracks: [t("panel", kf.slideXIn("110%"), DUR.medium)],
         },
         dont: {
-            caption: "Bounce — the modal overshoots its final size",
+            caption: "The dialog grows past its final size, then settles back.",
             scene: () => <ModalScene />,
             tracks: [
                 t("scrim", kf.fadeIn(), DUR.medium),
@@ -261,8 +261,8 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
     /* motion-4 · Use strong custom easing — curve + rail as one instrument. */
     "motion-4": {
         trigger: "replay",
-        hint: "Play, then switch to ¼× — watch each dot hug its curve",
-        hintReduced: "Read the two curves — the steep start is where the left one does its travel",
+        hint: "Select ¼×, then play. Compare how far each panel moves at the start.",
+        hintReduced: "The Do curve starts steeper. Its panel covers more distance early.",
         do: {
             caption: "strong curve · 360ms — most of the travel happens up front",
             scene: () => easingScene(0.23, 1, 0.32, 1, "Panel"),
@@ -308,12 +308,12 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         control: "Open",
         hint: "Open both and compare when the menu labels settle.",
         do: {
-            caption: "menu · 180ms — reads as a response",
+            caption: "The menu reaches full size in 180ms.",
             scene: () => <MenuScene origin="top left" />,
             tracks: [t("panel", kf.popIn(0.95), 180)],
         },
         dont: {
-            caption: "Menu · 500ms — the labels stay in motion longer",
+            caption: "The menu reaches full size in 500ms.",
             scene: () => <MenuScene origin="top left" />,
             tracks: [t("panel", kf.popIn(0.95), 500)],
         },
@@ -327,13 +327,13 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         controlEngaged: "Dismiss",
         hint: "Show the toast, then dismiss it. Compare the timing in each direction.",
         do: {
-            caption: "in 220ms · out 160ms — exits get out of the way",
+            caption: "The toast enters in 220ms and exits in 160ms.",
             scene: () => <ToastScene />,
             tracks: [t("panel", kf.slideYIn("150%"), DUR.medium)],
             exitTracks: [t("panel", kf.slideYOut("150%"), 160, { easing: EASE.inOut })],
         },
         dont: {
-            caption: "360ms both ways — the goodbye takes as long as the hello",
+            caption: "The toast takes 360ms to enter and 360ms to exit.",
             scene: () => <ToastScene />,
             tracks: [t("panel", kf.slideYIn("150%"), DUR.slow)],
             exitTracks: [t("panel", kf.slideYOut("150%"), DUR.slow, { easing: EASE.inOut })],
@@ -344,7 +344,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
      * 0.9 overshoots. */
     "motion-8": {
         trigger: "press",
-        hint: "Press and hold either side to compare the change in label size.",
+        hint: "Press and hold either side. Compare how much each button shrinks.",
         do: {
             caption: "Pressed scale(0.96) — 4% smaller",
             scene: () => <ButtonScene label="Save" restBounds />,
@@ -363,15 +363,15 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
     "motion-9": {
         trigger: "action",
         control: "Open menu",
-        hint: "Replay at ¼× and compare when the menu labels become readable.",
-        hintReduced: "Real objects don't grow from nothing — the left menu starts at 95%, the right at zero",
+        hint: "Open the menus at ¼× and compare when the labels become readable.",
+        hintReduced: "With motion on, the Do menu starts at 95% size and the Don’t menu at zero.",
         do: {
-            caption: "scale(0.95) + fade — it arrives",
+            caption: "The menu fades in from scale(0.95) to full size.",
             scene: () => <MenuScene origin="top left" />,
             tracks: [t("panel", kf.popIn(0.95), DUR.medium)],
         },
         dont: {
-            caption: "scale(0) + fade — it materializes from a point",
+            caption: "The menu fades in from scale(0) to full size.",
             scene: () => <MenuScene origin="top left" />,
             tracks: [t("panel", kf.popIn(0), DUR.medium)],
         },
@@ -382,9 +382,9 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
     "motion-10": {
         trigger: "action",
         control: "Open menu",
-        hint: "The dot marks the origin — only one menu starts where you clicked",
+        hint: "Open the menus. Each dot marks where its menu grows from.",
         do: {
-            caption: "grows from its trigger — cause meets effect",
+            caption: "The menu grows from the corner nearest its button.",
             scene: () => <MenuScene origin="top left" originMarker />,
             tracks: menuFromOrigin(0.6),
             exitTracks: menuFromOriginExit(0.6),
@@ -393,7 +393,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
             readoutEasing: EASE.out,
         },
         dont: {
-            caption: "grows from center — detached from its button",
+            caption: "The menu grows from its center.",
             scene: () => <MenuScene origin="center" originMarker />,
             tracks: menuFromOrigin(0.6),
             exitTracks: menuFromOriginExit(0.6),
@@ -406,7 +406,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
     "motion-11": {
         trigger: "toolbar",
         do: {
-            caption: "Adjacent tip — opens without a second delay",
+            caption: "On hover, the first tooltip waits 300ms. Move to the next tool for an immediate tooltip.",
             scene: () => <TooltipScene />,
             tracks: [t("panel", kf.riseIn(4), 100)],
             exitTracks: [t("panel", kf.crossfade(false), 100)],
@@ -423,7 +423,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
     "motion-12": {
         trigger: "interrupt",
         do: {
-            caption: "transition · 420ms — turns from where it is",
+            caption: "CSS transition · 420ms — reverses from the card’s current position",
             scene: () => <RaceScene label="Transition" />,
             // Interrupted at 38%: the target flips back to rest and the card
             // eases home from where it actually is.
@@ -463,15 +463,15 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
      * vs snapping in. */
     "motion-13": {
         trigger: "action",
-        control: "Add items",
-        hint: "Compare the illustrated first frames of the inserted rows.",
+        control: "Add rows",
+        hint: "Add rows and compare how they appear.",
         do: {
-            caption: "Starting-style illustration — rows enter from below",
+            caption: "The rows fade in and rise into place.",
             scene: () => <ListScene hiddenAtRest />,
             tracks: [t("row", kf.riseIn(6), DUR.medium, { staggerMs: 40 })],
         },
         dont: {
-            caption: "Instant reveal — rows appear at their final positions",
+            caption: "The rows appear immediately in their final positions.",
             scene: () => <ListScene hiddenAtRest />,
             tracks: [t("row", kf.fadeIn(), 0)],
         },
@@ -481,14 +481,14 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
      * vs animating height (layout work every frame). */
     "motion-14": {
         trigger: "replay",
-        hint: "Compare visual travel with a height change. A performance trace can show their layout and paint costs.",
+        hint: "Compare the sliding toast with the growing box. Use a performance trace to check their layout and paint costs.",
         do: {
-            caption: "Translate and fade · 220ms",
+            caption: "The toast slides up in 220ms.",
             scene: () => <ToastScene />,
             tracks: [t("panel", kf.slideYIn("150%"), DUR.medium)],
         },
         dont: {
-            caption: "Height · 220ms — changes layout",
+            caption: "The box grows in height over 220ms.",
             scene: () => <GrowBoxScene />,
             tracks: [t("panel", kf.growHeight(2, 30), DUR.medium)],
         },
@@ -501,15 +501,15 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         trigger: "toggle",
         control: "Show toasts",
         controlEngaged: "Dismiss",
-        hint: "Dismiss them — the fixed-pixel exit strands the taller toast",
+        hint: "Show the toasts, then dismiss them. Watch the taller toast in each example.",
         do: {
-            caption: "exit translateY(150%) — measured against itself",
+            caption: "Each toast slides down by 150% of its own height.",
             scene: () => <ToastPairScene />,
             tracks: [t("panel", kf.slideYIn("150%"), DUR.medium)],
             exitTracks: [t("panel", kf.slideYOut("150%"), 160, { easing: EASE.inOut })],
         },
         dont: {
-            caption: "Exit translateY(40px) — leaves part of the taller toast visible",
+            caption: "Each toast slides down 40px. Part of the taller toast stays visible.",
             scene: () => <ToastPairScene />,
             tracks: [t("panel", kf.slideYIn("150%"), DUR.medium)],
             exitTracks: [
@@ -527,7 +527,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
      * autoplay on touch, and the touch tap fallback animates only the don't. */
     "motion-16": {
         trigger: "hover",
-        hint: "Hover both — a real pointer can't tell them apart; on touch only the right pane moves",
+        hint: "Hover over either example. Both buttons grow. On touch, only the Don’t button grows.",
         touchAutoplay: false,
         doRequiresHover: true,
         do: {
@@ -537,7 +537,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
             exitTracks: [t("panel", kf.scaleTo(1.06, 1), DUR.fast)],
         },
         dont: {
-            caption: "scales on tap — a phantom hover",
+            caption: "Tapping triggers the hover animation.",
             scene: () => <ButtonScene label="Hover me" variant="secondary" restBounds />,
             tracks: [t("panel", kf.scaleTo(1, 1.06), DUR.fast)],
             exitTracks: [t("panel", kf.scaleTo(1.06, 1), DUR.fast)],
@@ -548,16 +548,16 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
      * movement) vs sliding regardless. */
     "motion-17": {
         trigger: "replay",
-        hint: "Play both — the left still reports the news without sweeping it across the screen",
+        hint: "Play both examples and compare how the Saved toast appears.",
         do: {
-            caption: "fade in place · 220ms — the signal without the sweep",
+            caption: "The Saved toast fades in place over 220ms.",
             scene: () => <ToastScene />,
             tracks: [
                 t("panel", [{ opacity: 0, transform: "translateY(0)" }, { opacity: 1, transform: "translateY(0)" }], DUR.medium),
             ],
         },
         dont: {
-            caption: "slides regardless · 220ms — motion the user asked you to remove",
+            caption: "With motion on, the Saved toast slides up in 220ms.",
             scene: () => <ToastScene />,
             tracks: [t("panel", kf.slideYIn("150%"), DUR.medium)],
         },
@@ -568,7 +568,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
     "motion-18": {
         trigger: "drag",
         do: {
-            caption: "0.5 px/ms or 60% of the rail — intent counts",
+            caption: "Dismisses on release past 60% of the card’s travel or above 0.5 px/ms to the right.",
             scene: () => <RailCardScene />,
             tracks: [
                 t(
@@ -592,7 +592,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
             ],
         },
         dont: {
-            caption: "60% of the rail only — your flick is ignored",
+            caption: "Dismisses only when released past 60% of the card’s travel.",
             scene: () => <RailCardScene />,
             tracks: [
                 t(
@@ -613,7 +613,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
     "motion-19": {
         trigger: "drag",
         do: {
-            caption: "rubber-band past the edge · spring home in 450ms — the edge pushes back",
+            caption: "The card resists the drag past the wall, then springs back in 450ms.",
             scene: () => <RailCardScene />,
             tracks: [
                 t(
@@ -629,7 +629,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
             ],
         },
         dont: {
-            caption: "hard clamp · flat 220ms return — a dead stop at the wall",
+            caption: "The card stops at the wall and returns in 220ms on release.",
             scene: () => <RailCardScene />,
             tracks: [
                 t(
@@ -651,12 +651,12 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
     "motion-20": {
         trigger: "drag",
         do: {
-            caption: "The knob follows outside the frame until release or cancel",
+            caption: "The knob keeps tracking the pointer outside the frame until the drag ends.",
             scene: () => <SliderScene />,
             tracks: [t("knob", [{ transform: railX(0) }, { transform: railX(1) }], 500)],
         },
         dont: {
-            caption: "The knob freezes outside the frame mid-drag",
+            caption: "The knob stops while the pointer is outside the frame.",
             scene: () => <SliderScene />,
             tracks: [
                 t(
@@ -676,12 +676,12 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
     "motion-21": {
         trigger: "load",
         do: {
-            caption: "CSS transform transition — browser controls playback",
-            scene: () => <RaceScene label="Compositor" />,
+            caption: "A CSS transform transition keeps the card moving during long tasks.",
+            scene: () => <RaceScene label="CSS transition" />,
             tracks: [t("panel", kf.race(), 420)],
         },
         dont: {
-            caption: "rAF transform writes — each update needs a callback",
+            caption: "The card waits for the next animation frame callback to move.",
             scene: () => <RaceScene label="Main thread" />,
             tracks: [t("panel", kf.race(), 420, { easing: "steps(5, end)" })],
         },
@@ -707,18 +707,18 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
     /* motion-28 · Identical crossfades, with and without blur on arrival. */
     "motion-28": {
         trigger: "toggle",
-        control: "Change state",
-        controlEngaged: "Change back",
-        hint: "Switch to ¼× to compare when each incoming glyph becomes recognizable.",
-        hintReduced: "Change state to see the incoming glyph at rest.",
+        control: "Show checkmark",
+        controlEngaged: "Show plus",
+        hint: "Select ¼× and switch icons. Compare how soon you can recognize each one.",
+        hintReduced: "Switch between the plus and the checkmark.",
         do: {
-            caption: `${ICON_SWAP_MS}ms crossfade — the incoming glyph stays sharp`,
+            caption: `${ICON_SWAP_MS}ms crossfade — the new icon stays sharp`,
             scene: () => <IconSwapScene />,
             tracks: iconSwap("icon-out", "icon-in", 0),
             exitTracks: iconSwap("icon-in", "icon-out", 0),
         },
         dont: {
-            caption: `${ICON_SWAP_MS}ms crossfade — blur obscures the incoming glyph`,
+            caption: `${ICON_SWAP_MS}ms crossfade — the new icon starts blurry`,
             scene: () => <IconSwapScene />,
             tracks: iconSwap("icon-out", "icon-in", 4),
             exitTracks: iconSwap("icon-in", "icon-out", 4),
@@ -729,8 +729,8 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
      * present on load; the comparison needlessly replays an entrance. */
     "motion-29": {
         trigger: "replay",
-        control: "Reload UI",
-        hint: "Reload the example to compare when the ready control appears.",
+        control: "Reload",
+        hint: "Reload and compare when the Ready button appears.",
         do: {
             caption: "Ready on first render · 0ms",
             scene: () => <ButtonScene label="Ready" variant="secondary" />,
@@ -748,7 +748,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
      * cannot resolve Tailwind classes: blue-600/700, green-600. */
     "color-7": {
         trigger: "hover",
-        hint: "Hover each button and compare its feedback with the color you use for success.",
+        hint: "Hover over either example. One button darkens and the other turns green.",
         do: {
             caption: "blue-600 → blue-700 — same hue, deeper",
             scene: () => <ButtonScene label="Hover me" background="#155dfc" />,
@@ -770,7 +770,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
         control: "Submit",
         hint: "Compare the busy state with the button that still looks ready to submit.",
         do: {
-            caption: "spinner + disabled — the button is honest about working",
+            caption: "The button dims and a spinner replaces Submit.",
             scene: () => <SubmitScene spinner />,
             tracks: [
                 t("label", kf.crossfade(false), DUR.fast),
@@ -779,7 +779,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
             ],
         },
         dont: {
-            caption: "still clickable — double-submit roulette",
+            caption: "The button briefly shrinks. Its Submit label stays visible.",
             scene: () => <SubmitScene spinner={false} />,
             tracks: [t("fill", kf.scaleTo(1, 0.97), 80), t("fill", kf.scaleTo(0.97, 1), 80, { delayMs: 80 })],
         },
@@ -790,13 +790,13 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
     "sys-9": {
         trigger: "action",
         control: "Like",
-        hint: "Like both — the left heart trusts the server will agree, the right asks permission first",
+        hint: "Select Like. Watch when each heart fills and when Synced appears.",
         do: {
-            caption: "fills at 0ms · synced at 700ms — the round trip happens behind you",
+            caption: "At 1×, the heart starts filling at 0ms. Synced starts appearing at 700ms.",
             scene: () => <LikeScene />,
             // The lesson is when the heart fills, not when the receipt lands.
             readoutMs: 0,
-            readoutTag: "synced 700ms",
+            readoutTag: "Synced at 700ms",
             tracks: [
                 // The fill replaces the outline in both panes, so the only
                 // difference left between them is when it happens.
@@ -806,7 +806,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
             ],
         },
         dont: {
-            caption: "spinner until 560ms — you wait through the round trip",
+            caption: "At 1×, the spinner starts fading and the heart starts filling at 560ms.",
             scene: () => <LikeScene />,
             readoutMs: 560,
             tracks: [
@@ -829,9 +829,9 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
     "sys-1": {
         trigger: "action",
         control: "Load",
-        hint: "Load both — the same 900ms wait, but one pane spends it teaching you the layout",
+        hint: "Select Load. Compare what each example shows during the 900ms wait.",
         do: {
-            caption: "skeleton — the layout arrives before the data",
+            caption: "The skeleton shows the row layout before the text appears.",
             scene: () => <LoadingScene kind="skeleton" />,
             // The wait both panes share; the 220ms reveal after it is not the point.
             readoutMs: 900,
@@ -841,7 +841,7 @@ export const showcaseSpecs: Record<string, ShowcaseSpec> = {
             ],
         },
         dont: {
-            caption: "spinner — a clock with no hands",
+            caption: "The spinner shows activity without showing the row layout.",
             scene: () => <LoadingScene kind="spinner" />,
             readoutMs: 900,
             tracks: [

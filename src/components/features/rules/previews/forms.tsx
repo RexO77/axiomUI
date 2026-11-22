@@ -445,7 +445,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
                         <Shell className={zipWide ? "w-full" : "w-20"}>
                             <Value mono>94114</Value>
                         </Shell>
-                        <WidthBracket label="5 chars" widthClass="w-20" />
+                        <WidthBracket label="5 digits" widthClass="w-20" />
                     </div>
                 </PreviewFrame>
             );
@@ -554,8 +554,8 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
                     <MiniButton label="Save changes" variant="primary" className="w-full" />
                     <Ann>
                         {isDo
-                            ? "checkbox waits for Save — applies on submit"
-                            : "switch reads as applied — but Save is still there"}
+                            ? "Checkbox takes effect after Save changes"
+                            : "Switch looks on before Save changes"}
                     </Ann>
                 </PreviewFrame>
             );
@@ -565,7 +565,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
         // Both panes show the submitted error; only Don't shows it early.
         case "form-8": {
             const isDo = variant === "do";
-            const error = <ErrorNote>Email is missing a domain</ErrorNote>;
+            const error = <ErrorNote>Add the domain after @</ErrorNote>;
             return (
                 <PreviewFrame className="flex flex-col justify-center gap-1">
                     <Label>Email</Label>
@@ -588,7 +588,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
                     {error}
                     <div className="flex flex-wrap items-center justify-between gap-1.5">
                         <MiniButton label="Continue" variant="primary" />
-                        <Ann>After submit</Ann>
+                        <Ann>After pressing Continue</Ann>
                     </div>
                 </PreviewFrame>
             );
@@ -636,8 +636,8 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
                     </div>
                     <Ann>
                         {isDo
-                            ? "hint before entry — accepted first try"
-                            : "no hint — the format arrives with the error"}
+                            ? "MM / YY shown before typing"
+                            : "MM / YY appears only in the error"}
                     </Ann>
                 </PreviewFrame>
             );
@@ -702,7 +702,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
                     <div className="space-y-1">
                         <div className="flex h-3.5 items-baseline justify-between gap-2">
                             <Label>Country</Label>
-                            {note("from saved address", "choose again")}
+                            {note("from this booking", "choose again")}
                         </div>
                         <Shell>
                             <Value muted={!isDo}>{isDo ? "India" : "Select country…"}</Value>
@@ -758,7 +758,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
                         ) : null}
                     </div>
                     <Ann>
-                        {isDo ? "1 signal — the save is confirmed" : "0 signals — no way to tell"}
+                        {isDo ? "1 confirmation after saving" : "0 confirmations after saving"}
                     </Ann>
                 </PreviewFrame>
             );
@@ -794,7 +794,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
             const isDo = variant === "do";
             const fields = [
                 { label: "Full name", value: "Maya Chen" },
-                { label: "Work email", value: "maya@", error: "Enter a complete email address" },
+                { label: "Work email", value: "maya@", error: "Add the domain after @" },
                 { label: "Company", value: "Acme Design" },
             ];
             return (
@@ -810,7 +810,7 @@ export const formPreviews: PreviewRenderer = (ruleId, variant) => {
                     ))}
                     <div className="flex flex-wrap items-center justify-between gap-1.5">
                         <MiniButton label="Continue" variant="primary" />
-                        <Ann>After submit</Ann>
+                        <Ann>After pressing Continue</Ann>
                     </div>
                 </PreviewFrame>
             );

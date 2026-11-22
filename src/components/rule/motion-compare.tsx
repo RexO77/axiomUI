@@ -23,6 +23,7 @@ import { rules, type Rule } from "@/data/ui-logic";
 import { Segmented } from "@/components/ui/segmented";
 import { Tooltip } from "@/components/ui/tooltip";
 import { VerdictLabel } from "@/components/ui/verdict-label";
+import { DemoCanvas, useDemoAnnotations } from "./measure/demo-annotations";
 import { useCanHover, useReducedMotion } from "@/lib/media";
 import {
   cancelPane,
@@ -116,6 +117,7 @@ export function MotionCompare({ ruleId }: { ruleId: string }) {
 
 function Body({ spec, rule }: { spec: ShowcaseSpec; rule: Rule }) {
   const uid = useId();
+  const annotations = useDemoAnnotations(rule);
   const doRef = useRef<HTMLDivElement>(null);
   const dontRef = useRef<HTMLDivElement>(null);
   const bars = useRef<(HTMLSpanElement | null)[]>([null, null]);
@@ -331,8 +333,8 @@ function Body({ spec, rule }: { spec: ShowcaseSpec; rule: Rule }) {
       ? canHover
         ? (spec.hint ?? "Hover the canvas: both sides react together")
         : spec.doRequiresHover
-          ? "Tap: only the Don’t side moves; the Do side is obeying this rule"
-          : "Tap the canvas to preview the hover state"
+          ? "Tap either side. Only the Don’t button grows."
+          : "Tap either side to see both hover states."
       : null;
   const hotkey = spec.hotkey;
   const hint = gesture ? gestureHint : hotkey ? `Or press ${hotkey.toUpperCase()} while the demo has focus` : spec.hint;
@@ -343,7 +345,7 @@ function Body({ spec, rule }: { spec: ShowcaseSpec; rule: Rule }) {
 
   return (
     <div
-      className="cmp"
+      className={annotations.enabled ? "cmp cmp-annotated" : "cmp"}
       data-kind="motion"
       // The lesson's own key (motion-2's K) while focus is in the demo. Consumed
       // here, so the shell's shortcut for the same key never also runs.
@@ -381,13 +383,14 @@ function Body({ spec, rule }: { spec: ShowcaseSpec; rule: Rule }) {
         </div>
       )}
 
-      <div
+      <DemoCanvas
+        annotations={annotations}
         className="cmp-canvas"
         data-live={live || undefined}
         data-gesture={gesture || undefined}
         role={gesture ? "button" : undefined}
         tabIndex={gesture ? 0 : undefined}
-        aria-label={gesture ? (isPress ? "Press and hold to preview both sides" : "Hover or focus to preview both sides") : undefined}
+        aria-label={gesture ? (isPress ? "Press and hold to preview both sides" : "Preview hover effects") : undefined}
         onPointerDown={
           gesture
             ? (event) => {
@@ -435,7 +438,7 @@ function Body({ spec, rule }: { spec: ShowcaseSpec; rule: Rule }) {
         {(["do", "dont"] as const).map((side) => {
           const pane = side === "do" ? spec.do : spec.dont;
           return (
-            <figure key={side} className="cmp-pane" aria-labelledby={`${uid}-${side}-l`} aria-describedby={`${uid}-${side}-c`}>
+            <figure key={side} className="cmp-pane" data-side={side} aria-labelledby={`${uid}-${side}-l`} aria-describedby={`${uid}-${side}-c`}>
               <span className="cmp-pane-label" id={`${uid}-${side}-l`}>
                 <VerdictLabel verdict={side} />
               </span>
@@ -445,6 +448,7 @@ function Body({ spec, rule }: { spec: ShowcaseSpec; rule: Rule }) {
                   {pane.scene()}
                 </div>
               </div>
+              {annotations.overlay(side)}
               <span className="cmp-track" aria-hidden="true">
                 <span
                   ref={(el) => {
@@ -456,27 +460,28 @@ function Body({ spec, rule }: { spec: ShowcaseSpec; rule: Rule }) {
             </figure>
           );
         })}
-      </div>
+      </DemoCanvas>
 
       <div className="cmp-captions">
         {(["do", "dont"] as const).map((side) => (
           <p key={side} id={`${uid}-${side}-c`}>
             <span className="cmp-cap-rule">
-              <span className="cmp-cap-v">{side === "do" ? "Do" : "Don’t"}</span>
-              {side === "do" ? rule.do : rule.dont}
+              <span className="cmp-cap-v">{side === "do" ? "Do" : "Don’t"}:{" "}</span>
+              {annotations.caption(side)}
             </span>{" "}
             {(side === "do" ? spec.do : spec.dont).caption}
             {side === "dont" && tally !== null ? (
               <span className="cmp-tally" data-on={plays > 0 || undefined}>
-                ×{plays} · <span className="rule-hint-motion">{tally}s waited</span><span className="rule-hint-reduced">would cost {tally}s</span>
+                {plays} {plays === 1 ? "open" : "opens"} · {tally}s of motion at 1×
               </span>
             ) : null}
           </p>
         ))}
       </div>
+      {annotations.readout}
       {hint ? <p className={reducedHint ? "rule-hint rule-hint-motion" : "rule-hint"}>{hint}</p> : null}
       {reducedHint ? <p className="rule-hint rule-hint-reduced">{reducedHint}</p> : null}
-      <p className="rule-hint rule-hint-reduced">Reduced motion: end states only, as your setting asks.</p>
+      <p className="rule-hint rule-hint-reduced">Reduced motion: end states only.</p>
     </div>
   );
 }

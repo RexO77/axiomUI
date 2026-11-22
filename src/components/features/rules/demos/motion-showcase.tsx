@@ -450,7 +450,7 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
     const tallySeconds = spec.tallyDontMs ? ((plays * spec.tallyDontMs) / 1000).toFixed(1) : "0.0";
     const tally = spec.tallyDontMs
         ? {
-              text: `×${plays} · ${tallySeconds}s of motion at 1×`,
+              text: `${plays} ${plays === 1 ? "open" : "opens"} · ${tallySeconds}s of motion at 1×`,
               counting: plays > 0,
           }
         : null;
@@ -462,8 +462,8 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
               ? canHover
                   ? (spec.hint ?? "Hover the panes — both react together")
                   : spec.doRequiresHover
-                    ? "Tap — only the don’t pane moves; the do pane is obeying this rule"
-                    : "Tap the panes to preview the hover state"
+                    ? "Tap either side. Only the Don’t button grows."
+                    : "Tap either side to see both hover states."
               : null;
 
     const hints = [
@@ -479,7 +479,7 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
                 ? (spec.hintReduced ?? spec.hint)
                 : spec.hint
             : null,
-        reduced ? "Reduced motion — end states only; this page is honoring it" : null,
+        reduced ? "Reduced motion: end states only." : null,
     ].filter((hint): hint is string => hint !== null);
 
     return (
@@ -544,8 +544,8 @@ function ShowcaseBody({ spec }: { spec: ShowcaseSpec }) {
                 aria-label={
                     isGesture
                         ? isPress
-                            ? "Press and hold to preview both variants"
-                            : "Focus or hover to preview both variants"
+                            ? "Press and hold to preview both sides"
+                            : "Preview hover effects"
                         : undefined
                 }
                 className={cn(

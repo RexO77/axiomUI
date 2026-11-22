@@ -85,6 +85,9 @@
   --ax-dont: #e11d48;
   --ax-dont-ink: #be123c;
 
+  /* Measurement ink stays distinct from the verdict on either pane. */
+  --ax-redline: #c2410c;
+
   /* The bezel card: an outer shell one step off the page, a header row on
      it, and an inset panel holding the content. In light the shell is the
      greyer step and the panel white; in dark the shell lifts and the panel
@@ -167,6 +170,7 @@
   --ax-do-ink: #6ee7b7;
   --ax-dont: #fda4af;
   --ax-dont-ink: #fecdd3;
+  --ax-redline: #fb923c;
 
   --ax-scrim: rgb(0 0 0 / 0.5);
   --ax-shadow-inset: inset 0 0 0 1px rgba(255, 255, 255, 0.1);

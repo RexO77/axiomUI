@@ -1,11 +1,12 @@
 // design-system: strict
 "use client";
 
-import { useId, useState, type ReactNode } from "react";
+import { useEffect, useId, useState, type ReactNode } from "react";
 
 import type { Rule } from "@/data/ui-logic";
 import type { Variant } from "@/components/features/rules/preview-primitives";
 import { exampleCode, RestaurantReview, TicketChart, type ReportingQuarter } from "@/components/features/rules/previews/reading-examples";
+import { DemoCanvas, useDemoAnnotations } from "./measure/demo-annotations";
 import { VerdictLabel } from "@/components/ui/verdict-label";
 
 const fieldClass = "min-h-11 min-w-0 rounded-control border border-ink-muted bg-surface px-2 font-mono text-base text-ink";
@@ -39,7 +40,7 @@ function CodeEntry({ variant }: { variant: Variant }) {
           </div>
         </fieldset>
       )}
-      <button type="submit" className="cmp-ctl justify-self-start">Check example</button>
+      <button type="submit" className="cmp-ctl justify-self-start">Check code</button>
       <p role="status" className="min-h-5 text-xs">
         {checked === null ? "" : checked === exampleCode ? `Received ${checked} · all six digits` : `Received ${checked || "no digits"} · expected ${exampleCode}`}
       </p>
@@ -51,6 +52,9 @@ export function WorkedComparison({ rule }: { rule: Rule }) {
   const [quarter, setQuarter] = useState<ReportingQuarter>("Q1");
   const [rtl, setRtl] = useState(false);
   const uid = useId();
+  const annotations = useDemoAnnotations(rule);
+  const refresh = annotations.refresh;
+  useEffect(() => { refresh(); }, [refresh, rtl, quarter]);
   let control: ReactNode;
   let example: (variant: Variant) => ReactNode;
   switch (rule.id) {
@@ -82,21 +86,23 @@ export function WorkedComparison({ rule }: { rule: Rule }) {
       return null;
   }
   return (
-    <div className="cmp" data-kind="worked">
+    <div className={annotations.enabled ? "cmp cmp-annotated" : "cmp"} data-kind="worked">
       <div className="cmp-bar">{control}</div>
-      <div className="cmp-canvas">
+      <DemoCanvas annotations={annotations} className="cmp-canvas">
         {(["do", "dont"] as const).map((side) => (
-          <figure key={side} className="cmp-pane" aria-labelledby={`${uid}-${side}`} aria-describedby={`${uid}-${side}-caption`}>
+          <figure key={side} className="cmp-pane" data-side={side} aria-labelledby={`${uid}-${side}`} aria-describedby={`${uid}-${side}-caption`}>
             <span className="cmp-pane-label" id={`${uid}-${side}`}><VerdictLabel verdict={side} /></span>
-            <div className="w-full max-w-sm">{example(side)}</div>
+            <div className="w-full max-w-sm" data-measure-root="">{example(side)}</div>
+            {annotations.overlay(side)}
           </figure>
         ))}
-      </div>
+      </DemoCanvas>
       <div className="cmp-captions">
         {(["do", "dont"] as const).map((side) => (
-          <p key={side} id={`${uid}-${side}-caption`}><span className="cmp-cap-v">{side === "do" ? "Do" : "Don’t"}</span>{rule[side]}</p>
+          <p key={side} id={`${uid}-${side}-caption`}><span className="cmp-cap-v">{side === "do" ? "Do" : "Don’t"}:{" "}</span>{annotations.caption(side)}</p>
         ))}
       </div>
+      {annotations.readout}
     </div>
   );
 }

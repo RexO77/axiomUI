@@ -1,9 +1,10 @@
 /* The rule comparison: one canvas for every rule, Do and Don't at 1:1, verdict
-   labels inside the panes, a hairline split, captions under each half, hints
-   under the captions. Stills (peek, rising card, palette) are the pair at rest.
+   labels inside the panes, a hairline split, captions under each half. Stills
+   (peek, rising card, palette) are the pair at rest.
 
-   Rhythm: compare bar → 12 → canvas → 12 → captions → 8 → hints. Pane labels,
-   captions and hints sit on the inner edge, 16px in from the canvas.
+   Rhythm: compare bar → 12 → canvas → 12 → captions (→ 8 → a motion rule's
+   hints). Pane labels and captions sit on the inner edge, 16px in from the
+   canvas. A static rule's live hints end its toolbar instead.
 
    Previews are never CSS-scaled. The one transform is the reader's 2× zoom,
    under [data-zoom="2"], around a box laid out at 1× (never `zoom:`, which
@@ -39,24 +40,72 @@
 }
 .cmp-ctl:active { background: var(--ax-press); }
 .cmp-ctl[aria-pressed="true"] { background: var(--ax-hover); color: var(--ax-ink); }
-.cmp-flip { min-width: 112px; }
-/* Keyboard-started changes are 0ms (021): every control in the bar, the zoom
-   switch and a hand-built showcase's control row, Segmented's radios included. */
-:root[data-input="keyboard"] :is(.cmp-bar, .cmp-zoom, .cmp-show > .motion-showcase > .justify-between) :is(button, [role="radio"]) { transition: none; }
+/* Keyboard-started changes are 0ms (021): every control in the bar and a
+   hand-built showcase's control row, Segmented's radios included. */
+:root[data-input="keyboard"] :is(.cmp-bar, .cmp-dock, .cmp-show > .motion-showcase > .justify-between) :is(button, [role="radio"]) { transition: none; }
 
-/* Static rules: zoom is the bar's sibling, so a phone in Flip can move it to
-   the caption line and the bar never wraps. */
-.cmp[data-kind="static"] {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas: "bar zoom" "canvas canvas" "cap cap" "hint hint";
+/* The static view control and inspection toggles share the floating dock. */
+.cmp[data-kind="static"] { --cmp-mode-motion: var(--motion-medium) var(--ease-drawer); }
+.cmp[data-kind="static"] .cmp-bar { gap: 8px; }
+.cmp-tools {
+  display: inline-flex;
+  flex: none;
   align-items: center;
+  gap: 2px;
+  min-height: 32px;
+  padding: 3px;
+  border-radius: var(--radius-control);
+  background: var(--ax-fill);
 }
-.cmp[data-kind="static"] > .cmp-bar { grid-area: bar; min-width: 0; }
-.cmp[data-kind="static"] > .cmp-zoom { grid-area: zoom; margin: 0 0 12px 8px; }
-.cmp[data-kind="static"] > .cmp-canvas { grid-area: canvas; }
-.cmp[data-kind="static"] > .cmp-captions { grid-area: cap; align-self: start; }
-.cmp[data-kind="static"] > .rule-hint { grid-area: hint; }
+.cmp-tool {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 26px;
+  border-radius: var(--radius-item);
+  color: var(--ax-ink-muted);
+  cursor: pointer;
+}
+.cmp-tool svg { width: 16px; height: 16px; flex: none; }
+@media (hover: hover) and (pointer: fine) {
+  .cmp-tool:hover { color: var(--ax-ink); }
+}
+.cmp-tool:active { background: var(--ax-press); }
+.cmp-tool[aria-pressed="true"] { background: var(--ax-raised); box-shadow: var(--ax-shadow-item); color: var(--ax-ink); }
+.cmp-tool:focus-visible { outline: 2px solid var(--ax-ring); outline-offset: 0; }
+/* Desktop hints describe the active flip and pan gestures. */
+.cmp-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 12px;
+  min-width: 0;
+  margin-left: 8px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--ax-ink-muted);
+}
+.cmp-hint > span { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.cmp-hint > span + span::before { content: "·"; margin-right: 8px; }
+@media (hover: none) {
+  .cmp-hint { display: none; }
+}
+
+/* Both and Do/Don't share one progress value. Picking the other side changes
+   which pane uses that value, without starting a transition of its own: the
+   switch between Do and Don't is a blink. */
+@property --cmp-mode-progress {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+:root[data-input="keyboard"] .cmp[data-kind="static"] { --cmp-mode-motion: 0ms; }
+@media (prefers-reduced-motion: reduce) {
+  .cmp[data-kind="static"] { --cmp-mode-motion: 0ms; }
+}
 
 /* ── Canvas ─────────────────────────────────────────────────────────── */
 
@@ -83,10 +132,37 @@
   pointer-events: none;
 }
 .cmp-canvas:focus-visible { outline-offset: 2px; }
-.cmp-canvas[data-flip] { grid-template-columns: minmax(0, 1fr); cursor: pointer; }
-.cmp-canvas[data-flip] .cmp-pane { grid-area: 1 / 1; }
-.cmp-canvas[data-flip] .cmp-pane[data-off] { visibility: hidden; }
-.cmp-canvas[data-flip] .cmp-pane + .cmp-pane { box-shadow: none; }
+.cmp-canvas[data-flip] { cursor: pointer; }
+.cmp[data-kind="static"] .cmp-canvas {
+  --cmp-pane-h: max(var(--cmp-canvas-h), calc(var(--cmp-box-h) + 88px));
+  --cmp-mode-progress: 0;
+  grid-template-columns: minmax(0, 1fr);
+  transition: --cmp-mode-progress var(--cmp-mode-motion);
+}
+.cmp[data-kind="static"] .cmp-canvas[data-flip] { --cmp-mode-progress: 1; }
+.cmp[data-kind="static"] .cmp-pane {
+  grid-area: 1 / 1;
+  width: calc(50% + 50% * var(--cmp-mode-progress));
+  height: var(--cmp-pane-h);
+  min-height: 0;
+}
+.cmp[data-kind="static"] .cmp-pane + .cmp-pane {
+  justify-self: end;
+  box-shadow: none;
+}
+.cmp[data-kind="static"] .cmp-pane + .cmp-pane::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 1px;
+  background: var(--ax-line);
+  opacity: calc(1 - var(--cmp-mode-progress));
+  pointer-events: none;
+}
+.cmp[data-kind="static"] .cmp-canvas:not([data-lead="dont"]) > .cmp-pane + .cmp-pane,
+.cmp[data-kind="static"] .cmp-canvas[data-lead="dont"] > .cmp-pane:first-of-type {
+  opacity: max(0, calc(1 - 1.6 * var(--cmp-mode-progress)));
+}
 /* At 2× a touch drag pans the canvas: the browser must not take it as a page pan. */
 .cmp-canvas[data-zoom="2"] { cursor: grab; touch-action: none; }
 .cmp-canvas[data-zoom="2"][data-panning] { cursor: grabbing; }
@@ -117,23 +193,9 @@
 }
 .cmp-box > * { width: 100%; }
 .cmp-canvas[data-zoom="2"] .cmp-box { transform: translate(var(--cmp-pan-x), var(--cmp-pan-y)) scale(2); }
-.cmp-zoomchip {
-  position: absolute;
-  right: 12px;
-  bottom: 12px;
-  z-index: 2;
-  display: inline-flex;
-  align-items: center;
-  height: 24px;
-  padding: 0 8px;
-  border-radius: var(--radius-tip);
-  background: var(--ax-surface);
-  box-shadow: inset 0 0 0 1px var(--ax-line);
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 500;
-  color: var(--ax-ink-secondary);
-}
+/* Zoomed content passes under the verdict label: the label keeps a backing. */
+.cmp-canvas[data-zoom="2"] .cmp-pane-label { margin: -2px -6px; padding: 2px 6px; border-radius: var(--radius-tip); background: var(--ax-stage); }
+.cmp-canvas[data-measuring] { cursor: crosshair; }
 
 /* Inside a canvas the preview frame's ring, radius, fill and padding go: the
    canvas is the frame, so nothing nests. */
@@ -149,14 +211,15 @@
 
 /* ── Captions and hints ─────────────────────────────────────────────── */
 
-/* Tested claims in mono, 12/18, wrapped and balanced; Flip's shown side in ink. */
+/* Tested claims in mono, 12/18, wrapped and balanced, in the emphasis grey: the
+   lesson, a step above prose. Flip's shown side in ink. */
 .cmp-captions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 1px; margin-top: 12px; }
 .cmp-captions p {
   padding: 0 16px;
   font-family: var(--font-plex-mono), ui-monospace, monospace;
   font-size: 12px;
   line-height: 18px;
-  color: var(--ax-ink-muted);
+  color: var(--ax-ink-secondary);
   overflow-wrap: anywhere;
   /* Captions run one to three lines; balance keeps a two-line caption from
      ending on one word, which pretty leaves alone. */
@@ -170,8 +233,8 @@
 .cmp-tally { margin-left: 8px; font-family: -apple-system, BlinkMacSystemFont, var(--font-inter), ui-sans-serif, system-ui, sans-serif; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .cmp-tally[data-on] { color: var(--ax-dont-ink); }
 
-/* Every hint sits in one place: under the captions, on the inner edge, 13/20.
-   In the flow, never fixed, and it stays for as long as the rule is open. */
+/* A motion rule's hints sit under the captions, on the inner edge, 13/20.
+   In the flow, never fixed, and they stay for as long as the rule is open. */
 .rule-hint {
   margin-top: 8px;
   padding: 0 16px;
@@ -192,7 +255,6 @@
   .rule-hint-motion { display: none; }
   .rule-hint-reduced { display: block; }
   .rule-hint-motion + .rule-hint { margin-top: 8px; }
-  .cmp-tally .rule-hint-reduced { display: inline; }
 }
 
 /* Landscape phones keep panes side by side on purpose; only narrow containers stack. */
@@ -203,7 +265,70 @@
   .cmp-captions { grid-template-columns: minmax(0, 1fr); row-gap: 6px; }
   .cmp-cap-v { display: inline; margin-right: 6px; font-family: -apple-system, BlinkMacSystemFont, var(--font-inter), ui-sans-serif, system-ui, sans-serif; font-weight: 600; }
   .cmp-bar { flex-wrap: wrap; }
+  .cmp[data-kind="static"] .cmp-canvas {
+    --cmp-pane-h: max(var(--cmp-canvas-h), calc(var(--cmp-box-h) + 72px));
+    height: calc(var(--cmp-pane-h) * (2 - var(--cmp-mode-progress)));
+  }
+  .cmp[data-kind="static"] .cmp-pane { width: 100%; }
+  .cmp[data-kind="static"] .cmp-pane + .cmp-pane { align-self: end; box-shadow: none; }
+  .cmp[data-kind="static"] .cmp-pane + .cmp-pane::before { inset: 0 0 auto; height: 1px; width: auto; }
 }
+
+/* ── Measure ────────────────────────────────────────────────────────── */
+
+.cmp-measure-overlay { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.cmp-measure-overlay > span { position: absolute; }
+.cmp-measure-outline { box-shadow: inset 0 0 0 1px currentColor; }
+.cmp-measure-padding {
+  background: currentColor;
+  opacity: 0.42;
+  mask-image: repeating-linear-gradient(-45deg, black 0 1px, transparent 1px 5px);
+}
+.cmp-measure-gap { background: currentColor; opacity: 0.16; }
+.cmp-measure-line, .cmp-measure-line::before, .cmp-measure-line::after { background: currentColor; }
+.cmp-measure-line::before, .cmp-measure-line::after { content: ""; position: absolute; }
+.cmp-measure-line[data-axis="x"] { height: 1px; }
+.cmp-measure-line[data-axis="x"]::before, .cmp-measure-line[data-axis="x"]::after { width: 1px; height: 7px; top: -3px; }
+.cmp-measure-line[data-axis="x"]::before { left: 0; }
+.cmp-measure-line[data-axis="x"]::after { right: 0; }
+.cmp-measure-line[data-axis="y"] { width: 1px; }
+.cmp-measure-line[data-axis="y"]::before, .cmp-measure-line[data-axis="y"]::after { width: 7px; height: 1px; left: -3px; }
+.cmp-measure-line[data-axis="y"]::before { top: 0; }
+.cmp-measure-line[data-axis="y"]::after { bottom: 0; }
+.cmp-measure-chip {
+  z-index: 1;
+  border-radius: var(--radius-kbd);
+  padding: 0 4px;
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-size: 12px;
+  line-height: 16px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.cmp-measure-readout {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--ax-line);
+  font-size: 13px;
+  line-height: 20px;
+}
+.cmp-measure-instructions, .cmp-measure-readout dt, .cmp-measure-copy { color: var(--ax-ink-muted); }
+:root[data-input="keyboard"] .cmp-measure-pointer { display: none; }
+:root[data-input="keyboard"] .cmp-measure-keys {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+.cmp-measure-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.cmp-measure-heading h3 { flex: 1 1 auto; font-weight: 600; color: var(--ax-ink); }
+.cmp-measure-readout dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 192px), 1fr)); gap: 8px 16px; }
+.cmp-measure-readout dd { color: var(--ax-ink); font-family: var(--font-plex-mono), ui-monospace, monospace; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 
 /* ── Motion rules ───────────────────────────────────────────────────── */
 
@@ -394,7 +519,8 @@
   .cmp-ctl { height: 44px; padding-inline: 12px; }
   .cmp-show > .motion-showcase > .justify-between { min-height: 44px; }
   .cmp-show > .motion-showcase > .justify-between > button { min-height: 44px; padding: 12px 16px; }
-  .cmp[data-kind="static"] .cmp-pane { min-height: max(160px, calc(var(--cmp-box-h) + 72px)); padding: 40px 16px 32px; }
+  .cmp[data-kind="static"] .cmp-canvas { --cmp-pane-h: max(160px, calc(var(--cmp-box-h) + 72px)); }
+  .cmp[data-kind="static"] .cmp-pane { padding: 40px 16px 32px; }
   .cmp[data-kind="motion"] .cmp-canvas,
   .cmp[data-kind="motion"] .cmp-pane { min-height: 200px; }
   .cmp-show > .motion-showcase > .grid { grid-template-rows: minmax(200px, auto) auto; }
@@ -403,20 +529,103 @@
   .cmp-captions p,
   .cmp-show > .motion-showcase > .grid > .min-w-0 > p,
   .cmp-pane-ms,
-  .cmp-zoomchip,
   .rule-hint,
   .cmp-show .text-xs,
   .cmp-show > .motion-showcase > .flex-col { font-size: 13px; line-height: 20px; }
-  /* Flip: "Show Don't" keeps the bar to one row; zoom moves to the caption line. */
-  .cmp[data-kind="static"][data-flip] { grid-template-areas: "bar bar" "canvas canvas" "cap zoom" "hint hint"; }
-  .cmp[data-kind="static"][data-flip] > .cmp-zoom { align-self: start; margin: 12px 0 0 12px; }
-  .cmp[data-kind="static"][data-flip] > .cmp-bar { flex-wrap: nowrap; }
+  /* The view and the tools split the row: one line from 320px, 44px targets. */
+  .cmp[data-kind="static"] .cmp-bar { justify-content: space-between; }
+  .cmp-tools { min-height: 44px; }
+  .cmp-tool { width: 44px; height: 38px; }
+  .cmp-tool::before { content: ""; position: absolute; inset: 50% 0 auto; height: 44px; translate: 0 -50%; }
+}
+
+/* Under 352px the view drops its glyphs and keeps its words. */
+@container (max-width: 351px) {
+  .cmp[data-kind="static"] .cmp-bar [role="radio"] > span[aria-hidden="true"] { display: none; }
+}
+
+/* Too narrow for a hint beside the controls: it would wrap the toolbar. */
+@container (max-width: 560px) {
+  .cmp-hint { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cmp-ctl { transition: none; }
+  .cmp-ctl, .cmp-tool { transition: none; }
 }
 @media (forced-colors: active) {
   .cmp-canvas, .cmp-box, .still-pair, .still { forced-color-adjust: none; }
+  .cmp-measure-overlay { forced-color-adjust: auto; }
+  .cmp-measure-outline { outline: 1px solid Highlight; outline-offset: -1px; }
+  .cmp-measure-line, .cmp-measure-chip { forced-color-adjust: none; }
+  .cmp-measure-line, .cmp-measure-chip { background: Highlight; }
+  .cmp-measure-line { color: Highlight; }
+  .cmp-measure-chip { color: HighlightText; }
   .cmp-show > .motion-showcase > .grid::before { border: 1px solid CanvasText; }
+}
+
+/* The dock has a reserved landing area outside the pan and inspection plane. */
+.cmp-stage {
+  position: relative;
+  padding-bottom: 48px;
+  border-radius: var(--radius-frame);
+  background: var(--ax-stage);
+}
+.cmp-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: var(--radius-frame);
+  box-shadow: var(--ax-shadow-inset);
+}
+.cmp-stage .cmp-canvas::after { display: none; }
+.cmp-stage .cmp-canvas { border-end-start-radius: 0; border-end-end-radius: 0; }
+.cmp-dock {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: 9px;
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--radius-well);
+  background: var(--ax-overlay);
+  box-shadow: var(--ax-shadow-popover);
+}
+.cmp-dock .segmented, .cmp-dock .cmp-tools { background: none; padding: 0; }
+.cmp-dock .cmp-tools { padding-left: 4px; border-left: 1px solid var(--ax-line-strong); border-radius: 0; }
+.cmp-dock .cmp-tool { border-radius: var(--radius-field); }
+.cmp-dock .segmented::before, .cmp-dock .segmented:not([data-measured]) [aria-checked="true"] { background: var(--ax-inverse); }
+.cmp-dock .segmented [aria-checked="true"], .cmp-dock .segmented [aria-checked="true"] svg { color: var(--ax-on-inverse); }
+.cmp-stage [data-annotated] [data-annotation] { visibility: hidden; }
+.cmp[data-kind="static"] .cmp-stage .cmp-canvas[data-measuring] {
+  --cmp-pane-h: max(var(--cmp-canvas-h), calc(var(--cmp-box-h) + 132px));
+}
+.cmp-canvas[data-annotated] { cursor: default; }
+.cmp-canvas[data-annotated][data-flip] { cursor: pointer; }
+.cmp-canvas[data-annotated][data-zoom="2"] { cursor: grab; }
+.cmp-canvas[data-annotated][data-panning] { cursor: grabbing; }
+.cmp-annotated .cmp-hint { margin: 6px 16px 0; }
+.cmp-annotated .cmp-hint:empty { display: none; }
+
+@media (hover: hover) and (pointer: fine) {
+  .cmp-dock { opacity: 0; translate: -50% 4px; pointer-events: none; transition: opacity 170ms var(--ease-out-strong), translate 170ms var(--ease-out-strong); }
+  .cmp-stage:is(:hover, :focus-within, :has(:active)) .cmp-dock { opacity: 1; translate: -50% 0; pointer-events: auto; }
+}
+/* 44px targets make the dock 52px tall; 9px off the floor it needs 61px, so every coarse pointer gets the phone's 62px landing. */
+@media (pointer: coarse) {
+  .cmp-stage { padding-bottom: 62px; }
+  .cmp-dock button, .cmp-measure-readout button { min-width: 44px; min-height: 44px; }
+}
+@media (max-width: 640px), (pointer: coarse) and (max-height: 500px) {
+  .cmp-stage { padding-bottom: 62px; }
+  .cmp-dock { opacity: 1; bottom: 6px; pointer-events: auto; translate: -50% 0; }
+  .cmp-dock button, .cmp-measure-readout button { min-width: 44px; min-height: 44px; }
+  .cmp-dock [role="radio"] > span[aria-hidden="true"] { display: none; }
+  .cmp-annotated .cmp-hint { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cmp-stage .cmp-dock { transition: none; }
 }
