@@ -14,7 +14,7 @@
    cross-fade between the two views keeps one content edge. The header row
    lines up with the same block.
 
-   Rule prose turns common ligatures off: Manrope joins "--" into a dash, and
+   Rule prose turns common ligatures off: a sans can join "--" into a dash, and
    the copy quotes CSS ("--swipe-amount"). Code-like tokens are
    <code class="rv-code"> in Plex Mono (prose-code.ts). */
 

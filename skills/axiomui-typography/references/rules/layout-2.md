@@ -12,7 +12,7 @@ Limit the width of sustained prose on wide screens. Around 65 characters per lin
 
 ## Why it works
 
-A 95ch canvas can accommodate a wide table and a narrower reading column. The sample caps the column at 52ch to fit about 65 characters per full line in Manrope. The exact count depends on the font and the words.
+A 95ch canvas can accommodate a wide table and a narrower reading column. The sample caps the column at 52ch to fit about 65 characters per full line. The exact count depends on the font and the words.
 
 - [USWDS · Measure (line length)](https://designsystem.digital.gov/design-tokens/typesetting/measure/)
 - [CSS Values · Font-relative lengths](https://www.w3.org/TR/css-values-4/#ch)

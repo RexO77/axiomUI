@@ -1,6 +1,6 @@
 // design-system: strict
 // Code-like tokens in rule prose (summaries, the deep dive, Before you ship):
-// the copy names CSS and DOM APIs inline, and set in Manrope they read as
+// the copy names CSS and DOM APIs inline, and set in the sans they read as
 // words ("scale(0)", "--swipe-amount", "element.animate()"). This finds them
 // so Stage can set them in Plex Mono. Conservative on purpose: a miss is
 // prose that stays prose; a false hit puts a normal word in mono.

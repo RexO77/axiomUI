@@ -12,7 +12,7 @@ When tightening a display headline, check the gaps between neighboring glyphs at
 
 ## Why it works
 
-In the two-line Manrope headline, tighter tracking compresses the gap between the o and g in together. The same em value moves the letters farther in pixels as the heading gets larger, so check the spacing again when the size changes.
+In the two-line headline, tighter tracking compresses the gap between the o and g in together. The same em value moves the letters farther in pixels as the heading gets larger, so check the spacing again when the size changes.
 
 - [USWDS · Letterspacing tokens](https://designsystem.digital.gov/design-tokens/typesetting/letterspacing/)
 - [CSS Text · Letter spacing](https://www.w3.org/TR/css-text-3/#letter-spacing-property)
