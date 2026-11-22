@@ -76,7 +76,7 @@ describe("ruleProse", () => {
       for (const { title, href, kind } of sources) {
         expect(title.trim(), rule.id).toMatch(/\S/);
         expect(new URL(href).protocol, rule.id).toBe("https:");
-        if (kind !== undefined) expect(Object.keys(SOURCE_KIND_LABEL), rule.id).toContain(kind);
+        expect(Object.keys(SOURCE_KIND_LABEL), rule.id).toContain(kind);
       }
     }
   });

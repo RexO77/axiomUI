@@ -31,7 +31,7 @@ export const SOURCE_KIND_LABEL: Readonly<Record<SourceKind, string>> = Object.fr
   practice: "Practice",
 });
 
-export type RuleSource = Readonly<{ title: string; href: `https://${string}`; kind?: SourceKind }>;
+export type RuleSource = Readonly<{ title: string; href: `https://${string}`; kind: SourceKind }>;
 
 /** The four section headings, in reading order. Shared by the view and its tests. */
 export const PROSE_HEADINGS = Object.freeze({
