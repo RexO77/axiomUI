@@ -45,7 +45,7 @@ import {
 } from "react";
 
 import { writeSide } from "@/components/gallery/side-switch";
-import { WallContext, type WallApi, type WallFilter } from "@/components/gallery/wall-context";
+import { WallContext, type FilterOptions, type WallApi, type WallFilter } from "@/components/gallery/wall-context";
 import { Shell } from "@/components/shell/shell";
 import type { InputOrigin } from "@/components/shell/shell-context";
 import { rules } from "@/data/ui-logic";
@@ -449,39 +449,46 @@ export function CatalogApp({ basePath, wall, children }: CatalogAppProps) {
    * commit, with no morph. The wall reads the result through WallContext.
    * A rule on screen, or one opening, owns the location: the change waits.
    */
+  const revealFilter = useRef(false);
   const setFilter = useCallback(
-    (patch: WallFilter) => {
+    (patch: WallFilter, options?: FilterOptions) => {
       const cur = locRef.current;
       if (cur.view !== "gallery" || pendingOpen.current) return;
       const next: CatalogLocation = { ...cur, ...patch, collection: patch.collection === undefined ? cur.collection : patch.collection };
       if (same(next, cur)) return;
+      revealFilter.current = Boolean(options?.reveal);
       writeHistory("replace", galleryState, galleryUrl(next));
       commit(next);
     },
     [commit, galleryUrl],
   );
   /** A filter chosen on a rule (Show only, a Shift+Enter search), applied once the exit has landed on the wall. */
-  const queuedFilter = useRef<WallFilter | null>(null);
+  const queuedFilter = useRef<{ patch: WallFilter; options?: FilterOptions } | null>(null);
   const queueFilter = useCallback(
-    (patch: WallFilter) => {
-      if (locRef.current.view === "gallery" && !pendingOpen.current) setFilter(patch);
-      else queuedFilter.current = patch;
+    (patch: WallFilter, options?: FilterOptions) => {
+      if (locRef.current.view === "gallery" && !pendingOpen.current) setFilter(patch, options);
+      else queuedFilter.current = { patch, options };
     },
     [setFilter],
   );
   useEffect(() => {
-    const patch = queuedFilter.current;
-    if (!patch || loc.view !== "gallery" || pendingOpen.current) return;
+    const queued = queuedFilter.current;
+    if (!queued || loc.view !== "gallery" || pendingOpen.current) return;
     queuedFilter.current = null;
-    setFilter(patch);
+    setFilter(queued.patch, queued.options);
   }, [loc, setFilter]);
+  const takeReveal = useCallback(() => {
+    const reveal = revealFilter.current;
+    revealFilter.current = false;
+    return reveal;
+  }, []);
   const visible = useMemo(() => {
     const deck = deckFor(wallShown);
     return deck.kind === "catalog" ? null : new Set(deck.rules.map((rule) => rule.id));
   }, [wallShown]);
   const wallApi = useMemo<WallApi>(
-    () => ({ q: wallShown.q, collection: wallShown.collection, show: wallShown.show, visible, setFilter, queueFilter }),
-    [wallShown.q, wallShown.collection, wallShown.show, visible, setFilter, queueFilter],
+    () => ({ q: wallShown.q, collection: wallShown.collection, show: wallShown.show, visible, setFilter, queueFilter, takeReveal }),
+    [wallShown.q, wallShown.collection, wallShown.show, visible, setFilter, queueFilter, takeReveal],
   );
 
   /*

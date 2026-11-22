@@ -148,8 +148,8 @@ Enable hover-only effects when the primary input can hover. Keep every action av
 
 When reduced motion is on, remove unnecessary travel, zoom and spin. Keep the result visible with a label or icon.
 
-- Do: With motion on, the toast fades in place
-- Don’t: With motion on, the toast slides up
+- Do: With reduced motion, the toast fades in place
+- Don’t: With reduced motion, the toast still slides up
 - Reasoning: `references/rules/motion-17.md` · https://axiomui.nischal.fyi/rules/motion-17
 
 ### Let a quick flick dismiss a card (`motion-18`)

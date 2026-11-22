@@ -238,7 +238,7 @@ export function Palette({ session, currentId, onClose, onOpen, onSearch }: Palet
           </div>
           {count === 0 ? (
             <p className="palette-empty">
-              No rules match “{q}”. Try a broader term, like “spacing”.
+              No rules match “{q}”. Try one word, like “tracking”.
             </p>
           ) : (
             <div className="palette-preview" aria-hidden="true">

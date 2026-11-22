@@ -118,7 +118,7 @@ A Markdown table with Before, After, Why and Rule columns, one row per material 
 
 ## Axiom UI rule lookup
 
-Every rule ID above is one of Axiom UI's 112 rules. Its description and Do and Don’t examples are enough for the sweep; its full reference adds why it works, what breaks, implementation notes and review questions. This is the single-file copy of the skill, so the rules are online rather than beside it:
+Every rule ID above is one of Axiom UI's 112 rules. Its description and Do and Don’t examples are enough for the sweep; its full reference adds why it works, what breaks, implementation notes and a Before you ship checklist. This is the single-file copy of the skill, so the rules are online rather than beside it:
 
 - Every rule’s Do and Don’t examples in one JSON file: https://axiomui.nischal.fyi/rules.json
 - One rule's full reasoning: https://axiomui.nischal.fyi/rules/<id>, for example https://axiomui.nischal.fyi/rules/typo-1

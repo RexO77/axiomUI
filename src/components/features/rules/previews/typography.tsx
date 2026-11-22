@@ -236,7 +236,7 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
                 <PreviewFrame className="flex items-center justify-center">
                     <div className="w-full max-w-[230px]">
                         <Spec className="block">
-                            {isDo ? "1 family · Inter" : "2 families · Arial + Verdana"}
+                            {isDo ? "1 sans · SF Pro or Inter" : "2 sans · Arial + Verdana"}
                         </Spec>
                         <p
                             className="mt-2 text-[17px] font-semibold leading-snug text-neutral-900 dark:text-neutral-50"
@@ -286,10 +286,9 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
 
         // Numeric alignment — the same order summary, right-aligned in both
         // panes; only font-variant-numeric changes. The amounts are 1-heavy on
-        // purpose: in SF and Inter alike the proportional 1 is far narrower
-        // than 0 or 8, so proportional figures let the decimal points wander
-        // while tabular figures stack every column. Alignment is not the
-        // variable here.
+        // purpose: in SF Pro and Inter the proportional 1 is far narrower than 0 or 8, so
+        // proportional figures let the decimal points wander while tabular
+        // figures stack every column. Alignment is not the variable here.
         case "typo-7": {
             const lines: Array<[string, string]> = [
                 ["Subtotal", "$1,111.10"],
@@ -371,8 +370,8 @@ export const typographyPreviews: PreviewRenderer = (ruleId, variant) => {
         // The avoid pane spends a different weight on every role, including
         // a bold meta line and a medium description, so the four-weight
         // scramble is visible without reading the tags.
-        // The sans is SF or variable Inter, so every tag below is a weight the
-        // page actually renders.
+        // SF Pro and Inter (variable) both render every weight below, so no
+        // tag names a weight the page fakes.
         case "typo-9": {
             const rows: Array<{ text: string; base: string; doW: string; dontW: string }> = [
                 {

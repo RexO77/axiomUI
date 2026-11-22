@@ -15,7 +15,7 @@
  * <body>. Esc closes it from inside, in the bubble phase, so nothing behind
  * it hears that Esc; focus then returns to the row.
  *
- * "Browse the skills" closes the popover and opens the full skills dialog.
+ * "Browse agent skills" closes the popover and opens the full skills dialog.
  * The dialog is its own chunk, fetched when the popover first opens, so the
  * catalog's first load never carries it. Focus returns to the row when it
  * closes.
