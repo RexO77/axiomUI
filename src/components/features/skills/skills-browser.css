@@ -237,7 +237,7 @@
   .skill-picker-select svg { position: absolute; right: 16px; bottom: 20px; width: 14px; height: 14px; pointer-events: none; }
   .skill-details { flex: 1; padding: 20px 16px; }
   .skill-footer { flex-wrap: wrap; column-gap: 4px; padding-bottom: env(safe-area-inset-bottom); }
-  /* SF and Inter set wider than Manrope did: at 4px both actions still share one row at 320px. */
+  /* At 4px both actions share one row at 320px in SF and in Inter. */
   .skill-footer .skill-action { padding-inline: 4px; }
   .skill-action, .skill-install-copy, .skill-install-scope button, .skill-install-after summary, .skill-toolbar .skill-close { min-height: 44px; }
 }
