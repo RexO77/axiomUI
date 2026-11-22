@@ -356,6 +356,19 @@ test.describe("comparison Measure", () => {
     expect(new URL(page.url()).pathname).toBe(ruleUrl("comp-7"));
   });
 
+  test("Enter on the Measure button hands focus to the canvas on authored marks too, as M does", async ({ page }) => {
+    await openCatalog(page, ruleUrl("comp-3"));
+    const measure = page.getByRole("button", { name: "Measure (M)", exact: true });
+    await measure.focus();
+    await page.keyboard.press("Enter");
+    await expect(measure).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("[data-compare-canvas]")).toBeFocused();
+    await expect(page.locator("[data-compare-canvas] .ml-overlay")).toHaveCount(2);
+    await page.keyboard.press("Escape");
+    await expect(measure).toHaveAttribute("aria-pressed", "false");
+    await expect(measure).toBeFocused();
+  });
+
   test("Escape on a focused dock tooltip closes only the tooltip, then Measure", async ({ page }) => {
     await openCatalog(page, ruleUrl("comp-7"));
     const measure = page.getByRole("button", { name: "Measure (M)", exact: true });

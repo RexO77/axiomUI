@@ -14,7 +14,7 @@ export function ruleToText(rule: Rule, origin: string = siteConfig.origin): stri
         rule.desc,
         ``,
         `Do: ${rule.do}`,
-        `Don't: ${rule.dont}`,
+        `Don’t: ${rule.dont}`,
         ``,
         url,
     ].join("\n");

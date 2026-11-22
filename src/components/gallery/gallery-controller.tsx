@@ -153,10 +153,13 @@ export function GalleryController({ base, total, sections, children }: GalleryCo
   const lastFilter = useRef(filterKey);
   const collection = wall.collection ? (collections.find((item) => item.id === wall.collection) ?? null) : null;
   const shown = wall.visible?.size ?? null;
+  const takeReveal = wall.takeReveal;
   useEffect(() => {
     if (lastFilter.current === filterKey) return;
     lastFilter.current = filterKey;
-    if (!ownChange.current) return;
+    // The reader's own change, here or through Show only; never one from the URL.
+    const revealed = takeReveal();
+    if (!ownChange.current && !revealed) return;
     ownChange.current = false;
     // A new filter starts at the top of its results.
     if (scroller.current) scroller.current.scrollTop = 0;
@@ -170,7 +173,7 @@ export function GalleryController({ base, total, sections, children }: GalleryCo
           : `${shown} ${shown === 1 ? "rule matches" : "rules match"}`;
     const timer = setTimeout(() => say(line), ANNOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [filterKey, shown, collection, wall.q, total, say]);
+  }, [filterKey, shown, collection, wall.q, takeReveal, total, say]);
 
   /* ── The side ──────────────────────────────────────────────────────── */
 

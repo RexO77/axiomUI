@@ -118,7 +118,7 @@ A Markdown table with Before, After, Why and Rule columns, one row per material 
 
 ## Axiom UI rule lookup
 
-Every rule ID above is one of Axiom UI's 138 rules. Its description and Do and Don’t examples are enough for the sweep; its full reference adds why it works, what breaks, implementation notes and review questions. Both live in `references/rules/<id>.md`: the first dozen lines hold the description and Do and Don’t examples, and the whole file is the full reference to read when step 3 calls for it. Cite the rule ID when you report the change. Each domain file below lists that domain’s Do and Don’t examples; read one whole only when a symptom falls outside the entry and symptom lists.
+Every rule ID above is one of Axiom UI's 138 rules. Its description and Do and Don’t examples are enough for the sweep; its full reference adds why it works, what breaks, implementation notes and a Before you ship checklist. Both live in `references/rules/<id>.md`: the first dozen lines hold the description and Do and Don’t examples, and the whole file is the full reference to read when step 3 calls for it. Cite the rule ID when you report the change. Each domain file below lists that domain’s Do and Don’t examples; read one whole only when a symptom falls outside the entry and symptom lists.
 
 If `references/` is missing, this is a single-file copy: read https://axiomui.nischal.fyi/rules.json for every rule’s Do and Don’t examples, and https://axiomui.nischal.fyi/rules/<id> for one rule's reasoning.
 

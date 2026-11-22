@@ -1,14 +1,16 @@
 // design-system: strict
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { Segmented, segmentIndex } from "@/components/ui/segmented";
 
-// Inspect the rendered handlers in node without a DOM renderer.
+// Inspect the rendered handlers in node without a DOM renderer. Layout
+// effects are collected, not run, so a test can run one against stub elements.
+const layoutEffects = vi.hoisted(() => [] as (() => void | (() => void))[]);
 vi.mock("react", async (importOriginal) => ({
   ...await importOriginal<typeof import("react")>(),
   useRef: (initial: unknown) => ({ current: initial }),
-  useLayoutEffect: () => {},
+  useLayoutEffect: (effect: () => void | (() => void)) => { layoutEffects.push(effect); },
 }));
 
 describe("segmented radio keyboard logic", () => {
@@ -68,8 +70,6 @@ describe("segmented presentation", () => {
     expect(html).toContain("bg-raised text-ink shadow-item");
     expect(html).not.toMatch(/bg-surface|hover:bg-|rounded-md|rounded-lg/);
     expect(html).toContain("hover:text-ink");
-    // The server paints the selected radio; measuring it and enabling motion are client-only.
-    expect(html).not.toMatch(/data-measured|data-slide/);
     expect(html).toContain("focus-visible:outline-offset-0");
     expect(html).toContain("[&amp;_svg]:size-3.5");
     expect(html).toContain('aria-hidden="true" class="text-ink-secondary"');
@@ -142,5 +142,77 @@ describe("segmented change origin", () => {
     const html = renderToStaticMarkup(disabled.tree);
     expect(html).toContain('aria-disabled="true"');
     expect(html).not.toContain('tabindex="0"');
+  });
+});
+
+describe("segmented pill placement", () => {
+  afterEach(() => { vi.unstubAllGlobals(); });
+
+  type Box = { left: number; right: number; top: number; width: number; height: number };
+  const box = (left: number, top: number, width: number, height: number): Box =>
+    ({ left, right: left + width, top, width, height });
+
+  /** Renders a group, attaches stub elements and runs its measuring effect. */
+  function measure({ value = "2", direction = "ltr", track = box(100, 50, 200, 32), selected = box(203, 53, 94, 26) } = {}) {
+    const style = new Map<string, string>();
+    const element = {
+      dataset: {} as Record<string, string>,
+      clientLeft: 1,
+      clientTop: 1,
+      getBoundingClientRect: () => track,
+      style: {
+        getPropertyValue: (property: string) => style.get(property) ?? "",
+        setProperty: (property: string, length: string) => { style.set(property, length); },
+      },
+    };
+    let resized = () => {};
+    vi.stubGlobal("getComputedStyle", () => ({ direction }));
+    vi.stubGlobal("ResizeObserver", class {
+      constructor(callback: () => void) { resized = callback; }
+      observe() {}
+      disconnect() {}
+    });
+    layoutEffects.length = 0;
+    const tree = Segmented({
+      label: "Zoom", value, onChange: vi.fn(),
+      options: [{ value: "1", label: "1×" }, { value: "2", label: "2×" }],
+    });
+    tree.props.ref.current = element;
+    tree.props.children.forEach((button: { props: { ref: (el: unknown) => void } }, index: number) =>
+      button.props.ref({ getBoundingClientRect: () => (index === 1 ? selected : box(103, 53, 94, 26)) }));
+    layoutEffects.at(-1)!();
+    return { element, style, resize: (next: Box) => { selected = next; resized(); } };
+  }
+
+  it("places the pill on the selected radio, inside the track's border", () => {
+    const { element, style } = measure();
+    expect(Object.fromEntries(style)).toEqual({
+      "--segment-start": "102px",
+      "--segment-top": "2px",
+      "--segment-width": "94px",
+      "--segment-height": "26px",
+    });
+    expect("measured" in element.dataset).toBe(true);
+  });
+
+  it("measures from the inline start in a right-to-left group", () => {
+    // The selected radio sits at the left, so in RTL it is the far end.
+    const { style } = measure({ direction: "rtl", selected: box(103, 53, 94, 26) });
+    expect(style.get("--segment-start")).toBe("102px");
+  });
+
+  it("leaves the server's painted radio in place while the group is hidden", () => {
+    const { element, style } = measure({ selected: box(0, 0, 0, 0) });
+    expect(style.size).toBe(0);
+    expect("measured" in element.dataset).toBe(false);
+  });
+
+  it("follows a resize without sliding the pill there", () => {
+    const { element, style, resize } = measure();
+    element.dataset.slide = "";
+    resize(box(213, 53, 84, 26));
+    expect(style.get("--segment-start")).toBe("112px");
+    expect(style.get("--segment-width")).toBe("84px");
+    expect("slide" in element.dataset).toBe(false);
   });
 });
