@@ -53,9 +53,10 @@ test("Shift+Tab wrapping to the last visit option scrolls it into the half-open 
   const before = await pageTop();
   await page.keyboard.press("Shift+Tab");
   const list = sheet.getByRole("group", { name: "Visit options" });
-  const focused = page.locator(":focus");
-  await expect(focused).not.toBe(expand);
-  const inside = await focused.evaluate((el) => {
+  // The focus trap wraps backwards from the first control to the last visit option.
+  const last = list.getByRole("button", { name: /Wheelchair access/ });
+  await expect(last).toBeFocused();
+  const inside = await last.evaluate((el) => {
     const box = el.closest('[role="group"]')!.getBoundingClientRect(), row = el.getBoundingClientRect();
     return row.top >= box.top - 1 && row.bottom <= box.bottom + 1;
   });
