@@ -506,6 +506,8 @@
      fits has no scroll range, its timeline is inactive, and the fade stays
      hidden. */
   @supports (animation-timeline: scroll()) {
+    /* Keep a link scrolled in by focus clear of the fade. */
+    .rv-side .rv-dd { scroll-padding-bottom: 32px; }
     .rv-side .rv-dd::after {
       content: "";
       position: sticky;

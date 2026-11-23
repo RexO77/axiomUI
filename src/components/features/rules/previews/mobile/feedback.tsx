@@ -42,7 +42,7 @@ function PricePane({ side, inspect, nearTop, leftHand, scale, calibrated, replay
           value={value} style={{ top: point.y - 26 }} onPointerDown={e => {
             stopReplay();
             if (e.pointerType === "touch") { touch.current = { x: e.clientX, y: e.clientY, drag: false }; return; }
-            setHolding(true); e.currentTarget.setPointerCapture(e.pointerId);
+            touch.current = null; setHolding(true); e.currentTarget.setPointerCapture(e.pointerId);
           }}
           onPointerMove={e => {
             const t = touch.current;
@@ -52,8 +52,10 @@ function PricePane({ side, inspect, nearTop, leftHand, scale, calibrated, replay
           }}
           onLostPointerCapture={() => setHolding(false)}
           onPointerUp={() => { touch.current = null; setHolding(false); }}
-          onPointerCancel={() => { touch.current = null; setHolding(false); }}
-          onKeyDown={stopReplay} onKeyUp={() => setHolding(false)} onBlur={() => setHolding(false)}
+          // A scroll cancels the touch, and the range can still report a late
+          // change for it, so keep ignoring it until the next pointer or key.
+          onPointerCancel={() => { if (touch.current?.drag) touch.current = null; setHolding(false); }}
+          onKeyDown={() => { touch.current = null; stopReplay(); }} onKeyUp={() => setHolding(false)} onBlur={() => setHolding(false)}
           onChange={e => { if (touch.current && !touch.current.drag) return; move(e.currentTarget.valueAsNumber); }} />
       </div>
       <SystemChrome profile="iOS" inset={16} />

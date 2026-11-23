@@ -102,6 +102,8 @@
   100% { opacity: 0; }
 }
 @supports (animation-timeline: scroll()) {
+  /* Keep an option scrolled in by focus clear of the fade. */
+  .skill-list { scroll-padding-bottom: 24px; }
   .skill-list::after {
     content: "";
     position: sticky;

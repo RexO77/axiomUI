@@ -1,7 +1,7 @@
 // design-system: strict
 "use client";
 
-import { useRef, useSyncExternalStore, type MouseEvent, type ReactNode, type Ref } from "react";
+import { useEffect, useRef, useSyncExternalStore, type MouseEvent, type ReactNode, type Ref } from "react";
 import { flushSync } from "react-dom";
 import { CircleCheck, CircleX, Columns2 } from "@/components/ui/icons";
 import { Segmented } from "@/components/ui/segmented";
@@ -28,18 +28,40 @@ export function ComparisonDock({ view, setView, keys, children }: {
   view: View; setView: (view: View) => void; keys: boolean; children: ReactNode;
 }) {
   const dock = useRef<HTMLDivElement>(null);
+  const follow = useRef<() => void>(undefined);
+  useEffect(() => () => follow.current?.(), []);
   // On a phone the panes stack, so showing one pane shortens the page by a
-  // pane's height and the dock would jump away from the finger that tapped
-  // it. Commit the change, then scroll by however far the dock moved.
+  // pane's height and the dock would slide away from the finger that tapped
+  // it. The canvas height eases over --motion-medium, so follow the dock
+  // through that transition. A ResizeObserver runs after each frame's layout
+  // and before its paint, so the correction lands in the same frame. Track the
+  // dock's offset within the scroller, not the viewport, so a scroll the
+  // reader makes meanwhile is never undone, and carry the sub-pixel remainder
+  // a whole-pixel scrollTop drops.
   const choose = (next: View) => {
     const el = dock.current;
-    const before = el?.getBoundingClientRect().top;
+    const stage = el?.closest<HTMLElement>(".cmp-stage");
+    const scroller = el?.closest<HTMLElement>(".shell-sheet") ?? document.scrollingElement;
+    follow.current?.();
+    if (!el || !stage || !scroller) { setView(next); return; }
+    const offset = () => el.getBoundingClientRect().top + scroller.scrollTop;
+    let last = offset(), pending = 0;
+    const settle = () => {
+      const now = offset();
+      pending += now - last;
+      last = now;
+      if (Math.abs(pending) < 1) return;
+      const from = scroller.scrollTop;
+      scroller.scrollTop = from + pending;
+      pending -= scroller.scrollTop - from;
+    };
+    const observer = new ResizeObserver(settle);
+    // The transition is 220ms; 400ms covers it with frames to spare.
+    const timer = setTimeout(() => follow.current?.(), 400);
+    follow.current = () => { observer.disconnect(); clearTimeout(timer); follow.current = undefined; };
     flushSync(() => setView(next));
-    if (!el || before === undefined) return;
-    const moved = el.getBoundingClientRect().top - before;
-    if (Math.abs(moved) < 1) return;
-    const scroller = el.closest<HTMLElement>(".shell-sheet") ?? document.scrollingElement;
-    if (scroller) scroller.scrollTop += moved;
+    settle();
+    observer.observe(stage);
   };
   return (
     <div className="cmp-dock" ref={dock}>
