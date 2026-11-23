@@ -23,6 +23,10 @@ function PricePane({ side, inspect, nearTop, leftHand, scale, calibrated, replay
   function stopReplay() { timers.current.forEach(clearTimeout); timers.current = []; }
   useEffect(() => stopReplay, []);
   function move(price: number) { setValue(price); setHolding(true); }
+  // A touch that lands on the track is a scroll until it moves sideways. The
+  // native range jumps to the touch point at once, so its changes are ignored
+  // (the controlled value puts it back) until the drag is clearly horizontal.
+  const touch = useRef<{ x: number; y: number; drag: boolean } | null>(null);
   useImperativeHandle(replayRef, () => () => {
     stopReplay();
     move(40);
@@ -35,10 +39,24 @@ function PricePane({ side, inspect, nearTop, leftHand, scale, calibrated, replay
         <div className="fb-heading" style={nearTop ? { top: 244 } : undefined}><small>Price filter</small><h3>Maximum price</h3><p>Drag the limit to ${priceTarget}.</p></div>
         <PriceDrawing value={value} side={side} nearTop={nearTop} leftHand={leftHand} holding={holding} />
         <input className="fb-range" type="range" aria-label="Maximum price" aria-valuetext={value + " dollars"} min="0" max="100" step="1"
-          value={value} style={{ top: point.y - 26 }} onPointerDown={e => { stopReplay(); setHolding(true); e.currentTarget.setPointerCapture(e.pointerId); }}
-          onLostPointerCapture={() => setHolding(false)} onPointerUp={() => setHolding(false)} onPointerCancel={() => setHolding(false)}
-          onKeyDown={stopReplay} onKeyUp={() => setHolding(false)} onBlur={() => setHolding(false)}
-          onChange={e => move(e.currentTarget.valueAsNumber)} />
+          value={value} style={{ top: point.y - 26 }} onPointerDown={e => {
+            stopReplay();
+            if (e.pointerType === "touch") { touch.current = { x: e.clientX, y: e.clientY, drag: false }; return; }
+            touch.current = null; setHolding(true); e.currentTarget.setPointerCapture(e.pointerId);
+          }}
+          onPointerMove={e => {
+            const t = touch.current;
+            if (!t || t.drag) return;
+            const dx = Math.abs(e.clientX - t.x), dy = Math.abs(e.clientY - t.y);
+            if (dx > 6 && dx > dy) { t.drag = true; setHolding(true); }
+          }}
+          onLostPointerCapture={() => setHolding(false)}
+          onPointerUp={() => { touch.current = null; setHolding(false); }}
+          // A scroll cancels the touch, and the range can still report a late
+          // change for it, so keep ignoring it until the next pointer or key.
+          onPointerCancel={() => { if (touch.current?.drag) touch.current = null; setHolding(false); }}
+          onKeyDown={() => { touch.current = null; stopReplay(); }} onKeyUp={() => setHolding(false)} onBlur={() => setHolding(false)}
+          onChange={e => { if (touch.current && !touch.current.drag) return; move(e.currentTarget.valueAsNumber); }} />
       </div>
       <SystemChrome profile="iOS" inset={16} />
     </PhoneFrame>

@@ -1410,7 +1410,7 @@ Claims: The background can fill the bottom of the screen while the button sits h
 - [WWDC21, Design for Safari 15](https://developer.apple.com/videos/play/wwdc2021/10029/) · guideline · “the safe area starts above it.”
 - [Android, Window insets](https://developer.android.com/develop/ui/compose/system/insets) · guideline · “Edge-to-edge is enforced on Android 15 and higher once your app targets SDK 35”
 - [Android, Edge-to-edge design](https://developer.android.com/design/ui/mobile/guides/layout-and-content/edge-to-edge) · guideline · “System bar insets apply to UI that is both tappable”
-- [MDN, env()](https://developer.mozilla.org/en-US/docs/Web/CSS/env) · standard · “where it is safe to place content”
+- [MDN, env()](https://developer.mozilla.org/en-US/docs/Web/CSS/env) · guideline · “where it is safe to place content”
 
 Judgement: The bottom inset, action height and ordinary padding are fixture values. A real safe-area intersection alone does not establish who receives a tap.
 

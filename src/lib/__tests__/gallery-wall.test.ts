@@ -138,11 +138,10 @@ describe("the gallery wall, server-rendered", () => {
     }
   });
 
-  it("gives tiles no handlers and the morph hooks the catalog app looks for", () => {
+  it("gives tiles no handlers, and the frame hook the motion tiles look for", () => {
     expect(html).not.toMatch(/\son[a-z]+=/i);
     for (const tile of tiles) {
       expect(all(tile, (n) => "data-tile-frame" in n.attrs)).toHaveLength(1);
-      expect(all(tile, (n) => "data-tile-title" in n.attrs)).toHaveLength(1);
     }
   });
 

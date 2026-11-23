@@ -41,3 +41,26 @@ test("Undo in the photo actions gives focus to the restored photo", async ({ pag
   await expect(pane.getByRole("status")).toHaveText("Photo restored.");
   await expect(photo).toBeFocused();
 });
+
+test("Shift+Tab wrapping to the last visit option scrolls it into the half-open sheet, not the page", async ({ page }) => {
+  await openCatalog(page, ruleUrl("mobile-18"));
+  const pane = page.getByRole("figure", { name: "Do", exact: true });
+  const sheet = pane.getByRole("dialog", { name: "Visit options" });
+  if (!(await sheet.isVisible())) await pane.getByRole("button", { name: "Visit options" }).click();
+  const expand = sheet.getByRole("button", { name: "Expand" });
+  await expand.focus();
+  const pageTop = () => page.locator(".shell-sheet").evaluate((el) => el.scrollTop);
+  const before = await pageTop();
+  await page.keyboard.press("Shift+Tab");
+  const list = sheet.getByRole("group", { name: "Visit options" });
+  // The focus trap wraps backwards from the first control to the last visit option.
+  const last = list.getByRole("button", { name: /Wheelchair access/ });
+  await expect(last).toBeFocused();
+  const inside = await last.evaluate((el) => {
+    const box = el.closest('[role="group"]')!.getBoundingClientRect(), row = el.getBoundingClientRect();
+    return row.top >= box.top - 1 && row.bottom <= box.bottom + 1;
+  });
+  expect(inside, "the focused row is inside the list's visible area").toBe(true);
+  await expect(list).toBeVisible();
+  expect(await pageTop(), "the page did not scroll").toBe(before);
+});

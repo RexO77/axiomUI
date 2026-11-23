@@ -120,11 +120,14 @@
     0 2px 4px rgb(0 0 0 / 0.04),
     0 12px 32px -8px rgb(0 0 0 / 0.16);
   /* A bezel shell sitting on the page: a ring and a touch of lift. The ring
-     is the --ax-line hairline and no fainter: a shell that lands on a half
-     pixel splits it across two rows, and a fainter ring vanishes there while
-     its rounded corners still show. */
+     is the --ax-line hairline and no fainter, and it is drawn inside the
+     shell's own box: a ring outside it can be clipped or painted over by
+     whatever composites the shell (the docked column is sticky), which
+     leaves an edge missing until the next repaint while the rounded corners
+     still show. */
+  --ax-bezel-ring: rgb(0 0 0 / 0.08);
   --ax-shadow-bezel:
-    0 0 0 1px rgb(0 0 0 / 0.08),
+    inset 0 0 0 1px var(--ax-bezel-ring),
     0 1px 2px rgb(0 0 0 / 0.04);
 
   /* Motion durations. showcase-engine.ts mirrors these as DUR, and
@@ -183,7 +186,8 @@
   --ax-shadow-popover:
     0 0 0 1px rgb(255 255 255 / 0.09),
     0 16px 40px -12px rgb(0 0 0 / 0.7);
-  --ax-shadow-bezel: 0 0 0 1px rgb(255 255 255 / 0.12);
+  --ax-bezel-ring: rgb(255 255 255 / 0.12);
+  --ax-shadow-bezel: inset 0 0 0 1px var(--ax-bezel-ring);
 }
 
 /* `inline` makes each utility emit the raw `var(--ax-*)` (and the font

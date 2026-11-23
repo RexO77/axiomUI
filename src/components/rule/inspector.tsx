@@ -196,7 +196,7 @@ function DeepDive({ ruleId, state }: { ruleId: string; state: ProseState }) {
   );
 }
 
-/** The review questions: a short list to read before shipping, not a checklist to tick. */
+/** Before you ship: a short list to read before shipping, not a checklist to tick. */
 function ShipCheck({ prose }: { prose: RuleProse }) {
   const uid = useId();
   if (prose.review.length === 0) return null;

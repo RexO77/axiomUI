@@ -141,7 +141,10 @@ export function usePhoneChrome(rootRef: RefObject<HTMLElement | null>, active: b
       }
     } else {
       s.anchor = Math.min(s.anchor, y);
-      if (y - s.anchor >= DIRECTION_TRAVEL) {
+      // Within a bar's height of the end, the end-of-page reveal above would
+      // undo a hide a frame later: the bar would dip and snap back.
+      const nearEnd = y + scroller.clientHeight >= scroller.scrollHeight - (HIDE_AFTER + DIRECTION_TRAVEL);
+      if (!nearEnd && y - s.anchor >= DIRECTION_TRAVEL) {
         s.min = true;
         s.anchor = y;
       }

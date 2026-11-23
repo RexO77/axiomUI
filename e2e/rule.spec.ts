@@ -208,6 +208,8 @@ test.describe("exits and the copy menu", () => {
               requestAnimationFrame(() => {
                 const outgoing = document
                   .getAnimations()
+                // Scroll-linked effects (the deep dive's bottom fade) are not motion.
+                .filter((animation) => animation.timeline === document.timeline)
                   .filter((animation) => (animation.effect as KeyframeEffect | null)?.pseudoElement === "::view-transition-old(root)");
                 resolve({
                   mode: root.getAttribute("data-vt"),
@@ -579,6 +581,8 @@ test.describe("deep dive toggle", () => {
           const tick = (t: number) => {
             const running = document
               .getAnimations()
+                // Scroll-linked effects (the deep dive's bottom fade) are not motion.
+                .filter((animation) => animation.timeline === document.timeline)
               .some((animation) => {
                 const target = (animation.effect as KeyframeEffect | null)?.target;
                 return animation.playState === "running" && target instanceof Element && view.contains(target);
@@ -611,6 +615,8 @@ test.describe("deep dive toggle", () => {
             resolve(
               document
                 .getAnimations()
+                // Scroll-linked effects (the deep dive's bottom fade) are not motion.
+                .filter((animation) => animation.timeline === document.timeline)
                 .filter((animation) => {
                   const target = (animation.effect as KeyframeEffect | null)?.target;
                   return !(animation instanceof CSSTransition) && target instanceof Element && view.contains(target);
@@ -716,7 +722,7 @@ test.describe("deep dive toggle", () => {
       const side = document.querySelector<HTMLElement>(".rv-stage > .rv-side")!;
       document.querySelector(".rv-head button[aria-controls]")!
         .dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
-      const animation = side.getAnimations().find((item) => !(item instanceof CSSTransition))!;
+      const animation = side.getAnimations().find((item) => !(item instanceof CSSTransition) && item.timeline === document.timeline)!;
       const frames: { left: number; opacity: number }[] = [];
       await new Promise<void>((resolve) => {
         const tick = () => {
@@ -889,7 +895,8 @@ test.describe("deep dive toggle", () => {
     transforms: [...document.querySelectorAll(".rv-head > :not(.rv-spacer), .rv-main, .rv-title, .rv-compare, .rv-side, .rv-dd, .rv-ship, .rv-related, .rv-next")]
       .map((el) => getComputedStyle(el).transform).filter((transform) => transform !== "none"),
     animations: document.querySelector(".rv")?.getAnimations({ subtree: true })
-      .filter((animation) => !(animation instanceof CSSTransition)).length ?? 0,
+      // Scroll-linked effects (the deep dive's bottom fade) are not motion.
+      .filter((animation) => !(animation instanceof CSSTransition) && animation.timeline === document.timeline).length ?? 0,
   }));
   const clean = { ghosts: 0, transforms: [], animations: 0 };
   const closeThenKey = (page: Page, key: string, delay = 0) => page.evaluate(async ({ key, delay }) => {

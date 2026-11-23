@@ -763,7 +763,7 @@ export const ruleSources: Readonly<Record<string, readonly RuleSource[]>> = {
     { title: "WWDC21, Design for Safari 15", href: "https://developer.apple.com/videos/play/wwdc2021/10029/", kind: "guideline" },
     { title: "Android, Window insets", href: "https://developer.android.com/develop/ui/compose/system/insets", kind: "guideline" },
     { title: "Android, Edge-to-edge design", href: "https://developer.android.com/design/ui/mobile/guides/layout-and-content/edge-to-edge", kind: "guideline" },
-    { title: "MDN, env()", href: "https://developer.mozilla.org/en-US/docs/Web/CSS/env", kind: "standard" },
+    { title: "MDN, env()", href: "https://developer.mozilla.org/en-US/docs/Web/CSS/env", kind: "guideline" },
   ],
   "mobile-2": [
     { title: "web.dev, The large, small, and dynamic viewport units", href: "https://web.dev/blog/viewport-units", kind: "guideline" },
@@ -830,14 +830,14 @@ export const ruleSources: Readonly<Record<string, readonly RuleSource[]>> = {
   ],
   "mobile-13": [
     { title: "W3C Pointer Events, Declaring direct manipulation behavior", href: "https://www.w3.org/TR/pointerevents3/#the-touch-action-css-property", kind: "standard" },
-    { title: "MDN, touch-action", href: "https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/touch-action", kind: "standard" },
+    { title: "MDN, touch-action", href: "https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/touch-action", kind: "guideline" },
     { title: "WebKit, More Responsive Tapping", href: "https://webkit.org/blog/5610/more-responsive-tapping-on-ios/", kind: "guideline" },
   ],
   "mobile-14": [
     { title: "Apple HIG, Providing context menu actions", href: "https://developer.apple.com/design/human-interface-guidelines/context-menus", kind: "guideline" },
     { title: "Apple HIG, Gestures", href: "https://developer.apple.com/design/human-interface-guidelines/gestures", kind: "guideline" },
     { title: "Apple HIG, Accessibility", href: "https://developer.apple.com/design/human-interface-guidelines/accessibility", kind: "guideline" },
-    { title: "MDN, -webkit-touch-callout", href: "https://developer.mozilla.org/en-US/docs/Web/CSS/-webkit-touch-callout", kind: "standard" },
+    { title: "MDN, -webkit-touch-callout", href: "https://developer.mozilla.org/en-US/docs/Web/CSS/-webkit-touch-callout", kind: "guideline" },
   ],
   "mobile-15": [
     { title: "Apple, Designing Fluid Interfaces", href: "https://developer.apple.com/videos/play/wwdc2018/803/", kind: "guideline" },
@@ -845,7 +845,7 @@ export const ruleSources: Readonly<Record<string, readonly RuleSource[]>> = {
     { title: "Rauno Freiberg, Invisible Details of Interaction Design", href: "https://rauno.me/craft/interaction-design", kind: "practice" },
   ],
   "mobile-16": [
-    { title: "MDN, overscroll-behavior", href: "https://developer.mozilla.org/en-US/docs/Web/CSS/overscroll-behavior", kind: "standard" },
+    { title: "MDN, overscroll-behavior", href: "https://developer.mozilla.org/en-US/docs/Web/CSS/overscroll-behavior", kind: "guideline" },
     { title: "W3C, CSS Overscroll Behavior Level 1", href: "https://www.w3.org/TR/css-overscroll-1/", kind: "standard" },
     { title: "Apple HIG, Scroll views", href: "https://developer.apple.com/design/human-interface-guidelines/scroll-views", kind: "guideline" },
     { title: "Chrome, Take control of your scroll", href: "https://developer.chrome.com/blog/overscroll-behavior", kind: "guideline" },
@@ -859,7 +859,7 @@ export const ruleSources: Readonly<Record<string, readonly RuleSource[]>> = {
     { title: "Android Compose, Partial bottom sheet", href: "https://developer.android.com/develop/ui/compose/components/bottom-sheets-partial", kind: "guideline" },
     { title: "Material, BottomSheetBehavior", href: "https://developer.android.com/reference/com/google/android/material/bottomsheet/BottomSheetBehavior", kind: "guideline" },
     { title: "UIKit, Sheet detents", href: "https://developer.apple.com/documentation/uikit/uisheetpresentationcontroller/detents", kind: "guideline" },
-    { title: "W3C APG, Modal dialog", href: "https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/", kind: "standard" },
+    { title: "W3C APG, Modal dialog", href: "https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/", kind: "guideline" },
   ],
   "mobile-19": [
     { title: "Baymard, Apply buttons in mobile filtering interfaces", href: "https://baymard.com/guidelines/1125-apply-buttons-in-mobile-filtering-interfaces", kind: "research" },
@@ -870,12 +870,12 @@ export const ruleSources: Readonly<Record<string, readonly RuleSource[]>> = {
   "mobile-20": [
     { title: "WebKit · Focused element scale calculation", href: "https://raw.githubusercontent.com/WebKit/WebKit/77899089cc29f732abe2c258e19c970c0df364e3/Source/WebKit/UIProcess/API/ios/WKWebViewIOS.mm", kind: "guideline" },
     { title: "Apple, What's New in Safari 10", href: "https://developer.apple.com/library/archive/releasenotes/General/WhatsNewInSafari/Articles/Safari_10_0.html", kind: "guideline" },
-    { title: "W3C ACT, Meta viewport allows for zoom", href: "https://www.w3.org/WAI/standards-guidelines/act/rules/b4f0c3/", kind: "standard" },
+    { title: "W3C ACT, Meta viewport allows for zoom", href: "https://www.w3.org/WAI/standards-guidelines/act/rules/b4f0c3/", kind: "guideline" },
     { title: "W3C, Understanding SC 1.4.4", href: "https://www.w3.org/WAI/WCAG22/Understanding/resize-text.html", kind: "standard" },
   ],
   "mobile-21": [
     { title: "Chrome · Keyboard resize policies", href: "https://developer.chrome.com/blog/viewport-resize-behavior", kind: "guideline" },
-    { title: "MDN, Visual Viewport API", href: "https://developer.mozilla.org/en-US/docs/Web/API/Visual_Viewport_API", kind: "standard" },
+    { title: "MDN, Visual Viewport API", href: "https://developer.mozilla.org/en-US/docs/Web/API/Visual_Viewport_API", kind: "guideline" },
     { title: "CSS Viewport (WD)", href: "https://www.w3.org/TR/css-viewport-1/#interactive-widget-section", kind: "standard" },
     { title: "Apple HIG, Virtual keyboards", href: "https://developer.apple.com/design/human-interface-guidelines/virtual-keyboards", kind: "guideline" },
     { title: "Emil Kowalski, Building a drawer component", href: "https://emilkowal.ski/ui/building-a-drawer-component", kind: "practice" },

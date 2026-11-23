@@ -10,7 +10,6 @@ import { SheetLayer } from "./kit/inspection";
 import { filters, finishPull, matchingShoes, sheetMetrics as m, toggleFilter, visitOptions, type Filter } from "./kit/sheets-fixtures";
 import "./sheets.css";
 
-export { isSheetRule } from "./kit/sheets-fixtures";
 type PaneProps = { good: boolean; inspect: boolean; replay: Ref<() => void> };
 const updates = ["Survey filed", "Soil tested", "Beds marked", "Stone delivered", "Paths graded", "Hedges trimmed", "Benches fitted", "Gates opened"];
 const destinations = ["Birchwood", "Westport", "North Quay", "Oxbridge", "Elm Park", "Southbank", "Hill End", "Victoria"];
@@ -78,7 +77,25 @@ function trap(event: KeyboardEvent<HTMLDivElement>, close: () => void) {
   const targets = [...event.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled), [tabindex="0"]')].filter(el => !el.closest("[inert]"));
   const target = event.shiftKey ? targets.at(-1) : targets[0];
   if (document.activeElement === (event.shiftKey ? targets[0] : targets.at(-1))) {
-    event.preventDefault(); target?.focus({ preventScroll: true });
+    event.preventDefault();
+    if (!target) return;
+    // The phone is scaled, so a plain focus() would scroll the frame and the
+    // page; scroll only the sheet's own list until the row is in view.
+    target.focus({ preventScroll: true });
+    reveal(target, event.currentTarget);
+  }
+}
+
+/** Scrolls the nearest scrolling box inside `sheet` just enough to show `el`. */
+function reveal(el: HTMLElement, sheet: HTMLElement) {
+  for (let box = el.parentElement; box && sheet.contains(box); box = box.parentElement) {
+    if (box.scrollHeight <= box.clientHeight || !/auto|scroll/.test(getComputedStyle(box).overflowY)) continue;
+    const row = el.getBoundingClientRect(), view = box.getBoundingClientRect();
+    // Rects are in screen pixels, scrollTop in the frame's own units.
+    const scale = view.height / box.offsetHeight || 1;
+    if (row.top < view.top) box.scrollTop -= (view.top - row.top) / scale;
+    else if (row.bottom > view.bottom) box.scrollTop += (row.bottom - view.bottom) / scale;
+    return;
   }
 }
 

@@ -3,6 +3,26 @@ import { expect, openCatalog, ruleUrl, test, wallUrl } from "./helpers";
 test.describe("phone catalog and static comparison", () => {
   test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
 
+  test("tapping Do keeps the dock under the finger while the stacked panes ease shut", async ({ page }) => {
+    await openCatalog(page, ruleUrl("comp-1"));
+    const dock = page.locator(".cmp-dock");
+    const canvas = page.locator("[data-compare-canvas]");
+    await dock.evaluate((element) => element.scrollIntoView({ block: "center" }));
+    const before = await dock.boundingBox();
+    if (!before) throw new Error("The dock should have a box");
+    const sheet = page.locator(".shell-sheet");
+    const scrollBefore = await sheet.evaluate((element) => element.scrollTop);
+
+    await page.getByRole("radio", { name: "Do", exact: true }).tap();
+    // The canvas height eases; check once the transition has run out.
+    await expect.poll(() => canvas.evaluate((element) => element.getAnimations().length)).toBe(0);
+    const after = await dock.boundingBox();
+    if (!after) throw new Error("The dock should still have a box");
+    expect(Math.abs(after.y - before.y)).toBeLessThan(2);
+    // The page did move to make that happen.
+    expect(await sheet.evaluate((element) => element.scrollTop)).toBeLessThan(scrollBefore - 50);
+  });
+
   test("Both stacks the examples and 2× touch drags pan without flipping or scrolling", async ({ page }) => {
     await openCatalog(page, ruleUrl("comp-1"));
     const canvas = page.locator("[data-compare-canvas]");
