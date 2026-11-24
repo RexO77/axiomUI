@@ -308,14 +308,26 @@ test("arrows and Enter while an input method is composing belong to the composit
   await awaitUrl(page, ruleUrl(railIds[0]));
 });
 
-test("a palette opened on a phone keeps the rail inert when the window widens", async ({ page }) => {
+test("a palette opened on a phone keeps its query and the rail inert when the window widens", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openCatalog(page, ruleUrl(railIds[3]));
   await page.keyboard.press("ControlOrMeta+k");
   await expect(palette(page)).toBeVisible();
+  const input = palette(page).getByRole("combobox");
+  await input.fill("contrast");
+  const preview = palette(page).locator(".palette-preview");
+  await expect(preview).toHaveCount(0);
+  await expect(input).toBeFocused();
   await page.setViewportSize({ width: 1440, height: 900 });
   await expect(page.locator(".shell-rail")).toBeVisible();
   await expect(palette(page)).toBeVisible();
+  await expect(input).toHaveValue("contrast");
+  await expect(input).toBeFocused();
+  await expect(preview.locator(".still-pair")).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(preview).toHaveCount(0);
+  await expect(input).toHaveValue("contrast");
+  await page.setViewportSize({ width: 1440, height: 900 });
   // The rail can be neither focused nor clicked behind the open dialog.
   await expect(page.locator(".shell-rail")).toHaveAttribute("inert", "");
   await page.keyboard.press("Escape");

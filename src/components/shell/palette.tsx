@@ -31,6 +31,7 @@ import { Kbd } from "@/components/ui/kbd";
 import { railCategories, railCategory, railCategoryOf } from "@/data/taxonomy";
 import { rules, type Rule } from "@/data/ui-logic";
 import { catalogStores } from "@/lib/catalog/stores";
+import { PHONE_QUERY, useMediaQuery } from "@/lib/media";
 import { searchRules, type MatchReason } from "@/lib/rule-search";
 
 import { trapTab, useModal, type ModalSession } from "./modal";
@@ -84,6 +85,30 @@ function Key({ glyph, spoken, off = false, children }: { glyph?: string; spoken:
   );
 }
 
+function PalettePreview({ activeRule, hasResults }: { activeRule: Rule | null; hasResults: boolean }) {
+  const [preview, setPreview] = useState<Rule | null>(activeRule);
+  useEffect(() => {
+    const timer = setTimeout(() => setPreview(activeRule), PREVIEW_MS);
+    return () => clearTimeout(timer);
+  }, [activeRule]);
+
+  if (!hasResults) return null;
+  return (
+    <div className="palette-preview" aria-hidden="true">
+      {activeRule ? (
+        <>
+          <div className="palette-preview-head">
+            <p className="palette-preview-category">{railCategory(railCategoryOf(activeRule)).name}</p>
+            <p className="palette-preview-title">{activeRule.title}</p>
+            <p className="palette-preview-summary">{activeRule.desc}</p>
+          </div>
+          {preview ? <StillPair key={preview.id} rule={preview} /> : null}
+        </>
+      ) : null}
+    </div>
+  );
+}
+
 export type PaletteProps = {
   session: Pick<ModalSession, "isOpen" | "returnTo">;
   currentId: string | null;
@@ -115,11 +140,9 @@ export function Palette({ session, currentId, onClose, onOpen, onSearch }: Palet
   const activeRule = flat.find((entry) => entry.key === active)?.rule ?? null;
   const optionId = (key: string) => `${uid}-${key.replace(":", "-")}`;
 
-  const [preview, setPreview] = useState<Rule | null>(activeRule);
-  useEffect(() => {
-    const timer = setTimeout(() => setPreview(activeRule), PREVIEW_MS);
-    return () => clearTimeout(timer);
-  }, [activeRule]);
+  // The CSS already hides this preview on phones. Do not mount its demo or
+  // schedule the preview update there; desktop updates also stay in the pane.
+  const phone = useMediaQuery(PHONE_QUERY);
 
   /* Opening, the current row comes to the middle of the list; after that, the least scroll. */
   const scrolled = useRef(false);
@@ -240,20 +263,8 @@ export function Palette({ session, currentId, onClose, onOpen, onSearch }: Palet
             <p className="palette-empty">
               No rules match “{q}”. Try one word, like “tracking”.
             </p>
-          ) : (
-            <div className="palette-preview" aria-hidden="true">
-              {activeRule ? (
-                <>
-                  <div className="palette-preview-head">
-                    <p className="palette-preview-category">{railCategory(railCategoryOf(activeRule)).name}</p>
-                    <p className="palette-preview-title">{activeRule.title}</p>
-                    <p className="palette-preview-summary">{activeRule.desc}</p>
-                  </div>
-                  {preview ? <StillPair key={preview.id} rule={preview} /> : null}
-                </>
-              ) : null}
-            </div>
-          )}
+          ) : null}
+          {!phone ? <PalettePreview activeRule={activeRule} hasResults={count > 0} /> : null}
         </div>
         <div className="palette-foot" id={`${uid}-keys`}>
           {count > 0 ? (
